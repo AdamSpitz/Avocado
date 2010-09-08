@@ -1,0 +1,99 @@
+ometa WikiParser <: Parser {
+
+	nl = '\n',
+
+	createTextSpec =
+	{
+		var spec = { string: '', attributes: []};
+		spec.assemble = function() {
+			var morph = new TextMorph(new Rectangle(0,0,10,10));
+			morph.applyStyle({fill: Color.white, borderWidth: 0, opacity: 0, fontSize: 16});
+			var text = new lively.Text.Text(spec.string);
+			spec.attributes.forEach(function(ea) { text.emphasize(ea, ea.start, ea.stop) });
+			morph.setRichText(text);
+			return morph;
+	 	};
+		spec.add = function(str) { spec.string += str };
+		spec.addAttribute = function(attr) { spec.attributes.push(attr) };
+		spec.addAttributed = function(str, attribute) {
+			attribute.start = spec.string.length;
+			spec.add(str);
+			attribute.stop = spec.string.length;
+			spec.addAttribute(attribute);
+		};
+		spec
+	},
+
+	heading =
+		'='+:start
+		(~'\n' ~'=' char:c -> c)+:cs
+		'='+:end ?(end.length == start.length)
+		-> {
+			var morph = new TextMorph(new Rectangle(0,0,10,10), cs.join(''));
+			morph.applyStyle({fill: Color.white, borderWidth: 0, opacity: 0, fontSize: 40 - start.length * 6});
+			morph
+		},
+
+	paragraph =
+		createTextSpec:spec atomicText(spec)+
+		-> spec.assemble(),
+
+	nestableText :spec =
+		atomicText(spec) | list(spec),
+
+	list :spec =
+		'*'+:level
+		spaces { spec.add(level.collect(function(ea) { return '\t'}).join('')); spec.add('• ')}
+		(~'\n' (bold(spec) | italic(spec) | link(spec) | wordsNoNewline(spec)))+ ('\n' | end)
+		{spec.add('\n')}
+		list(spec)*,
+
+	atomicText :spec =
+		wordsNoParagraphEnd(spec) | bold(spec) | italic(spec) | link(spec) | list(spec) | trash(spec),
+trash :spec =
+	~'\n' ~end {spec.add('<ERROR>')}
+	(char:c ?(c != '\n') {spec.add(c)})+ {spec.add('</ERROR>')},
+
+
+	character :spec = char:c -> spec.add(c),
+
+	wordsNoParagraphEnd :spec =
+		(~paragraphEnd
+		char:c
+		?(c != '*' && c != '[' && c != '<' && c != '\'')
+		{spec.add(c)})+,
+
+	wordsNoNewline :spec =
+		(char:c
+		?(c != '\n' && c != '*' && c != '[' && c != '<' && c != '\'')
+		{spec.add(c)})+,
+
+	bold :spec =
+		~space "'''" (~"'''" char:c ->c)+:cs "'''"
+		-> { spec.addAttributed(cs.join(''), {style: 'bold'}) },
+	italic :spec =
+		~space "''" (~"''" char:c ->c)+:cs "''"
+		-> { spec.addAttributed(cs.join(''), {style: 'italic'}) },
+
+
+	link :spec = 
+		'[' (~']' ~space char:c -> c)+:target (space+ (~']' char:c -> c)+ | empty -> []):name ']'
+		-> { spec.addAttributed(name.join('') || target.join(''), {link: target.join(''), color: 'blue'}) },
+
+	paragraphEnd =
+	  '\n' ('\n'+ | '='),
+
+	partEnd = 
+		'\n'+ | end,
+
+	textParts =
+	  ((heading | paragraph):p partEnd -> p)+,
+
+	log :msg = {console.log(msg)},
+
+
+	wikiTextDescription =
+		textParts:parts end
+		-> parts
+
+}

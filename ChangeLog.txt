@@ -1,0 +1,224 @@
+Friday, August 20, 2010
+
+  - Added some more tests, fixed some bugs.
+
+Monday, August 16, 2010
+
+  - Added a rudimentary combo-box widget.
+
+Wednesday, June 30, 2010
+
+  - Put in a hack to make it faster to grab complex morphs. (You won't get a fancy deep-copy drop shadow anymore, just a single morph with the same shape as the morph you're grabbing. Though in some cases that actually looks better than the old fancy behaviour.)
+
+Wednesday, June 16, 2010
+
+  - Made the animations work better on machines with little CPU power available.
+  - Made menu-item highlighting work on touch devices even when the finger just stabs down on the menu item without moving side to side.
+
+Tuesday, June 15, 2010
+
+  - Convert touch events to mouse events, so that all the existing code (which expects mouse events) will work.
+  - On touch devices, double-tap the world to bring up the world menu.
+
+Monday, June 14, 2010
+
+  - Fixed a bug with the LK fill-mixing code.
+  - Committed a first crack at iPad gestures (using Moousture).
+
+Tuesday, May 25, 2010
+
+  - Added a "turn on edit mode" item to the morph menu.
+
+Monday, May 24, 2010
+
+  - Added a ButtonMorph to the morph factory.
+  - Added a Core Sampler for drilling.
+
+Sunday, May 23, 2010
+
+  - Made a simple morph factory. (Isn't editable yet - it's procedurally generated.)
+
+Friday, May 21, 2010
+
+  - Fixed a UI bug with creating new objects.
+  - Took a first crack at making it possible to leave out the development environment and just deploy the app itself.
+
+Thursday, May 13, 2010
+
+  - Generalized the drag-and-drop highlighting stuff. Now a morph will highlight itself if something droppable is dragged over it.
+
+Tuesday, May 11, 2010
+
+  - Put in a workaround for that Chrome "prototype"-not-enumerable bug.
+  - Fixed Alt-Enter not working in evaluators in Chrome.
+
+Wednesday, April 28, 2010
+
+  - Working on the tic-tac-toe demo. The creation process is still a bit more complex than I'd like.
+  - Added "interpose new parent", because it's something that I do a lot.
+
+Tuesday, April 27, 2010
+
+  - Added a couple of Emacs key bindings (Ctrl-A, Ctrl-E) because my fingers keep using them of their own accord.
+  - Morphs that are zooming towards the hand will now follow the hand if the hand moves.
+  - Replaced \r with \n in fileouts.
+
+Monday, April 26, 2010
+
+  - Can file out a morph with submorphs now.
+  - When doing a "set module", show the most likely modules at the top of the list.
+
+Thursday, April 15, 2010
+
+  - Organized the module-choosing menu into directories, so that it's not huge and unwieldy and intimidating.
+  - Turned off the "guess creator slots before saving" thing - it might be more confusing than it's worth.
+  - Can rename modules, though their dependers aren't fixed up yet.
+
+Sunday, April 11, 2010
+
+  - Make it load fast (even with a bad connection) by statically concatenating the .js files.
+
+
+Stuff that happened before we started keeping track of which day they happened on:
+
+  - Core functionality:
+    - Create an object.
+    - See what slots point to.
+    - See the name of the object.
+    - Slots can point to different kinds of things - numbers, booleans, strings, arrays, functions, null, undefined.
+    - Add a slot to an object.
+    - Change the slot's contents.
+    - Change the slot's name.
+    - Move a slot.
+    - Drop a removed slot on the world, have it turn into a real object (so I can dismiss it).
+    - Evaluators.
+    - Show the __proto__ slot.
+    - "Create child."
+    - Get rid of that stupid drop shadow bug.
+    - Be able to edit a method right in the outliner box, rather than having to set the arrow to point to a different function.
+    - Error messages (little red boxes that fly away after a few seconds?) when something goes wrong in an evaluator.
+    - Should have a separate panel for the evaluators, so they don't die when you collapse the outliner.
+    - Make the arrows stop fidgeting.
+    - I still want SlotMorphs to not have so much wasted space. Why are they so tall?
+    - Implementors, Well-Known References, Well-Known Children.
+    - Comments on objects/slots.
+    - Slice outliners, so that search results look nicer.
+    - Categories.
+    - The giant-slotMorph bug.
+    - Can I make it "this" instead of "self" (in an evaluator)? Just a little thing that I don't want to have to explain to people.
+    - Better names for class instances. ("an Object" rather than "an Object.prototype")
+    - Grabbing - be right on the hand, and in the middle of the morph rather than the corner.
+    - Should the lobby be called the lobby, if it's actually the window object? Why not just call it window? Or maybe globals? Actually, LK calls it Global, huh?
+    - In Firefox, why is Object.prototype not called Object.prototype?
+    - Why does the "constructor" slot of some morph prototype (say, EvaluatorMorph.prototype) end up in category "C"?
+    - Whoops, the functionBody slot for - and any other slot pointing to - a well-known function just shows the well-known name. Should change it to not do that if I'm looking at the actual creator slot.
+    - Show methods as methods (inlined into the holder's box), rather than separate objects.
+    - Hey, why is the "Module: " line in a slot annotation not being left-justified properly (at least if there's something in it)?
+    - The module summary string should ignore copied-down slots.
+    - Oh, and the module summary string should just say "5 modules" or something once there's a whole bunch.
+    - Put copied-down slots in the right categories.
+    - Fixed bug: a category that doesn't have any slots of its own, only subcategories, doesn't show up.
+    - Categorized a bunch of our methods.
+    - "Clean up."
+    - I think "initialize" slots still think they're data slots (because they're wrapped or something). Or maybe it's slots that use $super?
+    - The infinite-recursion bug re: expression strings for circular structures.
+    - Some sort of mechanism for setting the world's context menu - application objects or something.
+    - Run everything (I mean, all of *my* code, not LK or Prototype) through JSLint.
+    - Menu item: "create subclass".
+    - A ^ button like in Self.
+    - Copy/move a category.
+    - Slice Redo. (Gotta unmark after doing the search.)
+    - Run JSLint whenever saving the contents of a slot.
+    - Be able to have a canvas at a location other than 0,0.
+  - UI stuff:
+    - Make slots expand to fit the outliner. (The outliner should be no wider than the child with the max minimum width, but the other slots should all expand to be that wide.)
+    - Why does the outliner keep getting wider?
+    - Fix that arrow bug where they attach to the world at 0,0.
+    - Make the slot contents / show source buttons look different from each other.
+    - Fix that slot-renaming bug.
+    - Generalize the layout stuff.
+    - Make an easy way to type in the initial contents of the slot, rather than having to open an evaluator and create it there and then get the arrow and then drag the arrow.
+    - Bug: get an arrow pointing to an outliner, dismiss the outliner, then click the D button again. (It'll toggle off first. You have to click it again to toggle it back on.)
+    - Bah, the giant-lobby problem is really annoying.
+    - I think I need outliners to periodically update themselves.
+    - Hmm, doing a refreshText (as part of updateAppearance) doesn't seem like a good idea if I'm in the middle of editing the text box - I'll lose what I've typed.
+    - Adding+renaming a slot seems to have the 100000-width bug every *other* time.
+    - Categories should be indented.
+    - Fiddle with the padding in a slotMorph - right now it doesn't look quite right.
+    - Should be really simple to put in a moduleSummary label for each outliner.
+    - Seriously, just fix "D" and "M". Blecch.
+    - Drag and drop into a category is still broken.
+    - Category needs a toString method.
+    - Source morph shouldn't stay red after accepting, which is what happens right now if the expressionEvaluatingToMe isn't exactly identical to what was typed.
+    - Maybe the source morph should close after you type something into it, at least if it's data rather than a method?
+    - Why, after I add one slot, does the next slot I add not start with its source open?
+    - Why isn't the source highlighting properly? (It *is* selected, but doesn't *appear* selected.)
+    - Hey, can I make the object name bold?
+    - Maybe a fixed-width font for the source? Otherwise my lining-up looks weird.
+    - Evaluator is word-wrapping? (What about source morph?)
+    - Do a carpet-morph command thing - if all the morphs on the carpet understand a particular command, put it on the carpet morph's menu. (Useful to file out all modules, run all tests, etc.) Maybe do it by type, so that if you accidentally get a few outliners on the carpet, you can still say "file out all modules."
+    - "Grab arrow" for slot contents buttons.
+    - Make the slots be lazy about creating stuff that isn't visible at first.
+    - Module morphs should have an update process.
+    - Be able to drag the outliner by clicking on one of its categories, or slots.
+    - Do dynamic loading on all the LK code, so that LK doesn't need to be loaded until someone hits the bookmarklet.
+    - Hey, can I tack this thing onto existing apps, like Google Docs? Maybe through a bookmarklet? How does Jash do it? I just tried running Jash with Lively Outliners, and it seems like Jash really does have access to stuff like OutlinerMorph. So maybe I could make a bookmarklet that you could hit to bring up a Lively world where you could play with your objects.
+    - LK integration:
+      - I'm doing the wrong menu. I've been overriding the morphMenu, when really that's meant to be the blue-button menu. I should be creating some other thing, I guess.
+      - Make "clean up" play nicely with other morphs, not just outliners.
+      - Can I make "inspect" give me an outliner instead of an Inspector?
+      - Play more nicely with styles.
+    - Cartoon animation:
+      - Anticipatory contrary motion.
+      - Slow in and slow out.
+      - Move along arcs rather than straight lines.
+      - Follow through at the end of a motion - wiggle or something.
+      - An outliner should wiggle if the result of an evaluator is the object itself.
+      - When a morph is coming to your hand, maybe it should zoom there?
+      - Make all LK "dismiss" buttons do the zooming thing.
+      - It's too slow when it only has to move a short distance. Maybe a minimum speed? Or maybe the top speed should always be the same, so it just takes longer if it has further to go?
+      - Motion blur.
+      - Menus grow smoothly from nothing.
+      - When creating a new object, maybe it shouldn't zoom in from the side, maybe it should grow from nothing, or bud off from the parent object, or something? :)
+    - Poses!
+      - For extensional ones:
+        - Just remember the whole world.
+        - UI state for outliners: expander, annotation toggler, comment toggler, plus all the state for the slots and categories
+        - UI state for slots: three togglers, arrow
+      - For intensional ones:
+        - Object inheritance hierarchy
+      - Before recalling a pose, remember the current layout (as an extensional pose) on an undo stack.
+  - Transporter:
+    - Create a slot called 'stack' on the lobby. Make it point to a new object.
+    - Give it a couple of slots - 'array' and 'top', or something.
+    - Right-clock the 'stack' slot, tell it to "be creator".
+    - Set the stack slot's module to be the (newly created) stack module.
+    - Get a list of all the modules. Get a list of objects containing slots in the stack module.
+    - File out the stack module.
+    - File in the stack module.
+    - Make sure the module includes the module object itself.
+    - Make sure the module includes annotation info.
+    - Copy-down parents, with slotsToOmit.
+    - Initialize-to expressions.
+    - Gotta deal with $super when filing in.
+    - Make those stupid {} stop showing up in the fileouts when they're unnecessary.
+    - Let me choose a directory (well, URL) where each module should live, so I can set everything up so that it files out directly over top of the real files. (Trust Git to handle bugs in the fileouts.)
+    - All Modules pose.
+    - Changed Modules pose.
+    - Make sure that modules are getting marked as changed when we setModule, setContents, rename, remove, etc.
+    - "File out" button on the module morph.
+    - Various menu items on the module morph; check Self.
+    - Fix slot ordering w.r.t. inheritance - gotta make sure the parent already exists before creating the child. Also copy-down inheritance. And references. And creator slots.
+    - Maybe a way to file out "ordinary" .js files? Ones that don't support all the live stuff, but still work, and look exactly like what you'd produce if you had written them by hand. Useful for people who want to eject. And maybe for deployment too.
+    - Be able to save morphs.
+    - Run the creatorSlotMarker before filing out stuff, so that objects with only one possible creator slot won't need to be set explicitly.
+    - Teach the transporter how to have __proto__ be a creator slot.
+  - Test framework:
+    - Make TestCase and TestResult morphs.
+  - Dog-fooding:
+    - Transporter.
+    - Mirrors.
+    - Core.
+    - Outliners.
+  - Documentation:
+    - Some writeups of the philosophy. Just a single page: a few sections, each one with a little blurb about the rationale, and a link to the relevant Self paper.

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>Avocado</title>
+
+<script>
+window.isLoadingStatically = true;
+</script>
+
+<script type="text/ecmascript" src="javascripts/static.js"></script>
+
+<script>
+function doneLoadingWindow() {
+  transporter.callWhenDoneLoadingAvocado = function(world) {
+    new MessageNotifierMorph("Right-click the background to start", Color.green).ignoreEvents().showTemporarilyInCenterOfWorld(world);
+  };
+  window.isDoneLoading = true;
+  transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
+}
+</script>
+
+</head>
+
+<body id="body" style="margin: 0px" onload="doneLoadingWindow()">
+
+<svg id="canvas"
+     width="100%" height="100%"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:lively="http://www.experimentalstuff.com/Lively"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+     xml:space="preserve"
+     zoomAndPan="disable">
+</svg>
+
+</body>
+
+</html>

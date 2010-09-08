@@ -1,0 +1,44 @@
+/* this parser is heavily based on Alex Warth's bootstrap js parser */
+
+ometa LKJSParser <: Parser {
+    isLKParser  = ''                                                    -> true,
+  
+    fromTo :x :y    = seq(x) (~seq(y) char)*:cs seq(y)                  -> cs,
+    nl              = '\n' | '\r'                                       -> '\n',
+	nameFirst       = letter | '$' | '_',
+  	nameRest        = nameFirst | digit,
+  	iName           = firstAndRest(#nameFirst, #nameRest):r		        -> r.join(''),
+  	isKeyword :x    = ?BSJSParser._isKeyword(x),
+  	name            = iName:n ~isKeyword(n)								-> n,
+  	keyword         = iName:k isKeyword(k)									-> k,
+  	escapeChar   = '\\' char:c                                              -> ometaUnescape('\\' + c),
+  	str     = '\'' (escapeChar | ~'\'' char)*:cs '\''                   -> { '\'' + cs.join('') + '\'' }
+  	        | '"' (escapeChar | ~'"' char)*:cs '"'                   -> { '"' + cs.join('') + '"' },
+    
+    comment         = fromTo('//', '\n'):c                              -> { '//' + c.join('')}
+                    | fromTo('/*', '*/'):c                              -> { '/*' + c.join('') + '*/' },
+  
+    optNl           = spacesNoNl (nl:n                                  -> n
+                    | empty                                             -> ''
+                    ),
+    spacesNoNl      = (~nl space)*:spcs									-> '\t',
+    sc              = spacesNoNl (nl:n								    -> n
+					| &'}' | end)						                -> ''
+                    | ";"	optNl:nl									    -> { ';' + nl },
+    srcElem         = "function":f (formal | empty):n funcRest:fr             -> { lively.Text.createText(f).concat(fr) }
+                    | stmt:s											-> s,
+    funcRest        = "(" listOf(#formal, ','):fs ")" "{" optNl:nl srcElems:body "}" -> { lively.Text.createText('(' + fs + ') {' + nl).concat(body).concat(lively.Text.createText('}')) },
+    formal          = spaces:sps name:n								    -> { sps.join('') + n},
+    srcElems        = srcElem*:ss                                       -> ss.inject(lively.Text.createText(''), function(text, ea) { return text.concat(ea) }) ,
+    stmt            = something:sth                                     ->  { sth },
+   something        =  spacesNoNl:spcs ( partStmt )+:parts sc:end            ->  {  parts.inject(lively.Text.createText(spcs), function(text, ea) {
+                                                                                        return text.concat(ea)
+                                                                                    }).concat(lively.Text.createText(end)) },
+	partStmt = str:s                                                ->  { lively.Text.createText(s, {color: Color.green}) }
+	            | keyword:k									        ->  { lively.Text.createText(k, {color: Color.red}) }
+				| name:n											->  { lively.Text.createText(n) }
+				| (~sc anything:a)									->  { lively.Text.createText(a) }
+};
+
+
+LKJSParser;
