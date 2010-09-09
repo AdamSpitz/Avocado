@@ -75,8 +75,8 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     var optionalParentButtonMorph  = Morph.createOptionalMorph(this.parentButton,  function() { return this.mirror().hasAccessibleParent(); }.bind(this));
     var optionalCommentButtonMorph = Morph.createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
     
-    this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton],
-                                            {top: 0, bottom: 0, left: 0, right: 0, between: 3});
+    this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton].compact(),
+                                                  {top: 0, bottom: 0, left: 0, right: 0, between: 3});
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
     this.optionalSlotsPanel = Morph.createOptionalMorph(function() {return this._categoryPresenter.slotsPanel();}.bind(this),

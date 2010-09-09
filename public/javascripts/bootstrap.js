@@ -937,9 +937,9 @@ thisModule.addSlots(transporter, function(add) {
 
   add.method('initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated', function(callWhenDone) {
     if (this.isDoneLoadingProgrammingEnvironment && window.worldHasBeenCreated) {
-      avocado.initialize();
-      var world = WorldMorph.current();
-      world.addApplication(avocado);
+      var app = window.appIsJSQuiche ? window.jsQuiche : window.avocado;
+      app.initialize();
+      WorldMorph.current().addApplication(app);
     }
   }, {category: ['bootstrapping']});
 
@@ -950,7 +950,7 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAllOfAvocado', function() {
-    if (modules['programming_environment/programming_environment']) {
+    if (modules['programming_environment/programming_environment'] || modules['programming_environment/code_organizer']) {
       this.isDoneLoadingProgrammingEnvironment = true;
       this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
     }
@@ -973,7 +973,11 @@ thisModule.addSlots(transporter, function(add) {
     // programming environment. -- Adam
     if (name === "programming_environment/programming_environment") {
       if (UserAgent.isIPhone) { return false; }
+      if (window.appIsJSQuiche) { return false; } // aaa HACK - what's the right way to do this?
       //if (window.wasServedFromGoogleAppEngine) { return currentUser && currentUser.isAdmin; }
+    }
+    if (name === "programming_environment/code_organizer") {
+      if (! window.appIsJSQuiche) { return false; } // aaa HACK - what's the right way to do this?
     }
     return true;
   }, {category: ['bootstrapping']});
@@ -990,8 +994,10 @@ thisModule.addSlots(transporter, function(add) {
         
         transporter.fileInIfWanted("avocado_lib", function() {
           transporter.doBootstrappingStep('doneLoadingAvocadoLib');
-          transporter.fileInIfWanted("programming_environment/programming_environment", function() {
-            transporter.doBootstrappingStep('doneLoadingAllOfAvocado');
+          transporter.fileInIfWanted("programming_environment/code_organizer", function() {
+            transporter.fileInIfWanted("programming_environment/programming_environment", function() {
+              transporter.doBootstrappingStep('doneLoadingAllOfAvocado');
+            });
           });
         });
       });

@@ -24,6 +24,32 @@ thisModule.addSlots(TestCase.prototype.Morph, function(add) {
   add.creator('prototype', Object.create(RowMorph.prototype));
 
   add.data('type', 'TestCase.prototype.Morph');
+  
+  add.method('addGlobalCommandsTo', function(cmdList) {
+    cmdList.addLine();
+
+    cmdList.addItem(["get tests", function(evt) {
+      // aaa - gather these automatically
+      var testCases = [
+        dictionary.tests,
+        set.tests,
+        mirror.tests,
+        transporter.tests,
+        objectGraphWalker.tests,
+        exitValueOf.tests,
+        enumerator.tests,
+        range.tests,
+        notifier.tests,
+        stringBuffer.tests,
+        String.prototype.tests,
+        Array.prototype.tests,
+        dependencies.tests,
+        organization.tests
+      ];
+      var world = evt.hand.world();
+      world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for avocado"));
+    }]);
+  })
 
 });
 
