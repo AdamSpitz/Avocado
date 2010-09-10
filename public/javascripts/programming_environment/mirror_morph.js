@@ -199,22 +199,32 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       }.bind(this));
     }.bind(this));
   }, {category: ['menu']});
+  
+  add.method('shouldAllowModification', function() {
+    return !window.appIsJSQuiche;
+  });
 
   add.method('addCommandsTo', function (cmdList) {
     this.addCategoryCommandsTo(cmdList);
 
     cmdList.addLine();
     if (this.mirror().canHaveChildren()) {
-      cmdList.addItem({label: "create child", go: function(evt) { this.createChild(evt); }.bind(this)});
+      if (this.shouldAllowModification()) {
+        cmdList.addItem({label: "create child", go: function(evt) { this.createChild(evt); }.bind(this)});
+      }
     }
 
     if (this.mirror().isReflecteeProbablyAClass()) {
-      cmdList.addItem({label: "create subclass", go: function(evt) { this.createSubclass(evt); }.bind(this)});
+      if (this.shouldAllowModification()) {
+        cmdList.addItem({label: "create subclass", go: function(evt) { this.createSubclass(evt); }.bind(this)});
+      }
     }
 
     if (this.mirror().hasAccessibleParent()) {
       cmdList.addItem({label: "get my parent", go: function(evt) { this.getParent(evt); }.bind(this)});
-      cmdList.addItem({label: "interpose new parent", go: function(evt) { this.interposeNewParent(evt); }.bind(this)});
+      if (this.shouldAllowModification()) {
+        cmdList.addItem({label: "interpose new parent", go: function(evt) { this.interposeNewParent(evt); }.bind(this)});
+      }
     }
     
     if (this.mirror().canHaveAnnotation()) {
@@ -226,28 +236,30 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
       cmdList.addItem({label: this._annotationToggler.isOn() ? "hide annotation" : "show annotation", go: function(evt) { this._annotationToggler.toggle(evt); }.bind(this)});
 
-      cmdList.addItem({label: "set module...", go: function(evt) {
-        var all = {};
-        var chooseTargetModule = function(sourceModuleName, evt) {
-          transporter.chooseOrCreateAModule(evt, this.modules(), this, "To which module?", function(targetModule, evt) {
-            this.mirror().eachNormalSlot(function(slot) {
-              if (! slot.isFromACopyDownParent()) {
-                if (sourceModuleName === all || (!slot.module() && sourceModuleName === '-') || (slot.module() && slot.module().name() === sourceModuleName)) {
-                  slot.setModule(targetModule);
+      if (this.shouldAllowModification()) {
+        cmdList.addItem({label: "set module...", go: function(evt) {
+          var all = {};
+          var chooseTargetModule = function(sourceModuleName, evt) {
+            transporter.chooseOrCreateAModule(evt, this.modules(), this, "To which module?", function(targetModule, evt) {
+              this.mirror().eachNormalSlot(function(slot) {
+                if (! slot.isFromACopyDownParent()) {
+                  if (sourceModuleName === all || (!slot.module() && sourceModuleName === '-') || (slot.module() && slot.module().name() === sourceModuleName)) {
+                    slot.setModule(targetModule);
+                  }
                 }
-              }
-            }.bind(this)); 
+              }.bind(this)); 
+            }.bind(this));
+          }.bind(this);
+
+          var whichSlotsMenu = new MenuMorph([], this);
+          whichSlotsMenu.addItem(["All", function(evt) {chooseTargetModule(all, evt);}.bind(this)]);
+          whichSlotsMenu.addLine();
+          this.modules().map(function(m) { return m ? m.name() : '-'; }).sort().each(function(moduleName) {
+            whichSlotsMenu.addItem([moduleName, function(evt) {chooseTargetModule(moduleName, evt);}.bind(this)]);
           }.bind(this));
-        }.bind(this);
-            
-        var whichSlotsMenu = new MenuMorph([], this);
-        whichSlotsMenu.addItem(["All", function(evt) {chooseTargetModule(all, evt);}.bind(this)]);
-        whichSlotsMenu.addLine();
-        this.modules().map(function(m) { return m ? m.name() : '-'; }).sort().each(function(moduleName) {
-          whichSlotsMenu.addItem([moduleName, function(evt) {chooseTargetModule(moduleName, evt);}.bind(this)]);
-        }.bind(this));
-        whichSlotsMenu.openIn(this.world(), evt.point(), false, "Of which slots?");
-      }.bind(this)});
+          whichSlotsMenu.openIn(this.world(), evt.point(), false, "Of which slots?");
+        }.bind(this)});
+      }
     }
 
     cmdList.addLine();
@@ -317,6 +329,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['creator slots']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
+    if (typeof(m.canBeDroppedOnMirror) === 'function') { return m.canBeDroppedOnMirror(this); }
     return typeof(m.wasJustDroppedOnMirror) === 'function';
   }, {category: ['drag and drop']});
 

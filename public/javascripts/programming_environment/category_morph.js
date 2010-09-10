@@ -72,12 +72,12 @@ thisModule.addSlots(category.Presenter, function(add) {
 
     var scms = this.immediateSubnodeMorphs();
     scms = scms.concat(this._slotsPanel.submorphs.select(function(m) {return m.isNewCategory && ! this.mirrorMorph().existingCategoryMorphFor(m.category());}.bind(this)));
-    scms.sort(function(scm1, scm2) {return scm1.category().lastPart().toUpperCase() < scm2.category().lastPart().toUpperCase() ? -1 : 1;});
+    scms.sort(function(scm1, scm2) { return scm1.category().lastPart().toUpperCase() < scm2.category().lastPart().toUpperCase() ? -1 : 1; });
 
     var supercatMorph = this.supernodeMorph();
     
     var allSubmorphs = [];
-    if (!supercatMorph || this.modulesSummaryString() !== supercatMorph._categoryPresenter.modulesSummaryString()) { allSubmorphs.push(this._modulesLabelRow); }
+    if (mirMorph.shouldAllowModification() && (!supercatMorph || this.modulesSummaryString() !== supercatMorph._categoryPresenter.modulesSummaryString())) { allSubmorphs.push(this._modulesLabelRow); }
     sms .each(function(sm ) {allSubmorphs.push(sm );});
     scms.each(function(scm) {allSubmorphs.push(scm);});
     allSubmorphs.each(function(m) { m.horizontalLayoutMode = LayoutModes.SpaceFill; });
@@ -210,9 +210,12 @@ thisModule.addSlots(category.MorphMixin, function(add) {
 
   add.method('addCategoryCommandsTo', function (cmdList) {
     if (this.mirror().canHaveSlots()) {
-      cmdList.addSection([{ label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); }.bind(this) },
-                          { label: "add function",  go: function(evt) { this.addSlot    (function() {}, evt); }.bind(this) },
-                          { label: "add category",  go: function(evt) { this.addCategory(               evt); }.bind(this) }]);
+      if (this.mirrorMorph().shouldAllowModification()) {
+        cmdList.addSection([{ label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); }.bind(this) },
+                            { label: "add function",  go: function(evt) { this.addSlot    (function() {}, evt); }.bind(this) }]);
+      }
+      
+      cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(               evt); }.bind(this) }]);
 
       if (!this.category().isRoot()) {
         cmdList.addLine();
@@ -301,6 +304,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   }, {category: ['renaming']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
+    if (typeof(m.canBeDroppedOnCategory) === 'function') { return m.canBeDroppedOnCategory(this); }
     return typeof(m.wasJustDroppedOnCategory) === 'function';
   }, {category: ['drag and drop']});
 
@@ -330,8 +334,19 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     newCategoryMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
     newCategoryMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
     newCategoryMorph.forceLayoutRejiggering();
+    if (! this.mirrorMorph().shouldAllowModification()) { newCategoryMorph._shouldOnlyBeDroppedOnThisParticularMirror = this.mirrorMorph().mirror(); }
     evt.hand.grabMorphWithoutAskingPermission(newCategoryMorph, evt);
     return newCategoryMorph;
+  }, {category: ['drag and drop']});
+
+  add.method('canBeDroppedOnCategory', function (categoryMorph) {
+    if (this._shouldOnlyBeDroppedOnThisParticularMirror) { return categoryMorph.mirror() === this._shouldOnlyBeDroppedOnThisParticularMirror; }
+    return true;
+  }, {category: ['drag and drop']});
+
+  add.method('canBeDroppedOnMirror', function (mirMorph) {
+    if (this._shouldOnlyBeDroppedOnThisParticularMirror) { return mirMorph.mirror() === this._shouldOnlyBeDroppedOnThisParticularMirror; }
+    return true;
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnMirror', function (mirMorph) {

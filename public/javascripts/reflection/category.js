@@ -16,6 +16,8 @@ thisModule.addSlots(category, function(add) {
 
   add.method('initialize', function (parts) {
     this._parts = parts;
+    // aaa HACK why are we getting an undefined in the first place? And why only in JSQuiche, not the regular Avocado?
+    for (var i = 0, n = parts.length; i < n; ++i) { if (parts[i] === undefined) { parts[i] = "undefined"; } }
   }, {category: ['creating']});
 
   add.method('root', function () { return category.create([]); }, {category: ['creating']});

@@ -309,6 +309,16 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     return [this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler];
   }, {category: ['updating']});
 
+  add.method('canBeDroppedOnCategory', function (categoryMorph) {
+    if (this._shouldOnlyBeDroppedOnThisParticularMirror) { return categoryMorph.mirror() === this._shouldOnlyBeDroppedOnThisParticularMirror; }
+    return true;
+  }, {category: ['drag and drop']});
+
+  add.method('canBeDroppedOnMirror', function (mirMorph) {
+    if (this._shouldOnlyBeDroppedOnThisParticularMirror) { return mirMorph.mirror() === this._shouldOnlyBeDroppedOnThisParticularMirror; }
+    return true;
+  }, {category: ['drag and drop']});
+
   add.method('wasJustDroppedOnMirror', function (mirMorph) {
     this.slot().copyTo(mirMorph.mirror());
     mirMorph.expander().expand();
@@ -374,12 +384,14 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     newSlotMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
     newSlotMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
     newSlotMorph.forceLayoutRejiggering();
+    if (! this.mirrorMorph().shouldAllowModification()) { newSlotMorph._shouldOnlyBeDroppedOnThisParticularMirror = this.mirrorMorph().mirror(); }
     evt.hand.grabMorphWithoutAskingPermission(newSlotMorph, evt);
     return newSlotMorph;
   }, {category: ['drag and drop']});
 
   add.method('addCommandsTo', function (cmdList) {
     var copyDown = this.slot().copyDownParentThatIAmFrom();
+    var isModifiable = this.mirrorMorph().shouldAllowModification();
 
     if (copyDown) {
       var copyDownParentMir = reflect(copyDown.parent);
@@ -387,19 +399,19 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
         this.world().morphFor(copyDownParentMir).grabMe(evt);
       }.bind(this)});
     } else {
-      if (this.slot().rename) {
+      if (isModifiable && this.slot().rename) {
         this._nameMorph.addEditingMenuItemsTo(cmdList);
       }
 
-      cmdList.addItem({label: this._sourceToggler.isOn() ? "hide contents" : "edit contents", go: function(evt) {
+      cmdList.addItem({label: this._sourceToggler.isOn() ? "hide contents" : "show contents", go: function(evt) {
         this._sourceToggler.toggle(evt);
       }.bind(this)});
 
       if (this.slot().copyTo) {
-        cmdList.addItem({label: "copy", go: function(evt) { this.grabCopy(evt); }.bind(this)});
+        cmdList.addItem({label: isModifiable ? "copy" : "change category", go: function(evt) { this.grabCopy(evt); }.bind(this)});
       }
       
-      if (this.slot().remove) {
+      if (isModifiable && this.slot().remove) {
         cmdList.addItem({label: "move", go: function(evt) {
           this.grabCopy(evt);
           this.slot().remove();
@@ -409,25 +421,25 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
       }
 
       if (this.slot().comment) {
-        cmdList.addItem({label: this._commentToggler.isOn() ? "hide comment" : "edit comment", go: function(evt) {
+        cmdList.addItem({label: this._commentToggler.isOn() ? "hide comment" : "show comment", go: function(evt) {
           this._commentToggler.toggle(evt);
         }.bind(this)});
       }
 
-      if (this.slot().beCreator && this.slot().contents().canHaveCreatorSlot()) {
+      if (isModifiable && this.slot().beCreator && this.slot().contents().canHaveCreatorSlot()) {
         var cs = this.slot().contents().explicitlySpecifiedCreatorSlot();
         if (!cs || ! cs.equals(this.slot())) {
           cmdList.addItem({label: "be creator", go: function(evt) { this.beCreator(); }.bind(this)});
         }
       }
 
-      if (this.slot().setModule) {
+      if (isModifiable && this.slot().setModule) {
         cmdList.addItem({label: "set module...", go: function(evt) {
           transporter.chooseOrCreateAModule(evt, this.mirrorMorph().modules(), this, "To which module?", function(m, evt) {this.setModule(m, evt);}.bind(this));
         }.bind(this)});
       }
 
-      if (this.slot().setModuleRecursively) {
+      if (isModifiable && this.slot().setModuleRecursively) {
         cmdList.addItem({label: "set module recursively...", go: function(evt) {
           transporter.chooseOrCreateAModule(evt, this.mirrorMorph().modules(), this, "To which module?", function(m, evt) {this.setModuleRecursively(m, evt);}.bind(this));
         }.bind(this)});
