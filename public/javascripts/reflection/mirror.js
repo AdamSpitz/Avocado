@@ -177,12 +177,19 @@ thisModule.addSlots(mirror, function(add) {
     var cs;
     kindOfCreatorSlot = kindOfCreatorSlot || 'explicitlySpecifiedCreatorSlot';
 
+    var i = 0;
     while (true) {
       if (mir.equals(lobbyMir)) { return chain; }
       cs = mir[kindOfCreatorSlot].call(mir);
       if (! cs) { return null; }
       chain.push(cs);
+      if (i >= 100) {
+        console.log("WARNING: Really long (" + i + " so far) chain of creator slots; giving up because it's probably a loop. " +
+                    "Here it is so far, starting from the end: " + chain.map(function(s) { return s.name(); }).join(", "));
+        return null;
+      }
       mir = cs.holder();
+      ++i;
     }
   }, {category: ['annotations', 'creator slot']});
 
