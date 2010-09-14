@@ -209,6 +209,8 @@ thisModule.addSlots(category.MorphMixin, function(add) {
   add.method('highlighter', function () { return this._highlighter; }, {category: ['highlighting']});
 
   add.method('addCategoryCommandsTo', function (cmdList) {
+    var isModifiable = this.mirrorMorph().shouldAllowModification();
+    
     if (this.mirror().canHaveSlots()) {
       if (this.mirrorMorph().shouldAllowModification()) {
         cmdList.addSection([{ label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); }.bind(this) },
@@ -220,14 +222,16 @@ thisModule.addSlots(category.MorphMixin, function(add) {
       if (!this.category().isRoot()) {
         cmdList.addLine();
 
-        cmdList.addItem({label: "copy", go: function(evt) { this.grabCopy(evt); }.bind(this)});
-      
-        cmdList.addItem({label: "move", go: function(evt) {
-          this.grabCopy(evt);
-          this.category().removeSlots(this.mirror());
-          var mirMorph = this.mirrorMorph();
-          if (mirMorph) { mirMorph.updateAppearance(); }
-        }.bind(this)});
+        cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }.bind(this)});
+
+        if (isModifiable) {
+          cmdList.addItem({label: "move", go: function(evt) {
+            this.grabCopy(evt);
+            this.category().removeSlots(this.mirror());
+            var mirMorph = this.mirrorMorph();
+            if (mirMorph) { mirMorph.updateAppearance(); }
+          }.bind(this)});
+        }
       }
     }
   }, {category: ['menu']});
@@ -364,10 +368,12 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnWorld', function (world) {
-    var mirMorph = world.morphFor(this.mirror());
-    world.addMorphAt(mirMorph, this.position());
-    mirMorph.expandCategory(this.category());
-    this.remove();
+    if (! this._shouldOnlyBeDroppedOnThisParticularMirror) {
+      var mirMorph = world.morphFor(this.mirror());
+      world.addMorphAt(mirMorph, this.position());
+      mirMorph.expandCategory(this.category());
+      this.remove();
+    }
   }, {category: ['drag and drop']});
 
 });

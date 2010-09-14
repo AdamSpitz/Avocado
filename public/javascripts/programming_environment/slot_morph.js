@@ -75,7 +75,9 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
 
   add.method('showContents', function (callWhenContentsAreVisible) {
     var w = this.world();
-    w.morphFor(this.slot().contents()).ensureIsInWorld(w, this._contentsPointer.worldPoint(pt(150,0)), false, true, true, callWhenContentsAreVisible);
+    var mir = this.slot().contents();
+    var mirMorph = w.morphFor(mir);
+    mirMorph.ensureIsInWorld(w, this._contentsPointer.worldPoint(pt(150,0)), false, true, true, callWhenContentsAreVisible);
   }, {category: ['contents']});
 
   add.method('showContentsArrow', function (callWhenDone) {
@@ -335,10 +337,12 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnWorld', function (world) {
-    var mirMorph = world.morphFor(this.slot().mirror());
-    world.addMorphAt(mirMorph, this.position());
-    mirMorph.expander().expand();
-    this.remove();
+    if (! this._shouldOnlyBeDroppedOnThisParticularMirror) {
+      var mirMorph = world.morphFor(this.slot().mirror());
+      world.addMorphAt(mirMorph, this.position());
+      mirMorph.expander().expand();
+      this.remove();
+    }
   }, {category: ['drag and drop']});
 
   add.method('setModule', function (m, evt) {
@@ -408,7 +412,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
       }.bind(this)});
 
       if (this.slot().copyTo) {
-        cmdList.addItem({label: isModifiable ? "copy" : "change category", go: function(evt) { this.grabCopy(evt); }.bind(this)});
+        cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }.bind(this)});
       }
       
       if (isModifiable && this.slot().remove) {
