@@ -372,7 +372,7 @@ Object.extend(Function.prototype, {
 			  // aaa - Another hack to avoid having hundreds of uncategorized classes cluttering
 			  // up the global namespace. -- Adam, August 2010
 			  if (targetScope === Global) {
-			    annotator.annotationOf(Global).categorize(['lively kernel'], [shortName]);
+			    annotator.annotationOf(Global).categorize(['JSQuiche', 'lively kernel'], [shortName]);
 			  }
 
 			}

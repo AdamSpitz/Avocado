@@ -13,7 +13,7 @@ requires('programming_environment/mirror_morph');
 
 thisModule.addSlots(lobby, function(add) {
 
-  add.creator('jsQuiche', {}, {category: ['avocado']});
+  add.creator('jsQuiche', {}, {category: ['JSQuiche']});
 
 });
 
