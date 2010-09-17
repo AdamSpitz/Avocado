@@ -96,8 +96,19 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     } else {
       var newText = this.getSavedText();
       if (newText !== this.getText()) {
+        //this.setWrapStyle(lively.Text.WrapStyle.Shrink); /// aaa experimenting with word-wrapping
+        
         this.setText(newText);
         this.changed();
+        
+        // aaa experiment with word-wrapping
+        /*
+        var extent = this.getExtent();
+        if (extent.x > 600) {
+          this.setExtent(extent.withX(600));
+          this.setWrapStyle(lively.Text.WrapStyle.Normal);
+        } 
+        */
       }
     }
   },

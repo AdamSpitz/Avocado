@@ -43,7 +43,8 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     this.beUngrabbable();
     this.closeDnD();
 
-    this._sourceToggler     = Object.newChildOf(toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.    sourceMorph();}.bind(this))       );
+    this._sourceToggler     = Object.newChildOf(toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.sourcePane();}.bind(this))       );
+    //this._sourceToggler     = Object.newChildOf(toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.    sourceMorph();}.bind(this))       );
     this._commentToggler    = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.comment    ? this.createRow(function() {return this.   commentMorph();}.bind(this)) : null);
     this._annotationToggler = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.annotation ? this.createRow(function() {return this.annotationMorph();}.bind(this)) : null);
 
@@ -154,6 +155,14 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     r.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
     return r;
   }, {category: ['creating']});
+
+  add.method('sourcePane', function () {
+    var m = this._sourcePane;
+    if (m) { return m; }
+    this._sourcePane = m = ScrollPane.ifNecessaryToContain(this.sourceMorph(), pt(400,300));
+    m.setLayoutModes({horizontalLayoutMode: LayoutModes.SpaceFill});
+    return m;
+  }, {category: ['source']});
 
   add.method('sourceMorph', function () {
     var m = this._sourceMorph;
