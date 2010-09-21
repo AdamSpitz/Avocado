@@ -56,8 +56,8 @@ thisModule.addSlots(avocado, function(add) {
       evt.hand.world().morphFor(reflect({})).growFromNothing(evt);
     }]);
 
-    cmdList.addItem(["get the Global object", function(evt) {
-      evt.hand.world().morphFor(reflect(Global)).grabMe(evt);
+    cmdList.addItem(["get the window object", function(evt) {
+      evt.hand.world().morphFor(reflect(window)).grabMe(evt);
     }]);
 
     if (this.debugMode) {
@@ -119,7 +119,7 @@ thisModule.addSlots(avocado, function(add) {
     if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
     
     creatorSlotMarker.annotateExternalObjects(true);
-    Global.categorizeGlobals();
+    window.categorizeGlobals();
 
     // make the lobby mirror morph less unwieldy, since people tend to keep lots of stuff there
     reflect(window).categorizeUncategorizedSlotsAlphabetically();

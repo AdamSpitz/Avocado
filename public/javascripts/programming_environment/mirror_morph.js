@@ -65,7 +65,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
     this.commentButton     = ButtonMorph.createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
     this.parentButton      = ButtonMorph.createButton("^",     function(evt) { this.getParent(evt);              }.bind(this), 1).setHelpText('Get my parent');
-    if (Global.EvaluatorMorph) {
+    if (window.EvaluatorMorph) {
       this.evaluatorButton = ButtonMorph.createButton("E",     function(evt) { this.openEvaluator(evt);          }.bind(this), 1).setHelpText('Show an evaluator box');
     }
     this.dismissButton   = this.createDismissButton();
@@ -327,7 +327,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('showCreatorPath', function (evt, callWhenDone) {
     var myMirror = this.mirror();
-    if (myMirror.reflectee() === Global) {
+    if (myMirror.reflectee() === window) {
       this.ensureIsInWorld(evt.hand.world(), pt(50,50), true, false, true, callWhenDone);
     } else {
       var creatorSlot = myMirror.probableCreatorSlot();

@@ -1,3 +1,8 @@
+Tuesday, September 21, 2010
+
+  - Can rename categories now.
+  - Renamed "Global" to "window".
+
 Friday, August 20, 2010
 
   - Added some more tests, fixed some bugs.

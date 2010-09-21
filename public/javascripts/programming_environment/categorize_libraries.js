@@ -1,6 +1,6 @@
 transporter.module.create('programming_environment/categorize_libraries', function(requires) {}, function(thisModule) {
 
-  thisModule.addSlots(Global, function(add) {
+  thisModule.addSlots(lobby, function(add) {
 
     add.method('categorizeGlobals', function () {
       // These lists come from a simple little HTML page that we wrote to get a list of the stuff
@@ -27,7 +27,7 @@ transporter.module.create('programming_environment/categorize_libraries', functi
       ];
 
       globalObjectCategories.forEach(function(catAndAttrs) {
-        annotator.annotationOf(Global).categorize(catAndAttrs[0], catAndAttrs[1]);
+        annotator.annotationOf(window).categorize(catAndAttrs[0], catAndAttrs[1]);
       });
 
       }, {category: ['initializing']});

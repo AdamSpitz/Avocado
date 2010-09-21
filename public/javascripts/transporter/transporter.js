@@ -250,7 +250,7 @@ thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
 
   add.method('initialize', function () {
     this._buffer = stringBuffer.create();
-    this._previousHolder = null;
+    this._currentHolder = null;
   }, {category: ['creating']});
 
   add.method('fullText', function () {
@@ -258,17 +258,17 @@ thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
   }, {category: ['accessing']});
 
   add.method('nextSlotIsIn', function (holder) {
-    if (!this._previousHolder || ! holder.equals(this._previousHolder)) {
+    if (!this._currentHolder || ! holder.equals(this._currentHolder)) {
       this.doneWithThisObject();
       this.writeObjectStarter(holder);
-      this._previousHolder = holder;
+      this._currentHolder = holder;
     }
   }, {category: ['writing']});
 
   add.method('doneWithThisObject', function () {
-    if (this._previousHolder) {
-      this.writeObjectEnder(this._previousHolder);
-      this._previousHolder = null;
+    if (this._currentHolder) {
+      this.writeObjectEnder(this._currentHolder);
+      this._currentHolder = null;
     }
   }, {category: ['writing']});
 
@@ -580,6 +580,8 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
 
 thisModule.addSlots(transporter.tests, function(add) {
 
+  add.creator('someObject', {});
+  
   add.method('addSlot', function (m, holder, name, contents) {
     var s = reflect(holder).slotAt(name);
     s.setContents(reflect(contents));
@@ -593,7 +595,7 @@ thisModule.addSlots(transporter.tests, function(add) {
     
     var m = transporter.module.named('blah');
 
-    this.addSlot(m, Global, 'qwerty', 3);
+    this.addSlot(m, this.someObject, 'qwerty', 3);
     
     m.uninstall();
 
@@ -609,12 +611,12 @@ thisModule.addSlots(transporter.tests, function(add) {
 
     this.assertEqual(0, m.objectsThatMightContainSlotsInMe().size());
 
-    var s1 = this.addSlot(m, Global, 'qwerty', 3);
-    this.assertEqual([reflect(Global)], m.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); }).sort());
+    var s1 = this.addSlot(m, this.someObject, 'qwerty', 3);
+    this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); }).sort());
     this.assertEqual([s1], enumerator.create(m, 'eachSlot').toArray().sort());
 
-    var s2 = this.addSlot(m, Global, 'uiop', 4);
-    this.assertEqual([reflect(Global)], m.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); }).toSet().toArray().sort());
+    var s2 = this.addSlot(m, this.someObject, 'uiop', 4);
+    this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); }).toSet().toArray().sort());
     this.assertEqual([s1, s2], enumerator.create(m, 'eachSlot').toArray().sort());
 
     m.uninstall();
@@ -627,14 +629,14 @@ thisModule.addSlots(transporter.tests, function(add) {
     this.assert(! m1.hasChangedSinceLastFileOut());
     this.assert(! m2.hasChangedSinceLastFileOut());
 
-    var s1 = this.addSlot(m1, Global, 'qwerty', 3);
+    var s1 = this.addSlot(m1, this.someObject, 'qwerty', 3);
     this.assert(  m1.hasChangedSinceLastFileOut());
     this.assert(! m2.hasChangedSinceLastFileOut());
     
     m1.markAsUnchanged();
     this.assert(! m1.hasChangedSinceLastFileOut());
 
-    var s2 = this.addSlot(m2, Global, 'uiop', 4);
+    var s2 = this.addSlot(m2, this.someObject, 'uiop', 4);
     this.assert(! m1.hasChangedSinceLastFileOut());
     this.assert(  m2.hasChangedSinceLastFileOut());
 
@@ -645,8 +647,8 @@ thisModule.addSlots(transporter.tests, function(add) {
   add.method('testRenaming', function () {
     var m = transporter.module.named('test_blah');
 
-    var s1 = this.addSlot(m, Global, 'qwerty', {});
-    var s2 = this.addSlot(m, qwerty, 'uiop',   4 );
+    var s1 = this.addSlot(m, this.someObject, 'qwerty', {});
+    var s2 = this.addSlot(m, this.someObject.qwerty, 'uiop',   4 );
 
     this.assertEqual("test_blah", m.name());
     this.assertEqual(m, s1.module());
@@ -671,10 +673,10 @@ thisModule.addSlots(transporter.tests, function(add) {
   add.method('testFileOutInfo', function () {
     var m = transporter.module.named('test_blah');
 
-    var s1 = this.addSlot(m, Global, 'qwerty', {});
+    var s1 = this.addSlot(m, this.someObject, 'qwerty', {});
     s1.beCreator();
 
-    var sp = reflect(qwerty).parentSlot();
+    var sp = reflect(this.someObject.qwerty).parentSlot();
     sp.setContents(reflect({}));
     sp.beCreator();
 
@@ -689,12 +691,12 @@ thisModule.addSlots(transporter.tests, function(add) {
   add.method('testOrderingForFilingOut', function () {
     var m = transporter.module.named('test_blah');
 
-    var s1 = this.addSlot(m, Global, 'qwerty', {});
+    var s1 = this.addSlot(m, this.someObject, 'qwerty', {});
     s1.beCreator();
-    var s2 = this.addSlot(m, qwerty, 'uiop', 3);
+    var s2 = this.addSlot(m, this.someObject.qwerty, 'uiop', 3);
     this.assertEqual([s1, s2], m.slotsInOrderForFilingOut());
 
-    var sp = reflect(qwerty).parentSlot();
+    var sp = reflect(this.someObject.qwerty).parentSlot();
     sp.setContents(reflect({}));
     sp.beCreator();
     this.assertEqual(sp, sp.contents().theCreatorSlot());
@@ -706,26 +708,26 @@ thisModule.addSlots(transporter.tests, function(add) {
   add.method('testFilingOutArrays', function () {
     var m = transporter.module.named('test_array_fileout');
 
-    var s1 = this.addSlot(m, Global, 'anArrayToFileOut', ['a', 2, 'three']);
+    var s1 = this.addSlot(m, this.someObject, 'anArrayToFileOut', ['a', 2, 'three']);
     s1.beCreator();
     var a = s1.contents();
-    this.assert(m.objectsThatMightContainSlotsInMe().include(Global), "the creator slot should be in the module");
+    this.assert(m.objectsThatMightContainSlotsInMe().include(this.someObject), "the creator slot should be in the module");
     this.assert(m.objectsThatMightContainSlotsInMe().include(a.reflectee()), "the indexable slots should be in the module");
     var indexables = [a.slotAt('0'), a.slotAt('1'), a.slotAt('2')];
     this.assertEqual([s1].concat(indexables), m.slotsInOrderForFilingOut());
-    this.assertEqual([s1], enumerator.create(m, 'eachSlotInMirror', reflect(Global)).toArray());
+    this.assertEqual([s1], enumerator.create(m, 'eachSlotInMirror', reflect(this.someObject)).toArray());
     this.assertEqual(indexables, enumerator.create(m, 'eachSlotInMirror', a).toArray());
 
     this.assertEqual(
 "start module test_array_fileout\n" +
-"  start object lobby\n" +
+"  start object transporter.tests.someObject\n" +
 "    slot anArrayToFileOut: []\n" +
-"  end object lobby\n" +
-"  start object anArrayToFileOut\n" +
+"  end object transporter.tests.someObject\n" +
+"  start object transporter.tests.someObject.anArrayToFileOut\n" +
 "    slot 0: 'a'\n" +
 "    slot 1: 2\n" +
 "    slot 2: 'three'\n" +
-"  end object anArrayToFileOut\n",
+"  end object transporter.tests.someObject.anArrayToFileOut\n",
     m.codeOfMockFileOut());
 
     m.uninstall();

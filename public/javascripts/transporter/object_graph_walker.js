@@ -166,7 +166,7 @@ thisModule.addSlots(objectGraphWalker, function(add) {
     // have to mark the annotation and then come by again and unmark it.
     var objectAnno;
     try { objectAnno = annotator.annotationOf(object); } catch (ex) { return false; } // stupid FireFox bug
-    var walkers = objectAnno.walkers = objectAnno.walkers || (Global.set && Object.newChildOf(set, hashTable.identityComparator)) || [];
+    var walkers = objectAnno.walkers = objectAnno.walkers || (window.set && Object.newChildOf(set, hashTable.identityComparator)) || [];
     if (walkers.include(this)) { return false; }
     walkers.push(this);
     this._marked.push(objectAnno);
@@ -260,7 +260,7 @@ thisModule.addSlots(creatorSlotMarker, function(add) {
   add.method('reachedObject', function (contents, howDidWeGetHere, shouldExplicitlySetIt) {
     if (! this.shouldMakeCreatorSlots) { return; }
     if (! howDidWeGetHere) { return; }
-    if (contents === Global) { return; }
+    if (contents === window) { return; }
     var contentsAnno;
     var slotHolder = howDidWeGetHere.slotHolder;
     var slotName   = howDidWeGetHere.slotName;
@@ -321,11 +321,11 @@ thisModule.addSlots(objectGraphWalker.tests, function(add) {
     w1.go();
     var n = 'objectGraphWalker_tests___extraSlotThatIAmAdding';
     var o = {};
-    Global[n] = o;
+    window[n] = o;
     var w2 = testingObjectGraphWalker.create();
     w2.go();
     this.assertEqual(w1.objectCount() + 1, w2.objectCount());
-    delete Global[n];
+    delete window[n];
   });
 
 });

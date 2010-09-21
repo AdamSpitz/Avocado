@@ -26,7 +26,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['initializing']});
 
   add.method('forObjectNamed', function(chainNames) {
-    var obj = Global;
+    var obj = window;
     for (var i = 0; i < chainNames.length; ++i) {
       if (obj === undefined || obj === null) { return null; }
       var slotName = chainNames[i];
@@ -72,8 +72,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['naming']});
 
   add.method('nameOfLobby', function () {
-    // I haven't quite decided whether I want to call it lobby or Global or window or what.
-    return lobby === Global ? "Global" : "lobby";
+    return "window";
   }, {category: ['naming']});
 
   add.method('inspect', function () {
@@ -695,13 +694,13 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assert(reflect(mirror.tests).isWellKnown());
     this.assert(! reflect({}).isWellKnown());
 
-    // Try an object that has a creator slot, but isn't actually connected to Global
-    // by a whole chain of creator slots.
-    Global.argle = {bargle: {}};
+    // Try an object that has a creator slot, but isn't actually connected to
+    // the window object by a whole chain of creator slots.
+    window.argle = {bargle: {}};
     reflect(argle).slotAt('bargle').beCreator();
     this.assert(! reflect(argle).isWellKnown());
     this.assert(! reflect(argle.bargle).isWellKnown());
-    delete Global.argle;
+    delete window.argle;
   });
 
   add.method('testIsReflecteeProbablyAClass', function () {
@@ -842,7 +841,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual("transporter", reflect(transporter).name());
     this.assertEqual("transporter.module", reflect(transporter.module).name());
     this.assertEqual("a TestCase.Morph", reflect(new TestCase.prototype.Morph(mirror.tests.create())).name());
-    this.assertEqual("", reflect(Global).name()); // aaa - maybe just fix this to say Global?;
+    this.assertEqual("", reflect(window).name()); // aaa - maybe just fix this to say 'window'?;
   });
 
   add.method('testInspect', function () {
@@ -855,7 +854,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual("[1, 'two', 3]", reflect([1, 'two', 3]).inspect());
     this.assertEqual("transporter", reflect(transporter).inspect());
     this.assertEqual("transporter.module", reflect(transporter.module).inspect());
-    this.assertEqual("Global", reflect(Global).inspect());
+    this.assertEqual("window", reflect(window).inspect());
   });
 
   add.method('testCreatorSlotChainExpression', function () {
@@ -869,13 +868,13 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual("transporter", reflect(transporter).creatorSlotChainExpression());
     this.assertEqual("transporter.module", reflect(transporter.module).creatorSlotChainExpression());
     this.assertEqual("TestCase.prototype.Morph.prototype", reflect(TestCase.prototype.Morph.prototype).creatorSlotChainExpression());
-    this.assertEqual("lobby", reflect(Global).creatorSlotChainExpression());
+    this.assertEqual("lobby", reflect(window).creatorSlotChainExpression());
     this.assertEqual("Selector.operators['!=']", reflect(Selector.operators['!=']).creatorSlotChainExpression());
   });
 
   add.method('testMorphDuplication', function () {
     // aaa - at first I thought this was a mirror bug, but it wasn't, so this test should maybe live elsewhere
-    var s = reflect(Global).slotAt('argleBargleMorph');
+    var s = reflect(window).slotAt('argleBargleMorph');
     var mMir = reflect(Morph.makeRectangle(pt(100,200), pt(60, 30)));
     s.setContents(mMir);
     s.beCreator();
@@ -940,12 +939,12 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual('null', reflect(null).expressionEvaluatingToMe(true));
     this.assertEqual('false', reflect(false).expressionEvaluatingToMe(true));
 
-    Global.argle = {bargle: 42};
+    window.argle = {bargle: 42};
     this.assertEqual('{bargle: 42}',    reflect(argle).expressionEvaluatingToMe());
-    reflect(Global).slotAt('argle').beCreator();
+    reflect(window).slotAt('argle').beCreator();
     this.assertEqual('argle',           reflect(argle).expressionEvaluatingToMe());
     this.assertEqual('{bargle: 42}',    reflect(argle).expressionEvaluatingToMe(true));
-    delete Global.argle;
+    delete window.argle;
   });
 
   add.method('testCopyDownParents', function () {
@@ -992,9 +991,9 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual(aMir.slotAt('4'), reflect(oE).theCreatorSlot());
     this.assert(! reflect(oX).theCreatorSlot());
 
-    this.assertEqual(reflect(Global).slotAt('dictionary'), reflect(dictionary).theCreatorSlot());
+    this.assertEqual(reflect(window).slotAt('dictionary'), reflect(dictionary).theCreatorSlot());
     a.pushAndAdjustCreatorSlots(dictionary); // a well-known object shouldn't have its creator slot changed
-    this.assertEqual(reflect(Global).slotAt('dictionary'), reflect(dictionary).theCreatorSlot());
+    this.assertEqual(reflect(window).slotAt('dictionary'), reflect(dictionary).theCreatorSlot());
   });
 
 });

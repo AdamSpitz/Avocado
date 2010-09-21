@@ -415,6 +415,8 @@ thisModule.addSlots(Array.prototype, function(add) {
 
 thisModule.addSlots(Array.prototype.tests, function(add) {
 
+  add.creator('someObject', {});
+  
   add.method('testComparing', function () {
     this.assertEqual([], []);
     this.assertEqual(['a'], ['a']);
@@ -422,7 +424,7 @@ thisModule.addSlots(Array.prototype.tests, function(add) {
     this.assertNotEqual(['a', 'b'], ['ab']);
     this.assertNotEqual(['a'], ['a', 'b']);
     this.assertNotEqual(['a', 'b'], ['b', 'a']);
-    this.assertEqual([reflect(Global)], [reflect(Global)]);
+    this.assertEqual([reflect(this.someObject)], [reflect(this.someObject)]);
   });
 
 });

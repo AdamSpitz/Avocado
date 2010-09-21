@@ -30,8 +30,8 @@ thisModule.addSlots(jsQuiche, function(add) {
 
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
-    cmdList.addItem(["get the Global object", function(evt) {
-      evt.hand.world().morphFor(reflect(Global)).grabMe(evt);
+    cmdList.addItem(["get the window object", function(evt) {
+      evt.hand.world().morphFor(reflect(window)).grabMe(evt);
     }]);
 
     this.menuItemContributors.each(function(c) {
@@ -59,7 +59,7 @@ thisModule.addSlots(jsQuiche, function(add) {
     if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
     
     creatorSlotMarker.annotateExternalObjects(true);
-    Global.categorizeGlobals();
+    window.categorizeGlobals();
 
     // make the lobby mirror morph less unwieldy, since people tend to keep lots of stuff there
     reflect(window).categorizeUncategorizedSlotsAlphabetically();

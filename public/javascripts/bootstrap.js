@@ -882,7 +882,7 @@ thisModule.addSlots(transporter, function(add) {
     var world = new WorldMorph(canvas);
     world.displayOnCanvas(canvas);
     modules.init.markAsUnchanged(); // because displayOnCanvas sets the creator slot of the world
-    if (Global.navigator.appName == 'Opera') { window.onresize(); }
+    if (navigator.appName == 'Opera') { window.onresize(); }
     //console.log("The world should be visible now.");
     return world;
   }, {category: ['bootstrapping']});

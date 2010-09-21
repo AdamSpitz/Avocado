@@ -112,7 +112,7 @@ thisModule.addSlots(snapshotter, function(add) {
     }
 
     var tearDownBuf = stringBuffer.create('\n');
-    tearDownBuf.append('var canvas = Global.document.getElementById("canvas");\n');
+    tearDownBuf.append('var canvas = window.document.getElementById("canvas");\n');
     // aaa - For now, let's just create a new world - recreating the morphs is tricky, I think.
     // tearDownBuf.append('WorldMorph.current().displayOnCanvas(canvas);\n');
     tearDownBuf.append('new WorldMorph(canvas).displayOnCanvas(canvas);\n');

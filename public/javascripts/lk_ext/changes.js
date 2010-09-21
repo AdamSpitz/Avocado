@@ -3,6 +3,7 @@ WorldMorph.addMethods({
       // Added by Adam, Feb. 2008, because sometimes it's useful
       // to have no keyboard focus (so that, for example, I can
       // hit Cmd-t to open a new tab)
+      evt.hand.setKeyboardFocus(null);
 
       // console.log(WorldMorph.currentWorld.fullBounds.width + " "+ WorldMorph.currentWorld.fullBounds.height );
       if (evt.point().x <= 50){
@@ -18,7 +19,6 @@ WorldMorph.addMethods({
       if ((WorldMorph.currentWorld.fullBounds.height + WorldMorph.currentWorld.fullBounds.y - evt.point().y) <= 50){
          WorldMorph.currentWorld.submorphs._each(function(entry){ entry.moveBy(new Point(0,10));});
       }
-      evt.hand.setKeyboardFocus(null);
       return $super(evt);
   }
 });
@@ -161,8 +161,8 @@ Class.newInitializer = function(name) {
   // this hack ensures that class instances have a name
   var c = eval(Class.initializerTemplate.replace(/CLASS/g, name) + ";" + name);
   
-  // Put it in a category so that it doesn't clutter up the Global object. -- Adam
-  if (Global.annotator && name.startsWith('anonymous_')) { annotator.annotationOf(Global).setSlotAnnotation(name, {category: ['anonymous classes']}); }
+  // Put it in a category so that it doesn't clutter up the window object. -- Adam
+  if (window.annotator && name.startsWith('anonymous_')) { annotator.annotationOf(window).setSlotAnnotation(name, {category: ['anonymous classes']}); }
 
   return c;
 };
@@ -272,6 +272,6 @@ ButtonMorph.addMethods({
 });
 
 // aaa - This doesn't really belong here.
-Global.javascriptReservedWords = {'abstract': true, 'boolean': true, 'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true, 'class': true, 'const': true, 'continue': true, 'debugger': true, 'default': true, 'delete': true, 'do': true, 'double': true, 'else': true, 'enum': true, 'export': true, 'extends': true, 'false': true, 'final': true, 'finally': true, 'float': true, 'for': true, 'function': true, 'goto': true, 'if': true, 'implements': true, 'import': true, 'in': true, 'instanceof': true, 'int': true, 'interface': true, 'long': true, 'native': true, 'new': true, 'null': true, 'package': true, 'private': true, 'protected': true, 'public': true, 'return': true, 'short': true, 'static': true, 'super': true, 'switch': true, 'synchronized': true, 'this': true, 'throw': true, 'throws': true, 'transient': true, 'true': true, 'try': true, 'typeof': true, 'var': true, 'volatile': true, 'void': true, 'while': true, 'with': true};
+window.javascriptReservedWords = {'abstract': true, 'boolean': true, 'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true, 'class': true, 'const': true, 'continue': true, 'debugger': true, 'default': true, 'delete': true, 'do': true, 'double': true, 'else': true, 'enum': true, 'export': true, 'extends': true, 'false': true, 'final': true, 'finally': true, 'float': true, 'for': true, 'function': true, 'goto': true, 'if': true, 'implements': true, 'import': true, 'in': true, 'instanceof': true, 'int': true, 'interface': true, 'long': true, 'native': true, 'new': true, 'null': true, 'package': true, 'private': true, 'protected': true, 'public': true, 'return': true, 'short': true, 'static': true, 'super': true, 'switch': true, 'synchronized': true, 'this': true, 'throw': true, 'throws': true, 'transient': true, 'true': true, 'try': true, 'typeof': true, 'var': true, 'volatile': true, 'void': true, 'while': true, 'with': true};
 
 
