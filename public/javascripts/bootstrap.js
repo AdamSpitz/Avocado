@@ -937,7 +937,7 @@ thisModule.addSlots(transporter, function(add) {
 
   add.method('initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated', function(callWhenDone) {
     if (this.isDoneLoadingProgrammingEnvironment && window.worldHasBeenCreated) {
-      var app = window.appIsJSQuiche ? window.jsQuiche : window.avocado;
+      var app = window.isInCodeOrganizingMode ? window.jsQuiche : window.avocado;
       app.initialize();
       WorldMorph.current().addApplication(app);
     }
@@ -973,11 +973,11 @@ thisModule.addSlots(transporter, function(add) {
     // programming environment. -- Adam
     if (name === "programming_environment/programming_environment") {
       if (UserAgent.isIPhone) { return false; }
-      if (window.appIsJSQuiche) { return false; } // aaa HACK - what's the right way to do this?
+      if (window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
       //if (window.wasServedFromGoogleAppEngine) { return currentUser && currentUser.isAdmin; }
     }
     if (name === "programming_environment/code_organizer") {
-      if (! window.appIsJSQuiche) { return false; } // aaa HACK - what's the right way to do this?
+      if (! window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
     }
     return true;
   }, {category: ['bootstrapping']});

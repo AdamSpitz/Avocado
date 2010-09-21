@@ -214,7 +214,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['menu']});
   
   add.method('shouldAllowModification', function() {
-    return !window.appIsJSQuiche;
+    return !window.isInCodeOrganizingMode;
   });
 
   add.method('addCommandsTo', function (cmdList) {
