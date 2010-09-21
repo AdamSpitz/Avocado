@@ -26,6 +26,10 @@ thisModule.addSlots(category, function(add) {
     return this._parts;
   }, {category: ['accessing']});
 
+  add.method('copy', function () {
+    return category.create(this.parts().map(function(p) { return p; }));
+  }, {category: ['accessing']});
+
   add.method('supercategory', function () {
     return category.create(this._parts.slice(0, this._parts.length - 1));
   }, {category: ['creating']});

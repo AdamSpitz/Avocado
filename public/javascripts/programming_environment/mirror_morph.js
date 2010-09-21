@@ -155,7 +155,20 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['categories']});
 
   add.method('categoryMorphFor', function (c) {
-    return this._categoryMorphs.getOrIfAbsentPut(c.fullName(), function() { return new category.Morph(Object.newChildOf(category.Presenter, this.mirror(), c)); }.bind(this));
+    return this._categoryMorphs.getOrIfAbsentPut(c.fullName(), function() {
+      var cm = new category.Morph(Object.newChildOf(category.Presenter, this.mirror(), c));
+      return cm;
+    }.bind(this));
+  }, {category: ['categories']});
+
+  add.method('justRenamedCategoryMorphFor', function (oldCat, newCat, isEmpty) {
+    if (! this._categoryMorphs) { return; } // nothing to do, since we haven't expanded this mirror yet
+    var oldCatMorph = this._categoryMorphs.removeKey(oldCat.fullName());
+    if (oldCatMorph && !isEmpty) {
+      var newCatMorph = this.categoryMorphFor(newCat);
+      this.updateAppearance();
+      oldCatMorph.transferUIStateTo(newCatMorph, Event.createFake());
+    }
   }, {category: ['categories']});
 
   add.method('commentMorph', function () {

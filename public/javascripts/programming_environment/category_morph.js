@@ -222,6 +222,8 @@ thisModule.addSlots(category.MorphMixin, function(add) {
       if (!this.category().isRoot()) {
         cmdList.addLine();
 
+        this.titleLabel.addEditingMenuItemsTo(cmdList, Event.createFake());
+        
         cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }.bind(this)});
 
         if (isModifiable) {
@@ -302,9 +304,28 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('rename', function (newName, evt) {
-    this.category().setLastPart(newName);
-    // aaa - if this thing has any slots already in it, gotta recategorize them;
-    this.mirrorMorph().updateAppearance();
+    var c = this.category();
+    var oldCat = c.copy();
+    var oldCatPrefixParts = oldCat.parts().map(function(p) {return p;});
+    var slotCount = 0;
+    this._categoryPresenter.eachNormalSlotInMeAndSubcategories(function(s) {
+      slotCount += 1;
+      var newCatParts = s.category().parts().map(function(p) {return p;});
+      
+      // Just for the sake of sanity, let's check to make sure this slot really is in this category.
+      for (var i = 0; i < oldCatPrefixParts.length; ++i) {
+        if (newCatParts[i] !== oldCatPrefixParts[i]) {
+          throw new Error("Assertion failure: renaming a category, but trying to recategorize a slot that's not in that category. ('" + newCatParts[i] + "' !== '" + oldCatPrefixParts[i] + "')");
+        }
+      }
+
+      newCatParts[oldCatPrefixParts.length - 1] = newName;
+      var newCat = category.create(newCatParts);
+      //console.log("Changing the category of " + s.name() + " from " + oldCat + " to " + newCat);
+      s.setCategory(newCat);
+    });
+    c.setLastPart(newName);
+    this.mirrorMorph().justRenamedCategoryMorphFor(oldCat, c, slotCount === 0);
   }, {category: ['renaming']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
