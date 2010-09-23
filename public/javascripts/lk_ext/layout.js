@@ -27,18 +27,16 @@ Morph.addMethods({
     */
 
     // Avoid infinite recursion... blecch.
-    /*
-    if (this._isChangingRightNow) {return;}
+    if (this._isChangingRightNow) {return newExtent;}
     this._isChangingRightNow = true;
 
-    console.log("rejiggering the layout of a " + this.constructor.type);
+    //console.log("rejiggering the layout of a " + this.constructor.type);
     
     if (this.horizontalLayoutMode === LayoutModes.SpaceFill) { newExtent = newExtent.withX(availableSpace.x); }
     if (this.  verticalLayoutMode === LayoutModes.SpaceFill) { newExtent = newExtent.withY(availableSpace.y); }
     if (! oldExtent.eqPt(newExtent)) { this.setExtent(newExtent); }
 
     delete this._isChangingRightNow;
-    */
 
     return newExtent;
   },
@@ -79,6 +77,13 @@ Morph.addMethods({
   beSpaceFilling: function() {
     this.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.  verticalLayoutMode = LayoutModes.SpaceFill;
+    return this;
+  },
+  
+  setLayoutModes: function(layoutModes) {
+    ["horizontalLayoutMode", "verticalLayoutMode"].forEach(function(n) {
+      if (layoutModes[n]) { this[n] = layoutModes[n]; }
+    }.bind(this));
     return this;
   }
 });

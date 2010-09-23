@@ -2452,12 +2452,13 @@ BoxMorph.subclass("SliderMorph", {
 		var bnds = this.shape.bounds();
 		var ext = this.getSliderExtent(); 
 	
+  	 // Yield 0 if the elevator takes up the full slider - otherwise we get infinities and weird jerky behaviour. -- Adam
 		if (this.vertical()) { // more vertical...
 			var elevPix = Math.max(ext*bnds.height,this.mss); // thickness of elevator in pixels
-			var newValue = p.y / (bnds.height-elevPix); 
+			var newValue = bnds.height === elevPix ? 0 : p.y / (bnds.height-elevPix);
 		} else { // more horizontal...
 			var elevPix = Math.max(ext*bnds.width,this.mss); // thickness of elevator in pixels
-			var newValue = p.x / (bnds.width-elevPix); 
+			var newValue = bnds.width === elevPix ? 0 : p.x / (bnds.width-elevPix); 
 		}
 		
 		if (isNaN(newValue)) newValue = 0;
@@ -2560,9 +2561,13 @@ BoxMorph.subclass("ScrollPane", {
 
     initialize: function($super, morphToClip, initialBounds) {
         $super(initialBounds);
-
+        
 		var clipR = this.calcClipR();
-        morphToClip.shape.setBounds(clipR); // FIXME what if the targetmorph should be bigger than the clipmorph?
+        // I don't understand why this next line of code was in there, with
+        // a comment next to it explaining exactly why it's broken.
+        // Commenting it out. -- Adam
+        //morphToClip.shape.setBounds(clipR); // FIXME what if the targetmorph should be bigger than the clipmorph?
+        
         // Make a clipMorph with the content (morphToClip) embedded in it
         this.clipMorph = this.addMorph(new ClipMorph(clipR));    
         //this.clipMorph.shape.setFill(morphToClip.shape.getFill());
@@ -2763,7 +2768,10 @@ BoxMorph.subclass("ScrollPane", {
 		};
         this.clipMorph.setExtent(clipR.extent());
         
-		this.innerMorph().setExtent(clipR.extent());
+		// Yeah, I'm completely baffled. There's a broken line of code, commented out, with
+		// a comment saying *why* it's broken, and then an uncommented exact copy of that
+		// line of code. Commenting out the second version. -- Adam
+		//this.innerMorph().setExtent(clipR.extent());
 		// WebCards commented this out: //this destroyes the content. i don't like that (Julius)
 		//this.innerMorph().setExtent(clipR.extent()); 
 		

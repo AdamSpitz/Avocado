@@ -76,3 +76,16 @@ ButtonMorph.prototype.simulatePress = function(evt) {
   this.onMouseDown(evt);
   this.onMouseUp(evt);
 };
+
+ScrollPane.ifNecessaryToContain = function(morph, maxExtent) {
+  if (morph.getExtent().y <= maxExtent.y) { return morph; }
+  return this.containing(morph, maxExtent);
+};
+
+ScrollPane.containing = function(morph, extent) {
+  var sp = new this(morph, extent.extentAsRectangle());
+  sp.closeDnD();
+  sp.clipMorph.closeDnD();
+  sp.adjustForNewBounds();
+  return sp;
+};
