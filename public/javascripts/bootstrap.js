@@ -124,15 +124,17 @@ var annotator = {
       if (! slots)            { return null;     }
       if (slots.length === 0) { return null;     }
       if (slots.length === 1) { return slots[0]; }
-      var shortest;
+      var shortest = null;
       var shortestLength;
       for (var i = 0, n = slots.length; i < n; ++i) {
         var s = slots[i];
         var sLength = annotator.creatorChainLength(s.holder);
-        if (!shortest || sLength < shortestLength) {
-          // This one's shorter, so probably better; use it instead.
-          shortest = s;
-          shortestLength = sLength;
+        if (typeof(sLength) === 'number') {
+          if (!shortest || sLength < shortestLength) {
+            // This one's shorter, so probably better; use it instead.
+            shortest = s;
+            shortestLength = sLength;
+          }
         }
       }
       return shortest;
