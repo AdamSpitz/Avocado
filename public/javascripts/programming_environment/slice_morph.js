@@ -34,6 +34,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
     this.setFill(lively.paint.defaultFillWithColor(Color.blue.lighter()));
     this.setPadding(5);
     this.shape.roundEdgesBy(10);
+    this.closeDnD();
 
     this._slotsPanel = new ColumnMorph().beInvisible();
     this._slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;

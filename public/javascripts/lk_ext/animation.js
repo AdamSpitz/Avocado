@@ -604,7 +604,8 @@ thisModule.addSlots(Morph.prototype, function(add) {
         motionBlurMorph.aaa_doesNotNeedACreatorSlot = true; // aaa HACK to fix performance bug
         // could try adjusting the opacity based on the distance, but I tried that and
         // couldn't figure out how to make it look non-weird
-        motionBlurMorph.setFillOpacity(0.3); 
+        motionBlurMorph.setFillOpacity(0.3);
+        motionBlurMorph.ignoreEvents();
         world.addMorphBack(motionBlurMorph);
         setTimeout(function() {motionBlurMorph.remove();}, blurTime);
       }

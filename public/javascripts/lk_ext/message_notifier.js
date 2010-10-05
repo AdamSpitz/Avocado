@@ -43,12 +43,14 @@ thisModule.addSlots(MessageNotifierMorph.prototype, function(add) {
 
   add.data('constructor', MessageNotifierMorph);
 
-  add.method('initialize', function ($super, msg, color) {
+  add.method('initialize', function ($super, err, color) {
     $super();
     this.shape.roundEdgesBy(10);
-    this._message = msg.toString();
+    this._originalError = err;
+    this._message = this._originalError.toString();
     this.setFill(lively.paint.defaultFillWithColor(color || Color.red));
     this.setRows([TextMorph.createLabel(this._message)]);
+    this.closeDnD();
   });
 
   add.method('wasJustDroppedOnWorld', function (world) {
