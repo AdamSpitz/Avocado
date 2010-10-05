@@ -81,16 +81,18 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
     morphsAndCommands.each(function(morphAndCommand) {
       var m = morphAndCommand.morph;
       m._module.fileOut(null,
-			repo,
-                        function() {m.refreshContentOfMeAndSubmorphs();},
-                        function(errorMessage) {
-                          if (errorMessage.mirrorWithoutCreatorSlot) {
-                            var world = evt.hand.world();
-                            world.morphFor(errorMessage.mirrorWithoutCreatorSlot).grabMe(evt);
-                          }
-                          MessageNotifierMorph.showError("Error filing out " + m._module + ": " + errorMessage, evt);
-                        });
+                        repo,
+                        function() { m.refreshContentOfMeAndSubmorphs(); },
+                        function(err) { m.errorFilingOut(err, evt); });
     });
+  }, {category: ['commands']});
+
+  add.method('errorFilingOut', function (err, evt) {
+    if (err.mirrorWithoutCreatorSlot) {
+      var world = evt.hand.world();
+      world.morphFor(err.mirrorWithoutCreatorSlot).grabMe(evt);
+    }
+    MessageNotifierMorph.showError("Error filing out " + this._module + ": " + err, evt);
   }, {category: ['commands']});
 
   add.method('emailTheSource', function (evt) {
@@ -108,13 +110,12 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
   add.method('mockFileOut', function (evt) {
     console.log(this._module.codeOfMockFileOut());
   }, {category: ['commands']});
-
+  
   add.method('printToConsole', function (evt) {
-      this._module.fileOut(Object.newChildOf(transporter.module.annotationlessFilerOuter),
+    this._module.fileOut(Object.newChildOf(transporter.module.annotationlessFilerOuter),
 			   transporter.repositories.console,
 			   function() {},
-			   function(errorMessage) { MessageNotifierMorph.showError("Error printing out " + this._module + ": " + errorMessage, evt); }.bind(this));
-
+			   function(err) { this.errorFilingOut(err, evt); }.bind(this));
   }, {category: ['commands']});
 
   add.method('forgetIWasChanged', function (evt) {
