@@ -371,7 +371,10 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     // source editor doesn't stay red.
     if (this._sourceMorph) { this._sourceMorph.cancelChanges(); }
 
-    if (c.isReflecteeFunction()) { c.addPossibleCreatorSlot(this.slot()); }
+    // Just to help make it easier and more intuitive to set creator slots.
+    if (!c.explicitlySpecifiedCreatorSlot() && c.canHaveCreatorSlot()) {
+      c.addPossibleCreatorSlot(this.slot());
+    }
 
     // Not sure this is really what I want, but I think I don't like it when
     // the source stays open after I edit it, at least if it's data rather than

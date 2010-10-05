@@ -57,12 +57,11 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     this.titleLabel = TextMorph.createLabel(function() {return m.inspect();});
-    // this.titleLabel.setFontFamily('serif'); // not sure I like it
-    // this.titleLabel.setEmphasis({style: 'bold'}); // I like it, except that the layout gets messed up
 
     this._commentToggler    = Object.newChildOf(toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ? this.createRow(this.   commentMorph()) : null);
     this._annotationToggler = Object.newChildOf(toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ?                this.annotationMorph()  : null);
 
+    this.akaButton         = ButtonMorph.createButton("AKA", function(evt) { this.showAKAMenu(evt);            }.bind(this), 1);
     this.commentButton     = ButtonMorph.createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
     this.parentButton      = ButtonMorph.createButton("^",     function(evt) { this.getParent(evt);              }.bind(this), 1).setHelpText('Get my parent');
     if (window.EvaluatorMorph) {
@@ -72,10 +71,11 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
     this.commentButton.getHelpText = function() { return (this._commentToggler.isOn() ? 'Hide' : 'Show') + ' my comment'; }.bind(this);
 
-    var optionalParentButtonMorph  = Morph.createOptionalMorph(this.parentButton,  function() { return this.mirror().hasAccessibleParent(); }.bind(this));
+    var optionalAKAButtonMorph     = Morph.createOptionalMorph(this.    akaButton, function() { return this.mirror().hasMultiplePossibleNames(); }.bind(this));
+    var optionalParentButtonMorph  = Morph.createOptionalMorph(this. parentButton, function() { return this.mirror().hasAccessibleParent(); }.bind(this));
     var optionalCommentButtonMorph = Morph.createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
     
-    this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton].compact(),
+    this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton].compact(),
                                                   {top: 0, bottom: 0, left: 0, right: 0, between: 3});
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
@@ -129,6 +129,21 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     if (! this.world()) { return; }
     this.populateSlotsPanelInMeAndExistingSubcategoryMorphs();
     this.refreshContentOfMeAndSubmorphs();
+    this.updateTitleLabelFont();
+  }, {category: ['updating']});
+  
+  add.method('refreshContent', function ($super) {
+    $super();
+    this.updateTitleLabelFont();
+  }, {category: ['updating']});
+  
+  add.method('updateTitleLabelFont', function () {
+    if (this.mirror().reflectee() === lobby || this.mirror().theCreatorSlot()) {
+      // this.titleLabel.setFontFamily('serif'); // not sure I like it
+      this.titleLabel.setEmphasis({style: 'bold'});
+    } else {
+      this.titleLabel.setEmphasis({style: 'unbold'});
+    }
   }, {category: ['updating']});
 
   add.method('inspect', function () {return this.mirror().inspect();}, {category: ['printing']});
@@ -339,6 +354,20 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
         }.bind(this));
       }.bind(this));
     }
+  }, {category: ['creator slots']});
+
+  add.method('showAKAMenu', function (evt) {
+    var akaMenu = new MenuMorph([], this);
+    var mir = this.mirror();
+    mir.possibleCreatorSlotsSortedByLikelihood().each(function(s) {
+      var chain = s.creatorSlotChainEndingWithMe();
+      var chainName = mir.convertCreatorSlotChainToString(chain);
+      akaMenu.addItem([chainName, function(evt) {
+        s.beCreator();
+        this.updateAppearance();
+      }.bind(this)]);
+    }.bind(this));
+    akaMenu.openIn(this.world(), evt.point(), false, "Other possible names:");
   }, {category: ['creator slots']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?

@@ -87,6 +87,25 @@ thisModule.addSlots(mirror, function(add) {
     return s.toString();
   }, {category: ['naming']});
 
+  add.method('convertCreatorSlotChainToString', function (chain) {
+    if (chain.length === 0) {return "";}
+    var isThePrototype = chain[0].contents().equals(this);
+    var s = stringBuffer.create(isThePrototype ? "" : chain[chain.length - 1].name().startsWithVowel() ? "an " : "a ");
+
+    var sep = "";
+    for (var i = chain.length - 1; i >= 0; i -= 1) {
+      var n = chain[i].name();
+      // HACK - Recognize class-like patterns and show names like "a WobulatorMorph" rather than "a WobulatorMorph.prototype",
+      // because, well, that's really annoying. Not sure this is the right way to fix this. But the reality is that in JS code
+      // it'll probably be common to have both class-like and prototype-like inheritance and naming patterns.
+      if ((n !== 'prototype' && n !== '__proto__') || (i === 0 && (isThePrototype || chain.length === 1))) {
+        s.append(sep).append(n);
+      }
+      sep = ".";
+    }
+    return s.toString();
+  }, {category: ['naming']});
+
   add.method('name', function () {
     if (! this.canHaveCreatorSlot()) {return Object.inspect(this.reflectee());}
 
@@ -99,25 +118,15 @@ thisModule.addSlots(mirror, function(add) {
     }
 
     if (chain) {
-      if (chain.length === 0) {return "";}
-      var isThePrototype = chain[0].contents().equals(this);
-      var s = stringBuffer.create(isThePrototype ? "" : chain[chain.length - 1].name().startsWithVowel() ? "an " : "a ");
-
-      var sep = "";
-      for (var i = chain.length - 1; i >= 0; i -= 1) {
-        var n = chain[i].name();
-        // HACK - Recognize class-like patterns and show names like "a WobulatorMorph" rather than "a WobulatorMorph.prototype",
-        // because, well, that's really annoying. Not sure this is the right way to fix this. But the reality is that in JS code
-        // it'll probably be common to have both class-like and prototype-like inheritance and naming patterns.
-        if ((n !== 'prototype' && n !== '__proto__') || (i === 0 && (isThePrototype || chain.length === 1))) {
-          s.append(sep).append(n);
-        }
-        sep = ".";
-      }
-      return s.toString();
+      return this.convertCreatorSlotChainToString(chain);
     } else {
       return this.isReflecteeFunction() ? "a function" : this.isReflecteeArray() ? "an array" : "an object";
     }
+  }, {category: ['naming']});
+  
+  add.method('hasMultiplePossibleNames', function () {
+    // Someday we could have a mechanism for remembering arbitrary names.
+    return this.hasMultiplePossibleCreatorSlots();
   }, {category: ['naming']});
 
   add.method('isWellKnown', function (kindOfCreatorSlot) {
@@ -176,8 +185,7 @@ thisModule.addSlots(mirror, function(add) {
     var cs;
     kindOfCreatorSlot = kindOfCreatorSlot || 'explicitlySpecifiedCreatorSlot';
 
-    var i = 0;
-    while (true) {
+    for (var i = 0; true; ++i) {
       if (mir.equals(lobbyMir)) { return chain; }
       cs = mir[kindOfCreatorSlot].call(mir);
       if (! cs) { return null; }
@@ -188,7 +196,6 @@ thisModule.addSlots(mirror, function(add) {
         return null;
       }
       mir = cs.holder();
-      ++i;
     }
   }, {category: ['annotations', 'creator slot']});
 
@@ -445,28 +452,62 @@ thisModule.addSlots(mirror, function(add) {
     return t === 'function' || (t === 'object' && o !== null);
   }, {category: ['annotations', 'creator slot']});
 
+  add.method('convertAnnotationCreatorSlotToRealSlot', function (s) {
+    return s ? reflect(s.holder).slotAt(s.name) : null;
+  }, {category: ['annotations', 'creator slot']});
+  
   add.method('probableCreatorSlot', function () {
     if (! this.canHaveCreatorSlot()) { return null; }
     var a = this.annotation();
     if (!a) { return null; }
-    var s = a.probableCreatorSlot();
-    return s ? reflect(s.holder).slotAt(s.name) : null;
+    return this.convertAnnotationCreatorSlotToRealSlot(a.probableCreatorSlot());
+  }, {category: ['annotations', 'creator slot']});
+
+  add.method('possibleCreatorSlots', function () {
+    if (! this.canHaveCreatorSlot()) { return []; }
+    var a = this.annotation();
+    if (!a) { return []; }
+    var ss = a.possibleCreatorSlots;
+    if (!ss) { return []; }
+    return ss.map(function(s) { return this.convertAnnotationCreatorSlotToRealSlot(s); }.bind(this));
+  }, {category: ['annotations', 'creator slot']});
+
+  add.method('creatorSlotChainLength', function () {
+    return annotator.creatorChainLength(this.reflectee());
+  }, {category: ['annotations', 'creator slot']});
+  
+  add.method('hasMultiplePossibleCreatorSlots', function () {
+    if (! this.canHaveCreatorSlot()) { return false; }
+    var a = this.annotation();
+    if (!a) { return false; }
+    var ss = a.possibleCreatorSlots;
+    if (!ss) { return false; }
+    return ss.length > 1;
+  }, {category: ['annotations', 'creator slot']});
+
+  add.method('possibleCreatorSlotsSortedByLikelihood', function () {
+    var explicitOne = this.explicitlySpecifiedCreatorSlot();
+    
+    return this.possibleCreatorSlots().sortBy(function(s) {
+      if (explicitOne && explicitOne.equals(s)) { return -1; }
+      var chainLength = s.holder().creatorSlotChainLength();
+      if (typeof(chainLength) !== 'number') { return 1000000; }
+      return chainLength;
+    });
   }, {category: ['annotations', 'creator slot']});
 
   add.method('theCreatorSlot', function () {
     if (! this.canHaveCreatorSlot()) { return null; }
     var a = this.annotation();
     if (!a) { return null; }
-    var s = a.theCreatorSlot();
-    return s ? reflect(s.holder).slotAt(s.name) : null;
+    return this.convertAnnotationCreatorSlotToRealSlot(a.theCreatorSlot());
   }, {category: ['annotations', 'creator slot']});
 
   add.method('explicitlySpecifiedCreatorSlot', function () {
     if (! this.canHaveCreatorSlot()) { return null; }
     var a = this.annotation();
     if (! a) { return null; }
-    var s = a.explicitlySpecifiedCreatorSlot();
-    return s ? reflect(s.holder).slotAt(s.name) : null;
+    return this.convertAnnotationCreatorSlotToRealSlot(a.explicitlySpecifiedCreatorSlot());
   }, {category: ['annotations', 'creator slot']});
 
   add.method('setCreatorSlot', function (s) {
