@@ -223,7 +223,11 @@ thisModule.addSlots(objectGraphWalker, function(add) {
     if (! encounteredStupidFirefoxBug) {
       this.reachedSlot(currentObj, name, contents);
       if (this.canHaveSlots(contents)) {
-        if (contents.constructor !== Array || this.shouldWalkIndexables) { // aaa - this isn't right. But I don't wanna walk all the indexables.
+        var shouldWalkContents;
+        // aaa - this isn't right. But I don't wanna walk all the indexables.
+        try { shouldWalkContents = contents.constructor !== Array || this.shouldWalkIndexables; }
+        catch (ex) { shouldWalkContents = true; } // another FireFox problem?
+        if (shouldWalkContents) {
           this.walk(contents, {previous: howDidWeGetHere, slotHolder: currentObj, slotName: name});
         }
       }
