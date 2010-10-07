@@ -38,6 +38,7 @@ thisModule.addSlots(mirror, function(add) {
   add.method('reflectee', function () { return this._reflectee; }, {category: ['accessing reflectee']});
 
   add.method('equals', function (m) {
+    if (!m) { return false; }
     return this.reflectee() === m.reflectee();
   }, {category: ['comparing']});
 
@@ -152,7 +153,11 @@ thisModule.addSlots(mirror, function(add) {
     if (! this.canHaveCreatorSlot()) {throw this.inspect() + " cannot have a creator slot chain.";}
 
     var chain = this.creatorSlotChain(kindOfCreatorSlot || 'probableCreatorSlot');
-    if (! chain) {throw this.inspect() + " does not have a creator slot chain.";}
+    if (! chain) {
+      var err = new Error(this.name() + " does not have a creator slot chain");
+      err.mirrorWithoutCreatorSlot = this;
+      throw err;
+    }
     if (chain.length === 0) {return "lobby";}
 
     var s = stringBuffer.create();

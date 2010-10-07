@@ -83,16 +83,26 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
       m._module.fileOut(null,
                         repo,
                         function() { m.refreshContentOfMeAndSubmorphs(); },
-                        function(err) { m.errorFilingOut(err, evt); });
+                        function(msg, errors) { m.errorFilingOut(msg, errors, evt); });
     });
   }, {category: ['commands']});
 
-  add.method('errorFilingOut', function (err, evt) {
-    if (err.mirrorWithoutCreatorSlot) {
-      var world = evt.hand.world();
-      world.morphFor(err.mirrorWithoutCreatorSlot).grabMe(evt);
-    }
-    MessageNotifierMorph.showError("Error filing out " + this._module + ": " + err, evt);
+  add.method('errorFilingOut', function (msg, errors, evt) {
+    var morphs = [];
+    var someMirrorsNeedCreatorSlots = false;
+    errors.each(function(err) {
+      if (err.mirrorWithoutCreatorSlot) {
+        var world = evt.hand.world();
+        var mirMorph = world.morphFor(err.mirrorWithoutCreatorSlot);
+        if (! morphs.include(mirMorph)) { morphs.push(mirMorph); }
+        someMirrorsNeedCreatorSlots = true;
+      } else {
+        morphs.push(new MessageNotifierMorph(err, Color.red));
+      }
+    }.bind(this));
+    var world = evt.hand.world();
+    world.assumePose(Object.newChildOf(poses.list, this._module + " errors", world, morphs));
+    MessageNotifierMorph.showError(msg + (someMirrorsNeedCreatorSlots ? "; make sure these objects have creator paths" : ""), evt);
   }, {category: ['commands']});
 
   add.method('emailTheSource', function (evt) {
@@ -115,7 +125,7 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
     this._module.fileOut(Object.newChildOf(transporter.module.annotationlessFilerOuter),
 			   transporter.repositories.console,
 			   function() {},
-			   function(err) { this.errorFilingOut(err, evt); }.bind(this));
+			   function(msg, errors) { this.errorFilingOut(msg, errors, evt); }.bind(this));
   }, {category: ['commands']});
 
   add.method('forgetIWasChanged', function (evt) {

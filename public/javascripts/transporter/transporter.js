@@ -105,9 +105,13 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('codeToFileOut', function (filerOuter) {
     filerOuter.writeModule(this.name(), this._requirements, function() {
       this.slotsInOrderForFilingOut().each(function(s) {
-        var h = s.holder();
-        filerOuter.nextSlotIsIn(h);
-        s.fileOutWith(filerOuter);
+        try {
+          var h = s.holder();
+          filerOuter.nextSlotIsIn(h);
+          s.fileOutWith(filerOuter);
+        } catch (ex) {
+          filerOuter.errors().push(ex);
+        }
       }.bind(this));
       filerOuter.doneWithThisObject();
     }.bind(this));
@@ -125,10 +129,15 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.method('fileOut', function (filerOuter, repo, successBlock, failBlock) {
     var codeToFileOut;
+    filerOuter = filerOuter || Object.newChildOf(this.filerOuter);
     try {
-      codeToFileOut = this.codeToFileOut(filerOuter || Object.newChildOf(this.filerOuter)).toString();
+      codeToFileOut = this.codeToFileOut(filerOuter).toString();
+      var errors = filerOuter.errors();
+      if (errors.length > 0) {
+        return failBlock(errors.length.toString() + " error" + (errors.length === 1 ? "" : "s") + " trying to file out " + this, errors);
+      }
     } catch (ex) {
-      return failBlock(ex);
+      return failBlock(ex, [ex]);
     }
     transporter.fileOut(this, repo, codeToFileOut, function() {this.markAsUnchanged(); if (successBlock) { successBlock(); }}.bind(this), failBlock);
   }, {category: ['transporting']});
@@ -190,7 +199,8 @@ thisModule.addSlots(slots['abstract'], function(add) {
               if (contentsParent.equals(reflect(Object.prototype))) {
                 contentsExpr = "{}";
               } else {
-                contentsExpr = "Object.create(" + contents.parentSlot().fileOutInfo().contentsExpr + ")";
+                var parentInfo = contents.parentSlot().fileOutInfo();
+                contentsExpr = "Object.create(" + parentInfo.contentsExpr + ")";
               }
             }
           }
@@ -201,7 +211,7 @@ thisModule.addSlots(slots['abstract'], function(add) {
   }, {category: ['transporting']});
 
   add.method('fileOutWith', function (filerOuter) {
-    var fileOutInfo = this.fileOutInfo();
+    var info = this.fileOutInfo();
       
     var contents = this.contents();
 
@@ -213,7 +223,7 @@ thisModule.addSlots(slots['abstract'], function(add) {
     var slotAnnoExpr = reflect(slotAnnoToStringify).expressionEvaluatingToMe();
 
     var objectAnnoExpr;
-    if (fileOutInfo.isCreator) {
+    if (info.isCreator) {
       var objectAnnoToStringify = {};
       var objectAnno = contents.annotation();
       if (objectAnno) {
@@ -232,10 +242,10 @@ thisModule.addSlots(slots['abstract'], function(add) {
       optionalArgs = ", " + slotAnnoExpr + optionalArgs;
     }
 
-    filerOuter.writeSlot(fileOutInfo.creationMethod, this.name(), fileOutInfo.contentsExpr, optionalArgs);
+    filerOuter.writeSlot(info.creationMethod, this.name(), info.contentsExpr, optionalArgs);
 
     // aaa - Stupid hack because some browsers won't let you set __proto__ so we have to treat it specially.
-    if (fileOutInfo.isCreator) {
+    if (info.isCreator) {
       var contentsParentSlot = contents.parentSlot();
       if (contentsParentSlot.equals(contentsParentSlot.contents().theCreatorSlot())) {
         filerOuter.writeStupidParentSlotCreatorHack(contentsParentSlot);
@@ -251,6 +261,7 @@ thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
   add.method('initialize', function () {
     this._buffer = stringBuffer.create();
     this._currentHolder = null;
+    this._errors = [];
   }, {category: ['creating']});
 
   add.method('fullText', function () {
@@ -271,6 +282,10 @@ thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
       this._currentHolder = null;
     }
   }, {category: ['writing']});
+
+  add.method('errors', function () {
+    return this._errors;
+  }, {category: ['error handling']});
 
 });
 
@@ -730,6 +745,23 @@ thisModule.addSlots(transporter.tests, function(add) {
 "  end object transporter.tests.someObject.anArrayToFileOut\n",
     m.codeOfMockFileOut());
 
+    m.uninstall();
+  });
+
+  add.method('testObjectsWithNoCreatorPath', function () {
+    var m = transporter.module.named('test_non_well_known_objects');
+
+    var o = {};
+    var oMir = reflect(o);
+    var s1 = this.addSlot(m, o, 'x', 3);
+    var s2 = this.addSlot(m, o, 'y', 'four');
+    
+    var fo = Object.newChildOf(transporter.module.mockFilerOuter);
+    m.codeToFileOut(fo);
+    this.assertEqual(2, fo.errors().length);
+    this.assertEqual(oMir, fo.errors()[0].mirrorWithoutCreatorSlot);
+    this.assertEqual(oMir, fo.errors()[1].mirrorWithoutCreatorSlot);
+    
     m.uninstall();
   });
 

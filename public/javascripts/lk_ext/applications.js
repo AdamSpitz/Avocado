@@ -31,7 +31,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
     // aaa TOTAL HACK. GAE isn't really an "application", exactly. Maybe we need
     // some separate concept here? -- Adam
-    if (window.wasServedFromGoogleAppEngine) {
+    if (window.wasServedFromGoogleAppEngine && window.googleAppEngine) {
       googleAppEngine.addGlobalCommandsTo(cmdList);
     }
 
