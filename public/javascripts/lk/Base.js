@@ -938,11 +938,18 @@ Namespace.addMethods({ // module specific, should be a subclass?
 		} else {
 		  name = "lk/" + name.replace(/\./g, '/');
 		}
-                if (window.urlForKernelModuleName && window.transporter && typeof transporter.loadedURLs[window.urlForKernelModuleName(name)] === 'function') { return true;}
+
+		var realURI = window.urlForKernelModuleName(name);
+
+		if (window.urlForKernelModuleName && window.transporter && typeof transporter.loadedURLs[realURI] === 'function') { return true;}
 
 		if (this.isLoaded()) return false;
 		if (this.uri().include('anonymous')) return true;
-		return Loader.scriptInDOM(this.uri());
+
+		// Check both what LK thinks the URI should be and what Avocado thinks the URI should be. -- Adam
+		if (Loader.scriptInDOM(this.uri())) return true;
+		if (Loader.scriptInDOM(realURI)) return true;
+		return false;
 	},
 	
 	load: function() {
