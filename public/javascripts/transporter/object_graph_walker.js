@@ -30,7 +30,7 @@ thisModule.addSlots(childFinder, function(add) {
   });
 
   add.method('reachedObject', function (o) {
-    if (reflect(o).parent().reflectee() === this.objectToSearchFor && reflect(o).creatorSlotChain('probableCreatorSlot')) {
+    if (reflect(o).parent().reflectee() === this.objectToSearchFor && reflect(o).isWellKnown('probableCreatorSlot')) {
       this._results.push(o);
     }
   });
@@ -48,7 +48,7 @@ thisModule.addSlots(implementorsFinder, function(add) {
   add.method('inspect', function () { return "Well-known implementors of '" + this.slotNameToSearchFor + "'"; });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
-    if (slotName === this.slotNameToSearchFor && reflect(holder).creatorSlotChain('probableCreatorSlot')) {
+    if (slotName === this.slotNameToSearchFor && reflect(holder).isWellKnown('probableCreatorSlot')) {
       this._results.push(reflect(holder).slotAt(slotName));
     }
   });
@@ -68,7 +68,7 @@ thisModule.addSlots(referenceFinder, function(add) {
   add.method('reachedSlot', function (holder, slotName, contents) {
     if (contents === this.objectToSearchFor) {
       var holderMir = reflect(holder);
-      if (holderMir.creatorSlotChain('probableCreatorSlot')) {
+      if (holderMir.isWellKnown('probableCreatorSlot')) {
         this._results.push(holderMir.slotAt(slotName));
       }
     }
@@ -76,7 +76,7 @@ thisModule.addSlots(referenceFinder, function(add) {
 
   add.method('reachedObject', function (o) {
     var mir = reflect(o);
-    if (mir.parent().reflectee() === this.objectToSearchFor && mir.creatorSlotChain('probableCreatorSlot')) {
+    if (mir.parent().reflectee() === this.objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
       this._results.push(mir.parentSlot());
     }
   });

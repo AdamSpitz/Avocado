@@ -22,7 +22,12 @@ thisModule.addSlots(stringBuffer, function(add) {
   add.method('append', function (string) {
     this.buffer.push(string);
     return this;
-  }, {category: ['appending']});
+  }, {category: ['adding']});
+
+  add.method('prepend', function (string) {
+    this.buffer.unshift(string);
+    return this;
+  }, {category: ['adding']});
 
   add.method('toString', function () {
     return this.buffer.join("");

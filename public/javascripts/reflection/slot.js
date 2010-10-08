@@ -57,6 +57,12 @@ thisModule.addSlots(slots['abstract'], function(add) {
     if (module) { module.markAsChanged(); }
   }, {category: ['accessing annotation', 'module']});
 
+  add.method('creatorSlotChainEndingWithMe', function (kindOfCreatorSlot) {
+    var chain = this.holder().creatorSlotChain(kindOfCreatorSlot);
+    chain.unshift(this);
+    return chain;
+  }, {category: ['creator slots']});
+
 });
 
 

@@ -146,11 +146,11 @@ var annotator = {
       } else {
         delete this.creatorSlot;
       }
-      delete this.possibleCreatorSlots; // don't need these anymore
+      // delete this.possibleCreatorSlots; // don't need these anymore // aaa - no, I disagree now, leave them there so people can easily change it back -- Adam, Oct. 2010
     },
 
     addPossibleCreatorSlot: function(name, holder) {
-      if (this.explicitlySpecifiedCreatorSlot()) { return; } // no point
+      // if (this.explicitlySpecifiedCreatorSlot()) { return; } // no point // aaa - no, I disagree now, leave them there so people can easily change it back -- Adam, Oct. 2010
       var slots = this.possibleCreatorSlots = this.possibleCreatorSlots || [];
 
       // Don't add duplicates.
