@@ -624,7 +624,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
       if (shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
         this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
       } else {
-        functionToCallWhenDone();
+        if (functionToCallWhenDone) { functionToCallWhenDone(); }
       }
     }
   }, {category: ['adding and removing']});

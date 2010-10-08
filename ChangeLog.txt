@@ -1,3 +1,7 @@
+Friday October 8, 2010
+
+  - Improvements to the transporter. Should be easier to set creator paths now, and easier to deal with errors.
+
 Tuesday, September 21, 2010
 
   - Can rename categories now.

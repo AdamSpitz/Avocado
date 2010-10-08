@@ -64,9 +64,11 @@ Object.extend = function extend(destination, source) {
 
 var annotator = {
   objectAnnotationPrototype: {
+    _slotAnnoPrefix: 'anno_',
+    
     annotationNameForSlotNamed: function(name) {
       // can't just use the name because it leads to conflicts with stuff inherited from Object.prototype
-      return "anno_" + name;
+      return this._slotAnnoPrefix + name;
     },
 
     existingSlotAnnotation: function(name) {
@@ -76,9 +78,10 @@ var annotator = {
     
     eachSlotAnnotation: function(f) {
       var slotAnnos = this.slotAnnotations;
+      var prefixLength = this._slotAnnoPrefix.length;
       for (var n in slotAnnos) {
         if (slotAnnos.hasOwnProperty(n)) {
-          f(n.substr("anno_".length), slotAnnos[n]);
+          f(n.substr(prefixLength), slotAnnos[n]);
         }
       }
     },
@@ -86,9 +89,9 @@ var annotator = {
     setSlotAnnotation: function(name, slotAnno) {
       if (slotAnno) {
         var realSlotAnno = annotator.asSlotAnnotation(slotAnno);
-	// sometimes annotation definitions come in as strings. Hack to force the UI to work anyways
-	if (! realSlotAnno['category'] instanceof Array) {
-		realSlotAnno['category'] = [realSlotAnno['category']]; 
+        // sometimes annotation definitions come in as strings. Hack to force the UI to work anyways
+	      if (! realSlotAnno['category'] instanceof Array) {
+		      realSlotAnno['category'] = [realSlotAnno['category']]; 
         }
         this.slotAnnotations[this.annotationNameForSlotNamed(name)] = realSlotAnno;
         return realSlotAnno;
@@ -108,36 +111,6 @@ var annotator = {
 
     explicitlySpecifiedCreatorSlot: function () {
       return this.hasOwnProperty('creatorSlot') ? this.creatorSlot : null;
-    },
-
-    theCreatorSlot: function() {
-      var cs = this.explicitlySpecifiedCreatorSlot();
-      if (cs) { return cs; }
-      var slots = this.possibleCreatorSlots;
-      return slots && slots.length === 1 ? slots[0] : null;
-    },
-
-    probableCreatorSlot: function() {
-      var cs = this.explicitlySpecifiedCreatorSlot();
-      if (cs) { return cs; }
-      var slots = this.possibleCreatorSlots;
-      if (! slots)            { return null;     }
-      if (slots.length === 0) { return null;     }
-      if (slots.length === 1) { return slots[0]; }
-      var shortest = null;
-      var shortestLength;
-      for (var i = 0, n = slots.length; i < n; ++i) {
-        var s = slots[i];
-        var sLength = annotator.creatorChainLength(s.holder);
-        if (typeof(sLength) === 'number') {
-          if (!shortest || sLength < shortestLength) {
-            // This one's shorter, so probably better; use it instead.
-            shortest = s;
-            shortestLength = sLength;
-          }
-        }
-      }
-      return shortest;
     },
 
     setCreatorSlot: function(name, holder) {
@@ -251,19 +224,6 @@ var annotator = {
     var anno = this.existingAnnotationOf(holder);
     if (!anno) { return null; }
     return anno.existingSlotAnnotation(name);
-  },
-
-  creatorChainLength: function(o) {
-    var len = 0;
-    while (o !== lobby) {
-      var anno = this.existingAnnotationOf(o);
-      if (!anno) { return null; }
-      var cs = anno.theCreatorSlot(); // aaa wrong - should be probableCreatorSlot, I think, but gotta avoid infinite loop
-      if (!cs) { return null; }
-      len += 1;
-      o = cs.holder;
-    }
-    return len;
   },
   
   adjustSlotsToOmit: function(rawSlotsToOmit) {

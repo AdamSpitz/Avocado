@@ -65,6 +65,7 @@ thisModule.addSlots(TestCase.prototype.Morph.prototype, function(add) {
     this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 3});
     this.setFill(lively.paint.defaultFillWithColor(Color.purple.darker()));
     this.shape.roundEdgesBy(10);
+    this.closeDnD();
 
     this._nameLabel = TextMorph.createLabel(function() { return this._testCaseProto.name(); }.bind(this));
     this._runButton = ButtonMorph.createButton('Run', function(evt) { this.runAll(); }.bind(this), 2);
