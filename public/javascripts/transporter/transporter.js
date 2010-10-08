@@ -339,21 +339,26 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
 thisModule.addSlots(transporter.module.annotationlessFilerOuter, function(add) {
 
   add.method('writeModule', function (name, reqs, bodyBlock) {
-    this._buffer.append("modules[").append(name.inspect()).append("] = {};\n\n");
+    this._buffer.append("if (typeof(window.modules) === 'object') { modules[").append(name.inspect()).append("] = {}; }\n\n");
     bodyBlock();
   }, {category: ['writing']});
 
   add.method('writeObjectStarter', function (mir) {
-    this._buffer.append("jQuery.extend(").append(mir.creatorSlotChainExpression()).append(", {\n\n");
+    // I don't like having to depend on an 'extend' method. Either we
+    // define 'extend' as a local function at the start of the file, or
+    // we just keep writing out the name of the object over and over.
+    // Let's try the latter for now; it actually kinda looks cleaner. -- Adam
+    // this._buffer.append("Object.extend(").append(mir.creatorSlotChainExpression()).append(", {\n\n");
   }, {category: ['writing']});
 
   add.method('writeObjectEnder', function (mir) {
-    this._buffer.append("});\n\n\n");
+    // this._buffer.append("});\n\n\n");
+    this._buffer.append("\n\n");
   }, {category: ['writing']});
 
   add.method('writeSlot', function (creationMethod, slotName, contentsExpr, optionalArgs) {
-    this._buffer.append("  ").append(slotName).append(": ").append(contentsExpr);
-    this._buffer.append(",\n\n");
+    // this._buffer.append("  ").append(slotName).append(": ").append(contentsExpr).append(",\n\n");
+    this._buffer.append(this._currentHolder.creatorSlotChainExpression()).append(".").append(slotName).append(" = ").append(contentsExpr).append(";\n\n");
   }, {category: ['writing']});
 
   add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
