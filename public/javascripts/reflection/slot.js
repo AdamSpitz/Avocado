@@ -7,7 +7,7 @@ requires('reflection/mirror');
 
 thisModule.addSlots(lobby, function(add) {
 
-  add.creator('slots', {}, {category: ['reflection']});
+  add.creator('slots', {}, {category: ['avocado', 'reflection']});
 
 });
 
@@ -292,7 +292,7 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['testing']});
 
   add.method('wellKnownImplementors', function () {
-    return implementorsFinder.create(this.name()).go();
+    return avocado.implementorsFinder.create(this.name()).go();
   }, {category: ['searching']});
 
 });

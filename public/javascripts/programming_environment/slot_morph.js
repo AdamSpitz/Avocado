@@ -19,9 +19,9 @@ thisModule.addSlots(slots['abstract'], function(add) {
 
 thisModule.addSlots(slots['abstract'].Morph, function(add) {
 
-  add.data('superclass', ColumnMorph);
+  add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(ColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
   add.data('type', 'slots.abstract.Morph');
 
@@ -43,10 +43,10 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     this.beUngrabbable();
     this.closeDnD();
 
-    this._sourceToggler     = Object.newChildOf(toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.sourcePane();}.bind(this))       );
-    //this._sourceToggler     = Object.newChildOf(toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.    sourceMorph();}.bind(this))       );
-    this._commentToggler    = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.comment    ? this.createRow(function() {return this.   commentMorph();}.bind(this)) : null);
-    this._annotationToggler = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.annotation ? this.createRow(function() {return this.annotationMorph();}.bind(this)) : null);
+    this._sourceToggler     = Object.newChildOf(avocado.toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.sourcePane();}.bind(this))       );
+    //this._sourceToggler     = Object.newChildOf(avocado.toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.    sourceMorph();}.bind(this))       );
+    this._commentToggler    = Object.newChildOf(avocado.toggler, this.updateAppearance.bind(this), slot.comment    ? this.createRow(function() {return this.   commentMorph();}.bind(this)) : null);
+    this._annotationToggler = Object.newChildOf(avocado.toggler, this.updateAppearance.bind(this), slot.annotation ? this.createRow(function() {return this.annotationMorph();}.bind(this)) : null);
 
     var slotMorph = this;
     var nameMorph = this._nameMorph = new TwoModeTextMorph(function() { return slotMorph.slotName(); },
@@ -62,7 +62,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     var optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
 
     var signatureRowContent = [nameMorph, optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph];
-    this.signatureRow = RowMorph.createSpaceFilling(function () { return signatureRowContent; },
+    this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; },
                                                     {left: 0, right: 2, top: 0, bottom: 0, between: 0});
 
     this.updateAppearance();
@@ -98,7 +98,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
 
     // aaa - This is still a bit of a mess.
 
-    var arrow = m.arrow = new ArrowMorph(slot, m, null);
+    var arrow = m.arrow = new avocado.ArrowMorph(slot, m, null);
     arrow.noLongerNeedsToBeUpdated = true;
     arrow.prepareToBeShown = this.showContents.bind(this);
 
@@ -151,7 +151,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
 
   add.method('createRow', function (getOrCreateContent) {
     var spacer = Morph.createSpacer();
-    var r = RowMorph.createSpaceFilling(function() {return [getOrCreateContent(), spacer];}, {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    var r = avocado.RowMorph.createSpaceFilling(function() {return [getOrCreateContent(), spacer];}, {left: 15, right: 2, top: 2, bottom: 2, between: 0});
     r.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
     return r;
   }, {category: ['creating']});
@@ -178,9 +178,9 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
       }
     };
     var setter = function(s) {
-      MessageNotifierMorph.showIfErrorDuring(function() {
+      avocado.MessageNotifierMorph.showIfErrorDuring(function() {
         // need the assignment and the semicolon so that JSLint doesn't gripe about seeing a naked expression
-        var ok = JSLINT(stringBuffer.create('var ___contents___ = (').append(s).append(');').toString());
+        var ok = JSLINT(avocado.stringBuffer.create('var ___contents___ = (').append(s).append(');').toString());
         if (!ok) {
           JSLINT.errors.each(function(error) {
             throw "JSLint says: " + error.reason;
@@ -188,7 +188,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
         }
       }.bind(this), Event.createFake(), new Color(1.0, 0.55, 0.0));
 
-      var newContents = MessageNotifierMorph.showIfErrorDuring(function() {
+      var newContents = avocado.MessageNotifierMorph.showIfErrorDuring(function() {
         return reflect(eval("(" + s + ")"));
       }.bind(this), Event.createFake());
       thisSlotMorph.setContents(newContents);
@@ -204,12 +204,12 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = new ColumnMorph(this).beInvisible();
+    m = this._annotationMorph = new avocado.ColumnMorph(this).beInvisible();
     m.setPadding({left: 0, right: 0, top: 0, bottom: 0, between: 2});
     this._moduleMorph      = new TextMorphRequiringExplicitAcceptance(this.moduleName.bind(this), this.setModuleName.bind(this));
     this._initializerMorph = new TextMorphRequiringExplicitAcceptance(this.initializationExpression.bind(this), this.setInitializationExpression.bind(this));
-    m.setRows([RowMorph.createSpaceFilling([TextMorph.createLabel("Module:"       ), this._moduleMorph     ]),
-               RowMorph.createSpaceFilling([TextMorph.createLabel("Initialize to:"), this._initializerMorph])]);
+    m.setRows([avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Module:"       ), this._moduleMorph     ]),
+               avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Initialize to:"), this._initializerMorph])]);
     return m;
   }, {category: ['annotation']});
 
@@ -235,7 +235,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
   add.method('slotName', function () { return this.slot().name(); }, {category: ['accessing']});
 
   add.method('setSlotName', function (newName, evt) {
-    MessageNotifierMorph.showIfErrorDuring(function() {
+    avocado.MessageNotifierMorph.showIfErrorDuring(function() {
       this.slot().rename(newName);
       var mirMorph = this.mirrorMorph();
       if (mirMorph) {
@@ -470,7 +470,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
 
     if (this.slot().wellKnownImplementors) {
       cmdList.addSection([{label: "implementors", go: function(evt) {
-        var slice = new SliceMorph(implementorsFinder.create(this.slot().name()));
+        var slice = new avocado.SliceMorph(avocado.implementorsFinder.create(this.slot().name()));
         slice.grabMe(evt);
         slice.redo();
       }.bind(this)}]);

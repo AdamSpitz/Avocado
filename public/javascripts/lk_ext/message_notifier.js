@@ -5,20 +5,20 @@ requires('lk_ext/rows_and_columns');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.method('MessageNotifierMorph', function MessageNotifierMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(MessageNotifierMorph, function(add) {
+thisModule.addSlots(avocado.MessageNotifierMorph, function(add) {
 
-  add.data('superclass', ColumnMorph);
+  add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(ColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
-  add.data('type', 'MessageNotifierMorph');
+  add.data('type', 'avocado.MessageNotifierMorph');
 
   add.method('showIfErrorDuring', function (f, evt, color) {
     try {
@@ -39,9 +39,9 @@ thisModule.addSlots(MessageNotifierMorph, function(add) {
 });
 
 
-thisModule.addSlots(MessageNotifierMorph.prototype, function(add) {
+thisModule.addSlots(avocado.MessageNotifierMorph.prototype, function(add) {
 
-  add.data('constructor', MessageNotifierMorph);
+  add.data('constructor', avocado.MessageNotifierMorph);
 
   add.method('initialize', function ($super, err, color) {
     $super();
@@ -68,7 +68,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
   add.method('showMessage', function (msg, color) {
     // By default, zoom away after a short while, unless the user touches it.
-    new MessageNotifierMorph(msg, color || Color.green).showTemporarilyInCenterOfWorld(this);
+    new avocado.MessageNotifierMorph(msg, color || Color.green).showTemporarilyInCenterOfWorld(this);
   }, {category: ['showing messages']});
 
 });

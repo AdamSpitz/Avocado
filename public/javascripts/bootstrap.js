@@ -305,6 +305,10 @@ function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone,
 
 var lobby = window;
 
+lobby.avocado = {};
+annotator.annotationOf(lobby.avocado).setCreatorSlot('avocado', lobby);
+annotator.annotationOf(lobby).setSlotAnnotation('avocado', {category: ['avocado']});
+
 lobby.modules = {};
 annotator.annotationOf(lobby.modules).setCreatorSlot('modules', lobby);
 annotator.annotationOf(lobby).setSlotAnnotation('modules', {category: ['transporter']});
@@ -643,7 +647,7 @@ thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add)
   add.method('onSuccess', function(m, transport, callWhenDone) {
     var statusCodeIfAny = parseInt(transport.responseText);
     if (!isNaN(statusCodeIfAny)) {
-      MessageNotifierMorph.showError("Failed to file out " + m + " module; status code " + statusCodeIfAny, Event.createFake());
+      avocado.MessageNotifierMorph.showError("Failed to file out " + m + " module; status code " + statusCodeIfAny, Event.createFake());
     } else {
       if (this.shouldShowNewFileContentsInNewWindow) {
         var urlToDownload = transport.responseText;
@@ -817,7 +821,7 @@ thisModule.addSlots(transporter, function(add) {
     // The right solution in the long run, I think, is to have some clear way of specifying
     // whether the programming-environment stuff should be loaded. -- Adam
     if (!UserAgent.isIPhone) {
-      creatorSlotMarker.annotateExternalObjects(true, initModule);
+      avocado.creatorSlotMarker.annotateExternalObjects(true, initModule);
     }
   }, {category: ['bootstrapping']});
 

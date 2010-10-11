@@ -10,7 +10,7 @@ thisModule.addSlots(transporter, function(add) {
 
   add.method('prepareToFileStuffOut', function () {
     // aaa - Not sure yet whether this is more confusing than it's worth.
-    // creatorSlotMarker.annotateExternalObjects(true);
+    // avocado.creatorSlotMarker.annotateExternalObjects(true);
   }, {category: ['filing out']});
 
   add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
@@ -63,7 +63,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['accessing']});
 
   add.method('slots', function () {
-    return enumerator.create(this, 'eachSlot').toArray();
+    return avocado.enumerator.create(this, 'eachSlot').toArray();
   }, {category: ['accessing']});
 
   add.method('eachSlotInMirror', function (mir, f) {
@@ -84,7 +84,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['iterating']});
 
   add.method('eachSlot', function (f) {
-    var alreadySeen = set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
+    var alreadySeen = avocado.set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
     this.objectsThatMightContainSlotsInMe().each(function(obj) {
       var mir = reflect(obj);
       if (! alreadySeen.includes(mir)) {
@@ -153,7 +153,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['iterating']});
 
   add.method('changedOnes', function () {
-    return Object.newChildOf(enumerator, this, 'eachModule').select(function(m) { return m.hasChangedSinceLastFileOut(); });
+    return Object.newChildOf(avocado.enumerator, this, 'eachModule').select(function(m) { return m.hasChangedSinceLastFileOut(); });
   }, {category: ['keeping track of changes']});
 
 });
@@ -259,7 +259,7 @@ thisModule.addSlots(slots['abstract'], function(add) {
 thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
 
   add.method('initialize', function () {
-    this._buffer = stringBuffer.create();
+    this._buffer = avocado.stringBuffer.create();
     this._currentHolder = null;
     this._errors = [];
   }, {category: ['creating']});
@@ -403,12 +403,12 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     this.calculateSlotDependencies();
 
     this._cycleBreakersMir = reflect({});
-    this._cycleBreakersByOriginalSlot = dictionary.copyRemoveAll();
+    this._cycleBreakersByOriginalSlot = avocado.dictionary.copyRemoveAll();
 
-    this._remainingSlotsByMirror = dictionary.copyRemoveAll();
+    this._remainingSlotsByMirror = avocado.dictionary.copyRemoveAll();
     this._module.objectsThatMightContainSlotsInMe().each(function(obj) {
       var mir = reflect(obj);
-      var slots = set.copyRemoveAll();
+      var slots = avocado.set.copyRemoveAll();
       this._module.eachSlotInMirror(mir, function(s) {
         slots.add(s);
         if (s.equals(s.contents().theCreatorSlot())) { slots.add(s.contents().parentSlot()); }
@@ -463,14 +463,14 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
   }, {category: ['dependencies']});
 
   add.method('calculateSlotDependencies', function () {
-    this._slotDeps = {  holderDeps: dependencies.copyRemoveAll(),
-                       contentDeps: dependencies.copyRemoveAll() };
+    this._slotDeps = {  holderDeps: avocado.dependencies.copyRemoveAll(),
+                       contentDeps: avocado.dependencies.copyRemoveAll() };
     
     this._module.eachSlot(function(s) { this.addSlotDependenciesFor(s); }.bind(this));
   }, {comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.', category: ['dependencies']});
 
   add.method('recalculateObjectDependencies', function () {
-    this._objDeps = dependencies.copyRemoveAll();
+    this._objDeps = avocado.dependencies.copyRemoveAll();
 
     this._slotDeps.holderDeps.eachDependency(function(depender, dependee) {
       this._objDeps.addDependency(depender.holder(), dependee.holder());
@@ -523,7 +523,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
 
   add.method('rememberCycleBreakerSlot', function (cycleBreakerSlot, originalSlot) {
     console.log("Created cycle-breaker slot for " + originalSlot + ": " + cycleBreakerSlot);
-    this._remainingSlotsByMirror.getOrIfAbsentPut(this._cycleBreakersMir, function() {return set.copyRemoveAll();}).add(cycleBreakerSlot);
+    this._remainingSlotsByMirror.getOrIfAbsentPut(this._cycleBreakersMir, function() {return avocado.set.copyRemoveAll();}).add(cycleBreakerSlot);
     this._cycleBreakersByOriginalSlot.getOrIfAbsentPut(originalSlot, function() {return [];}).push(cycleBreakerSlot);
   }, {category: ['dependencies']});
 
@@ -601,7 +601,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
 thisModule.addSlots(transporter.tests, function(add) {
 
   add.creator('someObject', {});
-  
+
   add.method('addSlot', function (m, holder, name, contents) {
     var s = reflect(holder).slotAt(name);
     s.setContents(reflect(contents));
@@ -610,7 +610,7 @@ thisModule.addSlots(transporter.tests, function(add) {
   });
 
   add.method('testCreatingAndDestroying', function () {
-    var w1 = testingObjectGraphWalker.create();
+    var w1 = avocado.testingObjectGraphWalker.create();
     w1.go();
     
     var m = transporter.module.named('blah');
@@ -619,7 +619,7 @@ thisModule.addSlots(transporter.tests, function(add) {
     
     m.uninstall();
 
-    var w2 = testingObjectGraphWalker.create();
+    var w2 = avocado.testingObjectGraphWalker.create();
     w2.go();
 
     this.assertEqual(w1.objectCount(), w2.objectCount(), "leftover objects after destroying a module");
@@ -633,11 +633,11 @@ thisModule.addSlots(transporter.tests, function(add) {
 
     var s1 = this.addSlot(m, this.someObject, 'qwerty', 3);
     this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); }).sort());
-    this.assertEqual([s1], enumerator.create(m, 'eachSlot').toArray().sort());
+    this.assertEqual([s1], avocado.enumerator.create(m, 'eachSlot').toArray().sort());
 
     var s2 = this.addSlot(m, this.someObject, 'uiop', 4);
     this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); }).toSet().toArray().sort());
-    this.assertEqual([s1, s2], enumerator.create(m, 'eachSlot').toArray().sort());
+    this.assertEqual([s1, s2], avocado.enumerator.create(m, 'eachSlot').toArray().sort());
 
     m.uninstall();
   });
@@ -735,8 +735,8 @@ thisModule.addSlots(transporter.tests, function(add) {
     this.assert(m.objectsThatMightContainSlotsInMe().include(a.reflectee()), "the indexable slots should be in the module");
     var indexables = [a.slotAt('0'), a.slotAt('1'), a.slotAt('2')];
     this.assertEqual([s1].concat(indexables), m.slotsInOrderForFilingOut());
-    this.assertEqual([s1], enumerator.create(m, 'eachSlotInMirror', reflect(this.someObject)).toArray());
-    this.assertEqual(indexables, enumerator.create(m, 'eachSlotInMirror', a).toArray());
+    this.assertEqual([s1], avocado.enumerator.create(m, 'eachSlotInMirror', reflect(this.someObject)).toArray());
+    this.assertEqual(indexables, avocado.enumerator.create(m, 'eachSlotInMirror', a).toArray());
 
     this.assertEqual(
 "start module test_array_fileout\n" +

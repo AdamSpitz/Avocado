@@ -1,14 +1,14 @@
 transporter.module.create('core/enumerator', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('enumerator', {}, {category: ['collections']}, {comment: 'An Enumerable whose contents are whatever is yielded by calling the specified method.', copyDownParents: [{parent: Enumerable}]});
 
 });
 
 
-thisModule.addSlots(enumerator, function(add) {
+thisModule.addSlots(avocado.enumerator, function(add) {
 
   add.method('create', function () {
     var e = Object.create(this);
@@ -37,14 +37,14 @@ thisModule.addSlots(enumerator, function(add) {
 });
 
 
-thisModule.addSlots(enumerator.tests, function(add) {
+thisModule.addSlots(avocado.enumerator.tests, function(add) {
 
   add.method('eachInteger', function (start, end, f) {
     for (var i = start; i < end; ++i) { f(i); }
   });
 
   add.method('testToArray', function () {
-    var e = enumerator.create(this, 'eachInteger', 3, 10);
+    var e = avocado.enumerator.create(this, 'eachInteger', 3, 10);
     this.assertEqual([3, 4, 5, 6, 7, 8, 9].join(','), e.toArray().join(','));
   });
 

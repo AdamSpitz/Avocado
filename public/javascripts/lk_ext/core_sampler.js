@@ -5,33 +5,33 @@ requires('lk_ext/rows_and_columns');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
-  add.method('CoreSamplerMorph', function CoreSamplerMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui', 'core sampler']});
+  add.method('CoreSamplerMorph', function CoreSamplerMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(CoreSamplerMorph, function(add) {
+thisModule.addSlots(avocado.CoreSamplerMorph, function(add) {
 
-  add.data('superclass', ColumnMorph);
+  add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(ColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
-  add.data('type', 'CoreSamplerMorph');
+  add.data('type', 'avocado.CoreSamplerMorph');
 
-  add.method('addGlobalCommandsTo', function(cmdList) {
-    cmdList.addItem({label: 'core sampler', go: function(evt) {new CoreSamplerMorph().grabMe(evt);}});
+  add.method('addGlobalCommandsTo', function (cmdList) {
+    cmdList.addItem({label: 'core sampler', go: function(evt) {new avocado.CoreSamplerMorph().grabMe(evt);}});
   });
 
 });
 
 
-thisModule.addSlots(CoreSamplerMorph.prototype, function(add) {
+thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
 
-  add.data('constructor', CoreSamplerMorph);
+  add.data('constructor', avocado.CoreSamplerMorph);
 
-  add.method('initialize', function($super) {
+  add.method('initialize', function ($super) {
     $super();
     this.setFill(lively.paint.defaultFillWithColor(Color.gray.darker()));
     this.setPadding(10);
@@ -65,8 +65,8 @@ thisModule.addSlots(CoreSamplerMorph.prototype, function(add) {
     this.refreshContent();
     this.startPeriodicallyUpdating();
   }, {category: ['creating']});
-  
-  add.method('refreshContent', function() {
+
+  add.method('refreshContent', function () {
     var w = this.world();
     if (w) {
       var p = this.worldPoint(this._circle.bounds().center());
@@ -78,7 +78,7 @@ thisModule.addSlots(CoreSamplerMorph.prototype, function(add) {
       var morphSummaries = [];
       w.eachMorphAt(p, function(m) {
         if (! this._crosshairMorphs.include(m)) {
-          var summary = RowMorph.createSpaceFilling([TextMorph.createLabel(reflect(m).name())]).enableEvents();
+          var summary = avocado.RowMorph.createSpaceFilling([TextMorph.createLabel(reflect(m).name())]).enableEvents();
           summary.grabsShouldFallThrough = true;
           summary.contextMenu = m.morphMenu.bind(m);
           morphSummaries.push(summary);
@@ -93,10 +93,10 @@ thisModule.addSlots(CoreSamplerMorph.prototype, function(add) {
       this.setRows([this._placeholderForWhenEmpty]);
     }
   }, {category: ['updating']});
-      
-  add.method('dropMeOnMorph', function($super, receiver) {
+
+  add.method('dropMeOnMorph', function ($super, receiver) {
     $super(receiver);
-    this.updateAppearance(); // because I'm impatient
+    this.updateAppearance(); // because I'm impatient;
   }, {category: ['drag and drop']});
 
   add.data('suppressHandles', true, {category: ['handles']});
@@ -106,7 +106,7 @@ thisModule.addSlots(CoreSamplerMorph.prototype, function(add) {
 
 thisModule.addSlots(Morph.prototype, function(add) {
 
-  add.method('eachMorphAt', function(p, iterator) {
+  add.method('eachMorphAt', function (p, iterator) {
     if (!this.fullContainsWorldPoint(p)) return;
     
     for (var i = this.submorphs.length - 1; i >= 0; --i) {

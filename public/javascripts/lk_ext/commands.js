@@ -1,21 +1,21 @@
 transporter.module.create('lk_ext/commands', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('command', {}, {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(command, function(add) {
+thisModule.addSlots(avocado.command, function(add) {
 
   add.creator('list', {});
 
 });
 
 
-thisModule.addSlots(command.list, function(add) {
+thisModule.addSlots(avocado.command.list, function(add) {
 
   add.method('create', function (cs) {
     return Object.newChildOf(this, cs);
@@ -76,12 +76,12 @@ thisModule.addSlots(SelectionMorph.prototype, function(add) {
   add.method('inspect', function () {
     if (!this.selectedMorphs || this.selectedMorphs.length === 0) { return "nothing here"; }
     
-    var morphsByClass = dictionary.copyRemoveAll();
+    var morphsByClass = avocado.dictionary.copyRemoveAll();
     this.selectedMorphs.each(function(m) {
       morphsByClass.getOrIfAbsentPut(m.constructor, function() {return [];}).push(m);
     });
 
-    var buf = stringBuffer.create();
+    var buf = avocado.stringBuffer.create();
     var sep = "";
     morphsByClass.eachKeyAndValue(function(c, ms) {
       buf.append(sep).append(ms.length.toString()).append(" ").append(reflect ? reflect(c).name() : c.type).append(ms.length === 1 ? "" : "s");
@@ -93,7 +93,7 @@ thisModule.addSlots(SelectionMorph.prototype, function(add) {
   add.method('addCommandsTo', function (cmdList) {
     if (! this.selectedMorphs) { return; }
 
-    var morphsByCommandType = dictionary.copyRemoveAll();
+    var morphsByCommandType = avocado.dictionary.copyRemoveAll();
     this.selectedMorphs.each(function(m) {
       var cmdList = m.commands();
       if (cmdList) {

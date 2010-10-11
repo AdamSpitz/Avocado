@@ -23,27 +23,29 @@ thisModule.addSlots(lobby, function(add) {
         throw exc;
       }
     }
-  }, {category: ['control flow']});
+  }, {category: ['avocado', 'control flow']});
 
 });
+
 
 thisModule.addSlots(exitValueOf, function(add) {
 
   add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
-  
+
 });
+
 
 thisModule.addSlots(exitValueOf.tests, function(add) {
 
-  add.method('testNotExiting', function() {
+  add.method('testNotExiting', function () {
     this.assertEqual(7, exitValueOf(function(exit) { return 7; }));
   });
 
-  add.method('testExiting', function() {
+  add.method('testExiting', function () {
     this.assertEqual(6, exitValueOf(function(exit) { exit(6); return 7; }));
   });
 
-  add.method('testExitingFromInsideAFunction', function() {
+  add.method('testExitingFromInsideAFunction', function () {
     this.assertEqual('good', exitValueOf(function(exit) {
       [1, 2, 3, 4, 5, 6, 7, 8, 9].each(function(n) { if (n === 4) { exit('good'); } });
       return 'no good';

@@ -1,14 +1,14 @@
 transporter.module.create('lk_ext/morph_factories', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('morphFactories', {}, {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(morphFactories, function(add) {
+thisModule.addSlots(avocado.morphFactories, function(add) {
 
   add.method('createFactoryForSimpleMorphs', function (evt) {
     var line    = Morph.makeLine([pt(0,0), pt(60, 30)], 2, Color.black).closeDnD();

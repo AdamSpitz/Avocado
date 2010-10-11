@@ -5,24 +5,24 @@ requires('core/lk_TestFramework');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
-  add.creator('objectGraphWalker', {}, {category: ['transporter']});
+  add.creator('objectGraphWalker', {}, {category: ['avocado', 'miscellaneous']});
 
-  add.creator('creatorSlotMarker', Object.create(objectGraphWalker), {category: ['transporter']});
+  add.creator('creatorSlotMarker', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
 
-  add.creator('implementorsFinder', Object.create(objectGraphWalker), {category: ['transporter']});
+  add.creator('implementorsFinder', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
 
-  add.creator('referenceFinder', Object.create(objectGraphWalker), {category: ['transporter']});
+  add.creator('referenceFinder', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
 
-  add.creator('childFinder', Object.create(objectGraphWalker), {category: ['transporter']});
+  add.creator('childFinder', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
 
-  add.creator('testingObjectGraphWalker', Object.create(objectGraphWalker), {category: ['transporter']});
+  add.creator('testingObjectGraphWalker', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
 
 });
 
 
-thisModule.addSlots(childFinder, function(add) {
+thisModule.addSlots(avocado.childFinder, function(add) {
 
   add.method('initialize', function ($super, o) {
     $super();
@@ -38,7 +38,7 @@ thisModule.addSlots(childFinder, function(add) {
 });
 
 
-thisModule.addSlots(implementorsFinder, function(add) {
+thisModule.addSlots(avocado.implementorsFinder, function(add) {
 
   add.method('initialize', function ($super, slotName) {
     $super();
@@ -56,7 +56,7 @@ thisModule.addSlots(implementorsFinder, function(add) {
 });
 
 
-thisModule.addSlots(referenceFinder, function(add) {
+thisModule.addSlots(avocado.referenceFinder, function(add) {
 
   add.method('initialize', function ($super, o) {
     $super();
@@ -84,7 +84,7 @@ thisModule.addSlots(referenceFinder, function(add) {
 });
 
 
-thisModule.addSlots(objectGraphWalker, function(add) {
+thisModule.addSlots(avocado.objectGraphWalker, function(add) {
 
   add.method('create', function () {
     var w = Object.create(this);
@@ -166,7 +166,7 @@ thisModule.addSlots(objectGraphWalker, function(add) {
     // have to mark the annotation and then come by again and unmark it.
     var objectAnno;
     try { objectAnno = annotator.annotationOf(object); } catch (ex) { return false; } // stupid FireFox bug
-    var walkers = objectAnno.walkers = objectAnno.walkers || (window.set && Object.newChildOf(set, hashTable.identityComparator)) || [];
+    var walkers = objectAnno.walkers = objectAnno.walkers || (window.avocado && avocado.set && Object.newChildOf(avocado.set, avocado.hashTable.identityComparator)) || [];
     if (walkers.include(this)) { return false; }
     walkers.push(this);
     this._marked.push(objectAnno);
@@ -237,7 +237,7 @@ thisModule.addSlots(objectGraphWalker, function(add) {
 });
 
 
-thisModule.addSlots(creatorSlotMarker, function(add) {
+thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
 
   add.method('annotateExternalObjects', function (shouldMakeCreatorSlots, moduleForExpatriateSlots) {
     var marker = this.create();
@@ -290,7 +290,7 @@ thisModule.addSlots(creatorSlotMarker, function(add) {
 });
 
 
-thisModule.addSlots(testingObjectGraphWalker, function(add) {
+thisModule.addSlots(avocado.testingObjectGraphWalker, function(add) {
 
   add.method('reset', function ($super) {
     $super();
@@ -318,15 +318,15 @@ thisModule.addSlots(testingObjectGraphWalker, function(add) {
 });
 
 
-thisModule.addSlots(objectGraphWalker.tests, function(add) {
+thisModule.addSlots(avocado.objectGraphWalker.tests, function(add) {
 
   add.method('testIncremental', function () {
-    var w1 = testingObjectGraphWalker.create();
+    var w1 = avocado.testingObjectGraphWalker.create();
     w1.go();
     var n = 'objectGraphWalker_tests___extraSlotThatIAmAdding';
     var o = {};
     window[n] = o;
-    var w2 = testingObjectGraphWalker.create();
+    var w2 = avocado.testingObjectGraphWalker.create();
     w2.go();
     this.assertEqual(w1.objectCount() + 1, w2.objectCount());
     delete window[n];

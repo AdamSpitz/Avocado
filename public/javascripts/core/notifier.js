@@ -5,14 +5,14 @@ requires('core/hash_table');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('notifier', {}, {category: ['core']}, {comment: 'Keeps track of a list of observers and notifies them when requested.'});
 
 });
 
 
-thisModule.addSlots(notifier, function(add) {
+thisModule.addSlots(avocado.notifier, function(add) {
 
   add.method('on', function (s) {
     return Object.newChildOf(this, s);
@@ -20,7 +20,7 @@ thisModule.addSlots(notifier, function(add) {
 
   add.method('initialize', function (s) {
     this.subject = s;
-    this.observers = Object.newChildOf(set, set.identityComparator);
+    this.observers = Object.newChildOf(avocado.set, avocado.set.identityComparator);
   });
 
   add.method('addObserver', function (o) {
@@ -41,10 +41,10 @@ thisModule.addSlots(notifier, function(add) {
 });
 
 
-thisModule.addSlots(notifier.tests, function(add) {
+thisModule.addSlots(avocado.notifier.tests, function(add) {
 
   add.method('testStuff', function (o) {
-    var n = notifier.on(3);
+    var n = avocado.notifier.on(3);
     var sum = 0;
     n.notifyAllObservers(1);
     n.addObserver(function(s, arg) { sum += (arg * s); });

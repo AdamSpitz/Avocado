@@ -22,7 +22,7 @@ var littleProfiler = {
 
   printTimes: function() {
     this.recordTime();
-    var s = stringBuffer.create("Profile of ").append(this._name).append(": total time ").append(this.totalTime());
+    var s = avocado.stringBuffer.create("Profile of ").append(this._name).append(": total time ").append(this.totalTime());
     s.append(", in-between times: ");
     sep = "";
     for (var i = 0; i < this._times.length - 1; ++i) {

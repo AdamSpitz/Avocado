@@ -2,8 +2,8 @@ transporter.module.create('reflection/annotation', function(requires) {}, functi
 
 
 thisModule.addSlots(annotator, function(add) {
-  
-  add.method('creatorChainLength', function(o) {
+
+  add.method('creatorChainLength', function (o) {
     var len = 0;
     while (o !== lobby) {
       var anno = this.existingAnnotationOf(o);
@@ -15,20 +15,28 @@ thisModule.addSlots(annotator, function(add) {
     }
     return len;
   }, {category: ['creator slots']});
-  
+
 });
 
 
 thisModule.addSlots(annotator.objectAnnotationPrototype, function(add) {
 
-  add.method('theCreatorSlot', function() {
+  add.method('categorize', function (catParts, slotNames) {
+    // Just a shortcut to let us categorize a bunch of slots at a time.
+    for (var i = 0, n = slotNames.length; i < n; ++i) {
+      var slotName = slotNames[i];
+	    this.slotAnnotation(slotName).category = catParts;
+    }
+  }, {category: ['categories']});
+
+  add.method('theCreatorSlot', function () {
     var cs = this.explicitlySpecifiedCreatorSlot();
     if (cs) { return cs; }
     var slots = this.possibleCreatorSlots;
     return slots && slots.length === 1 ? slots[0] : null;
   }, {category: ['creator slots']});
 
-  add.method('probableCreatorSlot', function() {
+  add.method('probableCreatorSlot', function () {
     var cs = this.explicitlySpecifiedCreatorSlot();
     if (cs) { return cs; }
     var slots = this.possibleCreatorSlots;
@@ -50,14 +58,6 @@ thisModule.addSlots(annotator.objectAnnotationPrototype, function(add) {
     }
     return shortest;
   }, {category: ['creator slots']});
-
-  add.method('categorize', function(catParts, slotNames) {
-    // Just a shortcut to let us categorize a bunch of slots at a time.
-    for (var i = 0, n = slotNames.length; i < n; ++i) {
-      var slotName = slotNames[i];
-	    this.slotAnnotation(slotName).category = catParts;
-    }
-  }, {category: ['categories']});
 
 });
 

@@ -27,7 +27,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   }, {category: ['applications']});
 
   add.method('commands', function ($super) {
-    var cmdList = command.list.create();
+    var cmdList = avocado.command.list.create();
 
     // aaa TOTAL HACK. GAE isn't really an "application", exactly. Maybe we need
     // some separate concept here? -- Adam

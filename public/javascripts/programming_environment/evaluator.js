@@ -5,27 +5,27 @@ requires('lk_ext/rows_and_columns');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
-  add.method('EvaluatorMorph', function EvaluatorMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
-
-});
-
-
-thisModule.addSlots(EvaluatorMorph, function(add) {
-
-  add.data('superclass', ColumnMorph);
-
-  add.creator('prototype', Object.create(ColumnMorph.prototype));
-
-  add.data('type', 'EvaluatorMorph');
+  add.method('EvaluatorMorph', function EvaluatorMorph() { Class.initializer.apply(this, arguments); }, {category: ['avocado', 'miscellaneous']});
 
 });
 
 
-thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
+thisModule.addSlots(avocado.EvaluatorMorph, function(add) {
 
-  add.data('constructor', EvaluatorMorph);
+  add.data('superclass', avocado.ColumnMorph);
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
+
+  add.data('type', 'avocado.EvaluatorMorph');
+
+});
+
+
+thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
+
+  add.data('constructor', avocado.EvaluatorMorph);
 
   add.method('initialize', function ($super, mirrorMorph) {
     $super();
@@ -56,7 +56,7 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
                    ButtonMorph.createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)).setHelpText('Run the code in the box and get the result'),
                    ButtonMorph.createButton("Close",  function(evt) {this.remove(  );}.bind(this))];
 
-    this.setRows([RowMorph.createSpaceFilling([tm]), RowMorph.createSpaceFilling(buttons)]);
+    this.setRows([avocado.RowMorph.createSpaceFilling([tm]), avocado.RowMorph.createSpaceFilling(buttons)]);
   }, {category: ['creating']});
 
   add.method('mirrorMorph', function () { return this._mirrorMorph;  }, {category: ['accessing']});
@@ -72,11 +72,11 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
   }, {category: ['running the code']});
 
   add.method('doIt', function (evt) {
-    MessageNotifierMorph.showIfErrorDuring(function() { this.runTheCode(); }.bind(this), evt);
+    avocado.MessageNotifierMorph.showIfErrorDuring(function() { this.runTheCode(); }.bind(this), evt);
   }, {category: ['running the code']});
 
   add.method('getIt', function (evt) {
-    MessageNotifierMorph.showIfErrorDuring(function() {
+    avocado.MessageNotifierMorph.showIfErrorDuring(function() {
       var resultMirMorph = evt.hand.world().morphFor(reflect(this.runTheCode()));
       if (resultMirMorph === this.mirrorMorph()) {
         resultMirMorph.wiggle();

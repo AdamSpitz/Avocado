@@ -19,16 +19,16 @@ thisModule.addSlots(transporter.module, function(add) {
 
 thisModule.addSlots(transporter.module.Morph, function(add) {
 
-  add.data('superclass', RowMorph);
+  add.data('superclass', avocado.RowMorph);
 
-  add.creator('prototype', Object.create(RowMorph.prototype));
+  add.creator('prototype', Object.create(avocado.RowMorph.prototype));
 
   add.data('type', 'transporter.module.Morph');
 
   add.method('doneUpload', function (name) {
     if (name.substr(-3) === '.js') { name = name.substr(0, name.length - 3); }
     transporter.fileIn(name, function() {
-      new MessageNotifierMorph(name + " has been loaded.", Color.green).showTemporarilyInCenterOfWorld(WorldMorph.current());
+      new avocado.MessageNotifierMorph(name + " has been loaded.", Color.green).showTemporarilyInCenterOfWorld(WorldMorph.current());
     });
   });
 
@@ -66,7 +66,7 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
 
   add.method('rename', function (evt) {
     evt.hand.world().prompt("New name?", function(newName) {
-      MessageNotifierMorph.showIfErrorDuring(function () {
+      avocado.MessageNotifierMorph.showIfErrorDuring(function () {
         this._module.rename(newName);
         this.updateAppearance();
       }.bind(this), evt);
@@ -98,12 +98,12 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
         if (! morphs.include(mirMorph)) { morphs.push(mirMorph); }
         someMirrorsNeedCreatorSlots = true;
       } else {
-        morphs.push(new MessageNotifierMorph(err, Color.red));
+        morphs.push(new avocado.MessageNotifierMorph(err, Color.red));
       }
     }.bind(this));
     var world = evt.hand.world();
-    world.assumePose(Object.newChildOf(poses.list, this._module + " errors", world, morphs));
-    MessageNotifierMorph.showError(msg + (someMirrorsNeedCreatorSlots ? "; make sure these objects have creator paths" : ""), evt);
+    world.assumePose(Object.newChildOf(avocado.poses.list, this._module + " errors", world, morphs));
+    avocado.MessageNotifierMorph.showError(msg + (someMirrorsNeedCreatorSlots ? "; make sure these objects have creator paths" : ""), evt);
   }, {category: ['commands']});
 
   add.method('emailTheSource', function (evt) {
@@ -114,14 +114,14 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
   }, {category: ['commands']});
 
   add.method('fileOutWithoutAnnotations', function (evt) {
-    MessageNotifierMorph.showIfErrorDuring(function() { this._module.fileOutWithoutAnnotations(); }.bind(this), evt);
+    avocado.MessageNotifierMorph.showIfErrorDuring(function() { this._module.fileOutWithoutAnnotations(); }.bind(this), evt);
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['commands']});
 
   add.method('mockFileOut', function (evt) {
     console.log(this._module.codeOfMockFileOut());
   }, {category: ['commands']});
-  
+
   add.method('printToConsole', function (evt) {
     this._module.fileOut(Object.newChildOf(transporter.module.annotationlessFilerOuter),
 			   transporter.repositories.console,
@@ -203,13 +203,13 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['menu']});
 
   add.method('modulePathDictionary', function () {
-    var modulePathDictionary = dictionary.copyRemoveAll();
+    var modulePathDictionary = avocado.dictionary.copyRemoveAll();
     transporter.module.eachModule(function(m) {
       var nameParts = m.name().split('/');
       var currentDictionary = modulePathDictionary;
       while (nameParts.length > 1) {
         var part = nameParts.shift();
-        currentDictionary = currentDictionary.getOrIfAbsentPut(part, function() {return dictionary.copyRemoveAll();});
+        currentDictionary = currentDictionary.getOrIfAbsentPut(part, function() {return avocado.dictionary.copyRemoveAll();});
       }
       currentDictionary.put(nameParts.shift(), m);
     });
@@ -250,12 +250,12 @@ thisModule.addSlots(transporter, function(add) {
     var snapshottingWorks = false; // aaa - turn this on once it works.
     if (snapshottingWorks) {
     menu.addItem(["save snapshot", function(evt) {
-      var snapshotter = snapshotter.create();
-      snapshotter.walk(lobby);
-      var snapshot = snapshotter.completeSnapshotText();
+      var s = avocado.snapshotter.create();
+      s.walk(lobby);
+      var snapshot = s.completeSnapshotText();
 
       var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/snapshots/");
-      var fileName = "snapshot_" + snapshotter._number + ".js";
+      var fileName = "snapshot_" + s._number + ".js";
       var url = baseDirURL.withFilename(fileName);
       var status = new Resource(Record.newPlainInstance({URL: url})).store(snapshot, true).getStatus();
       if (! status.isSuccess()) {
@@ -266,7 +266,7 @@ thisModule.addSlots(transporter, function(add) {
 
     menu.addItem(["all modules", function(evt) {
       var world = evt.hand.world();
-      world.assumePose(world.listPoseOfMorphsFor(Object.newChildOf(enumerator, transporter.module, 'eachModule'), "all modules"));
+      world.assumePose(world.listPoseOfMorphsFor(Object.newChildOf(avocado.enumerator, transporter.module, 'eachModule'), "all modules"));
     }]);
 
     menu.addItem(["changed modules", function(evt) {
@@ -320,7 +320,7 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
     jsFileNames.each(function(n) {
       menuItems.push([n, function(evt) {
         var moduleName = n.substring(0, n.length - 3);
-        MessageNotifierMorph.showIfErrorDuring(function() {
+        avocado.MessageNotifierMorph.showIfErrorDuring(function() {
           this.fileIn(pathFromModuleSystemRootDir ? (pathFromModuleSystemRootDir + '/' + moduleName) : moduleName);
         }.bind(this), evt);
       }.bind(this)]);

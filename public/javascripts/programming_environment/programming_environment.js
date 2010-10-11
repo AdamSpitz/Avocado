@@ -17,13 +17,6 @@ requires('programming_environment/test_case_morph');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
-
-  add.creator('avocado', {}, {category: ['avocado']});
-
-});
-
-
 thisModule.addSlots(avocado, function(add) {
 
   add.method('worldName', function () { return "Avocado"; }, {category: ['printing']});
@@ -137,7 +130,7 @@ thisModule.addSlots(avocado, function(add) {
     var shouldPrintLoadOrder = false;
     if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
     
-    creatorSlotMarker.annotateExternalObjects(true);
+    avocado.creatorSlotMarker.annotateExternalObjects(true);
     window.categorizeGlobals();
 
     // make the lobby mirror morph less unwieldy, since people tend to keep lots of stuff there
@@ -149,13 +142,13 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.menuItemContributors, function(add) {
 
-  add.data('0', morphFactories);
+  add.data('0', avocado.morphFactories);
 
-  add.data('1', CoreSamplerMorph);
+  add.data('1', avocado.CoreSamplerMorph);
 
   add.data('2', transporter);
 
-  add.data('3', poses);
+  add.data('3', avocado.poses);
 
   add.data('4', TestCase.prototype.Morph);
 

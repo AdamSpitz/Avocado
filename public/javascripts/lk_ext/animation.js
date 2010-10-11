@@ -1,44 +1,44 @@
 transporter.module.create('lk_ext/animation', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('animation', {}, {category: ['animation']}, {comment: 'Taking a crack at some of those cartoon animation techniques that Self\'s UI1 uses.\nhttp://selflanguage.org/documentation/published/animation.html'});
 
 });
 
 
-thisModule.addSlots(animation, function(add) {
+thisModule.addSlots(avocado.animation, function(add) {
 
   add.data('timePerStep', 40);
 
   add.creator('abstract', {});
 
-  add.creator('simultaneous', Object.create(animation['abstract']));
+  add.creator('simultaneous', Object.create(avocado.animation['abstract']));
 
-  add.creator('sequential', Object.create(animation['abstract']));
+  add.creator('sequential', Object.create(avocado.animation['abstract']));
 
-  add.creator('timeSegment', Object.create(animation['abstract']));
+  add.creator('timeSegment', Object.create(avocado.animation['abstract']));
 
-  add.creator('instantaneous', Object.create(animation['abstract']));
+  add.creator('instantaneous', Object.create(avocado.animation['abstract']));
 
   add.creator('stepper', {});
 
-  add.creator('nothingDoer', Object.create(animation.stepper));
+  add.creator('nothingDoer', Object.create(avocado.animation.stepper));
 
-  add.creator('accelerator', Object.create(animation.stepper));
+  add.creator('accelerator', Object.create(avocado.animation.stepper));
 
-  add.creator('pathMover', Object.create(animation.stepper));
+  add.creator('pathMover', Object.create(avocado.animation.stepper));
 
-  add.creator('speedStepper', Object.create(animation.stepper));
+  add.creator('speedStepper', Object.create(avocado.animation.stepper));
 
-  add.creator('wiggler', Object.create(animation.stepper));
+  add.creator('wiggler', Object.create(avocado.animation.stepper));
 
   add.creator('path', {});
 
-  add.creator('straightPath', Object.create(animation.path));
+  add.creator('straightPath', Object.create(avocado.animation.path));
 
-  add.creator('arcPath', Object.create(animation.path));
+  add.creator('arcPath', Object.create(avocado.animation.path));
 
   add.method('newWiggler', function (morph, centerFnOrPt, duration) {
     var centerPt = (typeof centerFnOrPt === 'function') ? centerFnOrPt() : centerFnOrPt || morph.getPosition();
@@ -178,7 +178,7 @@ thisModule.addSlots(animation, function(add) {
 });
 
 
-thisModule.addSlots(animation['abstract'], function(add) {
+thisModule.addSlots(avocado.animation['abstract'], function(add) {
 
   add.method('create', function () {
     var a = Object.create(this);
@@ -188,7 +188,7 @@ thisModule.addSlots(animation['abstract'], function(add) {
 
   add.method('initialize', function (name) {
     this._name = name;
-    this._preferredTimePerStep = animation.timePerStep;
+    this._preferredTimePerStep = avocado.animation.timePerStep;
   });
 
   add.method('whenDoneCall', function (f) { this._functionToCallWhenDone = f; return this; });
@@ -231,7 +231,7 @@ thisModule.addSlots(animation['abstract'], function(add) {
 });
 
 
-thisModule.addSlots(animation.simultaneous, function(add) {
+thisModule.addSlots(avocado.animation.simultaneous, function(add) {
 
   add.method('initialize', function ($super, name, simultaneousProcesses) {
     $super(name);
@@ -258,7 +258,7 @@ thisModule.addSlots(animation.simultaneous, function(add) {
 });
 
 
-thisModule.addSlots(animation.sequential, function(add) {
+thisModule.addSlots(avocado.animation.sequential, function(add) {
 
   add.method('initialize', function ($super, name, timeSegments) {
     $super(name);
@@ -290,7 +290,7 @@ thisModule.addSlots(animation.sequential, function(add) {
 });
 
 
-thisModule.addSlots(animation.timeSegment, function(add) {
+thisModule.addSlots(avocado.animation.timeSegment, function(add) {
 
   add.method('initialize', function ($super, name, duration, movement) {
     $super(name);
@@ -313,7 +313,7 @@ thisModule.addSlots(animation.timeSegment, function(add) {
 });
 
 
-thisModule.addSlots(animation.instantaneous, function(add) {
+thisModule.addSlots(avocado.animation.instantaneous, function(add) {
 
   add.method('initialize', function ($super, name, functionToRun) {
     $super(name);
@@ -334,7 +334,7 @@ thisModule.addSlots(animation.instantaneous, function(add) {
 });
 
 
-thisModule.addSlots(animation.stepper, function(add) {
+thisModule.addSlots(avocado.animation.stepper, function(add) {
 
   add.method('create', function () {
     var a = Object.create(this);
@@ -351,7 +351,7 @@ thisModule.addSlots(animation.stepper, function(add) {
 });
 
 
-thisModule.addSlots(animation.nothingDoer, function(add) {
+thisModule.addSlots(avocado.animation.nothingDoer, function(add) {
 
   add.method('doOneStep', function (morph, timeElapsedForThisStep) {
     return false;
@@ -360,7 +360,7 @@ thisModule.addSlots(animation.nothingDoer, function(add) {
 });
 
 
-thisModule.addSlots(animation.accelerator, function(add) {
+thisModule.addSlots(avocado.animation.accelerator, function(add) {
 
   add.method('initialize', function (acceleration, speedHolder) {
     this._acceleration = acceleration;
@@ -375,7 +375,7 @@ thisModule.addSlots(animation.accelerator, function(add) {
 });
 
 
-thisModule.addSlots(animation.pathMover, function(add) {
+thisModule.addSlots(avocado.animation.pathMover, function(add) {
 
   add.method('initialize', function (path, speedHolder) {
     this._path = path;
@@ -387,7 +387,7 @@ thisModule.addSlots(animation.pathMover, function(add) {
     var curPos = morph.getPosition();
     var newDstPos = this._path.destination();
     if (this._oldDestination && ! this._oldDestination.eqPt(newDstPos)) {
-      this._path = animation.straightPath.create(animation.straightPath.backtrackToFictionalStartingPoint(curPos, this._progress, newDstPos), this._path._destinationFnOrPt);
+      this._path = avocado.animation.straightPath.create(avocado.animation.straightPath.backtrackToFictionalStartingPoint(curPos, this._progress, newDstPos), this._path._destinationFnOrPt);
     }
 
     var speed = this._speedHolder.speed;
@@ -401,7 +401,7 @@ thisModule.addSlots(animation.pathMover, function(add) {
 });
 
 
-thisModule.addSlots(animation.speedStepper, function(add) {
+thisModule.addSlots(avocado.animation.speedStepper, function(add) {
 
   add.method('initialize', function (from, to, speedHolder, valueAccessor) {
     this._endingValue = to;
@@ -424,7 +424,7 @@ thisModule.addSlots(animation.speedStepper, function(add) {
 });
 
 
-thisModule.addSlots(animation.wiggler, function(add) {
+thisModule.addSlots(avocado.animation.wiggler, function(add) {
 
   add.method('initialize', function (centerFnOrPt) {
     this._isMovingTowardExtreme1 = false;
@@ -453,7 +453,7 @@ thisModule.addSlots(animation.wiggler, function(add) {
 });
 
 
-thisModule.addSlots(animation.path, function(add) {
+thisModule.addSlots(avocado.animation.path, function(add) {
 
   add.method('create', function () {
     var a = Object.create(this);
@@ -466,7 +466,7 @@ thisModule.addSlots(animation.path, function(add) {
 });
 
 
-thisModule.addSlots(animation.straightPath, function(add) {
+thisModule.addSlots(avocado.animation.straightPath, function(add) {
 
   add.method('initialize', function (from, to) {
     this._destinationFnOrPt = to;
@@ -495,7 +495,7 @@ thisModule.addSlots(animation.straightPath, function(add) {
 });
 
 
-thisModule.addSlots(animation.arcPath, function(add) {
+thisModule.addSlots(avocado.animation.arcPath, function(add) {
 
   add.method('initialize', function (from, to) {
     // Find the center of a circle that hits both points.
@@ -549,11 +549,11 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['zooming around']});
 
   add.method('startZoomingTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-    return this.startAnimating(animation.newMovement(this, animation.arcPath, loc, 3, shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
+    return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.arcPath, loc, 3, shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
   }, {category: ['zooming around']});
 
   add.method('startZoomingInAStraightLineTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
-    return this.startAnimating(animation.newMovement(this, animation.straightPath, loc, 2, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
+    return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.straightPath, loc, 2, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
   }, {category: ['zooming around']});
 
   add.method('zoomAwayAfter', function (ms) {
@@ -586,7 +586,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['zooming around']});
 
   add.method('wiggle', function (duration) {
-    return this.startAnimating(animation.newWiggler(this, null, duration));
+    return this.startAnimating(avocado.animation.newWiggler(this, null, duration));
   }, {category: ['wiggling']});
 
   add.method('setPositionAndDoMotionBlurIfNecessary', function (newPos, blurTime) {
@@ -599,7 +599,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
       if (ratio > 0.5) {
         var bounds = this.bounds();
         var allVertices = bounds.vertices().concat(bounds.translatedBy(difference).vertices());
-        var convexVertices = quickhull.getConvexHull(allVertices).map(function(a) {return a.pointA;});
+        var convexVertices = avocado.quickhull.getConvexHull(allVertices).map(function(a) {return a.pointA;});
         var motionBlurMorph = Morph.makePolygon(convexVertices, 0, Color.black, this.getFill());
         motionBlurMorph.aaa_doesNotNeedACreatorSlot = true; // aaa HACK to fix performance bug
         // could try adjusting the opacity based on the distance, but I tried that and
@@ -656,19 +656,19 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('smoothlyFadeTo', function (desiredAlpha, functionToCallWhenDone) {
-    this.startAnimating(animation.newFader(this, desiredAlpha), functionToCallWhenDone);
+    this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);
   }, {category: ['resizing']});
 
   add.method('smoothlyResizeTo', function (desiredSize, functionToCallWhenDone) {
-    this.startAnimating(animation.newResizer(this, desiredSize), functionToCallWhenDone);
+    this.startAnimating(avocado.animation.newResizer(this, desiredSize), functionToCallWhenDone);
   }, {category: ['resizing']});
 
   add.method('smoothlyScaleTo', function (desiredScale, functionToCallWhenDone) {
-    this.startAnimating(animation.newScaler(this, desiredScale), functionToCallWhenDone);
+    this.startAnimating(avocado.animation.newScaler(this, desiredScale), functionToCallWhenDone);
   }, {category: ['scaling']});
 
   add.method('smoothlyScaleVerticallyTo', function (desiredScale, functionToCallWhenDone) {
-    this.startAnimating(animation.newVerticalScaler(this, desiredScale), functionToCallWhenDone);
+    this.startAnimating(avocado.animation.newVerticalScaler(this, desiredScale), functionToCallWhenDone);
   }, {category: ['scaling']});
 
   add.method('stayCenteredAndSmoothlyScaleTo', function (desiredScale, centerPos, functionToCallWhenDone) {
@@ -697,7 +697,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
         m.translateBy(desiredPos.negated());
       }
     };
-    var animator = animation.newSpeedStepper(this, desiredScale, accessor, 200, 80);
+    var animator = avocado.animation.newSpeedStepper(this, desiredScale, accessor, 200, 80);
     this.startAnimating(animator, functionToCallWhenDone);
   }, {category: ['scaling']});
 

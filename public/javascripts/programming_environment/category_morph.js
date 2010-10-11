@@ -38,7 +38,7 @@ thisModule.addSlots(category.Presenter, function(add) {
   add.method('createModulesLabelRow', function () {
     var modulesLabel = TextMorph.createLabel(function() {return this.modulesSummaryString();}.bind(this));
     // modulesLabel.setFontSize(modulesLabel.getFontSize() - 1); // aaa - why does this create a little space at the beginning of the label?
-    this._modulesLabelRow = RowMorph.createSpaceFilling([modulesLabel], {left: 0, right: 0, top: 0, bottom: 2, between: 0});
+    this._modulesLabelRow = avocado.RowMorph.createSpaceFilling([modulesLabel], {left: 0, right: 0, top: 0, bottom: 2, between: 0});
     this._modulesLabelRow.updateAppearance = function() { modulesLabel.refreshText(); };
     return this._modulesLabelRow;
   }, {category: ['creating']});
@@ -46,7 +46,7 @@ thisModule.addSlots(category.Presenter, function(add) {
   add.method('slotsPanel', function () {
     var sp = this._slotsPanel;
     if (sp) { return sp; }
-    sp = this._slotsPanel = new ColumnMorph().beInvisible();
+    sp = this._slotsPanel = new avocado.ColumnMorph().beInvisible();
     sp.setPadding({top: 0, bottom: 0, left: 10, right: 0, between: 0});
     sp.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.populateSlotsPanel();
@@ -111,7 +111,7 @@ thisModule.addSlots(category.Presenter, function(add) {
     var n = modules.length;
     if (n === 0) { return ""; }
     if (n >=  5) { return n + " modules"; }
-    var s = stringBuffer.create(n === 1 ? "Module:  " : "Modules:  ");
+    var s = avocado.stringBuffer.create(n === 1 ? "Module:  " : "Modules:  ");
     var sep = "";
     modules.map(function(m) { return m ? m.lastPartOfName() : '-'; }).sort().each(function(name) {
       s.append(sep).append(name);
@@ -142,7 +142,7 @@ thisModule.addSlots(category.Presenter, function(add) {
 thisModule.addSlots(category.MorphMixin, function(add) {
 
   add.method('initializeCategoryUI', function () {
-    this._highlighter = booleanHolder.containing(true).addObserver(function() {this.updateHighlighting();}.bind(this));
+    this._highlighter = avocado.booleanHolder.containing(true).addObserver(function() {this.updateHighlighting();}.bind(this));
     this._highlighter.setChecked(false);
 
     this._expander = new ExpanderMorph(this);
@@ -243,9 +243,9 @@ thisModule.addSlots(category.MorphMixin, function(add) {
 
 thisModule.addSlots(category.Morph, function(add) {
 
-  add.data('superclass', ColumnMorph);
+  add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(ColumnMorph.prototype), {}, {copyDownParents: [{parent: category.MorphMixin}]});
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype), {}, {copyDownParents: [{parent: category.MorphMixin}]});
 
   add.data('type', 'category.Morph');
 
@@ -275,7 +275,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     this.titleLabel.backgroundColorWhenWritable = null;
     this.titleLabel.ignoreEvents();
 
-    this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel],
+    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel],
                                                   {top: 0, bottom: 0, left: 0, right: 0, between: 3});
     this.replaceThingiesWith([this._headerRow]);
   }, {category: ['creating']});

@@ -1,14 +1,14 @@
 transporter.module.create('lk_ext/sound', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('sound', {}, {category: ['sound']}, {comment: 'Uses the HTML5 <audio> tag to play sound files.'});
 
 });
 
 
-thisModule.addSlots(sound, function(add) {
+thisModule.addSlots(avocado.sound, function(add) {
 
   add.method('fromFile', function (path) {
     return Object.newChildOf(this, path);

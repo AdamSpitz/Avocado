@@ -1,19 +1,19 @@
 transporter.module.create('lk_ext/toggler', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('toggler', {}, {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(toggler, function(add) {
+thisModule.addSlots(avocado.toggler, function(add) {
 
   add.method('initialize', function (updateFunction, morphToShowOrHide) {
     this._updateFunction = updateFunction;
     this._morphToShowOrHide = morphToShowOrHide;
-    this._valueHolder = booleanHolder.containing(false);
+    this._valueHolder = avocado.booleanHolder.containing(false);
     this._valueHolder.addObserver(this.valueChanged.bind(this));
   });
 

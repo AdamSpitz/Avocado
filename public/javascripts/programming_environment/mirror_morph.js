@@ -25,9 +25,9 @@ thisModule.addSlots(mirror, function(add) {
 
 thisModule.addSlots(mirror.Morph, function(add) {
 
-  add.data('superclass', ColumnMorph);
+  add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(ColumnMorph.prototype), {}, {copyDownParents: [{parent: category.MorphMixin}]});
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype), {}, {copyDownParents: [{parent: category.MorphMixin}]});
 
   add.data('type', 'mirror.Morph');
 
@@ -45,26 +45,26 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 2});
     this.shape.roundEdgesBy(10);
 
-    this._slotMorphs     = dictionary.copyRemoveAll();
-    this._categoryMorphs = dictionary.copyRemoveAll();
+    this._slotMorphs     = avocado.dictionary.copyRemoveAll();
+    this._categoryMorphs = avocado.dictionary.copyRemoveAll();
 
     this.setFill(lively.paint.defaultFillWithColor(Color.neutral.gray.lighter()));
 
     this._categoryPresenter = category.Presenter.create(this._mirror, category.root());
     this.initializeCategoryUI(); // aaa - can be a bit slow
     
-    this._evaluatorsPanel = new ColumnMorph().beInvisible();
+    this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible();
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     this.titleLabel = TextMorph.createLabel(function() {return m.inspect();});
 
-    this._commentToggler    = Object.newChildOf(toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ? this.createRow(this.   commentMorph()) : null);
-    this._annotationToggler = Object.newChildOf(toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ?                this.annotationMorph()  : null);
+    this._commentToggler    = Object.newChildOf(avocado.toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ? this.createRow(this.   commentMorph()) : null);
+    this._annotationToggler = Object.newChildOf(avocado.toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ?                this.annotationMorph()  : null);
 
     this.akaButton         = ButtonMorph.createButton("AKA", function(evt) { this.showAKAMenu(evt);            }.bind(this), 1);
     this.commentButton     = ButtonMorph.createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
     this.parentButton      = ButtonMorph.createButton("^",     function(evt) { this.getParent(evt);              }.bind(this), 1).setHelpText('Get my parent');
-    if (window.EvaluatorMorph) {
+    if (window.avocado && avocado.EvaluatorMorph) {
       this.evaluatorButton = ButtonMorph.createButton("E",     function(evt) { this.openEvaluator(evt);          }.bind(this), 1).setHelpText('Show an evaluator box');
     }
     this.dismissButton   = this.createDismissButton();
@@ -75,7 +75,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     var optionalParentButtonMorph  = Morph.createOptionalMorph(this. parentButton, function() { return this.mirror().hasAccessibleParent(); }.bind(this));
     var optionalCommentButtonMorph = Morph.createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
     
-    this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton].compact(),
+    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton].compact(),
                                                   {top: 0, bottom: 0, left: 0, right: 0, between: 3});
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
@@ -97,7 +97,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('category', function () { return this._categoryPresenter.category(); }, {category: ['accessing']});
 
   add.method('createRow', function (m) {
-    var r = RowMorph.createSpaceFilling([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    var r = avocado.RowMorph.createSpaceFilling([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
     r.wasJustShown = function(evt) { m.requestKeyboardFocus(evt.hand); };
     return r;
   }, {category: ['creating']});
@@ -105,12 +105,12 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = new ColumnMorph(this).beInvisible();
+    m = this._annotationMorph = new avocado.ColumnMorph(this).beInvisible();
     m.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
     this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(this.copyDownParentsString.bind(this), this.setCopyDownParentsString.bind(this));
-    m.setRows([RowMorph.createSpaceFilling([TextMorph.createLabel("Copy-down parents:"), this._copyDownParentsLabel])]);
+    m.setRows([avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Copy-down parents:"), this._copyDownParentsLabel])]);
     return m;
   }, {category: ['annotation']});
 
@@ -119,7 +119,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['annotation']});
 
   add.method('setCopyDownParentsString', function (str) {
-    MessageNotifierMorph.showIfErrorDuring(function() {
+    avocado.MessageNotifierMorph.showIfErrorDuring(function() {
       this.mirror().setCopyDownParents(eval(str));
     }.bind(this), Event.createFake());
     this.updateAppearance(); // to make the copied-down slots appear;
@@ -131,12 +131,12 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     this.refreshContentOfMeAndSubmorphs();
     this.updateTitleLabelFont();
   }, {category: ['updating']});
-  
+
   add.method('refreshContent', function ($super) {
     $super();
     this.updateTitleLabelFont();
   }, {category: ['updating']});
-  
+
   add.method('updateTitleLabelFont', function () {
     if (this.mirror().reflectee() === lobby || this.mirror().theCreatorSlot()) {
       // this.titleLabel.setFontFamily('serif'); // not sure I like it
@@ -197,7 +197,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['comment']});
 
   add.method('openEvaluator', function (evt) {
-    var e = new EvaluatorMorph(this);
+    var e = new avocado.EvaluatorMorph(this);
     this._evaluatorsPanel.addRow(e);
     e.wasJustShown(evt);
     return e;
@@ -227,8 +227,8 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       }.bind(this));
     }.bind(this));
   }, {category: ['menu']});
-  
-  add.method('shouldAllowModification', function() {
+
+  add.method('shouldAllowModification', function () {
     return !window.isInCodeOrganizingMode;
   });
 
@@ -293,7 +293,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     cmdList.addLine();
 
     cmdList.addItem({label: "well-known references", go: function(evt) {
-      var slice = new SliceMorph(referenceFinder.create(this.mirror().reflectee()));
+      var slice = new avocado.SliceMorph(avocado.referenceFinder.create(this.mirror().reflectee()));
       slice.grabMe(evt);
       slice.redo();
     }.bind(this)});
@@ -308,7 +308,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       var w = evt.hand.world();
       var parentFunction = function(o) { return o.mirror().hasParent() ? w.morphFor(o.mirror().parent()) : null; };
       var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.morphFor(reflect(child)); }); };
-      w.assumePose(Object.newChildOf(poses.tree, this.mirror().inspect() + " inheritance tree", this, parentFunction, childrenFunction));
+      w.assumePose(Object.newChildOf(avocado.poses.tree, this.mirror().inspect() + " inheritance tree", this, parentFunction, childrenFunction));
     }.bind(this)});
   }, {category: ['menu']});
 

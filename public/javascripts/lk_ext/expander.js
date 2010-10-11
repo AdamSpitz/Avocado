@@ -2,7 +2,7 @@ ButtonMorph.subclass("ExpanderMorph", {
   initialize: function($super, expandee) {
     var s = this.defaultSideLength();
     $super(pt(0, 0).extent(pt(s, s))); // aaa - should fix ButtonMorph so that its initial shape doesn't have to be a rectangle
-    var model = booleanHolder.containing(false);
+    var model = avocado.booleanHolder.containing(false);
     this.connectModel({model: model, getValue: "isChecked", setValue: "setChecked"});
     if (expandee) { model.notifier.addObserver(function() {this.updateExpandedness();}.bind(expandee)); }
     return this;

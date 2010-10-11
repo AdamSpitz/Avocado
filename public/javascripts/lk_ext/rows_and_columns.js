@@ -5,7 +5,7 @@ requires('lk_ext/layout');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.method('RowOrColumnMorph', function RowOrColumnMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui', 'rows and columns']});
 
@@ -20,24 +20,24 @@ thisModule.addSlots(lobby, function(add) {
 });
 
 
-thisModule.addSlots(RowOrColumnMorph, function(add) {
+thisModule.addSlots(avocado.RowOrColumnMorph, function(add) {
 
   add.data('superclass', Morph);
 
   add.creator('prototype', Object.create(Morph.prototype));
 
-  add.data('type', 'RowOrColumnMorph');
+  add.data('type', 'avocado.RowOrColumnMorph');
 
 });
 
 
-thisModule.addSlots(RowMorph, function(add) {
+thisModule.addSlots(avocado.RowMorph, function(add) {
 
-  add.data('superclass', RowOrColumnMorph);
+  add.data('superclass', avocado.RowOrColumnMorph);
 
-  add.creator('prototype', Object.create(RowOrColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.RowOrColumnMorph.prototype));
 
-  add.data('type', 'RowMorph');
+  add.data('type', 'avocado.RowMorph');
 
   add.method('createSpaceFilling', function (content, padding) {
     var m = new this().beInvisible();
@@ -60,20 +60,20 @@ thisModule.addSlots(RowMorph, function(add) {
 });
 
 
-thisModule.addSlots(ColumnMorph, function(add) {
+thisModule.addSlots(avocado.ColumnMorph, function(add) {
 
-  add.data('superclass', RowOrColumnMorph);
+  add.data('superclass', avocado.RowOrColumnMorph);
 
-  add.creator('prototype', Object.create(RowOrColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.RowOrColumnMorph.prototype));
 
-  add.data('type', 'ColumnMorph');
+  add.data('type', 'avocado.ColumnMorph');
 
 });
 
 
-thisModule.addSlots(RowOrColumnMorph.prototype, function(add) {
+thisModule.addSlots(avocado.RowOrColumnMorph.prototype, function(add) {
 
-  add.data('constructor', RowOrColumnMorph);
+  add.data('constructor', avocado.RowOrColumnMorph);
 
   add.method('initialize', function ($super) {
     this.horizontalLayoutMode = LayoutModes.ShrinkWrap;
@@ -266,7 +266,7 @@ thisModule.addSlots(RowOrColumnMorph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(VerticalDirection, function(add) {
+thisModule.addSlots(avocado.VerticalDirection, function(add) {
 
   add.method('externallySpecifiedFreeSpaceSideways', function (m) {return m.externallySpecifiedFreeWidth;});
 
@@ -303,7 +303,7 @@ thisModule.addSlots(VerticalDirection, function(add) {
 });
 
 
-thisModule.addSlots(HorizontalDirection, function(add) {
+thisModule.addSlots(avocado.HorizontalDirection, function(add) {
 
   add.method('externallySpecifiedFreeSpaceSideways', function (m) {return m.externallySpecifiedFreeHeight;});
 
@@ -340,11 +340,11 @@ thisModule.addSlots(HorizontalDirection, function(add) {
 });
 
 
-thisModule.addSlots(ColumnMorph.prototype, function(add) {
+thisModule.addSlots(avocado.ColumnMorph.prototype, function(add) {
 
-  add.data('constructor', ColumnMorph);
+  add.data('constructor', avocado.ColumnMorph);
 
-  add.data('direction', VerticalDirection);
+  add.data('direction', avocado.VerticalDirection);
 
   add.method('addRow', function (m) {this.addMorph(m);});
 
@@ -353,11 +353,11 @@ thisModule.addSlots(ColumnMorph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(RowMorph.prototype, function(add) {
+thisModule.addSlots(avocado.RowMorph.prototype, function(add) {
 
-  add.data('constructor', RowMorph);
+  add.data('constructor', avocado.RowMorph);
 
-  add.data('direction', HorizontalDirection);
+  add.data('direction', avocado.HorizontalDirection);
 
   add.method('addColumn', function (m) {this.addMorph(m);});
 

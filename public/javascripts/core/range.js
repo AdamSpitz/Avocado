@@ -1,14 +1,14 @@
 transporter.module.create('core/range', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('range', {}, {category: ['collections']}, {comment: 'A range of numbers.', copyDownParents: [{parent: Enumerable}]});
 
 });
 
 
-thisModule.addSlots(range, function(add) {
+thisModule.addSlots(avocado.range, function(add) {
 
   add.method('create', function () {
     var r = Object.create(this);
@@ -72,10 +72,10 @@ thisModule.addSlots(range, function(add) {
 });
 
 
-thisModule.addSlots(range.tests, function(add) {
+thisModule.addSlots(avocado.range.tests, function(add) {
 
   add.method('testStuff', function () {
-    var r = range.create(3, 10);
+    var r = avocado.range.create(3, 10);
     this.assertEqual([3, 4, 5, 6, 7, 8, 9], r.toArray());
     r.includeEnd();
     this.assertEqual([3, 4, 5, 6, 7, 8, 9, 10], r.toArray());
