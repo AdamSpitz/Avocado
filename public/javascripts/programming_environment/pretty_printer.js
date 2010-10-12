@@ -83,6 +83,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       break;
     case THIS:
     case NULL:
+    //case UNDEFINED:
     case TRUE:
     case FALSE:
     case NUMBER:
@@ -185,6 +186,10 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append("return ");
       this.prettyPrint(node.value);
       this._buffer.append(";");
+      break;
+    case NOT:
+      this._buffer.append("!");
+      this.prettyPrint(node[0]);
       break;
     case OR:
     case AND:

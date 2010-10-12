@@ -134,6 +134,7 @@ thisModule.addSlots(TestResult.prototype.Morph.prototype, function(add) {
     this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 2});
     this.setFill(lively.paint.defaultFillWithColor(this._testResult.failed.length > 0 ? Color.red : Color.green));
     this.shape.roundEdgesBy(10);
+    this.closeDnD();
 
     var timeToRun = Object.newChildOf(avocado.enumerator, reflect(this._testResult.timeToRun), "eachNormalSlot").inject(0, function(sum, ea) {return sum + ea.contents().reflectee();});
     this._nameLabel = TextMorph.createLabel(this._testCase.name() + "(" + timeToRun + " ms)");

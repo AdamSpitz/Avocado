@@ -189,7 +189,8 @@ thisModule.addSlots(slots['abstract'], function(add) {
           isCreator = true;
           if (contents.isReflecteeFunction()) {
             creationMethod = "method";
-            contentsExpr = contents.reflectee().toString();
+            //contentsExpr = contents.reflectee().toString();
+            contentsExpr = contents.prettyPrint({indentationLevel: 2});
           } else {
             creationMethod = "creator";
             if (contents.isReflecteeArray()) {
