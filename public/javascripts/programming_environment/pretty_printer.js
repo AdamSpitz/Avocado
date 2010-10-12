@@ -39,7 +39,28 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
     // console.log("prettyPrint encountered node type: " + tokens[node.type]);
     switch(node.type) {
     case SCRIPT:
-      for (i = 0; i < node.length; ++i) { this.prettyPrint(node[i]); }
+      for (i = 0; i < node.length; ++i) {
+        if (i > 0) { this.newLine(); }
+        this.prettyPrint(node[i]);
+      }
+      break;
+    case BLOCK:
+      this._buffer.append("{");
+      if (node.length === 0) {
+      } else if (node.length === 1) {
+        this._buffer.append(" ");
+        this.prettyPrint(node[0]);
+        this._buffer.append(" ");
+      } else {
+        this.indent();
+        this.newLine();
+        for (i = 0; i < node.length; ++i) {
+          this.prettyPrint(node[i]);
+          if (i === node.length - 1) { this.unindent(); }
+          this.newLine();
+        }
+      }
+      this._buffer.append("}");
       break;
     case VAR:
       this._buffer.append("var ");
@@ -48,7 +69,10 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this.prettyPrint(node[i]);
       }
       this._buffer.append(";");
-      this.newLine();
+      break;
+    case SEMICOLON:
+      this.prettyPrint(node.expression);
+      this._buffer.append(";");
       break;
     case IDENTIFIER:
       this._buffer.append(node.value);
@@ -57,6 +81,10 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this.prettyPrint(node.initializer);
       }
       break;
+    case THIS:
+    case NULL:
+    case TRUE:
+    case FALSE:
     case NUMBER:
       this._buffer.append(node.value);
       break;
@@ -64,12 +92,55 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       var rightKindOfQuote = node.tokenizer.source[node.start];
       this._buffer.append(rightKindOfQuote).append(node.value).append(rightKindOfQuote);
       break;
+    case OBJECT_INIT:
+      this._buffer.append("{");
+      for (i = 0; i < node.length; ++i) {
+        if (i > 0) { this._buffer.append(", "); }
+        this.prettyPrint(node[i]);
+      }
+      this._buffer.append("}");
+      break;
+    case PROPERTY_INIT:
+      this.prettyPrint(node[0]);
+      this._buffer.append(": ");
+      this.prettyPrint(node[1]);
+      break;
+    case ARRAY_INIT:
+      this._buffer.append("[");
+      for (i = 0; i < node.length; ++i) {
+        if (i > 0) { this._buffer.append(", "); }
+        this.prettyPrint(node[i]);
+      }
+      this._buffer.append("]");
+      break;
+    case ASSIGN:
+      this.prettyPrint(node[0]);
+      this._buffer.append(" = ");
+      this.prettyPrint(node[1]);
+      break;
     case GROUP:
       if (node.value !== '(') { throw new Error("aaa, group but not open-paren?"); }
       this._buffer.append("(");
       if (node.length !== 1) { throw new Error("aaa, group but not just one member?"); }
       this.prettyPrint(node[0]);
       this._buffer.append(")");
+      break;
+    case CALL:
+      this.prettyPrint(node[0]);
+      this._buffer.append("(");
+      this.prettyPrint(node[1]);
+      this._buffer.append(")");
+      break;
+    case DOT:
+      this.prettyPrint(node[0]);
+      this._buffer.append(".");
+      this.prettyPrint(node[1]);
+      break;
+    case LIST:
+      for (i = 0; i < node.length; ++i) {
+        if (i > 0) { this._buffer.append(", "); }
+        this.prettyPrint(node[i]);
+      }
       break;
     case FUNCTION:
       if (node.functionForm === EXPRESSED_FORM) {
@@ -100,6 +171,16 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       reflect(node).morph().grabMe();
       throw new Error("prettyPrinter encountered unknown FUNCTION type: " + tokens[node.type]);
+    case IF:
+      this._buffer.append("if (");
+      this.prettyPrint(node.condition);
+      this._buffer.append(") ");
+      this.prettyPrint(node.thenPart);
+      if (node.elsePart) {
+        this._buffer.append(" else ");
+        this.prettyPrint(node.elsePart);
+      }
+      break;
     case RETURN:
       this._buffer.append("return ");
       this.prettyPrint(node.value);
@@ -120,6 +201,13 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append(" ").append(node.value).append(" ");
       this.prettyPrint(node[1]);
       break;
+    case HOOK:
+      this.prettyPrint(node[0]);
+      this._buffer.append(" ? ");
+      this.prettyPrint(node[1]);
+      this._buffer.append(" : ");
+      this.prettyPrint(node[2]);
+      break;
     default:
       reflect(node).morph().grabMe();
       throw new Error("prettyPrinter encountered unknown node type: " + tokens[node.type]);
@@ -132,12 +220,20 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
   }, {category: ['formatting']});
   
   add.method('indentDuring', function(f) {
-    this._indentationLevel += this._spacesPerIndent;
+    this.indent();
     try {
       return f();
     } finally {
-      this._indentationLevel -= this._spacesPerIndent;
+      this.unindent();
     }
+  }, {category: ['formatting']});
+  
+  add.method('indent', function(f) {
+    this._indentationLevel += this._spacesPerIndent;
+  }, {category: ['formatting']});
+  
+  add.method('unindent', function(f) {
+    this._indentationLevel -= this._spacesPerIndent;
   }, {category: ['formatting']});
 
 });
@@ -162,6 +258,14 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
   add.method('bigFunctionWithEverything', function () {
     var nothing = function () {};
     var f = function (a) { return a + 4; };
+    callAFunction(f, 42);
+    var obj = {a: 4, b: 5};
+    obj.a;
+    f.callAMethod(3, obj);
+    f = this;
+    var arr = obj.a < 3 ? [1, 2, 'three'] : null;
+    if (true) { lalala(); }
+    if (false) { bleh(); } else { blah(); }
     return 'lalala';
   });
   
