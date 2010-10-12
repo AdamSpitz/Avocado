@@ -475,6 +475,14 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
         slice.redo();
       }.bind(this)}]);
     }
+    
+    if (isModifiable && this.slot().contents().prettyPrint) {
+      cmdList.addSection([{label: "pretty-print", go: function(evt) {
+        var contentsMir = this.slot().contents();
+        var formatted = contentsMir.prettyPrint();
+        evt.hand.world().morphFor(reflect(formatted)).grabMe(evt);
+      }.bind(this)}]);
+    }
   }, {category: ['menu']});
 
 });
