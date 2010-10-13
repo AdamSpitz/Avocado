@@ -132,6 +132,13 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this.prettyPrint(node[1]);
       this._buffer.append(")");
       break;
+    case NEW_WITH_ARGS:
+    this._buffer.append("new ");
+      this.prettyPrint(node[0]);
+      this._buffer.append("(");
+      this.prettyPrint(node[1]);
+      this._buffer.append(")");
+      break;
     case DOT:
       this.prettyPrint(node[0]);
       this._buffer.append(".");
@@ -182,14 +189,45 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this.prettyPrint(node.elsePart);
       }
       break;
+    case FOR:
+      this._buffer.append("for (");
+      this.prettyPrint(node.setup);
+      // hack - sometimes the setup is an expression, sometimes it's a var statement; is there a clean way to do this? -- Adam
+      if (node.setup.type !== VAR) { this._buffer.append(";"); }
+      this._buffer.append(" ");
+      this.prettyPrint(node.condition);
+      this._buffer.append("; ");
+      this.prettyPrint(node.update);
+      this._buffer.append(") ");
+      this.prettyPrint(node.body);
+      break;
     case RETURN:
-      this._buffer.append("return ");
-      this.prettyPrint(node.value);
+      if (typeof(node.value) === 'object') {
+        this._buffer.append("return ");
+        this.prettyPrint(node.value);
+        this._buffer.append(";");
+      } else {
+        this._buffer.append("return;");
+      }
+      break;
+    case THROW:
+      this._buffer.append("throw ");
+      this.prettyPrint(node.exception);
       this._buffer.append(";");
       break;
     case NOT:
       this._buffer.append("!");
       this.prettyPrint(node[0]);
+      break;
+    case INCREMENT:
+    case DECREMENT:
+      if (node.postfix) {
+        this.prettyPrint(node[0]);
+        this._buffer.append(node.value);
+      } else {
+        this._buffer.append(node.value);
+        this.prettyPrint(node[0]);
+      }
       break;
     case OR:
     case AND:
@@ -215,7 +253,9 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       break;
     default:
       reflect(node).morph().grabMe();
-      throw new Error("prettyPrinter encountered unknown node type: " + tokens[node.type]);
+      var errorMsg = "prettyPrinter encountered unknown node type: " + tokens[node.type];
+      console.log(errorMsg);
+      throw new Error(errorMsg);
     }
   }, {category: ['formatting']});
   
@@ -260,17 +300,31 @@ thisModule.addSlots(mirror, function(add) {
 
 thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
 
-  add.method('bigFunctionWithEverything', function () {
+  add.method('functionToFormat1', function () {
     var nothing = function () {};
     var f = function (a) { return a + 4; };
     callAFunction(f, 42);
     var obj = {a: 4, b: 5};
     obj.a;
     f.callAMethod(3, obj);
+  });
+  
+  add.method('functionToFormat2', function () {
     f = this;
     var arr = obj.a < 3 ? [1, 2, 'three'] : null;
-    if (true) { lalala(); }
+    if (true) {
+      lalala();
+      return;
+    }
     if (false) { bleh(); } else { blah(); }
+    // can this thing do comments?
+    for (var i = 0; i < n; i++) {
+      throw new Error("blah blah");
+      ++i;
+      --i;
+      i--;
+    }
+    for (i = 0; i < n; i++) { something(); }
     return 'lalala';
   });
   
@@ -280,8 +334,12 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
     this.assertEqual(f.toString(), reflect(f).prettyPrint({indentationLevel: 2}));
   });
   
-  add.method('testEverything', function () {
-    this.checkFunction(this.bigFunctionWithEverything);
+  add.method('test1', function () {
+    this.checkFunction(this.functionToFormat1);
+  });
+  
+  add.method('test2', function () {
+    this.checkFunction(this.functionToFormat2);
   });
   
 });
