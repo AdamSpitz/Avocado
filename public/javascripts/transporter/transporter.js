@@ -103,6 +103,10 @@ thisModule.addSlots(transporter.module, function(add) {
   add.creator('mockFilerOuter', Object.create(transporter.module.abstractFilerOuter), {category: ['transporting']});
 
   add.method('codeToFileOut', function (filerOuter) {
+    if (this.preFileInFunctionName) {
+      filerOuter.writePreFileInFunction(this.preFileInFunctionName);
+    }
+    
     filerOuter.writeModule(this.name(), this._requirements, function() {
       this.slotsInOrderForFilingOut().each(function(s) {
         try {
@@ -189,8 +193,8 @@ thisModule.addSlots(slots['abstract'], function(add) {
           isCreator = true;
           if (contents.isReflecteeFunction()) {
             creationMethod = "method";
-            //contentsExpr = contents.reflectee().toString();
-            contentsExpr = contents.prettyPrint({indentationLevel: 2});
+            contentsExpr = contents.reflectee().toString();
+            //contentsExpr = contents.prettyPrint({indentationLevel: 2});
           } else {
             creationMethod = "creator";
             if (contents.isReflecteeArray()) {
@@ -287,6 +291,13 @@ thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
   add.method('errors', function () {
     return this._errors;
   }, {category: ['error handling']});
+
+  add.method('writePreFileInFunction', function (fnName) {
+    // This is basically just a hack to let us file out the bootstrap module.
+    var f = window[fnName];
+    this._buffer.append("window.").append(fnName).append(" = ").append(f.toString()).append(";\n");
+    this._buffer.append(fnName).append("();\n\n\n\n");
+  }, {category: ['writing']});
 
 });
 

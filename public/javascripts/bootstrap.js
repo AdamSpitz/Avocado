@@ -1,7 +1,6 @@
-// Bootstrap the module system.
+window.bootstrapTheModuleSystem = function () {
 
-// aaa - This file is kind of a mess. Gotta figure out exactly what the
-// minimal amount of stuff needed here is.
+// The bootstrap module is kind of a mess. Try to minimize it.
 
 if (typeof Object.create !== 'function') {
   Object.create = function(parent) {
@@ -62,7 +61,7 @@ Object.extend = function extend(destination, source) {
 };
 
 
-var annotator = {
+window.annotator = {
   objectAnnotationPrototype: {
     _slotAnnoPrefix: 'anno_',
     
@@ -239,7 +238,7 @@ var annotator = {
 // aaa - Copied from Base.js. Just a hack to make $super work. Not really sure
 // what the right solution is in the long run - how do we make this work with
 // both prototype-style inheritance and class-style inheritance?
-function hackToMakeSuperWork(holder, property, contents) {
+window.hackToMakeSuperWork = function(holder, property, contents) {
   var value = contents;
   var superclass = holder.constructor && this === holder.constructor.prototype && holder.constructor.superclass;
   var ancestor = superclass ? superclass.prototype : holder['__proto__']; // using [] to fool JSLint
@@ -260,10 +259,10 @@ function hackToMakeSuperWork(holder, property, contents) {
     })();
   }
   return value;
-}
+};
 
 
-function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone, aaa_name) {
+window.waitForAllCallbacks = function(functionThatYieldsCallbacks, functionToRunWhenDone, aaa_name) {
   var callbacks = [];
   var numberOfCallsExpected = 0;
   var numberCalledSoFar = 0;
@@ -299,48 +298,47 @@ function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone,
   });
   doneYieldingCallbacks = true;
   if (! alreadyDone) { checkWhetherDone(); }
-}
+};
 
 
+window.lobby = window; // aaa take this out once we've excised the word "lobby" from the rest of the code
 
-var lobby = window;
+window.avocado = {};
+annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
+annotator.annotationOf(window).setSlotAnnotation('avocado', {category: ['avocado']});
 
-lobby.avocado = {};
-annotator.annotationOf(lobby.avocado).setCreatorSlot('avocado', lobby);
-annotator.annotationOf(lobby).setSlotAnnotation('avocado', {category: ['avocado']});
+window.modules = {};
+annotator.annotationOf(modules).setCreatorSlot('modules', window);
+annotator.annotationOf(window).setSlotAnnotation('modules', {category: ['transporter']});
 
-lobby.modules = {};
-annotator.annotationOf(lobby.modules).setCreatorSlot('modules', lobby);
-annotator.annotationOf(lobby).setSlotAnnotation('modules', {category: ['transporter']});
+window.transporter = {};
+annotator.annotationOf(transporter).setCreatorSlot('transporter', window);
+annotator.annotationOf(window).setSlotAnnotation('transporter', {category: ['transporter']});
 
-lobby.transporter = {};
-annotator.annotationOf(lobby.transporter).setCreatorSlot('transporter', lobby);
-annotator.annotationOf(lobby).setSlotAnnotation('transporter', {category: ['transporter']});
+transporter.loadedURLs = {};
 
-lobby.transporter.loadedURLs = {};
+transporter.loadOrder = [];
 
-lobby.transporter.loadOrder = [];
+transporter.module = {};
+annotator.annotationOf(transporter.module).setCreatorSlot('module', transporter);
 
-lobby.transporter.module = {};
-annotator.annotationOf(lobby.transporter.module).setCreatorSlot('module', lobby.transporter);
+transporter.module.cache = {};
 
-lobby.transporter.module.cache = {};
+transporter.module.onLoadCallbacks = {};
 
-lobby.transporter.module.onLoadCallbacks = {};
-
-lobby.transporter.module.named = function(n) {
-  var m = lobby.modules[n];
+transporter.module.named = function(n) {
+  var m = modules[n];
   if (m) {return m;}
   //console.log("Creating module named " + n);
-  m = lobby.modules[n] = Object.create(this);
+  m = modules[n] = Object.create(this);
   m._name = n;
-  annotator.annotationOf(m).setCreatorSlot(n, lobby.modules);
-  lobby.transporter.module.cache[n] = [];
+  annotator.annotationOf(m).setCreatorSlot(n, modules);
+  transporter.module.cache[n] = [];
   return m;
 };
 
-lobby.transporter.module.create = function(n, reqBlock, contentsBlock) {
-  if (lobby.modules[n]) { throw 'The ' + n + ' module is already loaded.'; }
+transporter.module.create = function(n, reqBlock, contentsBlock) {
+  if (modules[n]) { throw 'The ' + n + ' module is already loaded.'; }
   var newModule = this.named(n);
   waitForAllCallbacks(function(finalCallback) {
     reqBlock(function(reqName) {
@@ -360,7 +358,7 @@ lobby.transporter.module.create = function(n, reqBlock, contentsBlock) {
   }, n);
 };
 
-lobby.transporter.module.callWhenDoneLoadingModuleNamed = function(n, callback) {
+transporter.module.callWhenDoneLoadingModuleNamed = function(n, callback) {
   callback = callback || function() {};
 
   if (typeof(callback) !== 'function') { throw "What kind of callback is that? " + callback; }
@@ -383,7 +381,7 @@ lobby.transporter.module.callWhenDoneLoadingModuleNamed = function(n, callback) 
   return false;
 };
 
-lobby.transporter.module.doneLoadingModuleNamed = function(n) {
+transporter.module.doneLoadingModuleNamed = function(n) {
   var onLoadCallback = transporter.module.onLoadCallbacks[n];
   if (typeof(onLoadCallback) === 'function') {
     transporter.module.onLoadCallbacks[n] = 'done';
@@ -395,11 +393,11 @@ lobby.transporter.module.doneLoadingModuleNamed = function(n) {
   }
 };
 
-lobby.transporter.module.objectsThatMightContainSlotsInMe = function() {
+transporter.module.objectsThatMightContainSlotsInMe = function() {
   return transporter.module.cache[this._name];
 };
 
-lobby.transporter.module.slotAdder = {
+transporter.module.slotAdder = {
   data: function(name, contents, slotAnnotation, contentsAnnotation) {
     if (! slotAnnotation) { slotAnnotation = {}; }
     this.holder[name] = contents;
@@ -449,7 +447,7 @@ lobby.transporter.module.slotAdder = {
   }
 };
 
-lobby.transporter.module.addSlots = function(holder, block) {
+transporter.module.addSlots = function(holder, block) {
   this.objectsThatMightContainSlotsInMe().push(holder);
   var slotAdder = Object.create(this.slotAdder);
   slotAdder.module = this;
@@ -458,7 +456,19 @@ lobby.transporter.module.addSlots = function(holder, block) {
 };
 
 transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
-lobby.transporter.module.create('bootstrap', function(requires) {}, function(thisModule) {
+};
+bootstrapTheModuleSystem();
+
+
+
+transporter.module.create('bootstrap', function(requires) {}, function(thisModule) {
+
+
+thisModule.addSlots(modules.bootstrap, function(add) {
+
+  add.data('preFileInFunctionName', 'bootstrapTheModuleSystem');
+
+});
 
 
 thisModule.addSlots(transporter, function(add) {
@@ -466,6 +476,274 @@ thisModule.addSlots(transporter, function(add) {
   add.creator('repositories', {});
 
   add.data('availableRepositories', [], {initializeTo: '[]'});
+
+  add.method('repositoryContainingModuleNamed', function (name) {
+    // aaa fix once I want to allow multiple repositories
+    return this.availableRepositories[0];
+  }, {category: ['loading']});
+
+  add.method('fileIn', function (name, moduleLoadedCallback) {
+    this.repositoryContainingModuleNamed(name).fileIn(name, moduleLoadedCallback);
+  }, {category: ['loading']});
+
+  add.method('fileOut', function (m, repo, codeToFileOut, successBlock, failBlock) {
+    (repo || m._repository).fileOutModule(m, codeToFileOut.replace(/[\r]/g, "\n"), successBlock, failBlock);
+  }, {category: ['saving']});
+
+  add.method('fileInIfWanted', function (name, callWhenDone) {
+    if (this.shouldLoadModule(name)) {
+      this.repositoryContainingModuleNamed(name).fileIn(name, callWhenDone);
+    } else {
+      if (callWhenDone) { callWhenDone(); }
+    }
+  }, {category: ['loading']});
+
+  add.method('loadExternal', function (names, callWhenDone) {
+    if (names.length === 0) { return callWhenDone(); }
+    var name = names.shift();
+    transporter.fileIn(name, function() {
+      transporter.loadExternal(names, callWhenDone);
+    });
+  }, {category: ['bootstrapping']});
+
+  add.method('createCanvasIfNone', function () {
+    var canvas = document.getElementById("canvas");
+    if (! canvas) {
+      canvas = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
+      canvas.setAttribute('id', 'canvas');
+      canvas.setAttribute('width',  '100%');
+      canvas.setAttribute('height', '600');
+      canvas.setAttribute('xmlns', "http://www.w3.org/2000/svg");
+      canvas.setAttribute('xmlns:lively', "http://www.experimentalstuff.com/Lively");
+      canvas.setAttribute('xmlns:xlink', "http://www.w3.org/1999/xlink");
+      canvas.setAttribute('xmlns:xhtml', "http://www.w3.org/1999/xhtml");
+      canvas.setAttribute('xml:space', "preserve");
+      canvas.setAttribute('zoomAndPan', "disable");
+
+      var title = document.createElement('title');
+      title.appendChild(document.createTextNode('Lively canvas'));
+      canvas.appendChild(title);
+      document.body.appendChild(canvas);
+    }
+    return canvas;
+  }, {category: ['bootstrapping']});
+
+  add.method('loadLivelyKernel', function (callWhenDone) {
+    if (document.body) { this.createCanvasIfNone(); } else { window.onload = this.createCanvasIfNone; }
+
+    // Later on could do something nicer with dependencies and stuff. For now,
+    // let's just try dynamically loading the LK files in the same order we
+    // loaded them when we were doing it statically in the .xhtml file.
+    this.loadExternal(
+      ["prototype/prototype",
+       "lk/JSON",
+       "lk/defaultconfig",
+       "local-LK-config",
+       "lk/Base",
+       "lk/scene",
+       "lk/Core",
+       "lk/Text",
+       "lk/Widgets",
+       "lk/Network",
+       "lk/Data",
+       "lk/Storage",
+       "lk/bindings",
+       "lk/Tools",
+       "lk/TestFramework",
+       "lk/TouchSupport",
+       "lk/cop/Layers",
+       "moousture/mootools-1.2.4-core-nc",
+       "moousture/Moousture",
+       "moousture/iPhoneProbe",
+       "jslint"
+      ], function() {
+        if (callWhenDone) { callWhenDone(); }
+      }
+    );
+  }, {category: ['bootstrapping']});
+
+  add.method('doneLoadingLivelyKernel', function () {
+  }, {category: ['bootstrapping']});
+
+  add.method('initializeRepositories', function () {
+    var baseURL = window.livelyBaseURL;
+    if (baseURL === undefined) { baseURL = document.documentURI; }
+    baseURL = baseURL.substring(0, baseURL.lastIndexOf("/")) + '/';
+    var repoURL = baseURL + "javascripts/";
+    // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
+    var kernelRepo;
+    if (window.kernelModuleSavingScriptURL || repoURL.indexOf("coolfridgesoftware.com") >= 0) {
+      var savingScriptURL = window.kernelModuleSavingScriptURL || "http://coolfridgesoftware.com/cgi-bin/savefile.cgi";
+      kernelRepo = Object.create(transporter.repositories.httpWithSavingScript);
+      kernelRepo.initialize(repoURL, savingScriptURL);
+    } else {
+      kernelRepo = Object.create(transporter.repositories.httpWithWebDAV);
+      kernelRepo.initialize(repoURL);
+    }
+    
+    if (window.urlForKernelModuleName) {
+      kernelRepo.urlForModuleName = window.urlForKernelModuleName;
+    }
+    
+    transporter.availableRepositories.push(kernelRepo);
+    
+    modules.bootstrap._repository = kernelRepo;
+  }, {category: ['bootstrapping']});
+
+  add.method('putUnownedSlotsInInitModule', function () {
+    var initModule = transporter.module.named('init');
+    // aaa - HACK! necessary because the phone runs out of memory while doing this, I think.
+    // The right solution in the long run, I think, is to have some clear way of specifying
+    // whether the programming-environment stuff should be loaded. -- Adam
+    if (!UserAgent.isIPhone) {
+      avocado.creatorSlotMarker.annotateExternalObjects(true, initModule);
+    }
+  }, {category: ['bootstrapping']});
+
+  add.method('printLoadOrder', function () {
+    console.log(transporter.loadOrder.map(function(itemToLoad) {
+      if (itemToLoad.externalScript) {
+        return "externalScript(" + itemToLoad.externalScript.inspect() + ");";
+      } else if (itemToLoad.module) {
+        return "newModule(" + itemToLoad.module.inspect() + ");";
+      } else if (itemToLoad.doIt) {
+        return "doIt(" + itemToLoad.doIt.inspect() + ");";
+      } else {
+        throw "What's this weird thing in the loadOrder?"
+      }
+    }).join("\n"));
+  }, {category: ['bootstrapping']});
+
+  add.method('initializeAvocado', function () {
+    Morph.prototype.suppressBalloonHelp = true; // I love the idea of balloon help, but it's just broken - balloons keep staying up when they shouldn't
+    //Morph.suppressAllHandlesForever(); // those things are annoying // but useful for direct UI construction
+    
+    var canvas = document.getElementById("canvas");
+    //console.log("About to create the world on canvas: " + canvas);
+    var world = new WorldMorph(canvas);
+    world.displayOnCanvas(canvas);
+    modules.init.markAsUnchanged(); // because displayOnCanvas sets the creator slot of the world
+    if (navigator.appName == 'Opera') { window.onresize(); }
+    //console.log("The world should be visible now.");
+    return world;
+  }, {category: ['bootstrapping']});
+
+  add.method('createAvocadoWorld', function () {
+    Event.prepareEventSystem();
+    var world = transporter.initializeAvocado();
+    this.initializeGestures();
+    if (this.callWhenDoneCreatingAvocadoWorld) {
+      this.callWhenDoneCreatingAvocadoWorld(world);
+      delete this.callWhenDoneCreatingAvocadoWorld;
+    }
+  }, {category: ['bootstrapping']});
+
+  add.method('initializeGestures', function () {
+    // aaa - big mess, just trying to see if it works
+    var gstr = new Moousture.ReducedLevenMatcher({reduceConsistency: 1});
+    var probe = new (UserAgent.isTouch ? Moousture.iPhoneProbe : Moousture.MouseProbe)(WorldMorph.current()); //$(document));
+    var recorder = new Moousture.Recorder({maxSteps: 20, minSteps: 8, matcher: gstr});
+    var monitor = new Moousture.Monitor(20, 1);
+    //CCW circle motion vectors
+    //gstr.addGesture([3,2,1,0,7,6,5,4], ccwCircle);
+    //Make a triangle
+    function triMov(error){
+      if (error * 10 >= 8) { return; }
+      WorldMorph.current().showContextMenu(Event.createFake());
+    }
+
+    gstr.addGesture([7, 1, 7, 1], triMov);
+    //Zig zag swipe vectors
+    //gstr.addGesture([4, 0, 4, 0], swipeMouse);
+    
+    //var swipeProbe = new Moousture.iPhoneProbe(WorldMorph.current().rawNode);
+    //var swipeMonitor = new Moousture.Monitor(20, 1);
+    //var swipeMatcher = new Moousture.ReducedLevenMatcher({reduceConsistency: 4});
+    //var swipeRecorder = new Moousture.Recorder({maxSteps: 50, minSteps: 2, matcher: swipeMatcher});
+    
+    //swipeMatcher.addGesture([0], rightSwipe);
+    //swipeMatcher.addGesture([4], leftSwipe);
+    
+    monitor.start(probe, recorder);
+    //swipeMonitor.start(swipeProbe, swipeRecorder);
+  }, {category: ['bootstrapping']});
+
+  add.method('createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded', function () {
+    if (transporter.isDoneLoadingAvocadoLib && window.isDoneLoading) {
+      transporter.createAvocadoWorld();
+      window.worldHasBeenCreated = true;
+      this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
+    }
+  }, {category: ['bootstrapping']});
+
+  add.method('initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated', function (callWhenDone) {
+    if (this.isDoneLoadingProgrammingEnvironment && window.worldHasBeenCreated) {
+      var app = window.isInCodeOrganizingMode ? window.jsQuiche : window.avocado;
+      app.initialize();
+      WorldMorph.current().addApplication(app);
+    }
+  }, {category: ['bootstrapping']});
+
+  add.method('doneLoadingAvocadoLib', function () {
+    transporter.doneLoadingLivelyKernel();
+    transporter.isDoneLoadingAvocadoLib = true;
+    transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
+  }, {category: ['bootstrapping']});
+
+  add.method('doneLoadingAllOfAvocado', function () {
+    if (modules['programming_environment/programming_environment'] || modules['programming_environment/code_organizer']) {
+      this.isDoneLoadingProgrammingEnvironment = true;
+      this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
+    }
+
+    if (this.callWhenDoneLoadingAvocado) {
+      this.callWhenDoneLoadingAvocado(WorldMorph.current());
+      delete this.callWhenDoneLoadingAvocado;
+    }
+  }, {category: ['bootstrapping']});
+
+  add.method('doBootstrappingStep', function (name) {
+    transporter.loadOrder.push({doIt: 'transporter.' + name + '();'});
+    //console.log("Doing bootstrapping step: " + name);
+    return this[name].call(this);
+  }, {category: ['bootstrapping']});
+
+  add.method('shouldLoadModule', function (name) {
+    // This is a total hack, not meant to be secure; I'm just putting it
+    // in here to show how it's possible to avoid loading in the
+    // programming environment. -- Adam
+    if (name === "programming_environment/programming_environment") {
+      if (UserAgent.isIPhone) { return false; }
+      if (window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
+      //if (window.wasServedFromGoogleAppEngine) { return currentUser && currentUser.isAdmin; }
+    }
+    if (name === "programming_environment/code_organizer") {
+      if (! window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
+    }
+    return true;
+  }, {category: ['bootstrapping']});
+
+  add.method('startAvocado', function (callWhenDone) {
+    this.callWhenDoneLoadingAvocado = callWhenDone;
+
+    this.doBootstrappingStep('initializeRepositories');
+
+    transporter.loadLivelyKernel(function() {
+
+      transporter.fileInIfWanted("transporter/object_graph_walker", function() {
+        transporter.doBootstrappingStep('putUnownedSlotsInInitModule');
+        
+        transporter.fileInIfWanted("avocado_lib", function() {
+          transporter.doBootstrappingStep('doneLoadingAvocadoLib');
+          transporter.fileInIfWanted("programming_environment/code_organizer", function() {
+            transporter.fileInIfWanted("programming_environment/programming_environment", function() {
+              transporter.doBootstrappingStep('doneLoadingAllOfAvocado');
+            });
+          });
+        });
+      });
+    });
+  }, {category: ['bootstrapping']});
 
 });
 
@@ -483,6 +761,7 @@ thisModule.addSlots(transporter.repositories, function(add) {
   add.creator('httpWithSavingScript', Object.create(transporter.repositories.http));
 
 });
+
 
 thisModule.addSlots(transporter.repositories['abstract'], function(add) {
 
@@ -506,6 +785,7 @@ thisModule.addSlots(transporter.repositories['abstract'], function(add) {
   }, {category: ['loading']});
 
 });
+
 
 thisModule.addSlots(transporter.repositories.http, function(add) {
 
@@ -644,7 +924,7 @@ thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add)
 
   add.data('shouldShowNewFileContentsInNewWindow', false, {category: ['downloading']});
 
-  add.method('onSuccess', function(m, transport, callWhenDone) {
+  add.method('onSuccess', function (m, transport, callWhenDone) {
     var statusCodeIfAny = parseInt(transport.responseText);
     if (!isNaN(statusCodeIfAny)) {
       avocado.MessageNotifierMorph.showError("Failed to file out " + m + " module; status code " + statusCodeIfAny, Event.createFake());
@@ -672,20 +952,20 @@ thisModule.addSlots(transporter.repositories.console, function(add) {
 thisModule.addSlots(transporter.module, function(add) {
 
   add.method('existingOneNamed', function (n) {
-    return lobby.modules[n];
+    return modules[n];
   }, {category: ['accessing']});
 
-  add.method('requirements', function() {
+  add.method('requirements', function () {
     if (! this._requirements) { this._requirements = []; }
     return this._requirements;
   }, {category: ['requirements']});
 
-  add.method('addRequirement', function(nameOfRequiredModule) {
+  add.method('addRequirement', function (nameOfRequiredModule) {
     this.requirements().push(nameOfRequiredModule);
     this.markAsChanged();
   }, {category: ['requirements']});
 
-  add.method('requires', function(moduleName, reqLoadedCallback) {
+  add.method('requires', function (moduleName, reqLoadedCallback) {
     this.requirements().push(moduleName);
 
     reqLoadedCallback = reqLoadedCallback || function() {};
@@ -697,278 +977,6 @@ thisModule.addSlots(transporter.module, function(add) {
       transporter.fileIn(moduleName, reqLoadedCallback);
     }
   }, {category: ['requirements']});
-
-});
-
-
-
-thisModule.addSlots(transporter, function(add) {
-
-  add.method('repositoryContainingModuleNamed', function (name) {
-    // aaa fix once I want to allow multiple repositories
-    return this.availableRepositories[0];
-  }, {category: ['loading']});
-
-  add.method('fileIn', function (name, moduleLoadedCallback) {
-    this.repositoryContainingModuleNamed(name).fileIn(name, moduleLoadedCallback);
-  }, {category: ['loading']});
-
-  add.method('fileOut', function(m, repo, codeToFileOut, successBlock, failBlock) {
-    (repo || m._repository).fileOutModule(m, codeToFileOut.replace(/[\r]/g, "\n"), successBlock, failBlock);
-  }, {category: ['saving']});
-
-  add.method('fileInIfWanted', function (name, callWhenDone) {
-    if (this.shouldLoadModule(name)) {
-      this.repositoryContainingModuleNamed(name).fileIn(name, callWhenDone);
-    } else {
-      if (callWhenDone) { callWhenDone(); }
-    }
-  }, {category: ['loading']});
-
-  add.method('loadExternal', function(names, callWhenDone) {
-    if (names.length === 0) { return callWhenDone(); }
-    var name = names.shift();
-    transporter.fileIn(name, function() {
-      transporter.loadExternal(names, callWhenDone);
-    });
-  }, {category: ['bootstrapping']});
-
-  add.method('createCanvasIfNone', function() {
-    var canvas = document.getElementById("canvas");
-    if (! canvas) {
-      canvas = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
-      canvas.setAttribute('id', 'canvas');
-      canvas.setAttribute('width',  '100%');
-      canvas.setAttribute('height', '600');
-      canvas.setAttribute('xmlns', "http://www.w3.org/2000/svg");
-      canvas.setAttribute('xmlns:lively', "http://www.experimentalstuff.com/Lively");
-      canvas.setAttribute('xmlns:xlink', "http://www.w3.org/1999/xlink");
-      canvas.setAttribute('xmlns:xhtml', "http://www.w3.org/1999/xhtml");
-      canvas.setAttribute('xml:space', "preserve");
-      canvas.setAttribute('zoomAndPan', "disable");
-
-      var title = document.createElement('title');
-      title.appendChild(document.createTextNode('Lively canvas'));
-      canvas.appendChild(title);
-      document.body.appendChild(canvas);
-    }
-    return canvas;
-  }, {category: ['bootstrapping']});
-
-  add.method('loadLivelyKernel', function(callWhenDone) {
-    if (document.body) { this.createCanvasIfNone(); } else { window.onload = this.createCanvasIfNone; }
-
-    // Later on could do something nicer with dependencies and stuff. For now,
-    // let's just try dynamically loading the LK files in the same order we
-    // loaded them when we were doing it statically in the .xhtml file.
-    this.loadExternal(
-      ["prototype/prototype",
-       "lk/JSON",
-       "lk/defaultconfig",
-       "local-LK-config",
-       "lk/Base",
-       "lk/scene",
-       "lk/Core",
-       "lk/Text",
-       "lk/Widgets",
-       "lk/Network",
-       "lk/Data",
-       "lk/Storage",
-       "lk/bindings",
-       "lk/Tools",
-       "lk/TestFramework",
-       "lk/TouchSupport",
-       "lk/cop/Layers",
-       "moousture/mootools-1.2.4-core-nc",
-       "moousture/Moousture",
-       "moousture/iPhoneProbe",
-       "jslint"
-      ], function() {
-        if (callWhenDone) { callWhenDone(); }
-      }
-    );
-  }, {category: ['bootstrapping']});
-
-  add.method('doneLoadingLivelyKernel', function() {
-  }, {category: ['bootstrapping']});
-
-  add.method('initializeRepositories', function() {
-    var baseURL = window.livelyBaseURL;
-    if (baseURL === undefined) { baseURL = document.documentURI; }
-    baseURL = baseURL.substring(0, baseURL.lastIndexOf("/")) + '/';
-    var repoURL = baseURL + "javascripts/";
-    // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
-    var kernelRepo;
-    if (window.kernelModuleSavingScriptURL || repoURL.indexOf("coolfridgesoftware.com") >= 0) {
-      var savingScriptURL = window.kernelModuleSavingScriptURL || "http://coolfridgesoftware.com/cgi-bin/savefile.cgi";
-      kernelRepo = Object.create(transporter.repositories.httpWithSavingScript);
-      kernelRepo.initialize(repoURL, savingScriptURL);
-    } else {
-      kernelRepo = Object.create(transporter.repositories.httpWithWebDAV);
-      kernelRepo.initialize(repoURL);
-    }
-    
-    if (window.urlForKernelModuleName) {
-      kernelRepo.urlForModuleName = window.urlForKernelModuleName;
-    }
-    
-    transporter.availableRepositories.push(kernelRepo);
-  }, {category: ['bootstrapping']});
-
-  add.method('putUnownedSlotsInInitModule', function() {
-    var initModule = transporter.module.named('init');
-    // aaa - HACK! necessary because the phone runs out of memory while doing this, I think.
-    // The right solution in the long run, I think, is to have some clear way of specifying
-    // whether the programming-environment stuff should be loaded. -- Adam
-    if (!UserAgent.isIPhone) {
-      avocado.creatorSlotMarker.annotateExternalObjects(true, initModule);
-    }
-  }, {category: ['bootstrapping']});
-
-  add.method('printLoadOrder', function() {
-    console.log(transporter.loadOrder.map(function(itemToLoad) {
-      if (itemToLoad.externalScript) {
-        return "externalScript(" + itemToLoad.externalScript.inspect() + ");";
-      } else if (itemToLoad.module) {
-        return "newModule(" + itemToLoad.module.inspect() + ");";
-      } else if (itemToLoad.doIt) {
-        return "doIt(" + itemToLoad.doIt.inspect() + ");";
-      } else {
-        throw "What's this weird thing in the loadOrder?"
-      }
-    }).join("\n"));
-  }, {category: ['bootstrapping']});
-
-  add.method('initializeAvocado', function() {
-    Morph.prototype.suppressBalloonHelp = true; // I love the idea of balloon help, but it's just broken - balloons keep staying up when they shouldn't
-    //Morph.suppressAllHandlesForever(); // those things are annoying // but useful for direct UI construction
-    
-    var canvas = document.getElementById("canvas");
-    //console.log("About to create the world on canvas: " + canvas);
-    var world = new WorldMorph(canvas);
-    world.displayOnCanvas(canvas);
-    modules.init.markAsUnchanged(); // because displayOnCanvas sets the creator slot of the world
-    if (navigator.appName == 'Opera') { window.onresize(); }
-    //console.log("The world should be visible now.");
-    return world;
-  }, {category: ['bootstrapping']});
-
-  add.method('createAvocadoWorld', function() {
-    Event.prepareEventSystem();
-    var world = transporter.initializeAvocado();
-    this.initializeGestures();
-    if (this.callWhenDoneCreatingAvocadoWorld) {
-      this.callWhenDoneCreatingAvocadoWorld(world);
-      delete this.callWhenDoneCreatingAvocadoWorld;
-    }
-  }, {category: ['bootstrapping']});
-
-  add.method('initializeGestures', function() {
-    // aaa - big mess, just trying to see if it works
-    var gstr = new Moousture.ReducedLevenMatcher({reduceConsistency: 1});
-    var probe = new (UserAgent.isTouch ? Moousture.iPhoneProbe : Moousture.MouseProbe)(WorldMorph.current()); //$(document));
-    var recorder = new Moousture.Recorder({maxSteps: 20, minSteps: 8, matcher: gstr});
-    var monitor = new Moousture.Monitor(20, 1);
-    //CCW circle motion vectors
-    //gstr.addGesture([3,2,1,0,7,6,5,4], ccwCircle);
-    //Make a triangle
-    function triMov(error){
-      if (error * 10 >= 8) { return; }
-      WorldMorph.current().showContextMenu(Event.createFake());
-    }
-
-    gstr.addGesture([7, 1, 7, 1], triMov);
-    //Zig zag swipe vectors
-    //gstr.addGesture([4, 0, 4, 0], swipeMouse);
-    
-    //var swipeProbe = new Moousture.iPhoneProbe(WorldMorph.current().rawNode);
-    //var swipeMonitor = new Moousture.Monitor(20, 1);
-    //var swipeMatcher = new Moousture.ReducedLevenMatcher({reduceConsistency: 4});
-    //var swipeRecorder = new Moousture.Recorder({maxSteps: 50, minSteps: 2, matcher: swipeMatcher});
-    
-    //swipeMatcher.addGesture([0], rightSwipe);
-    //swipeMatcher.addGesture([4], leftSwipe);
-    
-    monitor.start(probe, recorder);
-    //swipeMonitor.start(swipeProbe, swipeRecorder);
-  }, {category: ['bootstrapping']});
-
-  add.method('createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded', function() {
-    if (transporter.isDoneLoadingAvocadoLib && window.isDoneLoading) {
-      transporter.createAvocadoWorld();
-      window.worldHasBeenCreated = true;
-      this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
-    }
-  }, {category: ['bootstrapping']});
-
-  add.method('initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated', function(callWhenDone) {
-    if (this.isDoneLoadingProgrammingEnvironment && window.worldHasBeenCreated) {
-      var app = window.isInCodeOrganizingMode ? window.jsQuiche : window.avocado;
-      app.initialize();
-      WorldMorph.current().addApplication(app);
-    }
-  }, {category: ['bootstrapping']});
-
-  add.method('doneLoadingAvocadoLib', function() {
-    transporter.doneLoadingLivelyKernel();
-    transporter.isDoneLoadingAvocadoLib = true;
-    transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
-  }, {category: ['bootstrapping']});
-
-  add.method('doneLoadingAllOfAvocado', function() {
-    if (modules['programming_environment/programming_environment'] || modules['programming_environment/code_organizer']) {
-      this.isDoneLoadingProgrammingEnvironment = true;
-      this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
-    }
-
-    if (this.callWhenDoneLoadingAvocado) {
-      this.callWhenDoneLoadingAvocado(WorldMorph.current());
-      delete this.callWhenDoneLoadingAvocado;
-    }
-  }, {category: ['bootstrapping']});
-
-  add.method('doBootstrappingStep', function(name) {
-    transporter.loadOrder.push({doIt: 'transporter.' + name + '();'});
-    //console.log("Doing bootstrapping step: " + name);
-    return this[name].call(this);
-  }, {category: ['bootstrapping']});
-
-  add.method('shouldLoadModule', function(name) {
-    // This is a total hack, not meant to be secure; I'm just putting it
-    // in here to show how it's possible to avoid loading in the
-    // programming environment. -- Adam
-    if (name === "programming_environment/programming_environment") {
-      if (UserAgent.isIPhone) { return false; }
-      if (window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
-      //if (window.wasServedFromGoogleAppEngine) { return currentUser && currentUser.isAdmin; }
-    }
-    if (name === "programming_environment/code_organizer") {
-      if (! window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
-    }
-    return true;
-  }, {category: ['bootstrapping']});
-
-  add.method('startAvocado', function(callWhenDone) {
-    this.callWhenDoneLoadingAvocado = callWhenDone;
-
-    this.doBootstrappingStep('initializeRepositories');
-
-    transporter.loadLivelyKernel(function() {
-
-      transporter.fileInIfWanted("transporter/object_graph_walker", function() {
-        transporter.doBootstrappingStep('putUnownedSlotsInInitModule');
-        
-        transporter.fileInIfWanted("avocado_lib", function() {
-          transporter.doBootstrappingStep('doneLoadingAvocadoLib');
-          transporter.fileInIfWanted("programming_environment/code_organizer", function() {
-            transporter.fileInIfWanted("programming_environment/programming_environment", function() {
-              transporter.doBootstrappingStep('doneLoadingAllOfAvocado');
-            });
-          });
-        });
-      });
-    });
-  }, {category: ['bootstrapping']});
 
 });
 
