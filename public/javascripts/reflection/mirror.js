@@ -978,8 +978,13 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual('null', reflect(null).expressionEvaluatingToMe());
     this.assertEqual('false', reflect(false).expressionEvaluatingToMe());
     this.assertEqual("'pleh'", reflect('pleh').expressionEvaluatingToMe());
-    this.assertEqual('function () { return 3 + 4; }', reflect(function() { return 3 + 4; }).expressionEvaluatingToMe());
     this.assertEqual("[1, 2, 'three']", reflect([1, 2, 'three']).expressionEvaluatingToMe());
+    
+    // Don't wanna test the text directly because different browsers print the function slightly differently.
+    var functionText = reflect(function(a) { return a + 4; }).expressionEvaluatingToMe();
+    console.log("Here it is: " + functionText);
+    var recreatedFunction = eval("(" + functionText + ")");
+    this.assertEqual(19, recreatedFunction(15));
 
     this.assertEqual('3', reflect(3).expressionEvaluatingToMe(true));
     this.assertEqual('null', reflect(null).expressionEvaluatingToMe(true));
