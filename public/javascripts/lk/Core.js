@@ -641,22 +641,29 @@ var Event = (function() {
 			this.addMousePoint(this.rawEvent)
 	},
 	
-	offset: function() {
-		// note that FF doesn't doesnt calculate offsetLeft/offsetTop early enough we don't precompute these values
-		var topElement = this.canvas();
-		if (Config.isEmbedded) {
-			var offsetX = 0;
-			var offsetY = -3;
-			do {
-				offsetX += topElement.offsetLeft
-				offsetY += topElement.offsetTop
-				topElement = topElement.offsetParent;
-			} while (topElement && topElement.tagName != 'BODY');
-			return pt(offsetX, offsetY);
-		} else {
-			return pt(topElement.offsetLeft || 0, (topElement.offsetTop  || 0) - 3);
-		}
-	},
+  offset: function() {
+  	// Rearranged this whole function to make it work right in both FireFox and Safari. -- Adam
+
+  	// note that FF doesn't doesnt calculate offsetLeft/offsetTop early enough we don't precompute these values
+  	var topElement = this.canvas();
+  	// Look up the parentNode chain for a node that actually knows its offset. Necessary because
+  	// for some reason in FireFox the canvas doesn't know its offset. -- Adam
+  	while (topElement && typeof(topElement.offsetLeft) !== 'number' && typeof(topElement.offsetTop) !== 'number') {
+  	  topElement = topElement.parentNode;
+  	}
+  	var offsetX = topElement ? topElement.offsetLeft : 0;
+  	var offsetY = topElement ? topElement.offsetTop  : 0; // Why the heck was this -3? -- Adam
+
+  	if (Config.isEmbedded) {
+  		while (topElement && topElement.tagName != 'BODY') {
+  			topElement = topElement.parentNode; //.offsetParent; // aaa Adam offsetParent seems broken, at least in FF
+  			offsetX += topElement.offsetLeft || 0; // || 0 added by Adam
+  			offsetY += topElement.offsetTop  || 0; // || 0 added by Adam
+  		}
+  	}
+
+  	return pt(offsetX, offsetY);
+  },
 	
 	addMousePoint: function(evtOrTouch) {
 		var pos = pt(evtOrTouch.pageX || evtOrTouch.clientX, evtOrTouch.pageY || evtOrTouch.clientY);

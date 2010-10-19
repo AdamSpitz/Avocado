@@ -746,7 +746,16 @@ thisModule.addSlots(transporter, function(add) {
       var title = document.createElement('title');
       title.appendChild(document.createTextNode('Lively canvas'));
       canvas.appendChild(title);
-      document.body.appendChild(canvas);
+      
+      // Put the canvas inside a div, because for some reason FireFox isn't calculating
+      // offsetLeft and offsetTop for the canvas itself. Also, allow people to specify
+      // an 'avocadoDiv' element so they can control where Avocado goes on the page.
+      var avocadoDiv = document.getElementById('avocadoDiv');
+      if (! avocadoDiv) {
+        avocadoDiv = document.createElement('div');
+        document.body.appendChild(avocadoDiv);
+      }
+      avocadoDiv.appendChild(canvas);
     }
     return canvas;
   }, {category: ['bootstrapping']});
