@@ -14,10 +14,11 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['filing out']});
 
   add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
-  
+
   add.creator('reasonsForNeedingCreatorPath', {}, {category: ['filing out']});
-  
+
 });
+
 
 thisModule.addSlots(transporter.reasonsForNeedingCreatorPath, function(add) {
 
@@ -37,60 +38,60 @@ thisModule.addSlots(transporter.reasonsForNeedingCreatorPath, function(add) {
       throw ex;
     }
   });
-  
+
   add.creator('abstract', {});
-  
-  add.creator('ancestorOfObjectCreatedInTheModule', transporter.reasonsForNeedingCreatorPath.abstract);
-  
-  add.creator('objectContainsSlotInTheModule', transporter.reasonsForNeedingCreatorPath.abstract);
-  
-  add.creator('referencedBySlotInTheModule', transporter.reasonsForNeedingCreatorPath.abstract);
+
+  add.creator('ancestorOfObjectCreatedInTheModule', Object.create(transporter.reasonsForNeedingCreatorPath['abstract']));
+
+  add.creator('objectContainsSlotInTheModule', Object.create(transporter.reasonsForNeedingCreatorPath['abstract']));
+
+  add.creator('referencedBySlotInTheModule', Object.create(transporter.reasonsForNeedingCreatorPath['abstract']));
 
 });
 
 
-thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.abstract, function(add) {
-  
-  add.method('create', function(param) {
+thisModule.addSlots(transporter.reasonsForNeedingCreatorPath['abstract'], function(add) {
+
+  add.method('create', function (param) {
     return Object.newChildOf(this, param);
   });
-  
-  add.method('initialize', function(param) {
+
+  add.method('initialize', function (param) {
     this._param = param;
   });
-  
-  add.method('equals', function(other) {
+
+  add.method('equals', function (other) {
     // aaa hack, should really have a general equality tester that isn't part of hashTable.
     return this['__proto__'] === other['__proto__'] && avocado.hashTable.equalityComparator.keysAreEqual(this._param, other._param);
   });
-  
+
 });
 
 
 thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule, function(add) {
-  
-  add.method('toString', function() {
+
+  add.method('toString', function () {
     return "it is an ancestor of " + this._param.inspect();
   });
-  
+
 });
 
 
 thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule, function(add) {
-  
-  add.method('toString', function() {
+
+  add.method('toString', function () {
     return "it's referenced from the " + this._param;
   });
-  
+
 });
 
 
 thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule, function(add) {
-  
-  add.method('toString', function() {
+
+  add.method('toString', function () {
     return "the module contains slots in that object";
   });
-  
+
 });
 
 
@@ -409,7 +410,7 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
   }, {category: ['writing']});
 
   add.method('writeObjectStarter', function () {
-    this._buffer.append("thisModule.addSlots(").append(mir.creatorSlotChainExpression()).append(", function(add) {\n\n");
+    this._buffer.append("thisModule.addSlots(").append(this._currentHolderExpr).append(", function(add) {\n\n");
   }, {category: ['writing']});
 
   add.method('writeObjectEnder', function () {
