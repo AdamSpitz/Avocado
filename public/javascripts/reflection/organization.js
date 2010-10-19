@@ -6,7 +6,7 @@ requires('core/hash_table');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(window, function(add) {
 
   add.creator('abstractOrganization', {}, {category: ['avocado', 'reflection']});
 

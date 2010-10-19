@@ -5,7 +5,7 @@ requires('reflection/mirror');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(window, function(add) {
 
   add.creator('slots', {}, {category: ['avocado', 'reflection']});
 

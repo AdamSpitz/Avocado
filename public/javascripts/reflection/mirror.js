@@ -6,12 +6,12 @@ requires('core/lk_TestFramework');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(window, function(add) {
 
   add.creator('mirror', {}, {category: ['avocado', 'reflection']});
 
   add.method('reflect', function (o) {
-    var m = Object.create(lobby.mirror);
+    var m = Object.create(mirror);
     m.initialize(o);
     return m;
   }, {category: ['avocado', 'reflection']});
@@ -77,7 +77,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['naming']});
 
   add.method('inspect', function () {
-    if (this.reflectee() === lobby) {return this.nameOfLobby();}
+    if (this.reflectee() === window) {return this.nameOfLobby();}
     if (! this.canHaveSlots()) {return Object.inspect(this.reflectee());}
     if (this.isReflecteeArray()) { return this.reflectee().length > 5 ? "an array" : "[" + this.reflectee().map(function(elem) {return reflect(elem).inspect();}).join(", ") + "]"; }
     var n = this.name();
@@ -158,14 +158,14 @@ thisModule.addSlots(mirror, function(add) {
       err.mirrorWithoutCreatorPath = this;
       throw err;
     }
-    if (chain.length === 0) {return "lobby";}
+    if (chain.length === 0) {return "window";}
 
     var s = avocado.stringBuffer.create();
     var sep = "";
-    if (lobby === window && this.canSlotNameBeUsedAsJavascriptToken(chain[chain.length - 1].name())) {
-      // don't need to say "lobby" if the lobby is the global JS namespace
+    if (this.canSlotNameBeUsedAsJavascriptToken(chain[chain.length - 1].name())) {
+      // don't need to say "window"
     } else {
-      s.append("lobby");
+      s.append("window");
       sep = ".";
     }
     
@@ -185,13 +185,13 @@ thisModule.addSlots(mirror, function(add) {
     if (! this.canHaveCreatorSlot()) {return null;}
 
     var chain = [];
-    var lobbyMir = reflect(lobby);
+    var windowMir = reflect(window);
     var mir = this;
     var cs;
     kindOfCreatorSlot = kindOfCreatorSlot || 'explicitlySpecifiedCreatorSlot';
 
     for (var i = 0; true; ++i) {
-      if (mir.equals(lobbyMir)) { return chain; }
+      if (mir.equals(windowMir)) { return chain; }
       cs = mir[kindOfCreatorSlot].call(mir);
       if (! cs) { return null; }
       chain.push(cs);
@@ -225,11 +225,11 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['iterating']});
 
   add.method('functionBodySlot', function () {
-    return Object.create(lobby.slots.functionBody).initialize(this);
+    return Object.create(slots.functionBody).initialize(this);
   }, {category: ['functions']});
 
   add.method('parentSlot', function () {
-    return Object.create(lobby.slots.parent).initialize(this);
+    return Object.create(slots.parent).initialize(this);
   }, {category: ['accessing parent']});
 
   add.method('eachNormalSlot', function (f) {
@@ -292,7 +292,7 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('slotAt', function (n) {
     if (n === '__proto__') { return this.parentSlot(); }
-    return Object.create(lobby.slots.plain).initialize(this, n.toString());
+    return Object.create(slots.plain).initialize(this, n.toString());
   }, {category: ['accessing slot contents']});
 
   add.method('primitiveContentsAt', function (n) {
@@ -914,7 +914,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual("transporter", reflect(transporter).creatorSlotChainExpression());
     this.assertEqual("transporter.module", reflect(transporter.module).creatorSlotChainExpression());
     this.assertEqual("TestCase.prototype.Morph.prototype", reflect(TestCase.prototype.Morph.prototype).creatorSlotChainExpression());
-    this.assertEqual("lobby", reflect(window).creatorSlotChainExpression());
+    this.assertEqual("window", reflect(window).creatorSlotChainExpression());
     this.assertEqual("Selector.operators['!=']", reflect(Selector.operators['!=']).creatorSlotChainExpression());
   });
 

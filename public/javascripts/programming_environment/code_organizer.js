@@ -11,7 +11,7 @@ requires('programming_environment/mirror_morph');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(window, function(add) {
 
   add.creator('jsQuiche', {}, {category: ['JSQuiche']});
 
@@ -61,7 +61,7 @@ thisModule.addSlots(jsQuiche, function(add) {
     avocado.creatorSlotMarker.annotateExternalObjects(true);
     window.categorizeGlobals();
 
-    // make the lobby mirror morph less unwieldy, since people tend to keep lots of stuff there
+    // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
     reflect(window).categorizeUncategorizedSlotsAlphabetically();
   }, {category: ['initializing']});
 

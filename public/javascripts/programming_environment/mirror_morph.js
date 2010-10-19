@@ -138,7 +138,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('updateTitleLabelFont', function () {
-    if (this.mirror().reflectee() === lobby || this.mirror().theCreatorSlot()) {
+    if (this.mirror().reflectee() === window || this.mirror().theCreatorSlot()) {
       // this.titleLabel.setFontFamily('serif'); // not sure I like it
       this.titleLabel.setEmphasis({style: 'bold'});
     } else {

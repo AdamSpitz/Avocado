@@ -101,7 +101,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
   add.method('go', function (root) {
     this.reset();
     this._startTime = new Date().getTime();
-    this.walk(root === undefined ? lobby : root, 0);
+    this.walk(root === undefined ? window : root, 0);
     this.undoAllMarkings();
     return this.results();
   });
@@ -244,7 +244,7 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
     marker.moduleForExpatriateSlots = moduleForExpatriateSlots;
     marker.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
     marker.reset();
-    marker.walk(lobby);
+    marker.walk(window);
     // aaa - WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
     ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function'].each(function(typeName) {
         var type = window[typeName];

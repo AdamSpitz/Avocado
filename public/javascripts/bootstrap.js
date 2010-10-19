@@ -301,8 +301,6 @@ window.waitForAllCallbacks = function(functionThatYieldsCallbacks, functionToRun
 };
 
 
-window.lobby = window; // aaa take this out once we've excised the word "lobby" from the rest of the code
-
 window.avocado = {};
 annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
 annotator.annotationOf(window).setSlotAnnotation('avocado', {category: ['avocado']});
@@ -851,7 +849,7 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
           var _fileContents = req.responseText;
           // I really hope "with" is the right thing to do here. We seem to need
           // it in order to make globally-defined things work.
-          with (lobby) { eval("//@ sourceURL=" + url + "\n" + _fileContents); } // sourceURL will show up in the debugger
+          with (window) { eval("//@ sourceURL=" + url + "\n" + _fileContents); } // sourceURL will show up in the debugger
           transporter.loadedURLs[url]();
           transporter.loadedURLs[url] = 'done';
         }

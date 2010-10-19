@@ -1,7 +1,7 @@
 transporter.module.create('reflection/category', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(window, function(add) {
 
   add.creator('category', {}, {category: ['avocado', 'reflection']});
 

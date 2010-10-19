@@ -193,10 +193,10 @@ thisModule.addSlots(transporter, function(add) {
     this.chooseARepository(evt, targetMorph, 'Which server should the new module live on?', function(repo, evt) {
       evt.hand.world().prompt("Module name?", function(name) {
         if (name) {
-	  if (lobby.modules[name]) {
+	  if (modules[name]) {
 	    throw "There is already a module named " + name;
 	  }
-	  var module = lobby.transporter.module.named(name);
+	  var module = transporter.module.named(name);
 	  module._repository = repo;
 	  if (modules.thisProject) { modules.thisProject.addRequirement(name); }
 	  callback(module, evt);
@@ -254,7 +254,7 @@ thisModule.addSlots(transporter, function(add) {
     if (snapshottingWorks) {
     menu.addItem(["save snapshot", function(evt) {
       var s = avocado.snapshotter.create();
-      s.walk(lobby);
+      s.walk(window);
       var snapshot = s.completeSnapshotText();
 
       var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/snapshots/");

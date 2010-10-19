@@ -230,7 +230,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['transporting']});
 
   add.method('eachModule', function (f) {
-    reflect(lobby.modules).eachNormalSlot(function(s) { f(s.contents().reflectee()); });
+    reflect(modules).eachNormalSlot(function(s) { f(s.contents().reflectee()); });
   }, {category: ['iterating']});
 
   add.method('changedOnes', function () {

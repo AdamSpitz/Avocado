@@ -5,7 +5,7 @@ thisModule.addSlots(annotator, function(add) {
 
   add.method('creatorChainLength', function (o) {
     var len = 0;
-    while (o !== lobby) {
+    while (o !== window) {
       var anno = this.existingAnnotationOf(o);
       if (!anno) { return null; }
       var cs = anno.theCreatorSlot(); // aaa wrong - should be probableCreatorSlot, I think, but gotta avoid infinite loop

@@ -133,7 +133,7 @@ thisModule.addSlots(avocado, function(add) {
     avocado.creatorSlotMarker.annotateExternalObjects(true);
     window.categorizeGlobals();
 
-    // make the lobby mirror morph less unwieldy, since people tend to keep lots of stuff there
+    // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
     reflect(window).categorizeUncategorizedSlotsAlphabetically();
   }, {category: ['initializing']});
 
