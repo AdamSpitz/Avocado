@@ -59,6 +59,7 @@ thisModule.addSlots(slots['abstract'], function(add) {
 
   add.method('creatorSlotChainEndingWithMe', function (kindOfCreatorSlot) {
     var chain = this.holder().creatorSlotChain(kindOfCreatorSlot);
+    if (!chain) { return null; }
     chain.unshift(this);
     return chain;
   }, {category: ['creator slots']});
@@ -245,7 +246,7 @@ thisModule.addSlots(slots.plain, function(add) {
   add.method('setModuleRecursively', function (m) {
     this.setModule(m);
     var c = this.contents();
-    if (!c.reflecteeStoreString() && !c.isReflecteeSimpleMethod()) { // no need if we're not going to be filing in the object slot-by-slot anyway
+    if (!c.reflecteeStoreString() && !c.isReflecteeSimpleMethod() && !this.initializationExpression()) { // no need if we're not going to be filing in the object slot-by-slot anyway
       if (this.equals(c.theCreatorSlot())) {
         c.setModuleRecursively(m);
       }

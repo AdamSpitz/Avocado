@@ -14,7 +14,83 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['filing out']});
 
   add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  
+  add.creator('reasonsForNeedingCreatorPath', {}, {category: ['filing out']});
+  
+});
 
+thisModule.addSlots(transporter.reasonsForNeedingCreatorPath, function(add) {
+
+  add.method('recordIfExceptionDuring', function (f, reason) {
+    try {
+      return f();
+    } catch (ex) {
+      if (ex.mirrorWithoutCreatorPath) {
+        if (ex.reasonForNeedingCreatorPath) {
+          if (! ex.reasonForNeedingCreatorPath.include(reason)) {
+            ex.reasonForNeedingCreatorPath += ", " + reason;
+          }
+        } else {
+          ex.reasonForNeedingCreatorPath = reason;
+        }
+      }
+      throw ex;
+    }
+  });
+  
+  add.creator('abstract', {});
+  
+  add.creator('ancestorOfObjectCreatedInTheModule', transporter.reasonsForNeedingCreatorPath.abstract);
+  
+  add.creator('objectContainsSlotInTheModule', transporter.reasonsForNeedingCreatorPath.abstract);
+  
+  add.creator('referencedBySlotInTheModule', transporter.reasonsForNeedingCreatorPath.abstract);
+
+});
+
+
+thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.abstract, function(add) {
+  
+  add.method('create', function(param) {
+    return Object.newChildOf(this, param);
+  });
+  
+  add.method('initialize', function(param) {
+    this._param = param;
+  });
+  
+  add.method('equals', function(other) {
+    // aaa hack, should really have a general equality tester that isn't part of hashTable.
+    return this['__proto__'] === other['__proto__'] && hashTable.equalityComparator.keysAreEqual(this._param, other._param);
+  });
+  
+});
+
+
+thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule, function(add) {
+  
+  add.method('toString', function() {
+    return "it is an ancestor of " + this._param.inspect();
+  });
+  
+});
+
+
+thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule, function(add) {
+  
+  add.method('toString', function() {
+    return "it's referenced from the " + this._param;
+  });
+  
+});
+
+
+thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule, function(add) {
+  
+  add.method('toString', function() {
+    return "the module contains slots in that object";
+  });
+  
 });
 
 
@@ -180,11 +256,13 @@ thisModule.addSlots(slots['abstract'], function(add) {
         var cs = contents.theCreatorSlot();
         if (!cs) {
           var err = new Error("Cannot file out a reference to an object without a creator slot: " + contents.name());
-          err.mirrorWithoutCreatorSlot = contents;
+          err.mirrorWithoutCreatorPath = contents;
           throw err;
         } else if (! cs.equals(this)) {
           // This is just a reference to some well-known object that's created elsewhere.
-          contentsExpr = contents.creatorSlotChainExpression();
+          transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
+            contentsExpr = contents.creatorSlotChainExpression();
+          }, transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
         } else {
           isCreator = true;
           if (contents.isReflecteeFunction()) {
@@ -199,8 +277,10 @@ thisModule.addSlots(slots['abstract'], function(add) {
               if (contentsParent.equals(reflect(Object.prototype))) {
                 contentsExpr = "{}";
               } else {
-                var parentInfo = contents.parentSlot().fileOutInfo();
-                contentsExpr = "Object.create(" + parentInfo.contentsExpr + ")";
+                transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
+                  var parentInfo = contents.parentSlot().fileOutInfo();
+                  contentsExpr = "Object.create(" + parentInfo.contentsExpr + ")";
+                }, transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(contents));
               }
             }
           }
@@ -261,6 +341,7 @@ thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
   add.method('initialize', function () {
     this._buffer = stringBuffer.create();
     this._currentHolder = null;
+    this._currentHolderExpr = null;
     this._errors = [];
   }, {category: ['creating']});
 
@@ -271,15 +352,19 @@ thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
   add.method('nextSlotIsIn', function (holder) {
     if (!this._currentHolder || ! holder.equals(this._currentHolder)) {
       this.doneWithThisObject();
-      this.writeObjectStarter(holder);
-      this._currentHolder = holder;
+      transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
+        this._currentHolder = holder;
+        this._currentHolderExpr = holder.creatorSlotChainExpression();
+      }.bind(this), transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule.create());
+      this.writeObjectStarter();
     }
   }, {category: ['writing']});
 
   add.method('doneWithThisObject', function () {
     if (this._currentHolder) {
-      this.writeObjectEnder(this._currentHolder);
+      this.writeObjectEnder();
       this._currentHolder = null;
+      this._currentHolderExpr = null;
     }
   }, {category: ['writing']});
 
@@ -311,11 +396,11 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
     this._buffer.append("});\n");
   }, {category: ['writing']});
 
-  add.method('writeObjectStarter', function (mir) {
+  add.method('writeObjectStarter', function () {
     this._buffer.append("thisModule.addSlots(").append(mir.creatorSlotChainExpression()).append(", function(add) {\n\n");
   }, {category: ['writing']});
 
-  add.method('writeObjectEnder', function (mir) {
+  add.method('writeObjectEnder', function () {
     this._buffer.append("});\n\n\n");
   }, {category: ['writing']});
 
@@ -343,15 +428,15 @@ thisModule.addSlots(transporter.module.annotationlessFilerOuter, function(add) {
     bodyBlock();
   }, {category: ['writing']});
 
-  add.method('writeObjectStarter', function (mir) {
+  add.method('writeObjectStarter', function () {
     // I don't like having to depend on an 'extend' method. Either we
     // define 'extend' as a local function at the start of the file, or
     // we just keep writing out the name of the object over and over.
     // Let's try the latter for now; it actually kinda looks cleaner. -- Adam
-    // this._buffer.append("Object.extend(").append(mir.creatorSlotChainExpression()).append(", {\n\n");
+    // this._buffer.append("Object.extend(").append(this._currentHolderExpr).append(", {\n\n");
   }, {category: ['writing']});
 
-  add.method('writeObjectEnder', function (mir) {
+  add.method('writeObjectEnder', function () {
     // this._buffer.append("});\n\n\n");
     this._buffer.append("\n\n");
   }, {category: ['writing']});
@@ -375,12 +460,12 @@ thisModule.addSlots(transporter.module.mockFilerOuter, function(add) {
     bodyBlock();
   }, {category: ['writing']});
 
-  add.method('writeObjectStarter', function (mir) {
-    this._buffer.append("  start object ").append(mir.creatorSlotChainExpression()).append("\n");
+  add.method('writeObjectStarter', function () {
+    this._buffer.append("  start object ").append(this._currentHolderExpr).append("\n");
   }, {category: ['writing']});
 
-  add.method('writeObjectEnder', function (mir) {
-    this._buffer.append("  end object ").append(mir.creatorSlotChainExpression()).append("\n");
+  add.method('writeObjectEnder', function () {
+    this._buffer.append("  end object ").append(this._currentHolderExpr).append("\n");
   }, {category: ['writing']});
 
   add.method('writeSlot', function (creationMethod, slotName, contentsExpr, optionalArgs) {
@@ -763,9 +848,29 @@ thisModule.addSlots(transporter.tests, function(add) {
     
     var fo = Object.newChildOf(transporter.module.mockFilerOuter);
     m.codeToFileOut(fo);
-    this.assertEqual(2, fo.errors().length);
-    this.assertEqual(oMir, fo.errors()[0].mirrorWithoutCreatorSlot);
-    this.assertEqual(oMir, fo.errors()[1].mirrorWithoutCreatorSlot);
+    this.assertEqual(1, fo.errors().length);
+    this.assertEqual(oMir, fo.errors()[0].mirrorWithoutCreatorPath);
+    this.assertEqual(transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule.create(), fo.errors()[0].reasonForNeedingCreatorPath);
+    
+    m.uninstall();
+  });
+
+  add.method('testObjectsThatHaveParentsWithNoCreatorPath', function () {
+    var m = transporter.module.named('test_non_well_known_parents');
+
+    var p = {};
+    var o = Object.create(p);
+    var pMir = reflect(p);
+    var oMir = reflect(o);
+    var s1 = this.addSlot(m, o, 'x', 3);
+    var s2 = this.addSlot(m, this.someObject, 'pleh', o);
+    s2.beCreator();
+    
+    var fo = Object.newChildOf(transporter.module.mockFilerOuter);
+    m.codeToFileOut(fo);
+    this.assertEqual(1, fo.errors().length);
+    this.assertEqual(pMir, fo.errors()[0].mirrorWithoutCreatorPath);
+    this.assertEqual(transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(oMir), fo.errors()[0].reasonForNeedingCreatorPath);
     
     m.uninstall();
   });

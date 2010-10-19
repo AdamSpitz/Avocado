@@ -360,12 +360,14 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     var akaMenu = new MenuMorph([], this);
     var mir = this.mirror();
     mir.possibleCreatorSlotsSortedByLikelihood().each(function(s) {
-      var chain = s.creatorSlotChainEndingWithMe();
-      var chainName = mir.convertCreatorSlotChainToString(chain);
-      akaMenu.addItem([chainName, function(evt) {
-        s.beCreator();
-        this.updateAppearance();
-      }.bind(this)]);
+      var chain = s.creatorSlotChainEndingWithMe('theCreatorSlot');
+      if (chain) {
+        var chainName = mir.convertCreatorSlotChainToString(chain);
+        akaMenu.addItem([chainName, function(evt) {
+          s.beCreator();
+          this.updateAppearance();
+        }.bind(this)]);
+      }
     }.bind(this));
     akaMenu.openIn(this.world(), evt.point(), false, "Other possible names:");
   }, {category: ['creator slots']});

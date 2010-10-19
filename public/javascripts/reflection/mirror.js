@@ -155,7 +155,7 @@ thisModule.addSlots(mirror, function(add) {
     var chain = this.creatorSlotChain(kindOfCreatorSlot || 'probableCreatorSlot');
     if (! chain) {
       var err = new Error(this.name() + " does not have a creator slot chain");
-      err.mirrorWithoutCreatorSlot = this;
+      err.mirrorWithoutCreatorPath = this;
       throw err;
     }
     if (chain.length === 0) {return "lobby";}

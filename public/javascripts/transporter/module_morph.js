@@ -92,10 +92,13 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
     var morphs = [];
     var someMirrorsNeedCreatorSlots = false;
     errors.each(function(err) {
-      if (err.mirrorWithoutCreatorSlot) {
+      if (err.mirrorWithoutCreatorPath) {
         var world = evt.hand.world();
-        var mirMorph = world.morphFor(err.mirrorWithoutCreatorSlot);
-        if (! morphs.include(mirMorph)) { morphs.push(mirMorph); }
+        var mirMorph = world.morphFor(err.mirrorWithoutCreatorPath);
+        if (! morphs.include(mirMorph)) {
+          console.log(this._module + " needs " + err.mirrorWithoutCreatorPath.inspect() + " to have a creator path because " + (err.reasonForNeedingCreatorPath || "I said so, that's why."));
+          morphs.push(mirMorph);
+        }
         someMirrorsNeedCreatorSlots = true;
       } else {
         morphs.push(new MessageNotifierMorph(err, Color.red));
