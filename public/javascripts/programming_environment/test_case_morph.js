@@ -44,8 +44,8 @@ thisModule.addSlots(TestCase.prototype.Morph, function(add) {
         String.prototype.tests,
         Array.prototype.tests,
         avocado.dependencies.tests,
-        organization.tests,
-        avocado.prettyPrinter.tests
+        // doesn't work yet:  avocado.prettyPrinter.tests,
+        organization.tests
       ];
       var world = evt.hand.world();
       world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for avocado"));

@@ -61,7 +61,7 @@ thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.abstract, function(
   
   add.method('equals', function(other) {
     // aaa hack, should really have a general equality tester that isn't part of hashTable.
-    return this['__proto__'] === other['__proto__'] && hashTable.equalityComparator.keysAreEqual(this._param, other._param);
+    return this['__proto__'] === other['__proto__'] && avocado.hashTable.equalityComparator.keysAreEqual(this._param, other._param);
   });
   
 });

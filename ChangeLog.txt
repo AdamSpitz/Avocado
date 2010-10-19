@@ -1,4 +1,11 @@
-Friday October 8, 2010
+Tuesday, October 19, 2010
+
+  - Moved some objects into the "avocado" namespace, so that they don't clutter up the global namespace.
+  - More improvements to the transporter's error-reporting.
+  - Put in a mechanism so that we can file out the bootstrap module, rather than needing to use a text editor.
+  - Fixed the Safari clipboard hack so that it doesn't paste twice.
+
+Friday, October 8, 2010
 
   - Improvements to the transporter. Should be easier to set creator paths now, and easier to deal with errors.
 
