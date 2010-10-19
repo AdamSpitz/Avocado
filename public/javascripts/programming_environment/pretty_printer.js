@@ -9,7 +9,7 @@ requires('reflection/mirror');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('prettyPrinter', {}, {category: ['manipulating code']});
+  add.creator('prettyPrinter', {}, {category: ['manipulating code'], comment: 'Not usable yet. Just an experiment I was trying. -- Adam'});
 
 });
 

@@ -13,7 +13,6 @@ requires('programming_environment/evaluator');
 requires('programming_environment/slice_morph');
 requires('programming_environment/mirror_morph');
 requires('programming_environment/test_case_morph');
-requires('programming_environment/pretty_printer');
 
 }, function(thisModule) {
 
