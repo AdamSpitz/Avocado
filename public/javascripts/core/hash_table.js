@@ -5,18 +5,18 @@ requires('core/lk_TestFramework');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('hashTable', {}, {category: ['collections']}, {comment: 'I don\'t mean to keep this class around forever - hopefully sooner or later Javascript will\rhave a working hash table that can handle arbitrary objects (rather than just strings) as\rkeys. Maybe it exists already, but I couldn\'t find it. So for now I\'ll just use this bloody\rthing. -- Adam', copyDownParents: [{parent: Enumerable}]});
 
-  add.creator('dictionary', Object.create(hashTable), {category: ['collections']});
+  add.creator('dictionary', Object.create(avocado.hashTable), {category: ['collections']});
 
-  add.creator('set', Object.create(hashTable), {category: ['collections']});
+  add.creator('set', Object.create(avocado.hashTable), {category: ['collections']});
 
 });
 
 
-thisModule.addSlots(hashTable, function(add) {
+thisModule.addSlots(avocado.hashTable, function(add) {
 
   add.method('size', function () {
     return this._size;
@@ -37,7 +37,7 @@ thisModule.addSlots(hashTable, function(add) {
 
   add.creator('identityComparator', {}, {category: ['hashing']});
 
-  add.data('_comparator', hashTable.equalityComparator, {category: ['hashing'], initializeTo: 'hashTable.equalityComparator'});
+  add.data('_comparator', avocado.hashTable.equalityComparator, {category: ['hashing'], initializeTo: 'avocado.hashTable.equalityComparator'});
 
   add.method('isEmpty', function () {
     return this.size() === 0;
@@ -136,7 +136,7 @@ thisModule.addSlots(hashTable, function(add) {
 });
 
 
-thisModule.addSlots(hashTable.equalityComparator, function(add) {
+thisModule.addSlots(avocado.hashTable.equalityComparator, function(add) {
 
   add.method('keysAreEqual', function (k1, k2) {
     if (k1 === k2) {return true;}
@@ -152,13 +152,13 @@ thisModule.addSlots(hashTable.equalityComparator, function(add) {
 
   add.method('hashCodeForKey', function (k) {
     if (k.hashCode) { return k.hashCode(); }
-    return hashTable.identityComparator.hashCodeForKey(k);
+    return avocado.hashTable.identityComparator.hashCodeForKey(k);
   }, {category: ['hashing']});
 
 });
 
 
-thisModule.addSlots(hashTable.identityComparator, function(add) {
+thisModule.addSlots(avocado.hashTable.identityComparator, function(add) {
 
   add.method('keysAreEqual', function (k1, k2) {
     return k1 === k2;
@@ -173,7 +173,7 @@ thisModule.addSlots(hashTable.identityComparator, function(add) {
 });
 
 
-thisModule.addSlots(dictionary, function(add) {
+thisModule.addSlots(avocado.dictionary, function(add) {
 
   add.method('keyOfEntry', function (entry) {
     return entry.key;
@@ -261,10 +261,10 @@ thisModule.addSlots(dictionary, function(add) {
 });
 
 
-thisModule.addSlots(dictionary.tests, function(add) {
+thisModule.addSlots(avocado.dictionary.tests, function(add) {
 
   add.method('testGettingAndSetting', function () {
-    var h = dictionary.copyRemoveAll();
+    var h = avocado.dictionary.copyRemoveAll();
     var k1 = {};
     var k2 = {};
     var k3 = pt(5, 6);
@@ -287,7 +287,7 @@ thisModule.addSlots(dictionary.tests, function(add) {
 });
 
 
-thisModule.addSlots(set, function(add) {
+thisModule.addSlots(avocado.set, function(add) {
 
   add.method('keyOfEntry', function (entry) {
     return entry;
@@ -358,10 +358,10 @@ thisModule.addSlots(set, function(add) {
 });
 
 
-thisModule.addSlots(set.tests, function(add) {
+thisModule.addSlots(avocado.set.tests, function(add) {
 
   add.method('testGettingAndSetting', function () {
-    var s = set.copyRemoveAll();
+    var s = avocado.set.copyRemoveAll();
     var k1 = {};
     var k2 = {};
     var k3 = pt(5, 6);
@@ -389,7 +389,7 @@ thisModule.addSlots(Array.prototype, function(add) {
   add.method('equals', function (other) {
     if (this.size() !== other.size()) { return false; }
     for (var i = 0, n = this.size(); i < n; ++i) {
-      if (! hashTable.equalityComparator.keysAreEqual(this[i], other[i])) { return false; }
+      if (! avocado.hashTable.equalityComparator.keysAreEqual(this[i], other[i])) { return false; }
     }
     return true;
   }, {category: ['comparing']});
@@ -397,13 +397,13 @@ thisModule.addSlots(Array.prototype, function(add) {
   add.method('hashCode', function () {
     var s = [];
     for (var i = 0, n = Math.min(this.length, 5); i < n; ++i) {
-      s.push(hashTable.equalityComparator.hashCodeForKey(this[i]));
+      s.push(avocado.hashTable.equalityComparator.hashCodeForKey(this[i]));
     }
     return s.join();
   }, {category: ['comparing']});
 
   add.method('toSet', function () {
-    var s = set.copyRemoveAll();
+    var s = avocado.set.copyRemoveAll();
     s.addAll(this);
     return s;
   });
@@ -416,7 +416,7 @@ thisModule.addSlots(Array.prototype, function(add) {
 thisModule.addSlots(Array.prototype.tests, function(add) {
 
   add.creator('someObject', {});
-  
+
   add.method('testComparing', function () {
     this.assertEqual([], []);
     this.assertEqual(['a'], ['a']);

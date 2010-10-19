@@ -939,16 +939,18 @@ Namespace.addMethods({ // module specific, should be a subclass?
 		  name = "lk/" + name.replace(/\./g, '/');
 		}
 
-		var realURI = window.urlForKernelModuleName(name);
-
-		if (window.urlForKernelModuleName && window.transporter && typeof transporter.loadedURLs[realURI] === 'function') { return true;}
+		var realURI;
+		if (window.urlForKernelModuleName) {
+  		realURI = window.urlForKernelModuleName(name);
+		  if (window.transporter && typeof transporter.loadedURLs[realURI] === 'function') { return true;}
+		}
 
 		if (this.isLoaded()) return false;
 		if (this.uri().include('anonymous')) return true;
 
 		// Check both what LK thinks the URI should be and what Avocado thinks the URI should be. -- Adam
 		if (Loader.scriptInDOM(this.uri())) return true;
-		if (Loader.scriptInDOM(realURI)) return true;
+		if (realURI && Loader.scriptInDOM(realURI)) return true;
 		return false;
 	},
 	

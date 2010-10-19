@@ -19,37 +19,38 @@ thisModule.addSlots(TestCase.prototype, function(add) {
 
 thisModule.addSlots(TestCase.prototype.Morph, function(add) {
 
-  add.data('superclass', RowMorph);
+  add.data('superclass', avocado.RowMorph);
 
-  add.creator('prototype', Object.create(RowMorph.prototype));
+  add.creator('prototype', Object.create(avocado.RowMorph.prototype));
 
   add.data('type', 'TestCase.prototype.Morph');
-  
-  add.method('addGlobalCommandsTo', function(cmdList) {
+
+  add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
 
     cmdList.addItem(["get tests", function(evt) {
       // aaa - gather these automatically
       var testCases = [
-        dictionary.tests,
-        set.tests,
+        avocado.dictionary.tests,
+        avocado.set.tests,
         mirror.tests,
         transporter.tests,
-        objectGraphWalker.tests,
+        avocado.objectGraphWalker.tests,
         exitValueOf.tests,
-        enumerator.tests,
-        range.tests,
-        notifier.tests,
-        stringBuffer.tests,
+        avocado.enumerator.tests,
+        avocado.range.tests,
+        avocado.notifier.tests,
+        avocado.stringBuffer.tests,
         String.prototype.tests,
         Array.prototype.tests,
-        dependencies.tests,
-        organization.tests
+        avocado.dependencies.tests,
+        organization.tests,
+        avocado.prettyPrinter.tests
       ];
       var world = evt.hand.world();
       world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for avocado"));
     }]);
-  })
+  });
 
 });
 
@@ -112,9 +113,9 @@ thisModule.addSlots(TestResult.prototype, function(add) {
 
 thisModule.addSlots(TestResult.prototype.Morph, function(add) {
 
-  add.data('superclass', ColumnMorph);
+  add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(ColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
   add.data('type', 'TestResult.prototype.Morph');
 
@@ -133,8 +134,9 @@ thisModule.addSlots(TestResult.prototype.Morph.prototype, function(add) {
     this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 2});
     this.setFill(lively.paint.defaultFillWithColor(this._testResult.failed.length > 0 ? Color.red : Color.green));
     this.shape.roundEdgesBy(10);
+    this.closeDnD();
 
-    var timeToRun = Object.newChildOf(enumerator, reflect(this._testResult.timeToRun), "eachNormalSlot").inject(0, function(sum, ea) {return sum + ea.contents().reflectee();});
+    var timeToRun = Object.newChildOf(avocado.enumerator, reflect(this._testResult.timeToRun), "eachNormalSlot").inject(0, function(sum, ea) {return sum + ea.contents().reflectee();});
     this._nameLabel = TextMorph.createLabel(this._testCase.name() + "(" + timeToRun + " ms)");
 
     var rows = [this._nameLabel];
@@ -143,7 +145,7 @@ thisModule.addSlots(TestResult.prototype.Morph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('createFailureRow', function (failure) {
-    var s = stringBuffer.create(failure.selector).append(" failed ");
+    var s = avocado.stringBuffer.create(failure.selector).append(" failed ");
     if (failure.err.sourceURL !== undefined) {
       s.append("(").append(new URL(failure.err.sourceURL).filename());
       if (failure.err.line !== undefined) {
@@ -152,7 +154,7 @@ thisModule.addSlots(TestResult.prototype.Morph.prototype, function(add) {
       s.append("): ");
     }
     s.append(failure.err.message !== undefined ? failure.err.message : failure.err);
-    return RowMorph.createSpaceFilling([TextMorph.createLabel(s.toString())]);
+    return avocado.RowMorph.createSpaceFilling([TextMorph.createLabel(s.toString())]);
   }, {category: ['creating']});
 
   add.method('inspect', function () { return this._testCase.name(); }, {category: ['printing']});

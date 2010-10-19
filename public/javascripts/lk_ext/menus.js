@@ -31,7 +31,7 @@ Morph.addMethods({
 
   commands: function () {
     if (! this.addCommandsTo) { return null; }
-    var cmdList = command.list.create();
+    var cmdList = avocado.command.list.create();
     this.addCommandsTo(cmdList);
     if (cmdList.size() === 0) { return null; }
     return cmdList;

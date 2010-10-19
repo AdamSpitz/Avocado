@@ -5,14 +5,14 @@ requires('transporter/object_graph_walker');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
-  add.creator('snapshotter', Object.create(objectGraphWalker), {category: ['transporter']});
+  add.creator('snapshotter', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
 
 });
 
 
-thisModule.addSlots(snapshotter, function(add) {
+thisModule.addSlots(avocado.snapshotter, function(add) {
 
   add.data('currentNumber', 0, {comment: 'Used to mark the objects as we snapshot them, so that we know we have already included them in this snapshot.'});
 
@@ -20,9 +20,9 @@ thisModule.addSlots(snapshotter, function(add) {
 
   add.method('initialize', function ($super) {
     $super();
-    this._number = (++snapshotter.currentNumber);
+    this._number = (++avocado.snapshotter.currentNumber);
     this._objectsByOID = [];
-    this._buffer = stringBuffer.create();
+    this._buffer = avocado.stringBuffer.create();
   });
 
   add.data('namesToIgnore', ["__snapshotNumberOfOID__", "__snapshotNumber__", "__oid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__snapshotNumberOfOID__", "__snapshotNumber__", "__oid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
@@ -103,7 +103,7 @@ thisModule.addSlots(snapshotter, function(add) {
   });
 
   add.method('completeSnapshotText', function () {
-    var setupBuf = stringBuffer.create('(function() {\n');
+    var setupBuf = avocado.stringBuffer.create('(function() {\n');
     setupBuf.append("var createChildOf = function(parent) { function F() {}; F.prototype = parent; return new F(); };\n");
     setupBuf.append("var __objectsByOID__ = [];\n");
     for (var i = 0, n = this._objectsByOID.length; i < n; ++i) {
@@ -111,7 +111,7 @@ thisModule.addSlots(snapshotter, function(add) {
       setupBuf.append('__objectsByOID__[').append(i).append('] = ').append(this.creationStringFor(o)).append(';\n');
     }
 
-    var tearDownBuf = stringBuffer.create('\n');
+    var tearDownBuf = avocado.stringBuffer.create('\n');
     tearDownBuf.append('var canvas = window.document.getElementById("canvas");\n');
     // aaa - For now, let's just create a new world - recreating the morphs is tricky, I think.
     // tearDownBuf.append('WorldMorph.current().displayOnCanvas(canvas);\n');

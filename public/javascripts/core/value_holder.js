@@ -1,16 +1,16 @@
 transporter.module.create('core/value_holder', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('valueHolder', {}, {category: ['core']}, {comment: 'Stores a value and notifies you when someone changes it.'});
 
-  add.creator('booleanHolder', Object.create(valueHolder), {category: ['core']}, {comment: 'A valueHolder for booleans.'});
+  add.creator('booleanHolder', Object.create(avocado.valueHolder), {category: ['core']}, {comment: 'A valueHolder for booleans.'});
 
 });
 
 
-thisModule.addSlots(booleanHolder, function(add) {
+thisModule.addSlots(avocado.booleanHolder, function(add) {
 
   add.method('isChecked', function () { return this.getValue();     });
 
@@ -23,11 +23,11 @@ thisModule.addSlots(booleanHolder, function(add) {
 });
 
 
-thisModule.addSlots(valueHolder, function(add) {
+thisModule.addSlots(avocado.valueHolder, function(add) {
 
   add.method('containing', function (v) {
     var c = Object.create(this);
-    c.notifier = Object.newChildOf(notifier, this);
+    c.notifier = Object.newChildOf(avocado.notifier, this);
     c.setValue(v);
     return c;
   });

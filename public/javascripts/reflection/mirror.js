@@ -8,13 +8,13 @@ requires('core/lk_TestFramework');
 
 thisModule.addSlots(lobby, function(add) {
 
-  add.creator('mirror', {}, {category: ['reflection']});
+  add.creator('mirror', {}, {category: ['avocado', 'reflection']});
 
   add.method('reflect', function (o) {
     var m = Object.create(lobby.mirror);
     m.initialize(o);
     return m;
-  }, {category: ['reflection']});
+  }, {category: ['avocado', 'reflection']});
 
 });
 
@@ -25,7 +25,7 @@ thisModule.addSlots(mirror, function(add) {
     this._reflectee = o;
   }, {category: ['initializing']});
 
-  add.method('forObjectNamed', function(chainNames) {
+  add.method('forObjectNamed', function (chainNames) {
     var obj = window;
     for (var i = 0; i < chainNames.length; ++i) {
       if (obj === undefined || obj === null) { return null; }
@@ -82,7 +82,7 @@ thisModule.addSlots(mirror, function(add) {
     if (this.isReflecteeArray()) { return this.reflectee().length > 5 ? "an array" : "[" + this.reflectee().map(function(elem) {return reflect(elem).inspect();}).join(", ") + "]"; }
     var n = this.name();
     if (this.isReflecteeFunction()) { return n; } // the code will be visible through the *code* fake-slot
-    var s = stringBuffer.create(n);
+    var s = avocado.stringBuffer.create(n);
     var toString = this.reflecteeToString();
     if (typeof toString === 'string' && toString && toString.length < 40) { s.append("(").append(toString).append(")"); }
     return s.toString();
@@ -91,7 +91,7 @@ thisModule.addSlots(mirror, function(add) {
   add.method('convertCreatorSlotChainToString', function (chain) {
     if (chain.length === 0) {return "";}
     var isThePrototype = chain[0].contents().equals(this);
-    var s = stringBuffer.create(isThePrototype ? "" : chain[chain.length - 1].name().startsWithVowel() ? "an " : "a ");
+    var s = avocado.stringBuffer.create(isThePrototype ? "" : chain[chain.length - 1].name().startsWithVowel() ? "an " : "a ");
 
     var sep = "";
     for (var i = chain.length - 1; i >= 0; i -= 1) {
@@ -124,7 +124,7 @@ thisModule.addSlots(mirror, function(add) {
       return this.isReflecteeFunction() ? "a function" : this.isReflecteeArray() ? "an array" : "an object";
     }
   }, {category: ['naming']});
-  
+
   add.method('hasMultiplePossibleNames', function () {
     // Someday we could have a mechanism for remembering arbitrary names.
     return this.hasMultiplePossibleCreatorSlots();
@@ -160,7 +160,7 @@ thisModule.addSlots(mirror, function(add) {
     }
     if (chain.length === 0) {return "lobby";}
 
-    var s = stringBuffer.create();
+    var s = avocado.stringBuffer.create();
     var sep = "";
     if (lobby === window && this.canSlotNameBeUsedAsJavascriptToken(chain[chain.length - 1].name())) {
       // don't need to say "lobby" if the lobby is the global JS namespace
@@ -256,7 +256,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['iterating']});
 
   add.method('normalSlotNames', function (f) {
-    return enumerator.create(this, 'eachNormalSlotName');
+    return avocado.enumerator.create(this, 'eachNormalSlotName');
   }, {category: ['iterating']});
 
   add.method('eachSlotInCategory', function (c, f) {
@@ -364,7 +364,7 @@ thisModule.addSlots(mirror, function(add) {
     try {
       this.reflectee().__already_calculating_expressionEvaluatingToMe__ = true;
 
-      var str = stringBuffer.create("{");
+      var str = avocado.stringBuffer.create("{");
       var sep = "";
       this.eachNormalSlot(function(slot) {
         if (slot.name() !== '__already_calculating_expressionEvaluatingToMe__') {
@@ -436,7 +436,7 @@ thisModule.addSlots(mirror, function(add) {
 
     var hasSuper = this.reflectee().argumentNames && this.reflectee().argumentNames().first() === '$super';
 
-    var nonTrivialSlot = Object.newChildOf(enumerator, this, 'eachNormalSlot').find(function(s) {
+    var nonTrivialSlot = Object.newChildOf(avocado.enumerator, this, 'eachNormalSlot').find(function(s) {
       if (            aaa_LK_slotNamesAttachedToMethods.include(s.name())) {return false;}
       if (hasSuper && aaa_LK_slotNamesUsedForSuperHack .include(s.name())) {return false;}
         
@@ -460,7 +460,7 @@ thisModule.addSlots(mirror, function(add) {
   add.method('convertAnnotationCreatorSlotToRealSlot', function (s) {
     return s ? reflect(s.holder).slotAt(s.name) : null;
   }, {category: ['annotations', 'creator slot']});
-  
+
   add.method('probableCreatorSlot', function () {
     if (! this.canHaveCreatorSlot()) { return null; }
     var a = this.annotation();
@@ -480,7 +480,7 @@ thisModule.addSlots(mirror, function(add) {
   add.method('creatorSlotChainLength', function () {
     return annotator.creatorChainLength(this.reflectee());
   }, {category: ['annotations', 'creator slot']});
-  
+
   add.method('hasMultiplePossibleCreatorSlots', function () {
     if (! this.canHaveCreatorSlot()) { return false; }
     var a = this.annotation();
@@ -596,11 +596,11 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['annotations']});
 
   add.method('wellKnownChildren', function () {
-    return childFinder.create(this.reflectee()).go();
+    return avocado.childFinder.create(this.reflectee()).go();
   }, {category: ['searching']});
 
   add.method('wellKnownReferences', function () {
-    return referenceFinder.create(this.reflectee()).go().toArray();
+    return avocado.referenceFinder.create(this.reflectee()).go().toArray();
   }, {category: ['searching']});
 
   add.method('categorizeUncategorizedSlotsAlphabetically', function () {
@@ -758,7 +758,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assert(! reflect(3).isReflecteeProbablyAClass());
     this.assert(! reflect({}).isReflecteeProbablyAClass());
     this.assert(! reflect(TestCase.prototype).isReflecteeProbablyAClass());
-    this.assert(! reflect(stringBuffer).isReflecteeProbablyAClass());
+    this.assert(! reflect(avocado.stringBuffer).isReflecteeProbablyAClass());
   });
 
   add.method('testSize', function () {
@@ -960,16 +960,16 @@ thisModule.addSlots(mirror.tests, function(add) {
       this.createSlot(mir, 'y', 42, ['letters']);
       
       var root = category.root();
-      this.assertEqual('letters', enumerator.create(mir, 'eachImmediateSubcategoryOf', root).toArray().join(', '));
-      this.assertEqual('letters consonants, letters vowels', enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters')).toArray().sort().join(', '));
-      this.assertEqual('', enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
+      this.assertEqual('letters', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root).toArray().join(', '));
+      this.assertEqual('letters consonants, letters vowels', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters')).toArray().sort().join(', '));
+      this.assertEqual('', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
       
-      this.assertEqual('', enumerator.create(mir, 'eachSlotInCategory', root).toArray().sort().join(', '));
-      this.assertEqual('y slot', enumerator.create(mir, 'eachSlotInCategory', root.subcategory('letters')).toArray().sort().join(', '));
-      this.assertEqual('a slot, e slot', enumerator.create(mir, 'eachSlotInCategory', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
+      this.assertEqual('', avocado.enumerator.create(mir, 'eachSlotInCategory', root).toArray().sort().join(', '));
+      this.assertEqual('y slot', avocado.enumerator.create(mir, 'eachSlotInCategory', root.subcategory('letters')).toArray().sort().join(', '));
+      this.assertEqual('a slot, e slot', avocado.enumerator.create(mir, 'eachSlotInCategory', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
       
-      this.assertEqual('b slot, c slot, d slot', enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root.subcategory('letters').subcategory('consonants')).toArray().sort().join(', '));
-      this.assertEqual('a slot, b slot, c slot, d slot, e slot, y slot', enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root).toArray().sort().join(', '));
+      this.assertEqual('b slot, c slot, d slot', avocado.enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root.subcategory('letters').subcategory('consonants')).toArray().sort().join(', '));
+      this.assertEqual('a slot, b slot, c slot, d slot, e slot, y slot', avocado.enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root).toArray().sort().join(', '));
     }.bind(this));
   });
 
@@ -1042,9 +1042,9 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual(aMir.slotAt('4'), reflect(oE).theCreatorSlot());
     this.assert(! reflect(oX).theCreatorSlot());
 
-    this.assertEqual(reflect(window).slotAt('dictionary'), reflect(dictionary).theCreatorSlot());
-    a.pushAndAdjustCreatorSlots(dictionary); // a well-known object shouldn't have its creator slot changed
-    this.assertEqual(reflect(window).slotAt('dictionary'), reflect(dictionary).theCreatorSlot());
+    this.assertEqual(reflect(avocado).slotAt('dictionary'), reflect(avocado.dictionary).theCreatorSlot());
+    a.pushAndAdjustCreatorSlots(avocado.dictionary); // a well-known object shouldn't have its creator slot changed
+    this.assertEqual(reflect(avocado).slotAt('dictionary'), reflect(avocado.dictionary).theCreatorSlot());
   });
 
 });

@@ -1,14 +1,14 @@
 transporter.module.create('lk_ext/quickhull', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('quickhull', {}, {category: ['ui', 'convex hulls']}, {comment: 'http://en.literateprograms.org/Quickhull_(Javascript)'});
 
 });
 
 
-thisModule.addSlots(quickhull, function(add) {
+thisModule.addSlots(avocado.quickhull, function(add) {
 
   add.method('getDistance', function (cpt, bl) {
     var Vy = bl.pointB.x - bl.pointA.x;

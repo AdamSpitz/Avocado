@@ -1,7 +1,7 @@
 transporter.module.create('lk_ext/arrows', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.method('ArrowMorph', function ArrowMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
 
@@ -10,20 +10,20 @@ thisModule.addSlots(lobby, function(add) {
 });
 
 
-thisModule.addSlots(ArrowMorph, function(add) {
+thisModule.addSlots(avocado.ArrowMorph, function(add) {
 
   add.data('superclass', Morph);
 
   add.creator('prototype', Object.create(Morph.prototype));
 
-  add.data('type', 'ArrowMorph');
+  add.data('type', 'avocado.ArrowMorph');
 
 });
 
 
-thisModule.addSlots(ArrowMorph.prototype, function(add) {
+thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
 
-  add.data('constructor', ArrowMorph);
+  add.data('constructor', avocado.ArrowMorph);
 
   add.method('initialize', function ($super, assoc, ep1, ep2) {
     $super(new lively.scene.Polyline([pt(0,0), pt(0,0)]));
@@ -31,8 +31,8 @@ thisModule.addSlots(ArrowMorph.prototype, function(add) {
     this.setBorderColor(Color.black);
     this.setFill(null);
     this.notificationFunction = function() {setTimeout(this.putVerticesInTheRightPlace.bind(this), 0);}.bind(this);
-    this.endpoint1 = ep1 || new ArrowEndpoint(assoc, this);
-    this.endpoint2 = ep2 || new ArrowEndpoint(assoc, this);
+    this.endpoint1 = ep1 || new avocado.ArrowEndpoint(assoc, this);
+    this.endpoint2 = ep2 || new avocado.ArrowEndpoint(assoc, this);
     this.endpoint1.otherEndpoint = this.endpoint2;
     this.endpoint2.otherEndpoint = this.endpoint1;
     this.closeDnD();
@@ -172,18 +172,18 @@ thisModule.addSlots(ArrowMorph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(ArrowEndpoint, function(add) {
+thisModule.addSlots(avocado.ArrowEndpoint, function(add) {
 
   add.data('superclass', Morph);
 
   add.creator('prototype', Object.create(Morph.prototype));
 
-  add.data('type', 'ArrowEndpoint');
+  add.data('type', 'avocado.ArrowEndpoint');
 
   add.method('createForSetting', function (evt, tr, fep) {
     var arrow = tr.setterArrow;
     if (! arrow) {
-      arrow = tr.setterArrow = new ArrowMorph(tr, fep || tr.morph());
+      arrow = tr.setterArrow = new avocado.ArrowMorph(tr, fep || tr.morph());
       evt.hand.world().addMorph(arrow);
     } else {
       arrow.endpoint2.setPosition(evt.hand.position());
@@ -194,9 +194,9 @@ thisModule.addSlots(ArrowEndpoint, function(add) {
 });
 
 
-thisModule.addSlots(ArrowEndpoint.prototype, function(add) {
+thisModule.addSlots(avocado.ArrowEndpoint.prototype, function(add) {
 
-  add.data('constructor', ArrowEndpoint);
+  add.data('constructor', avocado.ArrowEndpoint);
 
   add.method('initialize', function ($super, tr, a) {
     $super(new lively.scene.Rectangle(pt(0, 0).extent(pt(10, 10))));
@@ -396,7 +396,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var world = this.world();
     if (world) {
       this.submorphs.each(function(m) {
-        if (m instanceof ArrowEndpoint) {
+        if (m instanceof avocado.ArrowEndpoint) {
           world.addMorphAt(m, this.worldPoint(m.getPosition()));
         }
       }.bind(this));

@@ -5,27 +5,27 @@ requires('lk_ext/rows_and_columns');
 }, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
-  add.method('SliceMorph', function SliceMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
-
-});
-
-
-thisModule.addSlots(SliceMorph, function(add) {
-
-  add.data('superclass', ColumnMorph);
-
-  add.creator('prototype', Object.create(ColumnMorph.prototype));
-
-  add.data('type', 'SliceMorph');
+  add.method('SliceMorph', function SliceMorph() { Class.initializer.apply(this, arguments); }, {category: ['avocado', 'miscellaneous']});
 
 });
 
 
-thisModule.addSlots(SliceMorph.prototype, function(add) {
+thisModule.addSlots(avocado.SliceMorph, function(add) {
 
-  add.data('constructor', SliceMorph);
+  add.data('superclass', avocado.ColumnMorph);
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
+
+  add.data('type', 'avocado.SliceMorph');
+
+});
+
+
+thisModule.addSlots(avocado.SliceMorph.prototype, function(add) {
+
+  add.data('constructor', avocado.SliceMorph);
 
   add.method('initialize', function ($super, searcher) {
     $super();
@@ -36,7 +36,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
     this.shape.roundEdgesBy(10);
     this.closeDnD();
 
-    this._slotsPanel = new ColumnMorph().beInvisible();
+    this._slotsPanel = new avocado.ColumnMorph().beInvisible();
     this._slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     this._expander = new ExpanderMorph(this);
@@ -44,7 +44,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
     this.redoButton = ButtonMorph.createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
 
-    this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton],
+    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton],
                                                   {top: 0, bottom: 0, left: 3, right: 3, between: 3});
 
     this.setPotentialContent([this._headerRow, Morph.createOptionalMorph(this._slotsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
@@ -86,7 +86,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
 
   add.method('createRowForSlot', function (s) {
     var inSituButton = ButtonMorph.createButton("in situ", function() { this.showInSitu(s, inSituButton); }.bind(this), 2);
-    return RowMorph.createSpaceFilling([TextMorph.createLabel(s.holder().name()), Morph.createSpacer(), s.newMorph(), inSituButton],
+    return avocado.RowMorph.createSpaceFilling([TextMorph.createLabel(s.holder().name()), Morph.createSpacer(), s.newMorph(), inSituButton],
                                        {top: 0, bottom: 0, left: 3, right: 3, between: 3});
   });
 

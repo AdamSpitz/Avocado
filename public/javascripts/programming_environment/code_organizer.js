@@ -58,7 +58,7 @@ thisModule.addSlots(jsQuiche, function(add) {
     var shouldPrintLoadOrder = false;
     if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
     
-    creatorSlotMarker.annotateExternalObjects(true);
+    avocado.creatorSlotMarker.annotateExternalObjects(true);
     window.categorizeGlobals();
 
     // make the lobby mirror morph less unwieldy, since people tend to keep lots of stuff there
@@ -70,7 +70,7 @@ thisModule.addSlots(jsQuiche, function(add) {
 
 thisModule.addSlots(jsQuiche.menuItemContributors, function(add) {
 
-  add.data('0', poses);
+  add.data('0', avocado.poses);
 
 });
 

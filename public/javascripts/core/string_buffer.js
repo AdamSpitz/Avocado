@@ -1,14 +1,14 @@
 transporter.module.create('core/string_buffer', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('stringBuffer', {}, {category: ['core']}, {comment: 'Lets you append a whole bunch of strings and then join them all at once, so you don\'t get quadratic behavior.'});
 
 });
 
 
-thisModule.addSlots(stringBuffer, function(add) {
+thisModule.addSlots(avocado.stringBuffer, function(add) {
 
   add.method('create', function (initialString) {
     return Object.newChildOf(this, initialString);
@@ -44,10 +44,10 @@ thisModule.addSlots(stringBuffer, function(add) {
 });
 
 
-thisModule.addSlots(stringBuffer.tests, function(add) {
+thisModule.addSlots(avocado.stringBuffer.tests, function(add) {
 
   add.method('testStuff', function (initialString) {
-    var s = stringBuffer.create('The');
+    var s = avocado.stringBuffer.create('The');
     this.assertEqual('The', s.toString());
     s.append(' quick').append(' brown fox');
     this.assertEqual('The quick brown fox', s.toString());

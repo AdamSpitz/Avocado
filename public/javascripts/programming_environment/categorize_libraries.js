@@ -1,8 +1,9 @@
 transporter.module.create('programming_environment/categorize_libraries', function(requires) {}, function(thisModule) {
 
-  thisModule.addSlots(lobby, function(add) {
 
-    add.method('categorizeGlobals', function () {
+thisModule.addSlots(lobby, function(add) {
+
+  add.method('categorizeGlobals', function () {
       // These lists come from a simple little HTML page that we wrote to get a list of the stuff
       // that comes built-in to the window object. Ideally we'd like to categorize *everything*.
       // For now, this at least gets a few hundred attributes out of our hair. -- Adam, August 2010
@@ -21,8 +22,8 @@ transporter.module.create('programming_environment/categorize_libraries', functi
       [['JSQuiche', 'libraries', 'Moousture'], ['Moousture']],
       [['JSQuiche', 'libraries', 'JSLint'], ['JSLINT']],
       [['JSQuiche', 'lively kernel'], ['$morph', 'ClipboardHack', 'Config', 'ContextJS', 'Converter', 'CustomJSON', 'DisplayThemes', 'Functions', 'Global', 'GlobalLayers', 'LayerStack', 'LayerableObjectTrait', 'LivelyNS', 'Loader', 'ModelMigration', 'NetRequestReporterTrait', 'NodeFactory', 'NodeStyle', 'Properties', 'Strings', 'UserAgent', 'ViewTrait', 'XHTMLNS', 'XLinkNS', 'basicResize', 'classes', 'composeLayers', 'computerLayersFor', 'connect', 'cop', 'createLayer', 'currentLayers', 'dbgOn', 'disableLayer', 'disconnect', 'disconnectAll', 'enableLayer', 'ensurePartialLayer', 'equals', 'functions', 'gather', 'getCurrentContext', 'getLayerDefinitionForObject', 'getStack', 'halt', 'initialize', 'inspect', 'interactiveEval', 'layerClass', 'layerClassAndSubclasses', 'layerGetterMethod', 'layerMethod', 'layerObject', 'layerProperty', 'layerPropertyWithShadow', 'layerSetterMethod', 'lively', 'logError', 'logStack', 'makePropertyLayerAware', 'module', 'namespace', 'namespaceIdentifier', 'newDragnDropListPane', 'newListPane', 'newPrintPane', 'newRealListPane', 'newTextListPane', 'newTextPane', 'newXenoPane', 'openStackViewer', 'printError', 'printStack', 'pt', 'rect', 'require', 'resetLayerStack', 'signal', 'subNamespaces', 'updateAttributeConnection', 'using', 'withLayers', 'withoutLayers', 'constructor']],
-      [['JSQuiche', 'avocado', 'bootstrap'], ['__annotation__', 'annotator', 'hackToMakeSuperWork', 'livelyBaseURL', 'lobby', 'modules', 'prototypeAttributeIsEnumerable', 'transporter', 'waitForAllCallbacks', 'currentUser', 'doneLoadingWindow', 'isDoneLoading', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'worldHasBeenCreated', 'isInCodeOrganizingMode']],
-      [['JSQuiche', 'avocado', 'miscellaneous'], ['ArrowEndpoint', 'ArrowMorph', 'ColumnMorph', 'ComboBoxMorph', 'CoreSamplerMorph', 'EvaluatorMorph', 'HorizontalDirection', 'LayoutModes', 'MessageNotifierMorph', 'RowMorph', 'RowOrColumnMorph', 'SliceMorph', 'VerticalDirection', 'abstractOrganization', 'animation', 'anonymous_module_0', 'avocado', 'booleanHolder', 'category', 'childFinder', 'command', 'creatorSlotMarker', 'dependencies', 'dictionary', 'enumerator', 'exitValueOf', 'hashTable', 'implementorsFinder', 'javascriptReservedWords', 'littleProfiler', 'mirror', 'morphFactories', 'notifier', 'objectGraphWalker', 'organization', 'organizationChain', 'organizationUsingAnnotations', 'poses', 'quickhull', 'range', 'referenceFinder', 'reflect', 'set', 'slots', 'snapshotter', 'sound', 'stringBuffer', 'testingObjectGraphWalker', 'toggler', 'valueHolder', 'categorizeGlobals']]
+      [['JSQuiche', 'avocado', 'bootstrap'], ['__annotation__', 'annotator', 'bootstrapTheModuleSystem', 'hackToMakeSuperWork', 'livelyBaseURL', 'lobby', 'modules', 'prototypeAttributeIsEnumerable', 'transporter', 'waitForAllCallbacks', 'currentUser', 'doneLoadingWindow', 'isDoneLoading', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'worldHasBeenCreated', 'isInCodeOrganizingMode']],
+      [['JSQuiche', 'avocado', 'miscellaneous'], ['LayoutModes', 'anonymous_module_0', 'avocado', 'category', 'exitValueOf', 'javascriptReservedWords', 'littleProfiler', 'mirror', 'slots', 'testingObjectGraphWalker', 'categorizeGlobals']]
 
       ];
 
@@ -30,9 +31,9 @@ transporter.module.create('programming_environment/categorize_libraries', functi
         annotator.annotationOf(window).categorize(catAndAttrs[0], catAndAttrs[1]);
       });
 
-      }, {category: ['initializing']});
+      }, {category: ['JSQuiche', 'avocado', 'miscellaneous']});
 
-    });
+});
 
 
-  });
+});

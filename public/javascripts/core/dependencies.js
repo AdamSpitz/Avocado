@@ -1,22 +1,22 @@
 transporter.module.create('core/dependencies', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('dependencies', {}, {category: ['collections']});
 
 });
 
 
-thisModule.addSlots(dependencies, function(add) {
+thisModule.addSlots(avocado.dependencies, function(add) {
 
   add.method('copyRemoveAll', function () {
     return Object.newChildOf(this);
   }, {category: ['creating']});
 
   add.method('initialize', function () {
-    this._dependeesByDepender = dictionary.copyRemoveAll();
-    this._dependersByDependee = dictionary.copyRemoveAll();
+    this._dependeesByDepender = avocado.dictionary.copyRemoveAll();
+    this._dependersByDependee = avocado.dictionary.copyRemoveAll();
   }, {category: ['creating']});
 
   add.method('dependeesByDepender', function () {
@@ -37,8 +37,8 @@ thisModule.addSlots(dependencies, function(add) {
 
   add.method('addDependency', function (depender, dependee) {
     if (depender.equals(dependee)) { return; }
-    this.dependeesByDepender().getOrIfAbsentPut(depender, function() { return set.copyRemoveAll(); }).add(dependee);
-    this.dependersByDependee().getOrIfAbsentPut(dependee, function() { return set.copyRemoveAll(); }).add(depender);
+    this.dependeesByDepender().getOrIfAbsentPut(depender, function() { return avocado.set.copyRemoveAll(); }).add(dependee);
+    this.dependersByDependee().getOrIfAbsentPut(dependee, function() { return avocado.set.copyRemoveAll(); }).add(depender);
   }, {category: ['adding']});
 
   add.method('removeDependency', function (depender, dependee, isOKIfItDoesntExist) {
@@ -73,10 +73,10 @@ thisModule.addSlots(dependencies, function(add) {
 });
 
 
-thisModule.addSlots(dependencies.tests, function(add) {
+thisModule.addSlots(avocado.dependencies.tests, function(add) {
 
   add.method('testStuff', function () {
-    var deps = dependencies.copyRemoveAll();
+    var deps = avocado.dependencies.copyRemoveAll();
     deps.addDependency(4, 2);
     deps.addDependency(6, 2);
     deps.addDependency(6, 3);

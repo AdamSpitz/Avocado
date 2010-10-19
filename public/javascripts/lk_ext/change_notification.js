@@ -11,5 +11,5 @@ Morph.addMethods({
         if (this._changeNotifier) { this._changeNotifier.notifyAllObservers(); } // Added by Adam
     },
 
-    changeNotifier: function() { return this._changeNotifier || (this._changeNotifier = notifier.on(this)); },
+    changeNotifier: function() { return this._changeNotifier || (this._changeNotifier = avocado.notifier.on(this)); },
 });

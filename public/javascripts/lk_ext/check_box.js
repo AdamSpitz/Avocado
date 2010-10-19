@@ -6,7 +6,7 @@ ButtonMorph.subclass("CheckBoxMorph", {
     this.checkedMorph.relayMouseEvents(this, {onMouseDown: "onMouseDown", onMouseMove: "onMouseMove", onMouseUp: "onMouseUp"});
     $super(pt(0,0).extent(extent));
     this.setFill(Color.white);
-    var model = booleanHolder.containing(false);
+    var model = avocado.booleanHolder.containing(false);
     this.connectModel({model: model, getValue: "isChecked", setValue: "setChecked"});
     this.notifier = model.notifier;
 

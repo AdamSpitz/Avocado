@@ -33,9 +33,9 @@ ButtonMorph.createButton = function (contents, f, padding) {
 };
 
 Morph.createEitherOrMorph = function(m1, m2, condition) {
-  var r = new RowMorph().beInvisible();
-  var t1 =  Object.newChildOf(toggler, function() {}, m1);
-  var t2 =  Object.newChildOf(toggler, function() {}, m2);
+  var r = new avocado.RowMorph().beInvisible();
+  var t1 =  Object.newChildOf(avocado.toggler, function() {}, m1);
+  var t2 =  Object.newChildOf(avocado.toggler, function() {}, m2);
   r.setPotentialContent([t1, t2]);
   r.refreshContent = hackToMakeSuperWork(r, "refreshContent", function($super) {
     var c = condition();
@@ -48,14 +48,14 @@ Morph.createEitherOrMorph = function(m1, m2, condition) {
 };
 
 Morph.createOptionalMorph = function(m, condition, layoutModes) {
-  var om = Morph.createEitherOrMorph(m, new RowMorph().beInvisible(), condition);
+  var om = Morph.createEitherOrMorph(m, new avocado.RowMorph().beInvisible(), condition);
   om.horizontalLayoutMode = (layoutModes || m).horizontalLayoutMode;
   om.verticalLayoutMode   = (layoutModes || m).verticalLayoutMode;
   return om;
 };
 
 Morph.createSpacer = function() {
-  return new RowMorph().beInvisible().beSpaceFilling();
+  return new avocado.RowMorph().beInvisible().beSpaceFilling();
 };
 
 Event.createFake = function (hand) {

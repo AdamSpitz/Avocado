@@ -1,22 +1,22 @@
 transporter.module.create('lk_ext/poses', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(lobby, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('poses', {}, {category: ['ui', 'poses']});
 
 });
 
 
-thisModule.addSlots(poses, function(add) {
+thisModule.addSlots(avocado.poses, function(add) {
 
   add.creator('abstract', {});
 
-  add.creator('tree', Object.create(poses['abstract']));
+  add.creator('tree', Object.create(avocado.poses['abstract']));
 
-  add.creator('list', Object.create(poses['abstract']));
+  add.creator('list', Object.create(avocado.poses['abstract']));
 
-  add.creator('snapshot', Object.create(poses['abstract']));
+  add.creator('snapshot', Object.create(avocado.poses['abstract']));
 
   add.method('addGlobalCommandsTo', function (menu) {
     menu.addLine();
@@ -61,7 +61,7 @@ thisModule.addSlots(poses, function(add) {
 });
 
 
-thisModule.addSlots(poses['abstract'], function(add) {
+thisModule.addSlots(avocado.poses['abstract'], function(add) {
 
   add.method('initialize', function (name) {
     this._name = name;
@@ -105,7 +105,7 @@ thisModule.addSlots(poses['abstract'], function(add) {
 });
 
 
-thisModule.addSlots(poses.tree, function(add) {
+thisModule.addSlots(avocado.poses.tree, function(add) {
 
   add.method('initialize', function ($super, name, focus, parentFunction, childrenFunction) {
     $super(name);
@@ -151,7 +151,7 @@ thisModule.addSlots(poses.tree, function(add) {
 });
 
 
-thisModule.addSlots(poses.list, function(add) {
+thisModule.addSlots(avocado.poses.list, function(add) {
 
   add.method('initialize', function ($super, name, world, morphs) {
     $super(name);
@@ -181,7 +181,7 @@ thisModule.addSlots(poses.list, function(add) {
 });
 
 
-thisModule.addSlots(poses.snapshot, function(add) {
+thisModule.addSlots(avocado.poses.snapshot, function(add) {
 
   add.method('initialize', function ($super, name, morphs) {
     $super(name);
@@ -210,7 +210,6 @@ thisModule.addSlots(poses.snapshot, function(add) {
       params["uiState" + i] = Object.toJSON(elem.uiState);
     }
   });
-
 
 });
 
@@ -296,7 +295,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   }, {category: ['poses']});
 
   add.method('createSnapshotOfCurrentPose', function (poseName) {
-    return Object.newChildOf(poses.snapshot, poseName, this.submorphs);
+    return Object.newChildOf(avocado.poses.snapshot, poseName, this.submorphs);
   }, {category: ['poses', 'taking snapshots']});
 
   add.method('rememberThisPose', function () {
@@ -307,12 +306,12 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
   add.method('cleanUp', function (evt) {
     var morphsToMove = this.submorphs.reject(function(m) { return m.shouldIgnorePoses(); });
-    this.assumePose(Object.newChildOf(poses.list, "clean up", this, morphsToMove));
+    this.assumePose(Object.newChildOf(avocado.poses.list, "clean up", this, morphsToMove));
   }, {category: ['poses', 'cleaning up']});
 
   add.method('listPoseOfMorphsFor', function (objects, name) {
     var morphsToMove = objects.map(function(m) { return this.morphFor(m); }.bind(this));
-    return Object.newChildOf(poses.list, name, this, morphsToMove);
+    return Object.newChildOf(avocado.poses.list, name, this, morphsToMove);
   }, {category: ['poses', 'cleaning up']});
 
 });
