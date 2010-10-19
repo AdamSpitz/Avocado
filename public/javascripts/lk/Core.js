@@ -6611,7 +6611,10 @@ ClipboardHack = {
         if (evt.getKeyChar().toLowerCase() === "v" || evt.getKeyCode() === 22) {		
             buffer.onpaste = function() {
 				TextMorph.clipboardString = event.clipboardData.getData("text/plain");
-                if(target.doPaste) target.doPaste();
+                if(target.doPaste) {
+                  target.doPaste();
+                  event.preventDefault(); // added by Adam, otherwise it pastes twice
+                }
             };
         	buffer.focus();
         	return true;
