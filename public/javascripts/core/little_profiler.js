@@ -1,26 +1,34 @@
-// Nothing clever, just a little object for helping me see what's going on in a method.
+transporter.module.create('core/little_profiler', function(requires) {}, function(thisModule) {
 
-var littleProfiler = {
 
-  named: function(name) {
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('littleProfiler', {}, {}, {comment: 'Nothing clever, just a little object for helping to see where the time is going in a method.'});
+  
+})
+
+
+thisModule.addSlots(avocado.littleProfiler, function(add) {
+
+  add.method('named', function(name) {
     return Object.newChildOf(this, name);
-  },
+  });
 
-  initialize: function(name) {
+  add.method('initialize', function(name) {
     this._name = name;
     this._times = [];
     this.recordTime();
-  },
+  });
 
-  recordTime: function() {
+  add.method('recordTime', function() {
     this._times.push(new Date().getTime());
-  },
+  });
 
-  totalTime: function() {
+  add.method('totalTime', function() {
     return this._times.last() - this._times.first();
-  },
+  });
 
-  printTimes: function() {
+  add.method('printTimes', function() {
     this.recordTime();
     var s = avocado.stringBuffer.create("Profile of ").append(this._name).append(": total time ").append(this.totalTime());
     s.append(", in-between times: ");
@@ -30,5 +38,10 @@ var littleProfiler = {
       sep = ", ";
     }
     console.log(s.toString());
-  },
-};
+  });
+  
+});
+
+
+});
+

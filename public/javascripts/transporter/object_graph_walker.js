@@ -279,7 +279,7 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
       }
     }
     
-    // Experimental - trying to make a way to search for "senders". Might be really slow; try it. -- Adam, Oct. 2010
+    // Remember identifiers so we can search for "senders".
     avocado.senders.rememberIdentifiersUsedBy(contents, howDidWeGetHere);
   });
 
@@ -303,6 +303,8 @@ thisModule.addSlots(avocado.senders, function(add) {
     return this.byID[id] || [];
   });
   
+  add.creator('finder', {});
+  
   add.method('rememberIdentifiersUsedBy', function(f, howDidWeGetHere) {
     if (typeof(f) !== 'function') { return; }
     var str = f.toString();
@@ -321,6 +323,27 @@ thisModule.addSlots(avocado.senders, function(add) {
         senders.push(howDidWeGetHere);
       }
     }
+  });
+  
+});
+
+
+thisModule.addSlots(avocado.senders.finder, function(add) {
+  
+  add.method('create', function(id) {
+    return Object.newChildOf(this, id);
+  });
+  
+  add.method('initialize', function(id) {
+    this._id = id;
+  });
+  
+  add.method('inspect', function() { return "senders of " + this._id; });
+  
+  add.method('go', function() {
+    return avocado.senders.of(this._id).map(function(x) {
+      return reflect(x.slotHolder).slotAt(x.slotName);
+    });
   });
   
 });

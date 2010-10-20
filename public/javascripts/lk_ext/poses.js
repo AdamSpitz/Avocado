@@ -16,6 +16,8 @@ thisModule.addSlots(avocado.poses, function(add) {
 
   add.creator('list', Object.create(avocado.poses['abstract']));
 
+  add.creator('clean', Object.create(avocado.poses.list));
+
   add.creator('snapshot', Object.create(avocado.poses['abstract']));
 
   add.method('addGlobalCommandsTo', function (menu) {
@@ -78,12 +80,9 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
   add.method('recreateInWorld', function (w) {
     this.eachElement(function(e) {
       e.morph.isPartOfCurrentPose = true;
+      if (e.uiState) { e.morph.assumeUIState(e.uiState); }
       e.morph.ensureIsInWorld(w, e.position, true, true, true, function() {
-        if (e.uiState) {
-          e.morph.assumeUIState(e.uiState);
-        } else {
-          if (typeof(e.morph.collapse) === 'function') { e.morph.collapse(); }
-        }
+        // do bad things happen if I make the uiState thing happen before moving the morph?
       });
     });
     
@@ -170,16 +169,31 @@ thisModule.addSlots(avocado.poses.list, function(add) {
     var widest = 0;
     for (var i = 0; i < sortedMorphsToMove.length; ++i) {
       var morph = sortedMorphsToMove[i];
-      f({morph: morph, position: pos});
+      var uiState = this.destinationUIStateFor(morph);
+      if (uiState) { morph.assumeUIState(uiState); }
+      f({morph: morph, position: pos, uiState: uiState});
       var extent = morph.getExtent().scaleBy(morph.getScale());
       pos = pos.withY(pos.y + extent.y);
       widest = Math.max(widest, extent.x);
       if (pos.y >= this._world.getExtent().y - 30) { pos = pt(pos.x + widest + 20, 20); }
     }
-  }, {category: ['poses', 'cleaning up']});
+  });
+  
+  add.method('destinationUIStateFor', function(morph) {
+    // just use whatever state it's in now
+    return null;
+  });
 
 });
 
+
+thisModule.addSlots(avocado.poses.clean, function(add) {
+  add.method('destinationUIStateFor', function(morph) {
+    var uiState = morph.constructUIStateMemento();
+    if (uiState) { uiState.isExpanded = false; }
+    return uiState;
+  });
+});
 
 thisModule.addSlots(avocado.poses.snapshot, function(add) {
 
@@ -306,7 +320,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
   add.method('cleanUp', function (evt) {
     var morphsToMove = this.submorphs.reject(function(m) { return m.shouldIgnorePoses(); });
-    this.assumePose(Object.newChildOf(avocado.poses.list, "clean up", this, morphsToMove));
+    this.assumePose(Object.newChildOf(avocado.poses.clean, "clean up", this, morphsToMove));
   }, {category: ['poses', 'cleaning up']});
 
   add.method('listPoseOfMorphsFor', function (objects, name) {

@@ -24,9 +24,7 @@ Morph.addMethods({
   contextMenu: function (evt) {
     var cs = this.commands();
     if (!cs) { return null; }
-    var menu = new MenuMorph([], this);
-    cs.addItemsToMenu(menu, this);
-    return menu;
+    return MenuMorph.fromCommandList(cs, this);
   },
 
   commands: function () {
@@ -49,5 +47,13 @@ MenuMorph.addMethods({
       if (this.items.size() > 0) {this.addLine();}
       newItems.each(function(item) {this.addItem(item);}.bind(this));
     }
+  }
+});
+
+Object.extend(MenuMorph, {
+  fromCommandList: function(cmdList, morph) {
+    var menu = new MenuMorph([], morph);
+    cmdList.addItemsToMenu(menu, morph);
+    return menu;
   }
 });

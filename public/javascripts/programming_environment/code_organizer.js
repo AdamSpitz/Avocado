@@ -55,13 +55,10 @@ thisModule.addSlots(jsQuiche, function(add) {
   }, {category: ['menu']});
 
   add.method('initialize', function () {
-    var shouldPrintLoadOrder = false;
-    if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
-    
     // I'm confused. Why is this here if it's already called from putUnownedSlotsInInitModule? -- Adam
     // avocado.creatorSlotMarker.annotateExternalObjects(true);
     
-    window.categorizeGlobals();
+    avocado.categorizeGlobals();
 
     // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
     reflect(window).categorizeUncategorizedSlotsAlphabetically();

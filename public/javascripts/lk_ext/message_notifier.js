@@ -74,4 +74,13 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 });
 
 
+thisModule.addSlots(Error.prototype, function(add) {
+  
+  add.method('newMorph', function () {
+    return new avocado.MessageNotifierMorph(this, Color.red);
+  }, {category: ['user interface']});
+  
+});
+
+
 });

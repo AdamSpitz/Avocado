@@ -1,5 +1,4 @@
-// aaa - These should really not live in the global namespace.
-// Maybe some of this is handled by the style/theme mechanism?
+// aaa - Maybe some of this is handled by the style/theme mechanism?
 
 lively.paint.defaultFillWithColor = function(c) {
   if (!c) { return null; }

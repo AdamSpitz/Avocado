@@ -5,20 +5,7 @@ WorldMorph.addMethods({
       // hit Cmd-t to open a new tab)
       evt.hand.setKeyboardFocus(null);
 
-      // console.log(WorldMorph.currentWorld.fullBounds.width + " "+ WorldMorph.currentWorld.fullBounds.height );
-      if (evt.point().x <= 50){
-         WorldMorph.currentWorld.submorphs._each(function(entry){ entry.moveBy(new Point(-10,0));});
-      }
-      if (evt.point().y <= 50){
-         WorldMorph.currentWorld.submorphs._each(function(entry){ entry.moveBy(new Point(0,-10));});
-      }
-
-      if ((WorldMorph.currentWorld.fullBounds.width + WorldMorph.currentWorld.fullBounds.x - evt.point().x) <= 50){
-         WorldMorph.currentWorld.submorphs._each(function(entry){ entry.moveBy(new Point(10,0));});
-      }
-      if ((WorldMorph.currentWorld.fullBounds.height + WorldMorph.currentWorld.fullBounds.y - evt.point().y) <= 50){
-         WorldMorph.currentWorld.submorphs._each(function(entry){ entry.moveBy(new Point(0,10));});
-      }
+      if (this.shouldSlideIfClickedAtEdge) { this.slideIfClickedAtEdge(evt); }
       return $super(evt);
   }
 });
@@ -271,7 +258,27 @@ ButtonMorph.addMethods({
   }
 });
 
-// aaa - This doesn't really belong here.
-window.javascriptReservedWords = {'abstract': true, 'boolean': true, 'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true, 'class': true, 'const': true, 'continue': true, 'debugger': true, 'default': true, 'delete': true, 'do': true, 'double': true, 'else': true, 'enum': true, 'export': true, 'extends': true, 'false': true, 'final': true, 'finally': true, 'float': true, 'for': true, 'function': true, 'goto': true, 'if': true, 'implements': true, 'import': true, 'in': true, 'instanceof': true, 'int': true, 'interface': true, 'long': true, 'native': true, 'new': true, 'null': true, 'package': true, 'private': true, 'protected': true, 'public': true, 'return': true, 'short': true, 'static': true, 'super': true, 'switch': true, 'synchronized': true, 'this': true, 'throw': true, 'throws': true, 'transient': true, 'true': true, 'try': true, 'typeof': true, 'var': true, 'volatile': true, 'void': true, 'while': true, 'with': true};
 
+ImageMorph.addMethods({
+  beLabel: function() {
+    this.setFill(null);
+    this.beUngrabbable();
+    this.ignoreEvents();
+    this.closeDnD();
+    return this;
+  }
+});
 
+SelectionMorph.addMethods({
+  inspect: function () {
+    return avocado.command.list.descriptionOfGroup(this.selectedMorphs);
+  },
+
+  addCommandsTo: function (cmdList) {
+    cmdList.addItemsFromGroup(this.selectedMorphs);
+  }
+});
+
+Object.extend(lively.scene.Rectangle.prototype, {
+  area: function() { return this.bounds().area(); }
+});

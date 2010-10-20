@@ -119,9 +119,9 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['annotation']});
 
   add.method('setCopyDownParentsString', function (str) {
-    avocado.MessageNotifierMorph.showIfErrorDuring(function() {
+    avocado.ui.showMessageIfErrorDuring(function() {
       this.mirror().setCopyDownParents(eval(str));
-    }.bind(this), Event.createFake());
+    }.bind(this));
     this.updateAppearance(); // to make the copied-down slots appear;
   }, {category: ['annotation']});
 
@@ -129,7 +129,6 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     if (! this.world()) { return; }
     this.populateSlotsPanelInMeAndExistingSubcategoryMorphs();
     this.refreshContentOfMeAndSubmorphs();
-    this.updateTitleLabelFont();
   }, {category: ['updating']});
 
   add.method('refreshContent', function ($super) {
@@ -171,8 +170,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('categoryMorphFor', function (c) {
     return this._categoryMorphs.getOrIfAbsentPut(c.fullName(), function() {
-      var cm = new category.Morph(Object.newChildOf(category.Presenter, this.mirror(), c));
-      return cm;
+      return new category.Morph(Object.newChildOf(category.Presenter, this.mirror(), c));
     }.bind(this));
   }, {category: ['categories']});
 
@@ -204,7 +202,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['evaluators']});
 
   add.method('getParent', function (evt) {
-    evt.hand.world().morphFor(this.mirror().parent()).grabMe(evt);
+    avocado.ui.grab(this.mirror().parent(), evt);
   }, {category: ['menu']});
 
   add.method('interposeNewParent', function (evt) {
@@ -236,6 +234,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     this.addCategoryCommandsTo(cmdList);
 
     cmdList.addLine();
+    
     if (this.mirror().canHaveChildren()) {
       if (this.shouldAllowModification()) {
         cmdList.addItem({label: "create child", go: function(evt) { this.createChild(evt); }.bind(this)});
@@ -259,33 +258,18 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       cmdList.addLine();
 
       if (this.mirror().comment) {
-        cmdList.addItem({label: this._commentToggler.isOn() ? "hide comment" : "show comment", go: function(evt) { this._commentToggler.toggle(evt); }.bind(this)});
+        cmdList.addItem({label: this._commentToggler.isOn() ? "hide comment" : "show comment", go: function(evt) {
+          this._commentToggler.toggle(evt);
+        }.bind(this)});
       }
 
-      cmdList.addItem({label: this._annotationToggler.isOn() ? "hide annotation" : "show annotation", go: function(evt) { this._annotationToggler.toggle(evt); }.bind(this)});
+      cmdList.addItem({label: this._annotationToggler.isOn() ? "hide annotation" : "show annotation", go: function(evt) {
+        this._annotationToggler.toggle(evt);
+      }.bind(this)});
 
       if (this.shouldAllowModification()) {
         cmdList.addItem({label: "set module...", go: function(evt) {
-          var all = {};
-          var chooseTargetModule = function(sourceModuleName, evt) {
-            transporter.chooseOrCreateAModule(evt, this.modules(), this, "To which module?", function(targetModule, evt) {
-              this.mirror().eachNormalSlot(function(slot) {
-                if (! slot.isFromACopyDownParent()) {
-                  if (sourceModuleName === all || (!slot.module() && sourceModuleName === '-') || (slot.module() && slot.module().name() === sourceModuleName)) {
-                    slot.setModule(targetModule);
-                  }
-                }
-              }.bind(this)); 
-            }.bind(this));
-          }.bind(this);
-
-          var whichSlotsMenu = new MenuMorph([], this);
-          whichSlotsMenu.addItem(["All", function(evt) {chooseTargetModule(all, evt);}.bind(this)]);
-          whichSlotsMenu.addLine();
-          this.modules().map(function(m) { return m ? m.name() : '-'; }).sort().each(function(moduleName) {
-            whichSlotsMenu.addItem([moduleName, function(evt) {chooseTargetModule(moduleName, evt);}.bind(this)]);
-          }.bind(this));
-          whichSlotsMenu.openIn(this.world(), evt.point(), false, "Of which slots?");
+          this.mirror().interactivelySetModuleOfManySlots(evt);
         }.bind(this)});
       }
     }
@@ -293,13 +277,11 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     cmdList.addLine();
 
     cmdList.addItem({label: "well-known references", go: function(evt) {
-      var slice = new avocado.SliceMorph(avocado.referenceFinder.create(this.mirror().reflectee()));
-      slice.grabMe(evt);
-      slice.redo();
+      avocado.ui.grab(avocado.referenceFinder.create(this.mirror().reflectee()), evt).redo();
     }.bind(this)});
     
     cmdList.addItem({label: "well-known children", go: function(evt) {
-      evt.hand.world().morphFor(reflect(this.mirror().wellKnownChildren())).grabMe(evt);
+      avocado.ui.showObjects(this.mirror().wellKnownChildren().map(reflect), "well-known children of " + this.mirror().name(), evt);
     }.bind(this)});
 
     cmdList.addLine();
@@ -328,11 +310,8 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['creating children']});
 
   add.method('createSubclass', function (evt) {
-    var subclass = reflect(this.mirror().reflectee().subclass());
-    var prototypeSlot = subclass.slotAt('prototype');
-    prototypeSlot.beCreator();
-    var subclassMirMorph = this.world().morphFor(subclass);
-    subclassMirMorph.grabMe(evt);
+    var subclass = this.mirror().createSubclass();
+    var subclassMirMorph = avocado.ui.grab(subclass, evt);
 
     // might as well show the arrow from the subclass to the superclass
     subclassMirMorph.expander().expand();
@@ -357,7 +336,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['creator slots']});
 
   add.method('showAKAMenu', function (evt) {
-    var akaMenu = new MenuMorph([], this);
+    var akaMenu = avocado.command.list.create();
     var mir = this.mirror();
     mir.possibleCreatorSlotsSortedByLikelihood().each(function(s) {
       var chain = s.creatorSlotChainEndingWithMe('theCreatorSlot');
@@ -369,7 +348,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
         }.bind(this)]);
       }
     }.bind(this));
-    akaMenu.openIn(this.world(), evt.point(), false, "Other possible names:");
+    avocado.ui.showMenu(akaMenu, this, "Other possible names:", evt);
   }, {category: ['creator slots']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
@@ -404,6 +383,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['UI state']});
 
   add.method('assumeUIState', function (uiState, evt) {
+    if (!uiState) { return; }
     evt = evt || Event.createFake();
     this._commentToggler   .setValue( uiState.isCommentOpen,    evt );
     this._annotationToggler.setValue( uiState.isAnnotationOpen, evt );

@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/quickhull', function(requires) {}, function(thisModule) {
+transporter.module.create('core/quickhull', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -56,7 +56,7 @@ thisModule.addSlots(avocado.quickhull, function(add) {
       if (!minPt || p.x < minPt.x) { minPt = p; }
     });
     var convexHullBaseLines = [];
-    this.buildConvexHull(this.createLine(minPt, maxPt), points, function(p) { if (!p) {throw "Gah";} convexHullBaseLines.push(p); });
+    this.buildConvexHull(this.createLine(minPt, maxPt), points, function(p) { convexHullBaseLines.push(p); });
     this.buildConvexHull(this.createLine(maxPt, minPt), points, function(p) { convexHullBaseLines.push(p); });
     return convexHullBaseLines;
   });

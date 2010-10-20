@@ -4,8 +4,8 @@ requires('avocado_lib');
 requires('lk_ext/core_sampler');
 requires('lk_ext/poses');
 requires('lk_ext/morph_factories');
-requires('transporter/module_morph');
 requires('transporter/snapshotter');
+requires('programming_environment/module_morph');
 requires('programming_environment/categorize_libraries');
 requires('programming_environment/category_morph');
 requires('programming_environment/slot_morph');
@@ -98,10 +98,6 @@ thisModule.addSlots(avocado, function(add) {
         this.createAnotherMorph(w, w.bounds(), 1000);
       }.bind(this)]);
 
-      cmdList.addItem(["translate the world", function(evt) {
-        evt.hand.world().slideBy(pt(200,100));
-      }]);
-
       cmdList.addItem(["zoom in to the world", function(evt) {
         evt.hand.world().zoomBy(2);
       }]);
@@ -120,6 +116,14 @@ thisModule.addSlots(avocado, function(add) {
       }]);
     }
 
+    // This world-navigation feature is usually very annoying, though occasionally very useful.
+    // Keep it off by default until we find a non-annoying UI for it. -- Adam
+    cmdList.addLine();
+    var navOn = WorldMorph.current().shouldSlideIfClickedAtEdge;
+    cmdList.addItem(["turn " + (navOn ? 'off' : 'on') + " world navigation", function(evt) {
+      evt.hand.world().shouldSlideIfClickedAtEdge = !navOn;
+    }]);
+
     this.menuItemContributors.each(function(c) {
       c.addGlobalCommandsTo(cmdList);
     });
@@ -127,13 +131,10 @@ thisModule.addSlots(avocado, function(add) {
   }, {category: ['menu']});
 
   add.method('initialize', function () {
-    var shouldPrintLoadOrder = false;
-    if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
-    
     // I'm confused. Why is this here if it's already called from putUnownedSlotsInInitModule? -- Adam
     // avocado.creatorSlotMarker.annotateExternalObjects(true);
     
-    window.categorizeGlobals();
+    avocado.categorizeGlobals();
 
     // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
     reflect(window).categorizeUncategorizedSlotsAlphabetically();
@@ -152,7 +153,7 @@ thisModule.addSlots(avocado.menuItemContributors, function(add) {
 
   add.data('3', avocado.poses);
 
-  add.data('4', TestCase.prototype.Morph);
+  add.data('4', TestCase);
 
 });
 

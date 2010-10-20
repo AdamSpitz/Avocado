@@ -72,11 +72,11 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
   }, {category: ['running the code']});
 
   add.method('doIt', function (evt) {
-    avocado.MessageNotifierMorph.showIfErrorDuring(function() { this.runTheCode(); }.bind(this), evt);
+    avocado.ui.showMessageIfErrorDuring(function() { this.runTheCode(); }.bind(this), evt);
   }, {category: ['running the code']});
 
   add.method('getIt', function (evt) {
-    avocado.MessageNotifierMorph.showIfErrorDuring(function() {
+    avocado.ui.showMessageIfErrorDuring(function() {
       var resultMirMorph = evt.hand.world().morphFor(reflect(this.runTheCode()));
       if (resultMirMorph === this.mirrorMorph()) {
         resultMirMorph.wiggle();

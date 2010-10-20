@@ -7,7 +7,7 @@ requires('transporter/object_graph_walker');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('snapshotter', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
+  add.creator('snapshotter', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous'], comment: 'Does not actually work yet; may not even be possible\nwithout reflective access to local variables.'});
 
 });
 
@@ -120,6 +120,24 @@ thisModule.addSlots(avocado.snapshotter, function(add) {
 
     return setupBuf.concat(this._buffer, tearDownBuf).toString();
   });
+  
+  add.method('saveSnapshot', function() {
+    this.walk(window);
+    var snapshot = this.completeSnapshotText();
+
+    var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/snapshots/");
+    var fileName = "snapshot_" + this._number + ".js";
+    var url = baseDirURL.withFilename(fileName);
+    var status = new Resource(Record.newPlainInstance({URL: url})).store(snapshot, true).getStatus();
+    if (! status.isSuccess()) {
+      throw "failed to write " + fileName + ", status is " + status.code();
+    }
+  });
+
+  add.method('addGlobalCommandsTo', function (cmdList, evt) {
+    cmdList.addLine();
+    cmdList.addItem(["save snapshot", function(evt) { avocado.snapshotter.create().saveSnapshot(); }]);
+  }, {category: ['user interface', 'commands']});
 
 });
 

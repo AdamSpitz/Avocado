@@ -645,21 +645,18 @@ var Event = (function() {
   	// Rearranged this whole function to make it work right in both FireFox and Safari. -- Adam
 
   	// note that FF doesn't doesnt calculate offsetLeft/offsetTop early enough we don't precompute these values
-  	var topElement = this.canvas();
-  	// Look up the parentNode chain for a node that actually knows its offset. Necessary because
-  	// for some reason in FireFox the canvas doesn't know its offset. -- Adam
-  	while (topElement && typeof(topElement.offsetLeft) !== 'number' && typeof(topElement.offsetTop) !== 'number') {
-  	  topElement = topElement.parentNode;
-  	}
-  	var offsetX = topElement ? topElement.offsetLeft : 0;
-  	var offsetY = topElement ? topElement.offsetTop  : 0; // Why the heck was this -3? -- Adam
+  	var e = this.canvas();
+  	// Look up the parentNode chain for a node that actually knows its offsetParent. Necessary because
+  	// for some reason in FireFox not every node does. -- Adam
+  	while (e && !e.offsetParent) { e = e.parentNode; }
 
-  	if (Config.isEmbedded) {
-  		while (topElement && topElement.tagName != 'BODY') {
-  			topElement = topElement.parentNode; //.offsetParent; // aaa Adam offsetParent seems broken, at least in FF
-  			offsetX += topElement.offsetLeft || 0; // || 0 added by Adam
-  			offsetY += topElement.offsetTop  || 0; // || 0 added by Adam
-  		}
+  	var offsetX = 0;
+  	var offsetY = 0; // Why the heck was this -3? -- Adam
+
+		while (e) {
+			offsetX += e.offsetLeft || 0; // || 0 added by Adam
+			offsetY += e.offsetTop  || 0; // || 0 added by Adam
+			e = e.offsetParent;
   	}
 
   	return pt(offsetX, offsetY);

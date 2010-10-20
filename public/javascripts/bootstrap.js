@@ -302,7 +302,7 @@ window.waitForAllCallbacks = function(functionThatYieldsCallbacks, functionToRun
 
 // aaa - This doesn't really belong here.
 window.javascriptReservedWords = {'abstract': true, 'boolean': true, 'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true, 'class': true, 'const': true, 'continue': true, 'debugger': true, 'default': true, 'delete': true, 'do': true, 'double': true, 'else': true, 'enum': true, 'export': true, 'extends': true, 'false': true, 'final': true, 'finally': true, 'float': true, 'for': true, 'function': true, 'goto': true, 'if': true, 'implements': true, 'import': true, 'in': true, 'instanceof': true, 'int': true, 'interface': true, 'long': true, 'native': true, 'new': true, 'null': true, 'package': true, 'private': true, 'protected': true, 'public': true, 'return': true, 'short': true, 'static': true, 'super': true, 'switch': true, 'synchronized': true, 'this': true, 'throw': true, 'throws': true, 'transient': true, 'true': true, 'try': true, 'typeof': true, 'var': true, 'volatile': true, 'void': true, 'while': true, 'with': true};
-
+annotator.annotationOf(window).setSlotAnnotation('javascriptReservedWords', {category: ['avocado']});
 
 window.avocado = {};
 annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
@@ -606,6 +606,10 @@ thisModule.addSlots(transporter, function(add) {
     transporter.availableRepositories.push(kernelRepo);
     
     modules.bootstrap._repository = kernelRepo;
+    
+    // aaa - This is not really the right place for this. I think. Maybe. Where's the
+    // place where we really know where the emailing script is? -- Adam
+    transporter.emailingScriptURL = "http://" + document.domain + "/cgi-bin/emailSource.cgi";
   }, {category: ['bootstrapping']});
 
   add.method('putUnownedSlotsInInitModule', function () {
@@ -696,6 +700,9 @@ thisModule.addSlots(transporter, function(add) {
 
   add.method('initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated', function (callWhenDone) {
     if (this.isDoneLoadingProgrammingEnvironment && window.worldHasBeenCreated) {
+      var shouldPrintLoadOrder = false;
+      if (shouldPrintLoadOrder) { this.printLoadOrder(); }
+
       var app = window.isInCodeOrganizingMode ? window.jsQuiche : window.avocado;
       app.initialize();
       WorldMorph.current().addApplication(app);

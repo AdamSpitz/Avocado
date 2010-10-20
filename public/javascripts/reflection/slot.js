@@ -64,6 +64,40 @@ thisModule.addSlots(slots['abstract'], function(add) {
     return chain;
   }, {category: ['creator slots']});
 
+  add.method('sourceCode', function () {
+    try {
+      var contentsMir = this.contents();
+      return contentsMir.expressionEvaluatingToMe(this.isSimpleMethod() || this.equals(contentsMir.probableCreatorSlot()));
+    } catch (ex) {
+      return "cannot display contents";
+    }
+  }, {category: ['user interface']});
+
+  add.method('newContentsForSourceCode', function (s) {
+    avocado.ui.showMessageIfWarningDuring(function() {
+      // need the assignment and the semicolon so that JSLint doesn't gripe about seeing a naked expression
+      var ok = JSLINT(avocado.stringBuffer.create('var ___contents___ = (').append(s).append(');').toString());
+      if (!ok) {
+        JSLINT.errors.each(function(error) {
+          throw "JSLint says: " + error.reason;
+        });
+      }
+    }.bind(this));
+
+    var newContents = avocado.ui.showMessageIfErrorDuring(function() {
+      return reflect(eval("(" + s + ")"));
+    }.bind(this));
+    
+    return newContents;
+  }, {category: ['user interface']});
+
+  add.method('bePossibleCreatorSlotIfNoneAlreadySpecified', function () {
+    var c = this.contents();
+    if (!c.explicitlySpecifiedCreatorSlot() && c.canHaveCreatorSlot()) {
+      c.addPossibleCreatorSlot(this);
+    }
+  }, {category: ['user interface']});
+
 });
 
 
@@ -161,9 +195,10 @@ thisModule.addSlots(slots.plain, function(add) {
     return this.name() + " slot";
   }, {category: ['printing']});
 
-  add.method('copyTo', function (newMir) {
+  add.method('copyTo', function (newMir, optionalCat) {
     var newSlot = newMir.slotAt(this.name());
     newSlot.setContents(this.contents());
+    if (optionalCat) { newSlot.setCategory(optionalCat); }
     return newSlot;
   }, {category: ['copying']});
 
@@ -297,7 +332,7 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['searching']});
 
   add.method('wellKnownSenders', function () {
-    return avocado.senders.of(this.name()).map(function(x) { return reflect(x.slotHolder).slotAt(x.slotName); });
+    return avocado.senders.finder.create(this.name()).go();
   }, {category: ['searching']});
 
 });

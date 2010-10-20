@@ -44,7 +44,6 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     this.closeDnD();
 
     this._sourceToggler     = Object.newChildOf(avocado.toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.sourcePane();}.bind(this))       );
-    //this._sourceToggler     = Object.newChildOf(avocado.toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.    sourceMorph();}.bind(this))       );
     this._commentToggler    = Object.newChildOf(avocado.toggler, this.updateAppearance.bind(this), slot.comment    ? this.createRow(function() {return this.   commentMorph();}.bind(this)) : null);
     this._annotationToggler = Object.newChildOf(avocado.toggler, this.updateAppearance.bind(this), slot.annotation ? this.createRow(function() {return this.annotationMorph();}.bind(this)) : null);
 
@@ -57,7 +56,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     var commentButton = ButtonMorph.createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
     commentButton.getHelpText = function() { return (this._commentToggler.isOn() ? 'Hide' : 'Show') + ' my comment'; }.bind(this);
 
-    var buttonChooserMorph = Morph.createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.isMethodThatShouldBeShownAsPartOfTheBox(); }.bind(this));
+    var buttonChooserMorph = Morph.createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.slot().isSimpleMethod(); }.bind(this));
 
     var optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
 
@@ -69,10 +68,6 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.data('grabsShouldFallThrough', true, {category: ['grabbing']});
-
-  add.method('isMethodThatShouldBeShownAsPartOfTheBox', function () {
-    return this.slot().isSimpleMethod();
-  }, {category: ['source']});
 
   add.method('showContents', function (callWhenContentsAreVisible) {
     var w = this.world();
@@ -110,18 +105,18 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
       slotMorph.setContents(mirMorph.mirror());
     };
 
-    // aaa - To do "grab pointer" properly I think I need to do a more general drag-and-drop thing. Right
-    // now nothing will get called if I drop the endpoint on something invalid (like the world or some
-    // other morph), so the visibility will need to be toggled an extra time to get it back to normal.
     m.addCommandsTo = function(cmdList) {
-      cmdList.addItem({label: "grab pointer", go: function(evt) { arrow.needsToBeVisible(); arrow.endpoint2.grabMeWithoutZoomingAroundFirst(evt); } });
+      // aaa - To do "grab pointer" properly I think I need to do a more general drag-and-drop thing. Right
+      // now nothing will get called if I drop the endpoint on something invalid (like the world or some
+      // other morph), so the visibility will need to be toggled an extra time to get it back to normal.
+      cmdList.addItem({label: "grab pointer", go: function(evt) {
+        arrow.needsToBeVisible();
+        arrow.endpoint2.grabMeWithoutZoomingAroundFirst(evt);
+      }});
 
-      if (slot.contents().reflectee() === true) {
-        cmdList.addItem({label: "set to false", go: function(evt) { slot.setContents(reflect(false)); } });
-      }
-
-      if (slot.contents().reflectee() === false) {
-        cmdList.addItem({label: "set to true", go: function(evt) { slot.setContents(reflect(true)); } });
+      var c = slot.contents().reflectee();
+      if (typeof(c) === 'boolean') {
+        cmdList.addItem({label: "set to " + (!c), go: function(evt) { slot.setContents(reflect(!c)); } });
       }
     };
 
@@ -141,12 +136,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['source']});
 
   add.method('createIconForButton', function (path) {
-    var icon = new ImageMorph(pt(10,10).extentAsRectangle(), (window.livelyBaseURL || "") + path);
-    icon.setFill(null);
-    icon.beUngrabbable();
-    icon.ignoreEvents();
-    icon.closeDnD();
-    return icon;
+    return new ImageMorph(pt(10,10).extentAsRectangle(), (window.livelyBaseURL || "") + path).beLabel();
   }, {category: ['creating']});
 
   add.method('createRow', function (getOrCreateContent) {
@@ -168,31 +158,8 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     var m = this._sourceMorph;
     if (m) { return m; }
     var thisSlotMorph = this;
-    var getter = function() {
-      try {
-        var slot = thisSlotMorph.slot();
-        var contentsMir = slot.contents();
-        return contentsMir.expressionEvaluatingToMe(slot.isSimpleMethod() || slot.equals(contentsMir.probableCreatorSlot()));
-      } catch (ex) {
-        return "cannot display contents";
-      }
-    };
-    var setter = function(s) {
-      avocado.MessageNotifierMorph.showIfErrorDuring(function() {
-        // need the assignment and the semicolon so that JSLint doesn't gripe about seeing a naked expression
-        var ok = JSLINT(avocado.stringBuffer.create('var ___contents___ = (').append(s).append(');').toString());
-        if (!ok) {
-          JSLINT.errors.each(function(error) {
-            throw "JSLint says: " + error.reason;
-          });
-        }
-      }.bind(this), Event.createFake(), new Color(1.0, 0.55, 0.0));
-
-      var newContents = avocado.MessageNotifierMorph.showIfErrorDuring(function() {
-        return reflect(eval("(" + s + ")"));
-      }.bind(this), Event.createFake());
-      thisSlotMorph.setContents(newContents);
-    };
+    var getter = function()  { return thisSlotMorph.slot().sourceCode(); };
+    var setter = function(s) { thisSlotMorph.setContents(thisSlotMorph.slot().newContentsForSourceCode(s)); };
     m = new TextMorphRequiringExplicitAcceptance(getter, setter);
     m.setFontFamily('monospace');
     m.horizontalLayoutMode = LayoutModes.SpaceFill;
@@ -206,9 +173,9 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     if (m) { return m; }
     m = this._annotationMorph = new avocado.ColumnMorph(this).beInvisible();
     m.setPadding({left: 0, right: 0, top: 0, bottom: 0, between: 2});
-    this._moduleMorph      = new TextMorphRequiringExplicitAcceptance(this.moduleName.bind(this), this.setModuleName.bind(this));
+    this._moduleNameMorph  = new TextMorphRequiringExplicitAcceptance(this.moduleName.bind(this), this.setModuleName.bind(this));
     this._initializerMorph = new TextMorphRequiringExplicitAcceptance(this.initializationExpression.bind(this), this.setInitializationExpression.bind(this));
-    m.setRows([avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Module:"       ), this._moduleMorph     ]),
+    m.setRows([avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Module:"       ), this._moduleNameMorph   ]),
                avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Initialize to:"), this._initializerMorph])]);
     return m;
   }, {category: ['annotation']});
@@ -223,26 +190,21 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     return m;
   }, {category: ['comment']});
 
-  add.method('showSource', function (evt) {
-    this._sourceToggler.beOn(evt);
-  }, {category: ['source']});
-
   add.method('wasJustAdded', function (evt) {
-    this.showSource(evt);
+    this._sourceToggler.beOn(evt);
     this._nameMorph.beWritableAndSelectAll();
   }, {category: ['events']});
 
   add.method('slotName', function () { return this.slot().name(); }, {category: ['accessing']});
 
   add.method('setSlotName', function (newName, evt) {
-    avocado.MessageNotifierMorph.showIfErrorDuring(function() {
-      this.slot().rename(newName);
+    avocado.ui.showMessageIfErrorDuring(function() {
+      var newSlot = this.slot().rename(newName);
       var mirMorph = this.mirrorMorph();
       if (mirMorph) {
         mirMorph.updateAppearance();
 
         // it's actually a whole nother slot and slotMorph but we want it to feel like the same one
-        var newSlot = mirMorph.mirror().slotAt(newName);
         var newSlotMorph = mirMorph.slotMorphFor(newSlot);
         this.transferUIStateTo(newSlotMorph);
         newSlotMorph.sourceMorph().requestKeyboardFocus(evt.hand);
@@ -261,6 +223,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['UI state']});
 
   add.method('assumeUIState', function (uiState, evt) {
+    if (!uiState) { return; }
     evt = evt || Event.createFake();
     this._sourceToggler    .setValue( uiState.isSourceOpen,     evt );
     this._commentToggler   .setValue( uiState.isCommentOpen,    evt );
@@ -286,10 +249,9 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
   add.method('setModuleName', function (n) {
     var module = transporter.module.existingOneNamed(n);
     if (module) { return this.slot().setModule(module); }
-    this.world().confirm("The '" + n + "' module does not exist. Create it?", function(b) {
+    avocado.ui.confirm("The '" + n + "' module does not exist. Create it?", function(b) {
       if (b) {
-        this.slot().setModule(transporter.module.named(n));
-        this._moduleMorph.changed();
+        this.setModule(transporter.module.named(n));
       }
     }.bind(this));
   }, {category: ['annotation', 'module']});
@@ -338,8 +300,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnCategory', function (categoryMorph) {
-    var newSlot = this.slot().copyTo(categoryMorph.mirrorMorph().mirror());
-    newSlot.setCategory(categoryMorph.category());
+    var newSlot = this.slot().copyTo(categoryMorph.mirrorMorph().mirror(), categoryMorph.category());
     categoryMorph.expander().expand();
     this.remove();
     categoryMorph.mirrorMorph().updateAppearance();
@@ -366,22 +327,20 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
 
   add.method('setContents', function (c, evt) {
     this.slot().setContents(c);
+
+    // Just to help make it easier and more intuitive to set creator slots.
+    this.slot().bePossibleCreatorSlotIfNoneAlreadySpecified();
     
     // Sometimes the text doesn't come out quite identical; this makes sure the
     // source editor doesn't stay red.
     if (this._sourceMorph) { this._sourceMorph.cancelChanges(); }
-
-    // Just to help make it easier and more intuitive to set creator slots.
-    if (!c.explicitlySpecifiedCreatorSlot() && c.canHaveCreatorSlot()) {
-      c.addPossibleCreatorSlot(this.slot());
-    }
 
     // Not sure this is really what I want, but I think I don't like it when
     // the source stays open after I edit it, at least if it's data rather than
     // a method. (The method I'm likely to be editing again. But editing the
     // source of a data slot is usually just done when initially creating the
     // slot.)
-    if (! this.isMethodThatShouldBeShownAsPartOfTheBox()) { this._sourceToggler.beOff(evt); }
+    if (! this.slot().isSimpleMethod()) { this._sourceToggler.beOff(evt); }
 
     this.updateAppearance();
   }, {category: ['contents']});
@@ -412,7 +371,7 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     if (copyDown) {
       var copyDownParentMir = reflect(copyDown.parent);
       cmdList.addItem({label: "copied down from " + copyDownParentMir.name(), go: function(evt) {
-        this.world().morphFor(copyDownParentMir).grabMe(evt);
+        avocado.ui.grab(copyDownParentMir, evt);
       }.bind(this)});
     } else {
       if (isModifiable && this.slot().rename) {
@@ -472,29 +431,19 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
     
     if (this.slot().wellKnownImplementors) {
       cmdList.addItem({label: "implementors", go: function(evt) {
-        var slice = new avocado.SliceMorph(avocado.implementorsFinder.create(this.slot().name()));
-        slice.grabMe(evt);
-        slice.redo();
+        avocado.ui.grab(avocado.implementorsFinder.create(this.slot().name()), evt).redo();
       }.bind(this)});
     }
 
     if (this.slot().wellKnownSenders) {
       cmdList.addItem({label: "senders", go: function(evt) {
-        var slot = this.slot();
-        var slice = new avocado.SliceMorph({
-          go:      function() { return slot.wellKnownSenders(); },
-          inspect: function() { return "senders of " + slot.name(); }
-        });
-        slice.grabMe(evt);
-        slice.redo();
+        avocado.ui.grab(avocado.senders.finder.create(this.slot().name()), evt).redo();
       }.bind(this)});
     }
     
     if (isModifiable && this.slot().contents().prettyPrint) {
       cmdList.addSection([{label: "pretty-print", go: function(evt) {
-        var contentsMir = this.slot().contents();
-        var formatted = contentsMir.prettyPrint();
-        evt.hand.world().morphFor(reflect(formatted)).grabMe(evt);
+        avocado.ui.grab(reflect(this.slot().contents().prettyPrint()), evt);
       }.bind(this)}]);
     }
   }, {category: ['menu']});

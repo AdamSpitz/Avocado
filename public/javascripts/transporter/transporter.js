@@ -1,6 +1,7 @@
 transporter.module.create('transporter/transporter', function(requires) {
 
 requires('core/lk_TestFramework');
+requires('core/notifier');
 requires('reflection/reflection');
 
 }, function(thisModule) {
@@ -16,6 +17,132 @@ thisModule.addSlots(transporter, function(add) {
   add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
 
   add.creator('reasonsForNeedingCreatorPath', {}, {category: ['filing out']});
+
+  add.method('addGlobalCommandsTo', function (cmdList, evt) {
+    cmdList.addLine();
+
+    cmdList.addItem(["all modules", function(evt) {
+      avocado.ui.showObjects(avocado.enumerator.create(transporter.module, 'eachModule'), "all modules", evt);
+    }]);
+
+    cmdList.addItem(["changed modules", function(evt) {
+      avocado.ui.showObjects(transporter.module.changedOnes(), "changed modules", evt);
+    }]);
+
+    if (transporter.availableRepositories.any(function(repo) { return repo.canListDirectoryContents; })) {
+      cmdList.addItem(["load JS file...", function(evt) {
+        avocado.ui.showMenu(transporter.commandListForLoadingJSFiles(), evt.hand.world(), "From where?", evt);
+      }]);
+    }
+  }, {category: ['user interface', 'commands']});
+
+
+  add.method('fileOutPlural', function (specs, evt, repo, filerOuterProto) {
+    this.prepareToFileStuffOut();
+    
+    var allErrors = [];
+    var errorMessage = "";
+    
+    specs.each(function(spec) {
+      spec.module.fileOut(spec.filerOuter || filerOuterProto ? Object.newChildOf(filerOuterProto) : null, repo, function() {}, function(msg, errors) {
+        errorMessage += msg + "\n";
+        errors.each(function(e) { allErrors.push({module: spec.module, error: e}); });
+      }.bind(this));
+    });
+    
+    if (allErrors.length > 0) {
+      this.errorFilingOut(errorMessage, allErrors, evt);
+    }
+  }, {category: ['user interface', 'commands', 'filing out']});
+
+  add.method('errorFilingOut', function (msg, errors, evt) {
+    avocado.ui.showObjects(this.objectsToShowForErrors(errors), "file-out errors", evt);
+    avocadi.ui.showError(msg, evt);
+  }, {category: ['user interface', 'error reporting']});
+  
+  add.method('objectsToShowForErrors', function(errors) {
+    var objectsToShow = [];
+    errors.each(function(moduleAndError) {
+      var err    = moduleAndError.error;
+      var module = moduleAndError.module;
+      var mir = err.mirrorWithoutCreatorPath;
+      if (mir) {
+        var world = evt.hand.world();
+        if (! objectsToShow.include(mir)) {
+          var reason = err.reasonForNeedingCreatorPath || "I said so, that's why.";
+          objectsToShow.push(mir);
+          objectsToShow.push(module + " needs " + mir.inspect() + " to have a creator path because " + reason);
+        }
+      } else {
+        objectsToShow.push(err);
+      }
+    }.bind(this));
+    return objectsToShow;
+  }, {category: ['user interface', 'error reporting']});
+
+
+
+  add.method('chooseARepository', function (evt, target, menuCaption, callback) {
+    if (transporter.availableRepositories.length === 1) { callback(transporter.availableRepositories[0], evt); return; }
+
+    var repoCmdList = transporter.commandListForRepositories(function(repo) { return function() { callback(repo, evt); }});
+    
+    avocado.ui.showMenu(repoCmdList, target, menuCaption, evt);
+  }, {category: ['user interface', 'commands']});
+
+  add.method('createAModule', function (evt, target, callback) {
+    this.chooseARepository(evt, target, 'Which server should the new module live on?', function(repo, evt) {
+      avocado.ui.prompt("Module name?", function(name) {
+        callback(transporter.module.createNewOne(name, repo), evt);
+      }, null, evt);
+    });
+  }, {category: ['user interface', 'commands']});
+
+  add.method('chooseOrCreateAModule', function (evt, likelyModules, target, menuCaption, callback) {
+    var modulesCmdList = transporter.module.commandListForChoosingOrCreatingAModule(evt, likelyModules, target, callback);
+    avocado.ui.showMenu(modulesCmdList, target, menuCaption, evt);
+  }, {category: ['user interface', 'commands']});
+  
+  add.method('commandListForLoadingJSFiles', function() {
+    return this.commandListForRepositories(function(repo) { return repo.menuItemsForLoadMenu(); });
+  }, {category: ['user interface', 'commands']});
+  
+  add.method('commandListForRepositories', function(f) {
+    var cmdList = avocado.command.list.create();
+    transporter.availableRepositories.each(function(repo) {
+      var c = f(repo);
+      if (c) {
+        cmdList.addItem([repo.toString(), c]);
+      }
+    });
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
+
+  add.method('modulePathDictionary', function () {
+    var d = avocado.dictionary.copyRemoveAll();
+    transporter.module.eachModule(function(m) {
+      var nameParts = m.name().split('/');
+      var currentDictionary = d;
+      while (nameParts.length > 1) {
+        var part = nameParts.shift();
+        currentDictionary = currentDictionary.getOrIfAbsentPut(part, function() {return avocado.dictionary.copyRemoveAll();});
+      }
+      currentDictionary.put(nameParts.shift(), m);
+    });
+    return d;
+  }, {category: ['module tree']});
+
+  add.method('menuItemsForModulePathDictionary', function (modulePathDict, evt, callback) {
+    if (modulePathDict.keys) { // aaa is there a better way to do a type test?
+      return modulePathDict.keys().sort().map(function(dirName) {
+          return [dirName, this.menuItemsForModulePathDictionary(modulePathDict.get(dirName), evt, callback)];
+      }.bind(this));
+    } else {
+      // the leaves of the tree are the modules
+      var module = modulePathDict;
+      return function(evt) { callback(module, evt); };
+    }
+  }, {category: ['module tree']});
 
 });
 
@@ -97,6 +224,29 @@ thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.objectContainsSlotI
 
 thisModule.addSlots(transporter.module, function(add) {
 
+  add.method('createNewOne', function (name, repo) {
+    if (!name)         { throw new Error("Cannot create a module with no name"); }
+    if (modules[name]) { throw new Error("There is already a module named " + name); }
+    var module = transporter.module.named(name);
+    module._repository = repo;
+    if (modules.thisProject) { modules.thisProject.addRequirement(name); }
+    return module;
+  }, {category: ['creating']});
+
+  add.method('commandListForChoosingOrCreatingAModule', function (evt, likelyModules, target, callback) {
+    var cmdList = avocado.command.list.create();
+    cmdList.addItem(["new module...", function(evt) { transporter.createAModule(evt, target, callback); }]);
+    cmdList.addLine();
+    if (likelyModules.length > 0 && likelyModules.length < 8) {
+      likelyModules.each(function(m) {
+        if (m) { cmdList.addItem([m.name(), function(evt) { callback(m, evt); }]); }
+      });
+      cmdList.addLine();
+    }
+    cmdList.addItems(transporter.menuItemsForModulePathDictionary(transporter.modulePathDictionary(), evt, callback));
+    return cmdList;
+  }, {category: ['menu']});
+
   add.method('name', function () { return this._name; }, {category: ['accessing']});
 
   add.method('lastPartOfName', function () { return this.name().split('/').last(); }, {category: ['accessing']});
@@ -125,10 +275,22 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.method('markAsChanged', function () {
     this._hasChangedSinceLastFileOut = true;
+    this.notifyObserversOfChange();
   }, {category: ['keeping track of changes']});
 
   add.method('markAsUnchanged', function () {
     this._hasChangedSinceLastFileOut = false;
+    this.notifyObserversOfChange();
+  }, {category: ['keeping track of changes']});
+
+  add.method('whenChangedNotify', function (observer) {
+    if (! this._changeNotifier) { this._changeNotifier = avocado.notifier.on(this); }
+    this._changeNotifier.addObserver(observer);
+  }, {category: ['keeping track of changes']});
+  
+  add.method('notifyObserversOfChange', function () {
+    if (! this._changeNotifier) { return; }
+    this._changeNotifier.notifyAllObservers();
   }, {category: ['keeping track of changes']});
 
   add.method('canBeFiledOut', function () {
@@ -200,10 +362,6 @@ thisModule.addSlots(transporter.module, function(add) {
     return filerOuter.fullText();
   }, {category: ['transporting']});
 
-  add.method('fileOutWithoutAnnotations', function (successBlock, failBlock) {
-    return this.fileOut(Object.newChildOf(this.annotationlessFilerOuter), null, successBlock, failBlock);
-  }, {category: ['transporting']});
-
   add.method('codeOfMockFileOut', function () {
     return this.codeToFileOut(Object.newChildOf(this.mockFilerOuter)).toString();
   }, {category: ['transporting']});
@@ -228,6 +386,58 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('slotsInOrderForFilingOut', function (f) {
     return Object.newChildOf(this.slotOrderizer, this).determineOrder();
   }, {category: ['transporting']});
+
+  add.method('fileOutAndReportErrors', function (evt, repo, filerOuterProto) {
+    transporter.fileOutPlural([{module: this}], evt, repo, filerOuterProto);
+  }, {category: ['user interface', 'commands', 'filing out']});
+
+  add.method('fileOutWithoutAnnotations', function (evt) {
+    this.fileOutAndReportErrors(evt, null, transporter.module.annotationlessFilerOuter);
+  }, {category: ['user interface', 'commands', 'filing out']});
+
+  add.method('printToConsole', function (evt) {
+    this.fileOutAndReportErrors(evt, transporter.repositories.console, transporter.module.annotationlessFilerOuter);
+  }, {category: ['user interface', 'commands', 'filing out']});
+
+  add.method('emailTheSource', function (evt) {
+    this.fileOutAndReportErrors(evt, this.repository().copyWithSavingScript(transporter.emailingScriptURL));
+  }, {category: ['user interface', 'commands', 'filing out']});
+
+  add.method('interactiveRename', function (evt) {
+    avocado.ui.prompt("New name?", function(newName) {
+      avocado.ui.showMessageIfErrorDuring(function () {
+        this.rename(newName);
+      }.bind(this), evt);
+    }.bind(this), this.name(), evt);
+  }, {category: ['user interface', 'commands']});
+
+  add.method('showAllObjects', function (evt) {
+    var objectsToShow = [this];
+    this.objectsThatMightContainSlotsInMe().each(function(o) { objectsToShow.push(reflect(o)); });
+    avocado.ui.showObjects(objectsToShow, "objects in module " + this.name(), evt);
+  }, {category: ['user interface', 'commands']});
+
+  add.method('addCommandsTo', function (cmdList) {
+    if (this.canBeFiledOut()) {
+      cmdList.addItem({id: 'save', label: 'save as .js file', go: this.fileOutAndReportErrors.bind(this)});
+      // aaa - not working yet: cmdList.addItem({label: 'email me the source', go: this.emailTheSource.bind(this)});
+    }
+
+    cmdList.addItem({label: 'print to console', go: this.printToConsole.bind(this)});
+
+    if (this.hasChangedSinceLastFileOut()) {
+      cmdList.addItem({label: 'forget I was changed', go: function(evt) { this.markAsUnchanged(); }.bind(this)});
+    }
+
+    cmdList.addLine();
+
+    cmdList.addItem({label: 'rename',            go: this.interactiveRename.bind(this)});
+    cmdList.addItem({label: 'get module object', go: function(evt) { avocado.ui.grab(reflect(this), evt); }.bind(this)});
+
+    cmdList.addLine();
+
+    cmdList.addItem({label: 'all objects', go: this.showAllObjects.bind(this)});
+  }, {category: ['user interface', 'commands']});
 
   add.method('eachModule', function (f) {
     reflect(modules).eachNormalSlot(function(s) { f(s.contents().reflectee()); });
@@ -696,6 +906,70 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
 });
 
 
+thisModule.addSlots(transporter.repositories.http, function(add) {
+
+  add.method('menuItemsForLoadMenu', function () {
+    return this.menuItemsForLoadMenuForDir(new FileDirectory(new URL(this._url)), "");
+  }, {category: ['user interface', 'commands']});
+
+  add.method('menuItemsForLoadMenuForDir', function (dir, pathFromModuleSystemRootDir) {
+    var menuItems = [];
+
+    var subdirURLs = this.subdirectoriesIn(dir);
+    subdirURLs.each(function(subdirURL) {
+      var subdir = new FileDirectory(subdirURL);
+      var subdirName = subdirURL.filename().withoutSuffix('/');
+      menuItems.push([subdirName, this.menuItemsForLoadMenuForDir(subdir, pathFromModuleSystemRootDir ? pathFromModuleSystemRootDir + "/" + subdirName : subdirName)]);
+    }.bind(this));
+        
+    var jsFileNames = this.filenamesIn(dir).select(function(n) {return n.endsWith(".js");});
+    jsFileNames.each(function(n) {
+      menuItems.push([n, function(evt) {
+        var moduleName = n.substring(0, n.length - 3);
+        avocado.ui.showMessageIfErrorDuring(function() {
+          this.fileIn(pathFromModuleSystemRootDir ? (pathFromModuleSystemRootDir + '/' + moduleName) : moduleName);
+        }.bind(this), evt);
+      }.bind(this)]);
+    }.bind(this));
+
+    return menuItems;
+  }, {category: ['user interface', 'commands']});
+
+  add.method('copyWithSavingScript', function (savingScriptURL) {
+    return Object.newChildOf(transporter.repositories.httpWithSavingScript, this.url(), savingScriptURL);
+  }, {category: ['copying']});
+
+});
+
+
+thisModule.addSlots(transporter.repositories.httpWithWebDAV, function(add) {
+
+  add.data('canListDirectoryContents', true, {category: ['directories']});
+
+  add.method('subdirectoriesIn', function (dir) {
+    return dir.subdirectories();
+  }, {category: ['directories']});
+
+  add.method('filenamesIn', function (dir) {
+    return dir.filenames();
+  }, {category: ['directories']});
+
+});
+
+
+thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add) {
+
+  add.method('subdirectoriesIn', function (dir) {
+    return []; // aaa;
+  }, {category: ['directories']});
+
+  add.method('filenamesIn', function (dir) {
+    return []; // aaa;
+  }, {category: ['directories']});
+
+});
+
+
 thisModule.addSlots(transporter.tests, function(add) {
 
   add.creator('someObject', {});
@@ -730,11 +1004,11 @@ thisModule.addSlots(transporter.tests, function(add) {
     this.assertEqual(0, m.objectsThatMightContainSlotsInMe().size());
 
     var s1 = this.addSlot(m, this.someObject, 'qwerty', 3);
-    this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); }).sort());
+    this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(reflect).sort());
     this.assertEqual([s1], avocado.enumerator.create(m, 'eachSlot').toArray().sort());
 
     var s2 = this.addSlot(m, this.someObject, 'uiop', 4);
-    this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); }).toSet().toArray().sort());
+    this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(reflect).toSet().toArray().sort());
     this.assertEqual([s1, s2], avocado.enumerator.create(m, 'eachSlot').toArray().sort());
 
     m.uninstall();

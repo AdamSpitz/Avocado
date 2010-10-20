@@ -23,17 +23,17 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('initialize', function (o) {
     this._reflectee = o;
-  }, {category: ['initializing']});
+  }, {category: ['creating']});
 
   add.method('forObjectNamed', function (chainNames) {
     var obj = window;
     for (var i = 0; i < chainNames.length; ++i) {
-      if (obj === undefined || obj === null) { return null; }
       var slotName = chainNames[i];
       obj = obj[slotName];
+      if (obj === undefined || obj === null) { return null; }
     }
     return reflect(obj);
-  }, {category: ['object names']});
+  }, {category: ['creating']});
 
   add.method('reflectee', function () { return this._reflectee; }, {category: ['accessing reflectee']});
 
@@ -142,7 +142,7 @@ thisModule.addSlots(mirror, function(add) {
     if (this.isReflecteeFunction() && this.reflecteeHasOwnProperty('superclass')) { return true; }
     return false;
   }, {category: ['testing']});
-
+  
   add.method('canSlotNameBeUsedAsJavascriptToken', function (n) {
     if (javascriptReservedWords[n]) { return false; }
     // aaa - What about Unicode?
@@ -346,6 +346,12 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('createChild', function () {
     return reflect(Object.create(this.reflectee()));
+  }, {category: ['children']});
+
+  add.method('createSubclass', function () {
+    var subclass = reflect(this.reflectee().subclass());
+    subclass.slotAt('prototype').beCreator();
+    return subclass;
   }, {category: ['children']});
 
   add.method('source', function () {
@@ -569,7 +575,53 @@ thisModule.addSlots(mirror, function(add) {
     if (ps.equals(p.theCreatorSlot())) {
       p.setModuleRecursively(m);
     }
-  }, {category: ['accessing annotation', 'module']});
+  }, {category: ['annotations', 'module']});
+  
+  add.method('slotsInModuleNamed', function (moduleName) {
+    // Pass in '-' or null if you want unowned slots.
+    // Pass in something like {} if you want all non-copied-down slots.
+    var wantUnowned = moduleName === '-' || !moduleName;
+    var wantAll = !wantUnowned && typeof(moduleName) !== 'string';
+    return avocado.enumerator.create(this, 'eachNormalSlot').select(function(slot) {
+      if (! slot.isFromACopyDownParent()) {
+        var m = slot.module();
+        if (wantAll || (!m && wantUnowned) || (m && m.name() === moduleName)) {
+          return true;
+        }
+      }
+      return false;
+    }); 
+  }, {category: ['annotations', 'module']});
+
+  add.method('modules', function () {
+    var modules = [];
+    this.eachNormalSlot(function(s) {
+      if (! s.isFromACopyDownParent()) {
+        var m = s.module();
+        if (! modules.include(m)) { modules.push(m); }
+      }
+    });
+    return modules.sort();
+  }, {category: ['annotations', 'module']});
+
+  add.method('chooseSourceModule', function (caption, callback, evt) {
+    var which = avocado.command.list.create();
+    which.addItem(["All", function(evt) {callback({}, evt);}]);
+    which.addLine();
+    this.modules().map(function(m) { return m ? m.name() : '-'; }).sort().each(function(moduleName) {
+      which.addItem([moduleName, function(evt) {callback(moduleName, evt);}]);
+    });
+    avocado.ui.showMenu(which, this, caption, evt);
+  }, {category: ['user interface', 'setting modules']});
+
+  add.method('interactivelySetModuleOfManySlots', function (evt) {
+    this.chooseSourceModule("Of which slots?", function(sourceModuleName, evt) {
+      var slotsToReassign = this.slotsInModuleNamed(sourceModuleName);
+      transporter.chooseOrCreateAModule(evt, this.modules(), this, "To which module?", function(targetModule, evt) {
+        slotsToReassign.each(function(slot) { slot.setModule(targetModule); });
+      });
+    }.bind(this), evt);
+  }, {category: ['user interface', 'setting modules']});
 
   add.method('canHaveAnnotation', function () {
     return this.canHaveSlots();
@@ -608,7 +660,7 @@ thisModule.addSlots(mirror, function(add) {
     this.eachNormalSlot(function(s) {
       var c = category.create(organizationUsingAnnotations.categoryForSlot(s));
       if (c.isRoot()) {
-	organizationUsingAnnotations.setCategoryForSlot(s, uncategorized.subcategory((s.name()[0] || '_unnamed_').toUpperCase()).parts());
+        organizationUsingAnnotations.setCategoryForSlot(s, uncategorized.subcategory((s.name()[0] || '_unnamed_').toUpperCase()).parts());
       }
     });
   }, {category: ['organizing']});
@@ -873,6 +925,20 @@ thisModule.addSlots(mirror.tests, function(add) {
     // call $super still respond with true to isReflecteeSimpleMethod().
     return $super();
   });
+  
+  add.method('createNestedClasses', function (f) {
+    Object.subclass("Argle", {});
+    Object.subclass("Argle.prototype.Bargle", {});
+    reflect(window).slotAt( 'Argle').beCreator();
+    reflect(Argle).slotAt('prototype').beCreator();
+    reflect(Argle.prototype).slotAt('Bargle').beCreator();
+    reflect(Argle.prototype.Bargle).slotAt('prototype').beCreator();
+    try {
+      f();
+    } finally {
+      reflect(window).slotAt('Argle').remove();
+    }
+  });
 
   add.method('testNaming', function () {
     this.assertEqual("3", reflect(3).name());
@@ -886,8 +952,11 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual("TestCase.prototype", reflect(TestCase.prototype).name());
     this.assertEqual("transporter", reflect(transporter).name());
     this.assertEqual("transporter.module", reflect(transporter.module).name());
-    this.assertEqual("a TestCase.Morph", reflect(new TestCase.prototype.Morph(mirror.tests.create())).name());
     this.assertEqual("", reflect(window).name()); // aaa - maybe just fix this to say 'window'?;
+    
+    this.createNestedClasses(function() {
+      this.assertEqual("an Argle.Bargle", reflect(new Argle.prototype.Bargle()).name());
+    }.bind(this));
   });
 
   add.method('testInspect', function () {
@@ -913,9 +982,12 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertThrowsException(function() { reflect([1, 'two', 3]).creatorSlotChainExpression(); });
     this.assertEqual("transporter", reflect(transporter).creatorSlotChainExpression());
     this.assertEqual("transporter.module", reflect(transporter.module).creatorSlotChainExpression());
-    this.assertEqual("TestCase.prototype.Morph.prototype", reflect(TestCase.prototype.Morph.prototype).creatorSlotChainExpression());
     this.assertEqual("window", reflect(window).creatorSlotChainExpression());
     this.assertEqual("Selector.operators['!=']", reflect(Selector.operators['!=']).creatorSlotChainExpression());
+    
+    this.createNestedClasses(function() {
+      this.assertEqual("Argle.prototype.Bargle.prototype", reflect(Argle.prototype.Bargle.prototype).creatorSlotChainExpression());
+    }.bind(this));
   });
 
   add.method('testMorphDuplication', function () {
@@ -932,7 +1004,7 @@ thisModule.addSlots(mirror.tests, function(add) {
   add.method('createSlot', function (mir, name, contents, cat) {
     var slot = mir.slotAt(name);
     slot.setContents(reflect(contents));
-    slot.setCategory(category.create(cat));
+    if (cat) { slot.setCategory(category.create(cat)); }
     return slot;
   });
 
@@ -1045,6 +1117,58 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual(reflect(avocado).slotAt('dictionary'), reflect(avocado.dictionary).theCreatorSlot());
     a.pushAndAdjustCreatorSlots(avocado.dictionary); // a well-known object shouldn't have its creator slot changed
     this.assertEqual(reflect(avocado).slotAt('dictionary'), reflect(avocado.dictionary).theCreatorSlot());
+  });
+  
+  add.method('testGettingSlotsByModule', function () {
+    var o = {};
+    var p = {copiedDown1: 'copiedDown1', copiedDown2: 'copiedDown2'};
+    var m1 = transporter.module.named('temp_mod_1');
+    var m2 = transporter.module.named('temp_mod_2');
+    var m3 = transporter.module.named('temp_mod_3');
+    var mir  = reflect(o);
+    var pMir = reflect(p);
+    mir.setCopyDownParents([{parent: p}]);
+    pMir.slotAt('copiedDown1').setModule(m3);
+    var s1 = this.createSlot(mir, 'a', 1);
+    var s2 = this.createSlot(mir, 'b', 2);
+    var s3 = this.createSlot(mir, 'c', 3);
+    var s4 = this.createSlot(mir, 'd', 4);
+    var s5 = this.createSlot(mir, 'e', 5);
+    this.assertEqual([null], mir.modules());
+    this.assertEqual([s1, s2, s3, s4, s5], mir.slotsInModuleNamed({}          ).sort());
+    this.assertEqual([s1, s2, s3, s4, s5], mir.slotsInModuleNamed(null        ).sort());
+    this.assertEqual([                  ], mir.slotsInModuleNamed('temp_mod_1').sort());
+    this.assertEqual([                  ], mir.slotsInModuleNamed('temp_mod_2').sort());
+    this.assertEqual([                  ], mir.slotsInModuleNamed('temp_mod_3').sort());
+    s3.setModule(m1);
+    s5.setModule(m1);
+    s2.setModule(m2);
+    this.assertEqual([null, m1, m2], mir.modules());
+    this.assertEqual([s1, s2, s3, s4, s5], mir.slotsInModuleNamed({}          ).sort());
+    this.assertEqual([s1,         s4    ], mir.slotsInModuleNamed(null        ).sort());
+    this.assertEqual([        s3,     s5], mir.slotsInModuleNamed('temp_mod_1').sort());
+    this.assertEqual([    s2            ], mir.slotsInModuleNamed('temp_mod_2').sort());
+    this.assertEqual([                  ], mir.slotsInModuleNamed('temp_mod_3').sort());
+    m1.uninstall();
+    m2.uninstall();
+    m3.uninstall();
+  });
+  
+  add.method('testFindingUnusedSlotNames', function() {
+    var i;
+    var o = {};
+    var mir = reflect(o);
+    this.assertEqual(0, mir.size());
+    for (i = 0; i < 20; ++i) { o[mir.findUnusedSlotName()] = i; }
+    this.assertEqual(20, mir.size());
+    for (i = 0; i < 30; ++i) { o[mir.findUnusedSlotName("prefix_")] = i + 1000; }
+    this.assertEqual(50, mir.size());
+  });
+  
+  add.method('testCreatingMirrorsByObjectName', function() {
+    this.assertIdentity(null,         mirror.forObjectNamed(['blahblahnothing'])            );
+    this.assertIdentity(mirror,       mirror.forObjectNamed(['mirror'         ]).reflectee());
+    this.assertIdentity(mirror.tests, mirror.forObjectNamed(['mirror', 'tests']).reflectee());
   });
 
 });

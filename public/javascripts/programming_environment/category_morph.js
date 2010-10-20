@@ -34,6 +34,10 @@ thisModule.addSlots(category.Presenter, function(add) {
   add.method('mirrorMorph', function () { return this._mirror.morph(); }, {category: ['accessing']});
 
   add.method('category', function () { return this._category; }, {category: ['accessing']});
+  
+  add.method('subcategory', function(name) {
+    return category.Presenter.create(this._mirror, this._category.subcategory(name));
+  });
 
   add.method('createModulesLabelRow', function () {
     var modulesLabel = TextMorph.createLabel(function() {return this.modulesSummaryString();}.bind(this));
@@ -94,6 +98,31 @@ thisModule.addSlots(category.Presenter, function(add) {
   add.method('eachNormalSlotInMeAndSubcategories', function (f) {
     this.mirror().eachSlotNestedSomewhereUnderCategory(this.category(), f);
   }, {category: ['iterating']});
+
+  add.method('rename', function (newName) {
+    var c = this.category();
+    var oldCat = c.copy();
+    var oldCatPrefixParts = oldCat.parts().map(function(p) {return p;});
+    var slotCount = 0;
+    this.eachNormalSlotInMeAndSubcategories(function(s) {
+      slotCount += 1;
+      var newCatParts = s.category().parts().map(function(p) {return p;});
+      
+      // Just for the sake of sanity, let's check to make sure this slot really is in this category.
+      for (var i = 0; i < oldCatPrefixParts.length; ++i) {
+        if (newCatParts[i] !== oldCatPrefixParts[i]) {
+          throw new Error("Assertion failure: renaming a category, but trying to recategorize a slot that's not in that category. ('" + newCatParts[i] + "' !== '" + oldCatPrefixParts[i] + "')");
+        }
+      }
+
+      newCatParts[oldCatPrefixParts.length - 1] = newName;
+      var newCat = category.create(newCatParts);
+      //console.log("Changing the category of " + s.name() + " from " + oldCat + " to " + newCat);
+      s.setCategory(newCat);
+    });
+    c.setLastPart(newName);
+    return {oldCat: oldCat, newCat: c, numberOfRenamedSlots: slotCount};
+  }, {category: ['renaming']});
 
   add.method('modules', function () {
     var modules = [];
@@ -185,9 +214,7 @@ thisModule.addSlots(category.MorphMixin, function(add) {
   add.method('addCategory', function (evt) {
     this.updateAppearance();
     this.expander().expand();
-    var c = this.category();
-    var cp = Object.newChildOf(category.Presenter, this.mirror(), c.subcategory(""));
-    var cm = new category.Morph(cp);
+    var cm = new category.Morph(this._categoryPresenter.subcategory(""));
     cm.isNewCategory = true;
     cm.horizontalLayoutMode = LayoutModes.SpaceFill;
     this._categoryPresenter.slotsPanel().addRow(cm);
@@ -304,28 +331,9 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('rename', function (newName, evt) {
-    var c = this.category();
-    var oldCat = c.copy();
-    var oldCatPrefixParts = oldCat.parts().map(function(p) {return p;});
-    var slotCount = 0;
-    this._categoryPresenter.eachNormalSlotInMeAndSubcategories(function(s) {
-      slotCount += 1;
-      var newCatParts = s.category().parts().map(function(p) {return p;});
-      
-      // Just for the sake of sanity, let's check to make sure this slot really is in this category.
-      for (var i = 0; i < oldCatPrefixParts.length; ++i) {
-        if (newCatParts[i] !== oldCatPrefixParts[i]) {
-          throw new Error("Assertion failure: renaming a category, but trying to recategorize a slot that's not in that category. ('" + newCatParts[i] + "' !== '" + oldCatPrefixParts[i] + "')");
-        }
-      }
-
-      newCatParts[oldCatPrefixParts.length - 1] = newName;
-      var newCat = category.create(newCatParts);
-      //console.log("Changing the category of " + s.name() + " from " + oldCat + " to " + newCat);
-      s.setCategory(newCat);
-    });
-    c.setLastPart(newName);
-    this.mirrorMorph().justRenamedCategoryMorphFor(oldCat, c, slotCount === 0);
+    // aaa - eww
+    var result = this._categoryPresenter.rename(newName);
+    this.mirrorMorph().justRenamedCategoryMorphFor(result.oldCat, result.newCat, result.numberOfRenamedSlots === 0);
   }, {category: ['renaming']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
@@ -344,6 +352,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   }, {category: ['UI state']});
 
   add.method('assumeUIState', function (uiState, evt) {
+    if (!uiState) { return; }
     this.expander().setExpanded(uiState.isExpanded);
   }, {category: ['UI state']});
 

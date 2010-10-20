@@ -1,4 +1,8 @@
-transporter.module.create('lk_ext/animation', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/animation', function(requires) {
+
+requires('core/quickhull');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {

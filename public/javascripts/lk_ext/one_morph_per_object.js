@@ -14,7 +14,13 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   }, {category: ['one morph per object']});
 
   add.method('morphFor', function (obj) {
-    return this.morphsByObject().getOrIfAbsentPut(obj, function() {return obj.newMorph();});
+    return this.morphsByObject().getOrIfAbsentPut(obj, function() {
+      if (typeof(obj.newMorph) === 'function') {
+        return obj.newMorph();
+      } else {
+        return new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
+      }
+    });
   });
 
 });
