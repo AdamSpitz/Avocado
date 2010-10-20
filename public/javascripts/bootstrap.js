@@ -300,6 +300,9 @@ window.waitForAllCallbacks = function(functionThatYieldsCallbacks, functionToRun
   if (! alreadyDone) { checkWhetherDone(); }
 };
 
+// aaa - This doesn't really belong here.
+window.javascriptReservedWords = {'abstract': true, 'boolean': true, 'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true, 'class': true, 'const': true, 'continue': true, 'debugger': true, 'default': true, 'delete': true, 'do': true, 'double': true, 'else': true, 'enum': true, 'export': true, 'extends': true, 'false': true, 'final': true, 'finally': true, 'float': true, 'for': true, 'function': true, 'goto': true, 'if': true, 'implements': true, 'import': true, 'in': true, 'instanceof': true, 'int': true, 'interface': true, 'long': true, 'native': true, 'new': true, 'null': true, 'package': true, 'private': true, 'protected': true, 'public': true, 'return': true, 'short': true, 'static': true, 'super': true, 'switch': true, 'synchronized': true, 'this': true, 'throw': true, 'throws': true, 'transient': true, 'true': true, 'try': true, 'typeof': true, 'var': true, 'volatile': true, 'void': true, 'while': true, 'with': true};
+
 
 window.avocado = {};
 annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
@@ -436,6 +439,14 @@ transporter.module.slotAdder = {
     if (typeof(contents.postFileIn) === 'function') {
       this.module.objectsWithAPostFileInMethod = this.module.objectsWithAPostFileInMethod || [];
       this.module.objectsWithAPostFileInMethod.push(contents);
+    }
+    
+    // aaa - Where's the right place to put this? How do we make sure that the stuff filed in before the
+    // senders code still has its senders indexed?
+    if (avocado.senders && avocado.senders.rememberIdentifiersUsedBy) {
+      if (typeof(contents) === 'function') {
+        avocado.senders.rememberIdentifiersUsedBy(contents, {slotHolder: this.holder, slotName: name});
+      }
     }
   },
 

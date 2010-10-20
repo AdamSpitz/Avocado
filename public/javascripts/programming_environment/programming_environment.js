@@ -130,7 +130,9 @@ thisModule.addSlots(avocado, function(add) {
     var shouldPrintLoadOrder = false;
     if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
     
-    avocado.creatorSlotMarker.annotateExternalObjects(true);
+    // I'm confused. Why is this here if it's already called from putUnownedSlotsInInitModule? -- Adam
+    // avocado.creatorSlotMarker.annotateExternalObjects(true);
+    
     window.categorizeGlobals();
 
     // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there

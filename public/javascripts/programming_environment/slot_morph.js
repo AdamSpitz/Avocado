@@ -468,12 +468,26 @@ thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
       }
     }
 
+    cmdList.addLine();
+    
     if (this.slot().wellKnownImplementors) {
-      cmdList.addSection([{label: "implementors", go: function(evt) {
+      cmdList.addItem({label: "implementors", go: function(evt) {
         var slice = new avocado.SliceMorph(avocado.implementorsFinder.create(this.slot().name()));
         slice.grabMe(evt);
         slice.redo();
-      }.bind(this)}]);
+      }.bind(this)});
+    }
+
+    if (this.slot().wellKnownSenders) {
+      cmdList.addItem({label: "senders", go: function(evt) {
+        var slot = this.slot();
+        var slice = new avocado.SliceMorph({
+          go:      function() { return slot.wellKnownSenders(); },
+          inspect: function() { return "senders of " + slot.name(); }
+        });
+        slice.grabMe(evt);
+        slice.redo();
+      }.bind(this)});
     }
     
     if (isModifiable && this.slot().contents().prettyPrint) {

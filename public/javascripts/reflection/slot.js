@@ -296,6 +296,10 @@ thisModule.addSlots(slots.plain, function(add) {
     return avocado.implementorsFinder.create(this.name()).go();
   }, {category: ['searching']});
 
+  add.method('wellKnownSenders', function () {
+    return avocado.senders.of(this.name()).map(function(x) { return reflect(x.slotHolder).slotAt(x.slotName); });
+  }, {category: ['searching']});
+
 });
 
 

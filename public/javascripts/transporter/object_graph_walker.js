@@ -7,17 +7,19 @@ requires('core/lk_TestFramework');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('objectGraphWalker', {}, {category: ['avocado', 'miscellaneous']});
+  add.creator('objectGraphWalker', {}, {category: ['object graph']});
 
-  add.creator('creatorSlotMarker', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
+  add.creator('creatorSlotMarker', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
-  add.creator('implementorsFinder', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
+  add.creator('implementorsFinder', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
-  add.creator('referenceFinder', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
+  add.creator('referenceFinder', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
-  add.creator('childFinder', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
+  add.creator('childFinder', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
-  add.creator('testingObjectGraphWalker', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous']});
+  add.creator('testingObjectGraphWalker', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
+  
+  add.creator('senders', {}, {category: ['object graph']});
 
 });
 
@@ -245,7 +247,7 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
     marker.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
     marker.reset();
     marker.walk(window);
-    // aaa - WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
+    // WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
     ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function'].each(function(typeName) {
         var type = window[typeName];
         var pathToType          = {                       slotHolder: window, slotName:  typeName   };
@@ -276,6 +278,9 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
         contentsAnno.addPossibleCreatorSlot(slotName, slotHolder);
       }
     }
+    
+    // Experimental - trying to make a way to search for "senders". Might be really slow; try it. -- Adam, Oct. 2010
+    avocado.senders.rememberIdentifiersUsedBy(contents, howDidWeGetHere);
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
@@ -287,6 +292,37 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
     annotator.annotationOf(holder).setSlotAnnotation(slotName, slotAnno);
   });
 
+});
+
+
+thisModule.addSlots(avocado.senders, function(add) {
+
+  add.data('byID', {}, {initializeTo: '{}'});
+  
+  add.method('of', function(id) {
+    return this.byID[id] || [];
+  });
+  
+  add.method('rememberIdentifiersUsedBy', function(f, howDidWeGetHere) {
+    if (typeof(f) !== 'function') { return; }
+    var str = f.toString();
+    var idRegex = /[A-Z_$a-z][A-Z_$0-9a-z]*/g;
+    var ids = str.match(idRegex);
+    if (!ids) { return; }
+    var sendersByID = this.byID;
+    for (var i = 0, n = ids.length; i < n; ++i) {
+      var id = ids[i];
+      if (!javascriptReservedWords[id]) {
+        var senders = sendersByID[id];
+        if (!senders) {
+          senders = [];
+          sendersByID[id] = senders;
+        }
+        senders.push(howDidWeGetHere);
+      }
+    }
+  });
+  
 });
 
 
