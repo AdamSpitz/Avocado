@@ -61,7 +61,7 @@ Object.extend = function extend(destination, source) {
 };
 
 
-window.annotator = {
+var annotator = {
   objectAnnotationPrototype: {
     _slotAnnoPrefix: 'anno_',
     
@@ -300,13 +300,19 @@ window.waitForAllCallbacks = function(functionThatYieldsCallbacks, functionToRun
   if (! alreadyDone) { checkWhetherDone(); }
 };
 
-// aaa - This doesn't really belong here.
-window.javascriptReservedWords = {'abstract': true, 'boolean': true, 'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true, 'class': true, 'const': true, 'continue': true, 'debugger': true, 'default': true, 'delete': true, 'do': true, 'double': true, 'else': true, 'enum': true, 'export': true, 'extends': true, 'false': true, 'final': true, 'finally': true, 'float': true, 'for': true, 'function': true, 'goto': true, 'if': true, 'implements': true, 'import': true, 'in': true, 'instanceof': true, 'int': true, 'interface': true, 'long': true, 'native': true, 'new': true, 'null': true, 'package': true, 'private': true, 'protected': true, 'public': true, 'return': true, 'short': true, 'static': true, 'super': true, 'switch': true, 'synchronized': true, 'this': true, 'throw': true, 'throws': true, 'transient': true, 'true': true, 'try': true, 'typeof': true, 'var': true, 'volatile': true, 'void': true, 'while': true, 'with': true};
-annotator.annotationOf(window).setSlotAnnotation('javascriptReservedWords', {category: ['avocado']});
-
 window.avocado = {};
 annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
 annotator.annotationOf(window).setSlotAnnotation('avocado', {category: ['avocado']});
+
+avocado.annotator = annotator;
+annotator.annotationOf(avocado.annotator).setCreatorSlot('annotator', avocado);
+annotator.annotationOf(avocado).setSlotAnnotation('annotator', {category: ['annotations']});
+
+// aaa - This doesn't really belong here.
+avocado.javascript = {};
+annotator.annotationOf(avocado.javascript).setCreatorSlot('javascript', avocado);
+annotator.annotationOf(avocado).setSlotAnnotation('javascript', {category: ['javascript']});
+avocado.javascript.reservedWords = {'abstract': true, 'boolean': true, 'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true, 'class': true, 'const': true, 'continue': true, 'debugger': true, 'default': true, 'delete': true, 'do': true, 'double': true, 'else': true, 'enum': true, 'export': true, 'extends': true, 'false': true, 'final': true, 'finally': true, 'float': true, 'for': true, 'function': true, 'goto': true, 'if': true, 'implements': true, 'import': true, 'in': true, 'instanceof': true, 'int': true, 'interface': true, 'long': true, 'native': true, 'new': true, 'null': true, 'package': true, 'private': true, 'protected': true, 'public': true, 'return': true, 'short': true, 'static': true, 'super': true, 'switch': true, 'synchronized': true, 'this': true, 'throw': true, 'throws': true, 'transient': true, 'true': true, 'try': true, 'typeof': true, 'var': true, 'volatile': true, 'void': true, 'while': true, 'with': true};
 
 window.modules = {};
 annotator.annotationOf(modules).setCreatorSlot('modules', window);
@@ -463,6 +469,8 @@ transporter.module.addSlots = function(holder, block) {
   slotAdder.holder = holder;
   block(slotAdder);
 };
+
+annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__annotation__', 'bootstrapTheModuleSystem', 'hackToMakeSuperWork', 'livelyBaseURL', 'loadTheLKTestFramework', 'modules', 'prototypeAttributeIsEnumerable', 'transporter', 'waitForAllCallbacks', 'currentUser', 'doneLoadingWindow', 'isDoneLoading', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'worldHasBeenCreated', 'isInCodeOrganizingMode']);
 
 transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
 };

@@ -167,7 +167,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     // Would use an identity dictionary here, if JavaScript could do one. As it is, we'll
     // have to mark the annotation and then come by again and unmark it.
     var objectAnno;
-    try { objectAnno = annotator.annotationOf(object); } catch (ex) { return false; } // stupid FireFox bug
+    try { objectAnno = avocado.annotator.annotationOf(object); } catch (ex) { return false; } // stupid FireFox bug
     var walkers = objectAnno.walkers = objectAnno.walkers || (window.avocado && avocado.set && Object.newChildOf(avocado.set, avocado.hashTable.identityComparator)) || [];
     if (walkers.include(this)) { return false; }
     walkers.push(this);
@@ -270,7 +270,7 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
     var contentsAnno;
     var slotHolder = howDidWeGetHere.slotHolder;
     var slotName   = howDidWeGetHere.slotName;
-    try { contentsAnno = annotator.annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
+    try { contentsAnno = avocado.annotator.annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
     if (shouldExplicitlySetIt) {
       contentsAnno.setCreatorSlot(slotName, slotHolder);
     } else {
@@ -285,11 +285,11 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
 
   add.method('reachedSlot', function (holder, slotName, contents) {
     if (! this.moduleForExpatriateSlots) { return; }
-    var existingSlotAnno = annotator.existingSlotAnnotation(holder, slotName);
+    var existingSlotAnno = avocado.annotator.existingSlotAnnotation(holder, slotName);
     var slotAnno = existingSlotAnno || {};
     if (slotAnno.module) { return; }
     slotAnno.module = this.moduleForExpatriateSlots;
-    annotator.annotationOf(holder).setSlotAnnotation(slotName, slotAnno);
+    avocado.annotator.annotationOf(holder).setSlotAnnotation(slotName, slotAnno);
   });
 
 });
@@ -314,7 +314,7 @@ thisModule.addSlots(avocado.senders, function(add) {
     var sendersByID = this.byID;
     for (var i = 0, n = ids.length; i < n; ++i) {
       var id = ids[i];
-      if (!javascriptReservedWords[id]) {
+      if (!avocado.javascript.reservedWords[id]) {
         var senders = sendersByID[id];
         if (!senders) {
           senders = [];

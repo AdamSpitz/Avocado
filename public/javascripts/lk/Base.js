@@ -367,12 +367,12 @@ Object.extend(Function.prototype, {
 			klass.prototype.constructor.displayName = className; // for debugging, because name can not be assigned
 			if (className) {
 			  targetScope[shortName] = klass; // otherwise it's anonymous
-			  annotator.annotationOf(klass).setCreatorSlot(shortName, targetScope); // aaa - kind of a hack, added by Adam so that we can file out Morph subclasses
+			  avocado.annotator.annotationOf(klass).setCreatorSlot(shortName, targetScope); // aaa - kind of a hack, added by Adam so that we can file out Morph subclasses
 			  
 			  // aaa - Another hack to avoid having hundreds of uncategorized classes cluttering
 			  // up the global namespace. -- Adam, August 2010
 			  if (targetScope === Global) {
-			    annotator.annotationOf(Global).categorize(['JSQuiche', 'lively kernel'], [shortName]);
+			    avocado.annotator.annotationOf(Global).categorize(['avocado', 'lively kernel'], [shortName]);
 			  }
 
 			}

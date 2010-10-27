@@ -1,7 +1,7 @@
 transporter.module.create('reflection/annotation', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(annotator, function(add) {
+thisModule.addSlots(avocado.annotator, function(add) {
 
   add.method('creatorChainLength', function (o) {
     var len = 0;
@@ -19,7 +19,7 @@ thisModule.addSlots(annotator, function(add) {
 });
 
 
-thisModule.addSlots(annotator.objectAnnotationPrototype, function(add) {
+thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
 
   add.method('categorize', function (catParts, slotNames) {
     // Just a shortcut to let us categorize a bunch of slots at a time.
@@ -47,7 +47,7 @@ thisModule.addSlots(annotator.objectAnnotationPrototype, function(add) {
     var shortestLength;
     for (var i = 0, n = slots.length; i < n; ++i) {
       var s = slots[i];
-      var sLength = annotator.creatorChainLength(s.holder);
+      var sLength = avocado.annotator.creatorChainLength(s.holder);
       if (typeof(sLength) === 'number') {
         if (!shortest || sLength < shortestLength) {
           // This one's shorter, so probably better; use it instead.

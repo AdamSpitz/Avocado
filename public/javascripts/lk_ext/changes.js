@@ -149,7 +149,9 @@ Class.newInitializer = function(name) {
   var c = eval(Class.initializerTemplate.replace(/CLASS/g, name) + ";" + name);
   
   // Put it in a category so that it doesn't clutter up the window object. -- Adam
-  if (window.annotator && name.startsWith('anonymous_')) { annotator.annotationOf(window).setSlotAnnotation(name, {category: ['anonymous classes']}); }
+  if (window.avocado && avocado.annotator && name.startsWith('anonymous_')) {
+    avocado.annotator.annotationOf(window).setSlotAnnotation(name, {category: ['anonymous classes']});
+  }
 
   return c;
 };

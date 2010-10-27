@@ -630,7 +630,7 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
   }, {category: ['writing']});
 
   add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
-    this._buffer.append("  annotator.annotationOf(");
+    this._buffer.append("  avocado.annotator.annotationOf(");
     this._buffer.append(parentSlot.contents().creatorSlotChainExpression());
     this._buffer.append(").setCreatorSlot(").append(parentSlot.name().inspect());
     this._buffer.append(", ").append(parentSlot.holder().creatorSlotChainExpression());
@@ -738,7 +738,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
         var cdps = contents.copyDownParents();
         cdps.each(function(cdp) {
           var copyDownParent = reflect(cdp.parent);
-          var slotsToOmit = annotator.adjustSlotsToOmit(cdp.slotsToOmit);
+          var slotsToOmit = avocado.annotator.adjustSlotsToOmit(cdp.slotsToOmit);
           var copyDownParentCreatorSlot = copyDownParent.theCreatorSlot();
           if (copyDownParentCreatorSlot && copyDownParentCreatorSlot.module() === this._module) {
             this._slotDeps.contentDeps.addDependency(s, copyDownParentCreatorSlot);

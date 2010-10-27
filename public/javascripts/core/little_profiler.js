@@ -3,7 +3,7 @@ transporter.module.create('core/little_profiler', function(requires) {}, functio
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('littleProfiler', {}, {}, {comment: 'Nothing clever, just a little object for helping to see where the time is going in a method.'});
+  add.creator('littleProfiler', {}, {category: ['profiling']}, {comment: 'Nothing clever, just a little object for helping to see where the time is going in a method.'});
 
 });
 

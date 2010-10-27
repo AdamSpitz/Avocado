@@ -4,12 +4,14 @@ transporter.module.create('lk_ext/transporting_morphs', function(requires) {}, f
 thisModule.addSlots(modules['lk_ext/transporting_morphs'], function(add) {
 
   add.method('postFileIn', function () {
-    annotator.annotationOf(lively.paint.LinearGradient.NorthSouth).setCreatorSlot('NorthSouth', lively.paint.LinearGradient);
-    annotator.annotationOf(lively.paint.LinearGradient.SouthNorth).setCreatorSlot('SouthNorth', lively.paint.LinearGradient);
-    annotator.annotationOf(lively.paint.LinearGradient.EastWest  ).setCreatorSlot('EastWest',   lively.paint.LinearGradient);
-    annotator.annotationOf(lively.paint.LinearGradient.WestEast  ).setCreatorSlot('WestEast',   lively.paint.LinearGradient);
-    annotator.annotationOf(lively.paint.LinearGradient.SouthWest ).setCreatorSlot('SouthWest',  lively.paint.LinearGradient);
-    annotator.annotationOf(lively.paint.LinearGradient.SouthEast ).setCreatorSlot('SouthEast',  lively.paint.LinearGradient);
+    var annotator = avocado.annotator;
+    var g = lively.paint.LinearGradient;
+    annotator.annotationOf(g.NorthSouth).setCreatorSlot('NorthSouth', g);
+    annotator.annotationOf(g.SouthNorth).setCreatorSlot('SouthNorth', g);
+    annotator.annotationOf(g.EastWest  ).setCreatorSlot('EastWest',   g);
+    annotator.annotationOf(g.WestEast  ).setCreatorSlot('WestEast',   g);
+    annotator.annotationOf(g.SouthWest ).setCreatorSlot('SouthWest',  g);
+    annotator.annotationOf(g.SouthEast ).setCreatorSlot('SouthEast',  g);
   });
 
 });

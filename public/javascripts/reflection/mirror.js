@@ -142,9 +142,9 @@ thisModule.addSlots(mirror, function(add) {
     if (this.isReflecteeFunction() && this.reflecteeHasOwnProperty('superclass')) { return true; }
     return false;
   }, {category: ['testing']});
-
+  
   add.method('canSlotNameBeUsedAsJavascriptToken', function (n) {
-    if (javascriptReservedWords[n]) { return false; }
+    if (avocado.javascript.reservedWords[n]) { return false; }
     // aaa - What about Unicode?
     return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(n);
   }, {category: ['testing']});
@@ -484,7 +484,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['annotations', 'creator slot']});
 
   add.method('creatorSlotChainLength', function () {
-    return annotator.creatorChainLength(this.reflectee());
+    return avocado.annotator.creatorChainLength(this.reflectee());
   }, {category: ['annotations', 'creator slot']});
 
   add.method('hasMultiplePossibleCreatorSlots', function () {
@@ -576,7 +576,7 @@ thisModule.addSlots(mirror, function(add) {
       p.setModuleRecursively(m);
     }
   }, {category: ['annotations', 'module']});
-
+  
   add.method('slotsInModuleNamed', function (moduleName) {
     // Pass in '-' or null if you want unowned slots.
     // Pass in something like {} if you want all non-copied-down slots.
@@ -634,7 +634,7 @@ thisModule.addSlots(mirror, function(add) {
   add.method('annotation', function () {
     if (this._cachedAnnotation) { return this._cachedAnnotation; }
     if (! this.canHaveAnnotation()) { return null; }
-    var a = annotator.existingAnnotationOf(this.reflectee());
+    var a = avocado.annotator.existingAnnotationOf(this.reflectee());
     if (a) { this._cachedAnnotation = a; }
     return a;
   }, {category: ['annotations']});
@@ -642,7 +642,7 @@ thisModule.addSlots(mirror, function(add) {
   add.method('annotationForWriting', function () {
     if (this._cachedAnnotation) { return this._cachedAnnotation; }
     if (! this.canHaveAnnotation()) { throw this.name() + " cannot have an annotation"; }
-    var a = annotator.annotationOf(this.reflectee());
+    var a = avocado.annotator.annotationOf(this.reflectee());
     if (a) { this._cachedAnnotation = a; }
     return a;
   }, {category: ['annotations']});
@@ -925,7 +925,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     // call $super still respond with true to isReflecteeSimpleMethod().
     return $super();
   });
-
+  
   add.method('createNestedClasses', function (f) {
     Object.subclass("Argle", {});
     Object.subclass("Argle.prototype.Bargle", {});
@@ -1118,7 +1118,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     a.pushAndAdjustCreatorSlots(avocado.dictionary); // a well-known object shouldn't have its creator slot changed
     this.assertEqual(reflect(avocado).slotAt('dictionary'), reflect(avocado.dictionary).theCreatorSlot());
   });
-
+  
   add.method('testGettingSlotsByModule', function () {
     var o = {};
     var p = {copiedDown1: 'copiedDown1', copiedDown2: 'copiedDown2'};
@@ -1153,8 +1153,8 @@ thisModule.addSlots(mirror.tests, function(add) {
     m2.uninstall();
     m3.uninstall();
   });
-
-  add.method('testFindingUnusedSlotNames', function () {
+  
+  add.method('testFindingUnusedSlotNames', function() {
     var i;
     var o = {};
     var mir = reflect(o);
@@ -1164,8 +1164,8 @@ thisModule.addSlots(mirror.tests, function(add) {
     for (i = 0; i < 30; ++i) { o[mir.findUnusedSlotName("prefix_")] = i + 1000; }
     this.assertEqual(50, mir.size());
   });
-
-  add.method('testCreatingMirrorsByObjectName', function () {
+  
+  add.method('testCreatingMirrorsByObjectName', function() {
     this.assertIdentity(null,         mirror.forObjectNamed(['blahblahnothing'])            );
     this.assertIdentity(mirror,       mirror.forObjectNamed(['mirror'         ]).reflectee());
     this.assertIdentity(mirror.tests, mirror.forObjectNamed(['mirror', 'tests']).reflectee());
