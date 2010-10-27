@@ -110,7 +110,7 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
   }, {category: ['vertices']});
 
   add.method('disappear', function (callWhenDone) {
-    waitForAllCallbacks(function(finalCallback) {
+    avocado.callbackWaiter.on(function(finalCallback) {
       this.endpoint1.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback());
       this.endpoint2.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback());
     }.bind(this), function() {

@@ -152,7 +152,7 @@ var Class = (function() {
   function extend(destination, source) {
     // aaa: Hacked by Adam, not sure what else to do.
     for (var property in source) {
-      if (property !== '__annotation__') {
+      if (property !== '__oid__') {
         destination[property] = source[property];
       }
     }
@@ -185,7 +185,7 @@ var Class = (function() {
 
     var results = [];
     for (var property in object) {
-      if (property !== '__annotation__') { // added by Adam to prevent infinite recursion
+      if (property !== '__oid__') { // added by Adam to prevent infinite recursion
 	var value = toJSON(object[property]);
 	if (!isUndefined(value))
 	  results.push(property.toJSON() + ': ' + value);

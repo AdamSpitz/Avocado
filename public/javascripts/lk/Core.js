@@ -1387,7 +1387,7 @@ lively.data.Wrapper.subclass('Morph', {
     layoutHandler: null, //a LayoutHandler for special response to setExtent, etc
     openForDragAndDrop: true, // Submorphs can be extracted from or dropped into me
     mouseHandler: MouseHandlerForDragging.prototype, //a MouseHandler for mouse sensitivity, etc
-    noShallowCopyProperties: ['id', 'rawNode', 'shape', 'submorphs', 'defs', 'activeScripts', 'nextNavigableSibling', 'focusHalo', 'fullBounds', '__annotation__'], // __annotation__ added by Adam
+    noShallowCopyProperties: ['id', 'rawNode', 'shape', 'submorphs', 'defs', 'activeScripts', 'nextNavigableSibling', 'focusHalo', 'fullBounds', '__oid__'], // __oid__ added by Adam
     isEpimorph: false, // temporary additional morph that goes away quickly, not included in bounds
 
     suppressBalloonHelp: Config.suppressBalloonHelp,

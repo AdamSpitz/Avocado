@@ -155,7 +155,7 @@ thisModule.addSlots(organizationChain, function(add) {
   });
 
   add.method('update', function (callWhenDone) {
-    waitForAllCallbacks(function(finalCallback) {
+    avocado.callbackWaiter.on(function(finalCallback) {
       this._org1.update(finalCallback());
       this._org2.update(finalCallback());
     }.bind(this), callWhenDone);

@@ -399,7 +399,7 @@ Object.extend(Function.prototype, {
 		var className = this.type || "Anonymous";
 
 		for (var property in source) {
-		  if (property !== '__annotation__') { // aaa - Hacked by Adam, not sure what else to do.
+		  if (property !== '__oid__') { // aaa - Hacked by Adam, not sure what else to do.
 			var getter = source.__lookupGetter__(property);
 			if (getter) this.prototype.__defineGetter__(property, getter);
 			var setter = source.__lookupSetter__(property);
@@ -925,7 +925,7 @@ Namespace.addMethods({ // module specific, should be a subclass?
 		
 	isLoading: function() {
 		// aaa - hack added by Adam to enable static loading
-		if (window.isLoadingStatically) {return true;}
+		if (window.avocado && avocado.isLoadingStatically) {return true;}
 
 		// aaa - another hack added by Adam, to enable XHR+eval loading
 		if (window.transporter && typeof transporter.loadedURLs[this.uri()] === 'function') {return true;}
@@ -2372,7 +2372,7 @@ namespace('lively.data');
 // FIXME the following does not really belong to Base should be somewhere else
 Record.subclass('lively.data.DOMRecord', {
 	description: "base class for records backed by a DOM Node",
-	noShallowCopyProperties: ['id', 'rawNode', '__annotation__'], // __annotation__ added by Adam
+	noShallowCopyProperties: ['id', 'rawNode', '__oid__'], // __oid__ added by Adam
 
 	initialize: function($super, store, argSpec) {
 		$super(store, argSpec);

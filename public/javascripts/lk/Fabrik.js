@@ -1935,7 +1935,7 @@ Widget.subclass('Component', {
     
     morphClass: ComponentMorph,
 
-	noShallowCopyProperties: ['id', 'rawNode',  'formalModel', 'actualModel', 'pinHandles', 'panel', '__annotation__'], // __annotation__ added by Adam
+	noShallowCopyProperties: ['id', 'rawNode',  'formalModel', 'actualModel', 'pinHandles', 'panel', '__oid__'], // __oid__ added by Adam
 
     initialize: function($super) {
         $super();

@@ -3175,7 +3175,7 @@ lively.data.Wrapper.subclass('Widget', ViewTrait, { // FIXME remove code duplica
     documentation: "Nonvisual component of a widget",
     useLightFrame: false,
     
-       noShallowCopyProperties: ['id', 'rawNode',  'formalModel', 'actualModel', '__annotation__'], // __annotation__ added by Adam
+       noShallowCopyProperties: ['id', 'rawNode',  'formalModel', 'actualModel', '__oid__'], // __oid__ added by Adam
 
 
     getViewTitle: function() { // a string or a TextMorph

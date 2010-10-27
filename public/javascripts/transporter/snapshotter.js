@@ -25,16 +25,16 @@ thisModule.addSlots(avocado.snapshotter, function(add) {
     this._buffer = avocado.stringBuffer.create();
   });
 
-  add.data('namesToIgnore', ["__snapshotNumberOfOID__", "__snapshotNumber__", "__oid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__snapshotNumberOfOID__", "__snapshotNumber__", "__oid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
+  add.data('namesToIgnore', ["__snapshotNumberOfOID__", "__snapshotNumber__", "__snapoid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__snapshotNumberOfOID__", "__snapshotNumber__", "__snapoid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
 
   add.data('shouldWalkIndexables', true);
 
   add.method('oidForObject', function (o) {
-    if (o.hasOwnProperty('__snapshotNumberOfOID__') && o.__snapshotNumberOfOID__ === this._number) { return o.__oid__; }
+    if (o.hasOwnProperty('__snapshotNumberOfOID__') && o.__snapshotNumberOfOID__ === this._number) { return o.__snapoid__; }
     var parent = o['__proto__'];
     if (parent) { this.oidForObject(parent); } // make sure the parent gets created before the child
     var oid = this._objectsByOID.length;
-    o.__oid__ = oid;
+    o.__snapoid__ = oid;
     this._objectsByOID.push(o);
     o.__snapshotNumberOfOID__ = this._number;
     return oid;

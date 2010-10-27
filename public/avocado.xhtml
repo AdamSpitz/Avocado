@@ -13,15 +13,16 @@
 <script type="text/ecmascript" src="javascripts/main.js"></script>
 
 <script>
-function doneLoadingWindow() {
-  window.isDoneLoading = true;
+if (! window.hasOwnProperty('avocado')) { window.avocado = {}; }
+avocado.doneLoadingWindow = function() {
+  transporter.isDoneLoadingWindow = true;
   transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
-}
+};
 </script>
 
 </head>
 
-<body id="body" style="margin: 0px" onload="doneLoadingWindow()">
+<body id="body" style="margin: 0px" onload="avocado.doneLoadingWindow()">
 
 <svg id="canvas"
      width="100%" height="800px"

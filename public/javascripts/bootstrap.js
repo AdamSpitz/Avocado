@@ -14,7 +14,14 @@ if (typeof Object.newChildOf !== 'function') {
   Object.newChildOf = function(parent) {
     var child = Object.create(parent);
     if (child.initialize) {
-      var args = $A(arguments); args.shift();
+      var args;
+      if (typeof($A) !== 'undefined') {
+        args = $A(arguments);
+        args.shift();
+      } else {
+        args = [];
+        for (var i = 1, n = arguments.length; i < n; ++i) { args.push(arguments[i]); }
+      }
       child.initialize.apply(child, args);
     }
     return child;
@@ -25,7 +32,7 @@ if (typeof Object.shallowCopy !== 'function') {
   Object.shallowCopy = function(o) {
     var c = Object.create(o['__proto__']);
     for (var property in o) {
-      if (o.hasOwnProperty(property) && property !== '__annotation__') {
+      if (o.hasOwnProperty(property) && property !== '__oid__') {
         c[property] = o[property];
       }
     }
@@ -34,26 +41,10 @@ if (typeof Object.shallowCopy !== 'function') {
 }
 
 
-// Seems like Chrome doesn't actually enumerate the "prototype" slot.
-// This is just a simple test to see.
-(function() {
-  function SomeConstructor() {}
-  SomeConstructor.prototype.someAttribute = 42;
-  window.prototypeAttributeIsEnumerable = false;
-  for (var name in SomeConstructor) {
-    if (SomeConstructor.hasOwnProperty(name)) {
-      if (name === 'prototype') {
-        window.prototypeAttributeIsEnumerable = true;
-      }
-    }
-  }
-})();
-
-
 // Gotta overwrite Prototype's Object.extend, or bad things happen with annotations.
 Object.extend = function extend(destination, source) {
   for (var property in source) {
-    if (property !== '__annotation__') {
+    if (property !== '__oid__') {
       destination[property] = source[property];
     }
   }
@@ -176,10 +167,9 @@ var annotator = {
     // So we'll hard-code their OIDs here.
     if (o === Object.prototype) { return 0; }
     if (o ===  Array.prototype) { return 1; }
-    // aaaaaaa rename __annotation__ to __oid__
-    if (o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
+    if (o.hasOwnProperty('__oid__')) { return o.__oid__; }
     var oid = this._nextOID++;
-    o.__annotation__ = oid;
+    o.__oid__ = oid;
     return oid;
   },
 
@@ -230,7 +220,7 @@ var annotator = {
     if (typeof slotsToOmit === 'string') {
       slotsToOmit = slotsToOmit.split(" ");
     }
-    slotsToOmit.push('__annotation__');
+    slotsToOmit.push('__oid__');
     return slotsToOmit;
   }
 };
@@ -261,46 +251,7 @@ window.hackToMakeSuperWork = function(holder, property, contents) {
   return value;
 };
 
-
-window.waitForAllCallbacks = function(functionThatYieldsCallbacks, functionToRunWhenDone, aaa_name) {
-  var callbacks = [];
-  var numberOfCallsExpected = 0;
-  var numberCalledSoFar = 0;
-  var doneYieldingCallbacks = false;
-  var alreadyDone = false;
-  
-  var checkWhetherDone = function() {
-    if (alreadyDone) {
-      throw "Whoa, called a callback again after we're already done.";
-    }
-
-    if (! doneYieldingCallbacks) { return; }
-
-    if (numberCalledSoFar >= numberOfCallsExpected) {
-      alreadyDone = true;
-      //console.log("OK, we seem to be done " + aaa_name + ". Here are the subguys: " + callbacks.map(function(cb) {return cb.aaa_name;}).join(', '));
-      if (functionToRunWhenDone) { functionToRunWhenDone(); }
-    }
-  };
-
-  functionThatYieldsCallbacks(function() {
-    numberOfCallsExpected += 1;
-    var callback = function() {
-      if (callback.alreadyCalled) {
-        throw "Wait a minute, this one was already called!";
-      }
-      callback.alreadyCalled = true;
-      numberCalledSoFar += 1;
-      checkWhetherDone();
-    };
-    callbacks.push(callback);
-    return callback;
-  });
-  doneYieldingCallbacks = true;
-  if (! alreadyDone) { checkWhetherDone(); }
-};
-
-window.avocado = {};
+if (! window.hasOwnProperty('avocado')) { window.avocado = {}; }
 annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
 annotator.annotationOf(window).setSlotAnnotation('avocado', {category: ['avocado']});
 
@@ -308,11 +259,78 @@ avocado.annotator = annotator;
 annotator.annotationOf(avocado.annotator).setCreatorSlot('annotator', avocado);
 annotator.annotationOf(avocado).setSlotAnnotation('annotator', {category: ['annotations']});
 
-// aaa - This doesn't really belong here.
 avocado.javascript = {};
 annotator.annotationOf(avocado.javascript).setCreatorSlot('javascript', avocado);
 annotator.annotationOf(avocado).setSlotAnnotation('javascript', {category: ['javascript']});
+
 avocado.javascript.reservedWords = {'abstract': true, 'boolean': true, 'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true, 'class': true, 'const': true, 'continue': true, 'debugger': true, 'default': true, 'delete': true, 'do': true, 'double': true, 'else': true, 'enum': true, 'export': true, 'extends': true, 'false': true, 'final': true, 'finally': true, 'float': true, 'for': true, 'function': true, 'goto': true, 'if': true, 'implements': true, 'import': true, 'in': true, 'instanceof': true, 'int': true, 'interface': true, 'long': true, 'native': true, 'new': true, 'null': true, 'package': true, 'private': true, 'protected': true, 'public': true, 'return': true, 'short': true, 'static': true, 'super': true, 'switch': true, 'synchronized': true, 'this': true, 'throw': true, 'throws': true, 'transient': true, 'true': true, 'try': true, 'typeof': true, 'var': true, 'volatile': true, 'void': true, 'while': true, 'with': true};
+
+// Seems like Chrome doesn't actually enumerate the "prototype" slot.
+// This is just a simple test to see.
+(function() {
+  function SomeConstructor() {}
+  SomeConstructor.prototype.someAttribute = 42;
+  avocado.javascript.prototypeAttributeIsEnumerable = false;
+  for (var name in SomeConstructor) {
+    if (SomeConstructor.hasOwnProperty(name)) {
+      if (name === 'prototype') {
+        avocado.javascript.prototypeAttributeIsEnumerable = true;
+      }
+    }
+  }
+})();
+
+
+avocado.callbackWaiter = {
+  on: function(functionThatYieldsCallbacks, functionToRunWhenDone, name) {
+    return Object.newChildOf(this, functionToRunWhenDone, name).yieldCallbacks(functionThatYieldsCallbacks);
+  },
+  
+  initialize: function(functionToRunWhenDone, name) {
+    this._name = name;
+    this._functionToRunWhenDone = functionToRunWhenDone;
+    this._callbacks = [];
+    this._numberOfCallsExpected = 0;
+    this._numberCalledSoFar = 0;
+    this._doneYieldingCallbacks = false;
+    this._alreadyDone = false;
+  },
+  
+  yieldCallbacks: function(functionThatYieldsCallbacks) {
+    var thisWaiter = this;
+    functionThatYieldsCallbacks(function() { return thisWaiter.createCallback(); });
+    this._doneYieldingCallbacks = true;
+    if (! this._alreadyDone) { this.checkWhetherDone(); }
+  },
+  
+  checkWhetherDone: function() {
+    if (this._alreadyDone) {
+      throw "Whoa, called a callback again after we're already done.";
+    }
+
+    if (! this._doneYieldingCallbacks) { return; }
+
+    if (this._numberCalledSoFar >= this._numberOfCallsExpected) {
+      this._alreadyDone = true;
+      if (this._functionToRunWhenDone) { this._functionToRunWhenDone(); }
+    }
+  },
+  
+  createCallback: function() {
+    this._numberOfCallsExpected += 1;
+    var thisWaiter = this;
+    var callback = function() {
+      if (callback.alreadyCalled) { throw new Error("Wait a minute, this one was already called!"); }
+      callback.alreadyCalled = true;
+      thisWaiter._numberCalledSoFar += 1;
+      thisWaiter.checkWhetherDone();
+    };
+    this._callbacks.push(callback);
+    return callback;
+  }
+};
+annotator.annotationOf(avocado.callbackWaiter).setCreatorSlot('callbackWaiter', avocado);
+annotator.annotationOf(avocado).setSlotAnnotation('callbackWaiter', {category: ['callbacks']});
 
 window.modules = {};
 annotator.annotationOf(modules).setCreatorSlot('modules', window);
@@ -347,7 +365,7 @@ transporter.module.named = function(n) {
 transporter.module.create = function(n, reqBlock, contentsBlock) {
   if (modules[n]) { throw 'The ' + n + ' module is already loaded.'; }
   var newModule = this.named(n);
-  waitForAllCallbacks(function(finalCallback) {
+  avocado.callbackWaiter.on(function(finalCallback) {
     reqBlock(function(reqName) {
       newModule.requires(reqName, Object.extend(finalCallback(), {aaa_name: reqName}));
     });
@@ -470,7 +488,7 @@ transporter.module.addSlots = function(holder, block) {
   block(slotAdder);
 };
 
-annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__annotation__', 'bootstrapTheModuleSystem', 'hackToMakeSuperWork', 'livelyBaseURL', 'loadTheLKTestFramework', 'modules', 'prototypeAttributeIsEnumerable', 'transporter', 'waitForAllCallbacks', 'currentUser', 'doneLoadingWindow', 'isDoneLoading', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'worldHasBeenCreated', 'isInCodeOrganizingMode']);
+annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__oid__', 'bootstrapTheModuleSystem', 'hackToMakeSuperWork', 'livelyBaseURL', 'loadTheLKTestFramework', 'modules', 'transporter', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
 
 transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
 };
@@ -699,15 +717,15 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded', function () {
-    if (transporter.isDoneLoadingAvocadoLib && window.isDoneLoading) {
+    if (transporter.isDoneLoadingAvocadoLib && transporter.isDoneLoadingWindow) {
       transporter.createAvocadoWorld();
-      window.worldHasBeenCreated = true;
+      avocado.worldHasBeenCreated = true;
       this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
     }
   }, {category: ['bootstrapping']});
 
   add.method('initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated', function (callWhenDone) {
-    if (this.isDoneLoadingProgrammingEnvironment && window.worldHasBeenCreated) {
+    if (this.isDoneLoadingProgrammingEnvironment && avocado.worldHasBeenCreated) {
       var shouldPrintLoadOrder = false;
       if (shouldPrintLoadOrder) { this.printLoadOrder(); }
 
