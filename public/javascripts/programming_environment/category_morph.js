@@ -34,8 +34,8 @@ thisModule.addSlots(category.Presenter, function(add) {
   add.method('mirrorMorph', function () { return this._mirror.morph(); }, {category: ['accessing']});
 
   add.method('category', function () { return this._category; }, {category: ['accessing']});
-  
-  add.method('subcategory', function(name) {
+
+  add.method('subcategory', function (name) {
     return category.Presenter.create(this._mirror, this._category.subcategory(name));
   });
 

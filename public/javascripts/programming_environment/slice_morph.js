@@ -6,36 +6,36 @@ requires('lk_ext/rows_and_columns');
 
 
 thisModule.addSlots(avocado, function(add) {
-  
+
   add.method('SliceMorph', function SliceMorph() { Class.initializer.apply(this, arguments); }, {category: ['slices']});
 
 });
 
 
 thisModule.addSlots(avocado.senders.finder, function(add) {
-  
-  add.method('newMorph', function() {
+
+  add.method('newMorph', function () {
     return new avocado.SliceMorph(this);
   });
-  
+
 });
 
 
 thisModule.addSlots(avocado.implementorsFinder, function(add) {
-  
-  add.method('newMorph', function() {
+
+  add.method('newMorph', function () {
     return new avocado.SliceMorph(this);
   });
-  
+
 });
 
 
 thisModule.addSlots(avocado.referenceFinder, function(add) {
-  
-  add.method('newMorph', function() {
+
+  add.method('newMorph', function () {
     return new avocado.SliceMorph(this);
   });
-  
+
 });
 
 

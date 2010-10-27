@@ -7,7 +7,7 @@ requires('transporter/object_graph_walker');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('snapshotter', Object.create(avocado.objectGraphWalker), {category: ['avocado', 'miscellaneous'], comment: 'Does not actually work yet; may not even be possible\nwithout reflective access to local variables.'});
+  add.creator('snapshotter', Object.create(avocado.objectGraphWalker), {comment: 'Does not actually work yet; may not even be possible\nwithout reflective access to local variables.', category: ['avocado', 'miscellaneous']});
 
 });
 
@@ -120,8 +120,8 @@ thisModule.addSlots(avocado.snapshotter, function(add) {
 
     return setupBuf.concat(this._buffer, tearDownBuf).toString();
   });
-  
-  add.method('saveSnapshot', function() {
+
+  add.method('saveSnapshot', function () {
     this.walk(window);
     var snapshot = this.completeSnapshotText();
 

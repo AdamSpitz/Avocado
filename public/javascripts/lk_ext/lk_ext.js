@@ -31,17 +31,17 @@ requires('lk_ext/world_navigation');
 
 }, function(thisModule) {
 
-  
+
 thisModule.addSlots(avocado, function(add) {
-  
-  add.creator('ui', {}, {category: ['user interface'], comment: 'An extra layer of indirection, in case we want to switch to a non-LK UI someday.\n\nDefinitely not complete yet. -- Adam, Oct. 2010'});
-  
+
+  add.creator('ui', {}, {comment: 'An extra layer of indirection, in case we want to switch to a non-LK UI someday.\n\nDefinitely not complete yet. -- Adam, Oct. 2010', category: ['user interface']});
+
 });
 
 
 thisModule.addSlots(avocado.ui, function(add) {
-  
-  add.method('worldFor', function(evtOrMorph) {
+
+  add.method('worldFor', function (evtOrMorph) {
     if (evtOrMorph) {
       if (typeof(evtOrMorph.world) === 'function') {
         return evtOrMorph.world();
@@ -51,55 +51,55 @@ thisModule.addSlots(avocado.ui, function(add) {
     }
     return WorldMorph.current();
   });
-  
-  add.method('prompt', function(msg, callback, defaultValue, evtOrMorph) {
+
+  add.method('prompt', function (msg, callback, defaultValue, evtOrMorph) {
     return this.worldFor(evtOrMorph).prompt(msg, function(value) {
       if (value === null) { return null; }
       return callback(value);
     }, defaultValue);
   });
-  
-  add.method('confirm', function(message, callback, evtOrMorph) {
+
+  add.method('confirm', function (message, callback, evtOrMorph) {
     return this.worldFor(evtOrMorph).confirm(message, callback);
   });
-  
-  add.method('grab', function(obj, evt) {
+
+  add.method('grab', function (obj, evt) {
     var m = this.worldFor(evt).morphFor(obj);
     m.grabMe(evt);
     return m;
   });
-  
-  add.method('showObjects', function(objs, name, evt) {
+
+  add.method('showObjects', function (objs, name, evt) {
     var w = this.worldFor(evt);
     w.assumePose(w.listPoseOfMorphsFor(objs, name));
   });
-  
-  add.method('showNextTo', function(objToBeNextTo, objToShow, evt) {
+
+  add.method('showNextTo', function (objToBeNextTo, objToShow, evt) {
     // This is maybe a bit too much abstraction. But let's try it for now. Un-abstract
     // it if this function starts needing a million arguments. -- Adam, Oct. 2010
     var w = this.worldFor(evt);
     var morphToBeNextTo = w.morphFor(objToBeNextTo);
     w.morphFor(objToShow).ensureIsInWorld(w, morphToBeNextTo.worldPoint(pt(morphToBeNextTo.getExtent().x + 50, 0)), true, true, true);
   });
-  
-  add.method('showMessageIfErrorDuring', function(f, evt) {
+
+  add.method('showMessageIfErrorDuring', function (f, evt) {
     return avocado.MessageNotifierMorph.showIfErrorDuring(f, evt);
   });
-  
-  add.method('showMessageIfWarningDuring', function(f, evt) {
+
+  add.method('showMessageIfWarningDuring', function (f, evt) {
     return avocado.MessageNotifierMorph.showIfErrorDuring(f, evt, new Color(1.0, 0.55, 0.0));
   });
-  
-  add.method('showError', function(err, evt) {
+
+  add.method('showError', function (err, evt) {
     avocado.MessageNotifierMorph.showError(msg, evt);
   });
-  
-  add.method('showMenu', function(cmdList, target, caption, evt) {
+
+  add.method('showMenu', function (cmdList, target, caption, evt) {
     var menu = MenuMorph.fromCommandList(cmdList, target);
     var world = this.worldFor(evt);
     menu.openIn(world, evt.point(), false, caption);
   });
-  
+
 });
 
 

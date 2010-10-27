@@ -1,7 +1,7 @@
-window.loadTheLKTestFramework = function() {
+window.loadTheLKTestFramework = function () {
   require('lively.TestFramework').toRun(function() {});
 };
-window.loadTheLKTestFramework();
+loadTheLKTestFramework();
 
 
 
@@ -17,33 +17,17 @@ thisModule.addSlots(modules['core/lk_TestFramework'], function(add) {
 
 thisModule.addSlots(TestCase.prototype, function(add) {
 
-  add.method('create', function(testResult, optTestSelector) {
-    return Object.newChildOf(this, testResult, optTestSelector);
-  });
-  
-  add.method('createAndRun', function() {
-    var testCase = this.create();
-    testCase.runAll();
-    var result = testCase.result;
-    result.testCase = testCase;
-    return result;
-  });
-
-  add.method('name', function() {
-    return reflect(this).name();
-  });
-
-  add.method('inspect', function() {
-    return this.name();
-  });
-
-  add.method('createTests', function() {
+  add.method('createTests', function () {
     return this.allTestSelectors().collect(function(sel) {
       return this.create(this.result, sel);
     }, this);
   });
-	
-  add.method('allTestSelectors', function() {
+
+  add.method('name', function () {
+    return reflect(this).name();
+  });
+
+  add.method('allTestSelectors', function () {
     var functionNames = [];
     for (var name in this) {
       if (name.startsWith('test') && typeof this[name] === 'function') {
@@ -51,6 +35,22 @@ thisModule.addSlots(TestCase.prototype, function(add) {
       }
     }
     return functionNames;
+  });
+
+  add.method('create', function (testResult, optTestSelector) {
+    return Object.newChildOf(this, testResult, optTestSelector);
+  });
+
+  add.method('createAndRun', function () {
+    var testCase = this.create();
+    testCase.runAll();
+    var result = testCase.result;
+    result.testCase = testCase;
+    return result;
+  });
+
+  add.method('inspect', function () {
+    return this.name();
   });
 
   add.method('createAndRunAndShowResult', function () {
@@ -68,38 +68,13 @@ thisModule.addSlots(TestCase.prototype, function(add) {
 
     cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject.bind(this)});
   }, {category: ['user interface', 'commands']});
-  
+
 });
 
 
 thisModule.addSlots(TestResult.prototype, function(add) {
 
-  add.method('totalTimeToRun', function() {
-    var total = 0;
-    for (var name in this.timeToRun) {
-      if (this.timeToRun.hasOwnProperty(name)) {
-        var t = this.timeToRun[name];
-        if (typeof(t) === 'number') {
-          total += t;
-        }
-      }
-    }
-    return total;
-  });
-  
-  add.method('inspect', function() {
-    return this.testCase.name() + "(" + this.totalTimeToRun() + " ms)";
-  });
-  
-  add.method('allPassed', function() {
-    return this.failed.length === 0;
-  });
-	
-  add.method('anyFailed', function() {
-    return ! this.allPassed();
-  });
-	
-	add.method('addFailure', function(className, selector, error) {
+  add.method('addFailure', function (className, selector, error) {
 	  // Better error message than the standard LK one.
 		this.failed.push({
 				classname: className,
@@ -120,6 +95,31 @@ thisModule.addSlots(TestResult.prototype, function(add) {
     });
   });
 
+  add.method('totalTimeToRun', function () {
+    var total = 0;
+    for (var name in this.timeToRun) {
+      if (this.timeToRun.hasOwnProperty(name)) {
+        var t = this.timeToRun[name];
+        if (typeof(t) === 'number') {
+          total += t;
+        }
+      }
+    }
+    return total;
+  });
+
+  add.method('inspect', function () {
+    return this.testCase.name() + "(" + this.totalTimeToRun() + " ms)";
+  });
+
+  add.method('allPassed', function () {
+    return this.failed.length === 0;
+  });
+
+  add.method('anyFailed', function () {
+    return ! this.allPassed();
+  });
+
   add.method('getErrorObjects', function (evt) {
     this.failed.each(function(f) {
       avocado.ui.grab(reflect(f.err), evt);
@@ -131,8 +131,9 @@ thisModule.addSlots(TestResult.prototype, function(add) {
       cmdList.addItem({label: 'get error objects', go: this.getErrorObjects.bind(this)});
     }
   }, {category: ['user interface', 'commands']});
-  
+
 });
+
 
 thisModule.addSlots(TestCase, function(add) {
 
@@ -144,7 +145,7 @@ thisModule.addSlots(TestCase, function(add) {
     }.bind(this)]);
   }, {category: ['user interface', 'commands']});
 
-  add.method('allAvocadoTestCasePrototypes', function() {
+  add.method('allAvocadoTestCasePrototypes', function () {
     // aaa - This should be replaced with a more general mechanism for finding tests.
     return [
       avocado.dictionary.tests,
@@ -164,7 +165,7 @@ thisModule.addSlots(TestCase, function(add) {
       organization.tests
     ];
   });
-  
+
 });
 
 

@@ -178,8 +178,8 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       if (pos.y >= this._world.getExtent().y - 30) { pos = pt(pos.x + widest + 20, 20); }
     }
   });
-  
-  add.method('destinationUIStateFor', function(morph) {
+
+  add.method('destinationUIStateFor', function (morph) {
     // just use whatever state it's in now
     return null;
   });
@@ -188,12 +188,15 @@ thisModule.addSlots(avocado.poses.list, function(add) {
 
 
 thisModule.addSlots(avocado.poses.clean, function(add) {
-  add.method('destinationUIStateFor', function(morph) {
+
+  add.method('destinationUIStateFor', function (morph) {
     var uiState = morph.constructUIStateMemento();
     if (uiState) { uiState.isExpanded = false; }
     return uiState;
   });
+
 });
+
 
 thisModule.addSlots(avocado.poses.snapshot, function(add) {
 

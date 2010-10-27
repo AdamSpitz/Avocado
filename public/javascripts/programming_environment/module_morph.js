@@ -31,8 +31,10 @@ thisModule.addSlots(transporter.module, function(add) {
     m.addCommandsTo = function(cmdList) {
       module.addCommandsTo(cmdList);
       var saveCmd = cmdList.itemWith("id", "save");
-      saveCmd.pluralLabel = 'save modules as .js files';
-      saveCmd.pluralGo = transporter.fileOutPluralMorphs.bind(transporter);
+      if (saveCmd) {
+        saveCmd.pluralLabel = 'save modules as .js files';
+        saveCmd.pluralGo = transporter.fileOutPluralMorphs.bind(transporter);
+      }
     };
 
     m.setColumns([nameLabel, changeIndicator, optionalFileOutButton, m.createDismissButton()]);

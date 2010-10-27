@@ -36,7 +36,6 @@ thisModule.addSlots(transporter, function(add) {
     }
   }, {category: ['user interface', 'commands']});
 
-
   add.method('fileOutPlural', function (specs, evt, repo, filerOuterProto) {
     this.prepareToFileStuffOut();
     
@@ -59,15 +58,14 @@ thisModule.addSlots(transporter, function(add) {
     avocado.ui.showObjects(this.objectsToShowForErrors(errors), "file-out errors", evt);
     avocadi.ui.showError(msg, evt);
   }, {category: ['user interface', 'error reporting']});
-  
-  add.method('objectsToShowForErrors', function(errors) {
+
+  add.method('objectsToShowForErrors', function (errors) {
     var objectsToShow = [];
     errors.each(function(moduleAndError) {
       var err    = moduleAndError.error;
       var module = moduleAndError.module;
       var mir = err.mirrorWithoutCreatorPath;
       if (mir) {
-        var world = evt.hand.world();
         if (! objectsToShow.include(mir)) {
           var reason = err.reasonForNeedingCreatorPath || "I said so, that's why.";
           objectsToShow.push(mir);
@@ -79,8 +77,6 @@ thisModule.addSlots(transporter, function(add) {
     }.bind(this));
     return objectsToShow;
   }, {category: ['user interface', 'error reporting']});
-
-
 
   add.method('chooseARepository', function (evt, target, menuCaption, callback) {
     if (transporter.availableRepositories.length === 1) { callback(transporter.availableRepositories[0], evt); return; }
@@ -102,12 +98,12 @@ thisModule.addSlots(transporter, function(add) {
     var modulesCmdList = transporter.module.commandListForChoosingOrCreatingAModule(evt, likelyModules, target, callback);
     avocado.ui.showMenu(modulesCmdList, target, menuCaption, evt);
   }, {category: ['user interface', 'commands']});
-  
-  add.method('commandListForLoadingJSFiles', function() {
+
+  add.method('commandListForLoadingJSFiles', function () {
     return this.commandListForRepositories(function(repo) { return repo.menuItemsForLoadMenu(); });
   }, {category: ['user interface', 'commands']});
-  
-  add.method('commandListForRepositories', function(f) {
+
+  add.method('commandListForRepositories', function (f) {
     var cmdList = avocado.command.list.create();
     transporter.availableRepositories.each(function(repo) {
       var c = f(repo);
@@ -287,7 +283,7 @@ thisModule.addSlots(transporter.module, function(add) {
     if (! this._changeNotifier) { this._changeNotifier = avocado.notifier.on(this); }
     this._changeNotifier.addObserver(observer);
   }, {category: ['keeping track of changes']});
-  
+
   add.method('notifyObserversOfChange', function () {
     if (! this._changeNotifier) { return; }
     this._changeNotifier.notifyAllObservers();

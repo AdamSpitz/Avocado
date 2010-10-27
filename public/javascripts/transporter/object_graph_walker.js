@@ -18,7 +18,7 @@ thisModule.addSlots(avocado, function(add) {
   add.creator('childFinder', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
   add.creator('testingObjectGraphWalker', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
-  
+
   add.creator('senders', {}, {category: ['object graph']});
 
 });
@@ -248,7 +248,7 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
     marker.reset();
     marker.walk(window);
     // WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
-    ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function'].each(function(typeName) {
+    ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function', 'Error'].each(function(typeName) {
         var type = window[typeName];
         var pathToType          = {                       slotHolder: window, slotName:  typeName   };
         var pathToTypePrototype = { previous: pathToType, slotHolder:   type, slotName: 'prototype' };
@@ -298,14 +298,14 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
 thisModule.addSlots(avocado.senders, function(add) {
 
   add.data('byID', {}, {initializeTo: '{}'});
-  
-  add.method('of', function(id) {
+
+  add.method('of', function (id) {
     return this.byID[id] || [];
   });
-  
+
   add.creator('finder', {});
-  
-  add.method('rememberIdentifiersUsedBy', function(f, howDidWeGetHere) {
+
+  add.method('rememberIdentifiersUsedBy', function (f, howDidWeGetHere) {
     if (typeof(f) !== 'function') { return; }
     var str = f.toString();
     var idRegex = /[A-Z_$a-z][A-Z_$0-9a-z]*/g;
@@ -324,28 +324,28 @@ thisModule.addSlots(avocado.senders, function(add) {
       }
     }
   });
-  
+
 });
 
 
 thisModule.addSlots(avocado.senders.finder, function(add) {
-  
-  add.method('create', function(id) {
+
+  add.method('create', function (id) {
     return Object.newChildOf(this, id);
   });
-  
-  add.method('initialize', function(id) {
+
+  add.method('initialize', function (id) {
     this._id = id;
   });
-  
-  add.method('inspect', function() { return "senders of " + this._id; });
-  
-  add.method('go', function() {
+
+  add.method('inspect', function () { return "senders of " + this._id; });
+
+  add.method('go', function () {
     return avocado.senders.of(this._id).map(function(x) {
       return reflect(x.slotHolder).slotAt(x.slotName);
     });
   });
-  
+
 });
 
 

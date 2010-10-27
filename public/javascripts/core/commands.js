@@ -42,7 +42,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
     this._commands.push(c);
   });
 
-  add.method('addItems', function(items) {
+  add.method('addItems', function (items) {
     items.forEach(function(item) { this.addItem(item); }.bind(this));
   });
 
@@ -71,11 +71,11 @@ thisModule.addSlots(avocado.command.list, function(add) {
       }
     }
   });
-  
+
   add.method('itemWith', function (attrName, attrValue) {
     return this.itemSuchThat(function(c) { return c[attrName] === attrValue; });
   });
-  
+
   add.method('itemSuchThat', function (criterion) {
     for (var i = 0, n = this._commands.length; i < n; ++i) {
       var c = this._commands[i];
