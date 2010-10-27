@@ -225,11 +225,11 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['iterating']});
 
   add.method('functionBodySlot', function () {
-    return Object.create(slots.functionBody).initialize(this);
+    return Object.create(avocado.slots.functionBody).initialize(this);
   }, {category: ['functions']});
 
   add.method('parentSlot', function () {
-    return Object.create(slots.parent).initialize(this);
+    return Object.create(avocado.slots.parent).initialize(this);
   }, {category: ['accessing parent']});
 
   add.method('eachNormalSlot', function (f) {
@@ -292,7 +292,7 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('slotAt', function (n) {
     if (n === '__proto__') { return this.parentSlot(); }
-    return Object.create(slots.plain).initialize(this, n.toString());
+    return Object.create(avocado.slots.plain).initialize(this, n.toString());
   }, {category: ['accessing slot contents']});
 
   add.method('primitiveContentsAt', function (n) {

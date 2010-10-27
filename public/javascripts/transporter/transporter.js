@@ -446,7 +446,7 @@ thisModule.addSlots(transporter.module, function(add) {
 });
 
 
-thisModule.addSlots(slots['abstract'], function(add) {
+thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('fileOutInfo', function () {
     var creationMethod = "data";

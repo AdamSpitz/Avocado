@@ -5,27 +5,27 @@ requires('reflection/mirror');
 }, function(thisModule) {
 
 
-thisModule.addSlots(window, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
-  add.creator('slots', {}, {category: ['avocado', 'reflection']});
+  add.creator('slots', {}, {category: ['reflection']});
 
 });
 
 
-thisModule.addSlots(slots, function(add) {
+thisModule.addSlots(avocado.slots, function(add) {
 
   add.creator('abstract', {});
 
-  add.creator('plain', Object.create(slots['abstract']));
+  add.creator('plain', Object.create(avocado.slots['abstract']));
 
-  add.creator('parent', Object.create(slots['abstract']));
+  add.creator('parent', Object.create(avocado.slots['abstract']));
 
-  add.creator('functionBody', Object.create(slots['abstract']));
+  add.creator('functionBody', Object.create(avocado.slots['abstract']));
 
 });
 
 
-thisModule.addSlots(slots['abstract'], function(add) {
+thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('initialize', function (m) {
     this._mirror = m;
@@ -101,7 +101,7 @@ thisModule.addSlots(slots['abstract'], function(add) {
 });
 
 
-thisModule.addSlots(slots.functionBody, function(add) {
+thisModule.addSlots(avocado.slots.functionBody, function(add) {
 
   add.method('name', function () { return "*body*"; }, {category: ['accessing']});
 
@@ -114,7 +114,7 @@ thisModule.addSlots(slots.functionBody, function(add) {
 });
 
 
-thisModule.addSlots(slots.parent, function(add) {
+thisModule.addSlots(avocado.slots.parent, function(add) {
 
   add.method('name', function () { return "__proto__"; }, {category: ['accessing']});
 
@@ -160,7 +160,7 @@ thisModule.addSlots(slots.parent, function(add) {
 });
 
 
-thisModule.addSlots(slots.plain, function(add) {
+thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('initialize', function (m, n) {
     this._mirror = m;

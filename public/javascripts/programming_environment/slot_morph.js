@@ -6,7 +6,7 @@ requires('lk_ext/rows_and_columns');
 }, function(thisModule) {
 
 
-thisModule.addSlots(slots['abstract'], function(add) {
+thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
 
@@ -17,20 +17,20 @@ thisModule.addSlots(slots['abstract'], function(add) {
 });
 
 
-thisModule.addSlots(slots['abstract'].Morph, function(add) {
+thisModule.addSlots(avocado.slots['abstract'].Morph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
   add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
-  add.data('type', 'slots.abstract.Morph');
+  add.data('type', 'avocado.slots.abstract.Morph');
 
 });
 
 
-thisModule.addSlots(slots['abstract'].Morph.prototype, function(add) {
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
-  add.data('constructor', slots['abstract'].Morph);
+  add.data('constructor', avocado.slots['abstract'].Morph);
 
   add.method('initialize', function ($super, slot) {
     $super();
