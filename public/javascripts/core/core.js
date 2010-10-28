@@ -13,6 +13,7 @@ requires('core/dependencies');
 requires('core/little_profiler');
 requires('core/math');
 requires('core/sound');
+requires('core/linked_list');
 
 }, function(thisModule) {
 

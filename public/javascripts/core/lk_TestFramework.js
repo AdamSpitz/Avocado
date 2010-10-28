@@ -161,6 +161,7 @@ thisModule.addSlots(TestCase, function(add) {
       String.prototype.tests,
       Array.prototype.tests,
       avocado.dependencies.tests,
+      avocado.list.tests,
       // doesn't work yet:  avocado.prettyPrinter.tests,
       organization.tests
     ];

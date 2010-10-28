@@ -151,7 +151,7 @@ thisModule.addSlots(avocado.hashTable.equalityComparator, function(add) {
   }, {category: ['hashing']});
 
   add.method('hashCodeForKey', function (k) {
-    if (k.hashCode) { return k.hashCode(); }
+    if (typeof(k.hashCode) === 'function') { return k.hashCode(); }
     return avocado.hashTable.identityComparator.hashCodeForKey(k);
   }, {category: ['hashing']});
 
