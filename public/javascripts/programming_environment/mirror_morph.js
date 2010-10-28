@@ -139,9 +139,11 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('updateTitleLabelFont', function () {
     if (this.mirror().reflectee() === window || this.mirror().theCreatorSlot()) {
       // this.titleLabel.setFontFamily('serif'); // not sure I like it
-      this.titleLabel.setEmphasis({style: 'bold'});
+
+      // aaa - This causes weird freezes when changing the name of an object. Fix it sometime. -- Adam
+      // this.titleLabel.setEmphasis({style: 'bold'});
     } else {
-      this.titleLabel.setEmphasis({style: 'unbold'});
+      // this.titleLabel.setEmphasis({style: 'unbold'});
     }
   }, {category: ['updating']});
 

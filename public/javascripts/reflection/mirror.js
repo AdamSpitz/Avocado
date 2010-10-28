@@ -79,12 +79,21 @@ thisModule.addSlots(mirror, function(add) {
   add.method('inspect', function () {
     if (this.reflectee() === window) {return this.nameOfLobby();}
     if (! this.canHaveSlots()) {return Object.inspect(this.reflectee());}
-    if (this.isReflecteeArray()) { return this.reflectee().length > 5 ? "an array" : "[" + this.reflectee().map(function(elem) {return reflect(elem).inspect();}).join(", ") + "]"; }
     var n = this.name();
     if (this.isReflecteeFunction()) { return n; } // the code will be visible through the *code* fake-slot
     var s = avocado.stringBuffer.create(n);
-    var toString = this.reflecteeToString();
-    if (typeof toString === 'string' && toString && toString.length < 40) { s.append("(").append(toString).append(")"); }
+    var maxToStringLength = 40;
+    var toString;
+    if (this.isReflecteeArray()) {
+      toString = this.reflectee().length.toString() + " elements";
+      if (this.reflectee().length <= 5) {
+        var firstElems = "[" + this.reflectee().map(function(elem) { return reflect(elem).inspect(); }).join(", ") + "]";
+        if (firstElems.length < maxToStringLength) { toString = firstElems; }
+      }
+    } else {
+      toString = this.reflecteeToString();
+    }
+    if (typeof toString === 'string' && toString && toString.length < maxToStringLength) { s.append("(").append(toString).append(")"); }
     return s.toString();
   }, {category: ['naming']});
 
@@ -194,6 +203,7 @@ thisModule.addSlots(mirror, function(add) {
       if (mir.equals(windowMir)) { return chain; }
       cs = mir[kindOfCreatorSlot].call(mir);
       if (! cs) { return null; }
+      if (! cs.contents().equals(mir)) { return null; } // probably obsolete or something
       chain.push(cs);
       if (i >= 100) {
         console.log("WARNING: Really long (" + i + " so far) chain of creator slots; giving up because it's probably a loop. " +
@@ -966,10 +976,14 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual("'lalala'", reflect("lalala").inspect());
     this.assertEqual("a Function", reflect(function() {}).inspect());
     this.assertEqual("an Object", reflect({}).inspect());
-    this.assertEqual("[1, 'two', 3]", reflect([1, 'two', 3]).inspect());
+    this.assertEqual("an Array([1, 'two', 3])", reflect([1, 'two', 3]).inspect());
     this.assertEqual("transporter", reflect(transporter).inspect());
     this.assertEqual("transporter.module", reflect(transporter.module).inspect());
     this.assertEqual("window", reflect(window).inspect());
+    
+    var mirWithBadCreatorSlot = reflect({});
+    mirWithBadCreatorSlot.setCreatorSlot(reflect(window).slotAt('doesntExist'));
+    this.assertEqual("an Object", mirWithBadCreatorSlot.inspect());
   });
 
   add.method('testCreatorSlotChainExpression', function () {
