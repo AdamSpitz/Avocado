@@ -37,14 +37,17 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
   add.method('prettyPrint', function(node) {
     var i;
     // console.log("prettyPrint encountered node type: " + tokens[node.type]);
+    
+    var NodeTypes = window; // aaa get them out of the global namespace
+    
     switch(node.type) {
-    case SCRIPT:
+    case NodeTypes.SCRIPT:
       for (i = 0; i < node.length; ++i) {
         if (i > 0) { this.newLine(); }
         this.prettyPrint(node[i]);
       }
       break;
-    case BLOCK:
+    case NodeTypes.BLOCK:
       this._buffer.append("{");
       if (node.length === 0) {
       } else if (node.length === 1) {
@@ -62,7 +65,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       this._buffer.append("}");
       break;
-    case VAR:
+    case NodeTypes.VAR:
       this._buffer.append("var ");
       for (i = 0; i < node.length; ++i) {
         if (i > 0) { this._buffer.append(", "); }
@@ -70,31 +73,31 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       this._buffer.append(";");
       break;
-    case SEMICOLON:
+    case NodeTypes.SEMICOLON:
       this.prettyPrint(node.expression);
       this._buffer.append(";");
       break;
-    case IDENTIFIER:
+    case NodeTypes.IDENTIFIER:
       this._buffer.append(node.value);
       if (node.initializer) {
         this._buffer.append(" = ");
         this.prettyPrint(node.initializer);
       }
       break;
-    case THIS:
-    case NULL:
-    //case UNDEFINED:
-    case TRUE:
-    case FALSE:
-    case NUMBER:
-    case REGEXP:
+    case NodeTypes.THIS:
+    case NodeTypes.NULL:
+    //case NodeTypes.UNDEFINED:
+    case NodeTypes.TRUE:
+    case NodeTypes.FALSE:
+    case NodeTypes.NUMBER:
+    case NodeTypes.REGEXP:
       this._buffer.append(node.value);
       break;
-    case STRING:
+    case NodeTypes.STRING:
       var rightKindOfQuote = node.tokenizer.source[node.start];
       this._buffer.append(rightKindOfQuote).append(node.value).append(rightKindOfQuote);
       break;
-    case OBJECT_INIT:
+    case NodeTypes.OBJECT_INIT:
       this._buffer.append("{");
       for (i = 0; i < node.length; ++i) {
         if (i > 0) { this._buffer.append(", "); }
@@ -102,12 +105,12 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       this._buffer.append("}");
       break;
-    case PROPERTY_INIT:
+    case NodeTypes.PROPERTY_INIT:
       this.prettyPrint(node[0]);
       this._buffer.append(": ");
       this.prettyPrint(node[1]);
       break;
-    case ARRAY_INIT:
+    case NodeTypes.ARRAY_INIT:
       this._buffer.append("[");
       for (i = 0; i < node.length; ++i) {
         if (i > 0) { this._buffer.append(", "); }
@@ -115,60 +118,60 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       this._buffer.append("]");
       break;
-    case ASSIGN:
+    case NodeTypes.ASSIGN:
       this.prettyPrint(node[0]);
       this._buffer.append(" = ");
       this.prettyPrint(node[1]);
       break;
-    case GROUP:
+    case NodeTypes.GROUP:
       if (node.value !== '(') { throw new Error("aaa, group but not open-paren?"); }
       this._buffer.append("(");
       if (node.length !== 1) { throw new Error("aaa, group but not just one member?"); }
       this.prettyPrint(node[0]);
       this._buffer.append(")");
       break;
-    case CALL:
+    case NodeTypes.CALL:
       this.prettyPrint(node[0]);
       this._buffer.append("(");
       this.prettyPrint(node[1]);
       this._buffer.append(")");
       break;
-    case DELETE:
+    case NodeTypes.DELETE:
       this._buffer.append("delete ");
       this.prettyPrint(node[0]);
       break;
-    case BREAK:
+    case NodeTypes.BREAK:
       this._buffer.append("break;");
       break;
-    case NEW:
+    case NodeTypes.NEW:
       this._buffer.append("new ");
       this.prettyPrint(node[0]);
       break;
-    case NEW_WITH_ARGS:
+    case NodeTypes.NEW_WITH_ARGS:
       this._buffer.append("new ");
       this.prettyPrint(node[0]);
       this._buffer.append("(");
       this.prettyPrint(node[1]);
       this._buffer.append(")");
       break;
-    case DOT:
+    case NodeTypes.DOT:
       this.prettyPrint(node[0]);
       this._buffer.append(".");
       this.prettyPrint(node[1]);
       break;
-    case LIST:
+    case NodeTypes.LIST:
       for (i = 0; i < node.length; ++i) {
         if (i > 0) { this._buffer.append(", "); }
         this.prettyPrint(node[i]);
       }
       break;
-    case INDEX:
+    case NodeTypes.INDEX:
       this.prettyPrint(node[0]);
       this._buffer.append("[");
       this.prettyPrint(node[1]);
       this._buffer.append("]");
       break;
-    case FUNCTION:
+    case NodeTypes.FUNCTION:
       if (node.functionForm === EXPRESSED_FORM || node.functionForm === DECLARED_FORM) {
         this._buffer.append("function ");
         if (node.name) { this._buffer.append(node.name); }
@@ -199,7 +202,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       reflect(node).morph().grabMe();
       throw new Error("prettyPrinter encountered unknown FUNCTION type: " + node.functionForm);
-    case IF:
+    case NodeTypes.IF:
       this._buffer.append("if (");
       this.prettyPrint(node.condition);
       this._buffer.append(") ");
@@ -209,7 +212,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this.prettyPrint(node.elsePart);
       }
       break;
-    case FOR:
+    case NodeTypes.FOR:
       this._buffer.append("for (");
       this.prettyPrint(node.setup);
       // hack - sometimes the setup is an expression, sometimes it's a var statement; is there a clean way to do this? -- Adam
@@ -221,20 +224,20 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
-    case WHILE:
+    case NodeTypes.WHILE:
       this._buffer.append("while (");
       this.prettyPrint(node.condition);
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
-    case DO:
+    case NodeTypes.DO:
       this._buffer.append("do ");
       this.prettyPrint(node.body);
       this._buffer.append(" while (");
       this.prettyPrint(node.condition);
       this._buffer.append(");");
       break;
-    case FOR_IN:
+    case NodeTypes.FOR_IN:
       this._buffer.append("for (");
       if (node.varDecl) { this._buffer.append("var "); }
       this.prettyPrint(node.iterator);
@@ -243,7 +246,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
-    case TRY:
+    case NodeTypes.TRY:
       this._buffer.append("try ");
       this.prettyPrint(node.tryBlock);
       node.catchClauses.each(function(catchClause) {
@@ -255,13 +258,13 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this.prettyPrint(node.finallyBlock);
       }
       break;
-    case WITH:
+    case NodeTypes.WITH:
       this._buffer.append("with (");
       this.prettyPrint(node.object);
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
-    case SWITCH:
+    case NodeTypes.SWITCH:
       this._buffer.append("switch (");
       this.prettyPrint(node.discriminant);
       this._buffer.append(") {");
@@ -285,7 +288,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       this._buffer.append("}");
       break;
-    case RETURN:
+    case NodeTypes.RETURN:
       if (typeof(node.value) === 'object') {
         this._buffer.append("return ");
         this.prettyPrint(node.value);
@@ -294,27 +297,27 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this._buffer.append("return;");
       }
       break;
-    case THROW:
+    case NodeTypes.THROW:
       this._buffer.append("throw ");
       this.prettyPrint(node.exception);
       this._buffer.append(";");
       break;
-    case TYPEOF:
+    case NodeTypes.TYPEOF:
       this._buffer.append("typeof");
       // I sometimes write typeof(3), sometimes typeof 3.
       if (node[0].type !== GROUP) { this._buffer.append(" "); }
       this.prettyPrint(node[0]);
       break;
-    case NOT:
+    case NodeTypes.NOT:
       this._buffer.append("!");
       this.prettyPrint(node[0]);
       break;
-    case UNARY_MINUS:
+    case NodeTypes.UNARY_MINUS:
       this._buffer.append("-");
       this.prettyPrint(node[0]);
       break;
-    case INCREMENT:
-    case DECREMENT:
+    case NodeTypes.INCREMENT:
+    case NodeTypes.DECREMENT:
       if (node.postfix) {
         this.prettyPrint(node[0]);
         this._buffer.append(node.value);
@@ -323,22 +326,22 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this.prettyPrint(node[0]);
       }
       break;
-    case OR:
-    case AND:
-    case BITWISE_OR:
-    case BITWISE_XOR:
-    case BITWISE_AND:
-    case EQ: case NE: case STRICT_EQ: case STRICT_NE:
-    case LT: case LE: case GE: case GT:
-    case INSTANCEOF:
-    case LSH: case RSH: case URSH:
-    case PLUS: case MINUS:
-    case MUL: case DIV: case MOD:
+    case NodeTypes.OR:
+    case NodeTypes.AND:
+    case NodeTypes.BITWISE_OR:
+    case NodeTypes.BITWISE_XOR:
+    case NodeTypes.BITWISE_AND:
+    case NodeTypes.EQ: case NodeTypes.NE: case NodeTypes.STRICT_EQ: case NodeTypes.STRICT_NE:
+    case NodeTypes.LT: case NodeTypes.LE: case NodeTypes.GE: case NodeTypes.GT:
+    case NodeTypes.INSTANCEOF:
+    case NodeTypes.LSH: case NodeTypes.RSH: case NodeTypes.URSH:
+    case NodeTypes.PLUS: case NodeTypes.MINUS:
+    case NodeTypes.MUL: case NodeTypes.DIV: case NodeTypes.MOD:
       this.prettyPrint(node[0]);
       this._buffer.append(" ").append(node.value).append(" ");
       this.prettyPrint(node[1]);
       break;
-    case HOOK:
+    case NodeTypes.HOOK:
       this.prettyPrint(node[0]);
       this._buffer.append(" ? ");
       this.prettyPrint(node[1]);

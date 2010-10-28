@@ -162,6 +162,11 @@ thisModule.addSlots(avocado.list['__proto__'], function(add) {
   }.bind(this));
 }, {category: ['searching']});
 
+  add.method('toString', function () {
+  if (this.size() > 10) { return ""; }
+  return this.toArray().join(", ");
+}, {category: ['printing']});
+
 });
 
 
