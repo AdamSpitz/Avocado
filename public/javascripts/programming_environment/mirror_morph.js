@@ -110,6 +110,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
     this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(this.copyDownParentsString.bind(this), this.setCopyDownParentsString.bind(this));
+    this._copyDownParentsLabel.suppressHandles = true;
     m.setRows([avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Copy-down parents:"), this._copyDownParentsLabel])]);
     return m;
   }, {category: ['annotation']});
@@ -123,6 +124,10 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       this.mirror().setCopyDownParents(eval(str));
     }.bind(this));
     this.updateAppearance(); // to make the copied-down slots appear;
+    
+    // Sometimes the text doesn't come out quite identical; this makes sure the
+    // editor doesn't stay red.
+    if (this._copyDownParentsLabel) { this._copyDownParentsLabel.cancelChanges(); }
   }, {category: ['annotation']});
 
   add.method('updateAppearance', function () {

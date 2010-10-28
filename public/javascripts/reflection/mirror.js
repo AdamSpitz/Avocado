@@ -567,15 +567,19 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['annotations', 'copy-down parents']});
 
   add.method('setCopyDownParents', function (cdps) {
+    this.markCreatorModuleAsChanged();
     // aaa - Of course, we should be removing slots copied in by the previous list of copy-down parents. But never mind that for now.
     var cdpsMir = reflect(cdps);
     if (! cdpsMir.isReflecteeArray()) { throw "Must be an array; e.g. [{parent: Enumerable}]"; }
-    this.annotationForWriting().copyDownParents = cdps;
-    for (var i = 0; i < cdps.length; ++i) {
-      if (cdps[i].parent === undefined) { throw "Each element of the array must contain a 'parent' slot pointing to the desired copy-down parent; e.g. [{parent: Enumerable}]"; }
-      this.annotationForWriting().copyDownSlots(this.reflectee(), cdps[i].parent, cdps[i].slotsToOmit);
-    }
+    var a = this.annotationForWriting();
+    a.copyDownParents = cdps;
+    a.copyDownSlotsFromAllCopyDownParents(this.reflectee());
   }, {category: ['annotations', 'copy-down parents']});
+
+  add.method('markCreatorModuleAsChanged', function () {
+    var cs = this.theCreatorSlot();
+    if (cs) { cs.markModuleAsChanged(); }
+  }, {category: ['annotations', 'module']});
 
   add.method('setModuleRecursively', function (m) {
     this.eachNormalSlot(function(slot) { slot.setModuleRecursively(m); });
@@ -1089,6 +1093,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual(2, mirA.size());
     var mirB = reflect({b: 2, bb: 22, bbb: 222});
     var mirC = reflect({c: 3, bleh: 'bleh!'});
+    mirB.slotAt('b').setCategory(category.create(['categories should be copied down']));
     mirA.setCopyDownParents([{parent: mirB.reflectee()}, {parent: mirC.reflectee(), slotsToOmit: ['bleh']}]);
     this.assertEqual(3, mirB.size());
     this.assertEqual(2, mirC.size());
@@ -1106,6 +1111,8 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual(mirA.copyDownParents()[0], mirA.slotAt('bb' ).copyDownParentThatIAmFrom());
     this.assertEqual(mirA.copyDownParents()[0], mirA.slotAt('bbb').copyDownParentThatIAmFrom());
     this.assertEqual(mirA.copyDownParents()[1], mirA.slotAt('c'  ).copyDownParentThatIAmFrom());
+    
+    this.assertEqual(category.create(['categories should be copied down']), mirA.slotAt('b').category());
   });
 
   add.method('testIndexableCreatorSlots', function () {
@@ -1166,6 +1173,25 @@ thisModule.addSlots(mirror.tests, function(add) {
     m1.uninstall();
     m2.uninstall();
     m3.uninstall();
+  });
+  
+  add.method('testSettingModuleRecursively', function() {
+    var m = transporter.module.named('temp_mod');
+    var cdp = {copiedDown: true};
+    var p = {c: 3};
+    var o = Object.create(p);
+    Object.extend(o, {a: 1, b: 2, x: {xa: 'one', xb: 'two'}, y: {ya: 'un'}});
+    
+    reflect(o).setCopyDownParents([{parent: cdp}]);
+    reflect(o).slotAt('x').beCreator();
+    reflect(o).parentSlot().beCreator();
+    reflect(o).setModuleRecursively(m);
+    
+    // Slots accessible through creator slots should be included.
+    // Copied-down slots should not be included.
+    this.assertEqual('a, b, c, x, xa, xb, y', m.slots().map(function(s) { return s.name(); }).sort().join(', '));
+    
+    m.uninstall();
   });
   
   add.method('testFindingUnusedSlotNames', function() {

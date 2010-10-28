@@ -126,6 +126,18 @@ var annotator = {
       this.possibleCreatorSlots.push({name: name, holder: holder});
     },
 
+    copyDownSlotsFromAllCopyDownParents: function(obj) {
+      if (this.copyDownParents) {
+        for (var i = 0, n = this.copyDownParents.length; i < n; i += 1) {
+          var cdp = this.copyDownParents[i];
+          if (typeof(cdp.parent) === 'undefined') {
+            throw new Error("Each element of the array must contain a 'parent' slot pointing to the desired copy-down parent; e.g. [{parent: Enumerable}]");
+          }
+          this.copyDownSlots(obj, cdp.parent, cdp.slotsToOmit);
+        }
+      }
+    },
+    
     copyDownSlots: function(dst, src, rawSlotsToOmit) {
       var slotsToOmit = annotator.adjustSlotsToOmit(rawSlotsToOmit);
       for (var name in src) {
@@ -150,8 +162,8 @@ var annotator = {
     categorize: function(catParts, slotNames) {
       // Just a shortcut to let us categorize a bunch of slots at a time.
       for (var i = 0, n = slotNames.length; i < n; ++i) {
-	var slotName = slotNames[i];
-	this.slotAnnotation(slotName).category = catParts;
+	      var slotName = slotNames[i];
+	      this.slotAnnotation(slotName).category = catParts;
       }
     }
   },
@@ -201,6 +213,26 @@ var annotator = {
     anno['__proto__'] = this.objectAnnotationPrototype;
     return anno;
   },
+  
+  loadObjectAnnotation: function(o, rawAnno, creatorSlotName, creatorSlotHolder) {
+    var a = annotator.annotationOf(o);
+    
+    if (creatorSlotName && creatorSlotHolder) {
+      a.setCreatorSlot(creatorSlotName, creatorSlotHolder);
+    }
+    
+    if (rawAnno) {
+      for (var property in rawAnno) {
+        if (rawAnno.hasOwnProperty(property) && property !== '__oid__') {
+          a[property] = rawAnno[property];
+        }
+      }
+
+      a.copyDownSlotsFromAllCopyDownParents(o);
+    }
+    
+    return a;
+  },
 
   asSlotAnnotation: function(slotAnno) {
     // aaa - In browsers that don't allow you to set __proto__, create a new
@@ -220,7 +252,9 @@ var annotator = {
     if (typeof slotsToOmit === 'string') {
       slotsToOmit = slotsToOmit.split(" ");
     }
-    slotsToOmit.push('__oid__');
+    if (! slotsToOmit.include('__oid__')) {
+      slotsToOmit.push('__oid__');
+    }
     return slotsToOmit;
   }
 };
@@ -429,21 +463,7 @@ transporter.module.slotAdder = {
     slotAnnotation.module = this.module;
     annotator.annotationOf(this.holder).setSlotAnnotation(name, slotAnnotation);
     if (contentsAnnotation) { // used for creator slots
-      var a = annotator.annotationOf(contents);
-      a.setCreatorSlot(name, this.holder);
-      
-      for (var property in contentsAnnotation) {
-        if (contentsAnnotation.hasOwnProperty(property)) {
-          a[property] = contentsAnnotation[property];
-        }
-      }
-      
-      if (contentsAnnotation.copyDownParents) {
-        for (var i = 0; i < contentsAnnotation.copyDownParents.length; i += 1) {
-          var cdp = contentsAnnotation.copyDownParents[i];
-          annotator.annotationOf(contents).copyDownSlots(contents, cdp.parent, cdp.slotsToOmit);
-        }
-      }
+      annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);
     }
 
     // aaa see hackToMakeSureArrayIndexablesGetFiledOut

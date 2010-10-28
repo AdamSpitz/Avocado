@@ -279,6 +279,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['accessing annotation', 'module']});
 
   add.method('setModuleRecursively', function (m) {
+    if (this.isFromACopyDownParent()) { return; }
     this.setModule(m);
     var c = this.contents();
     if (!c.reflecteeStoreString() && !c.isReflecteeSimpleMethod() && !this.initializationExpression()) { // no need if we're not going to be filing in the object slot-by-slot anyway
@@ -306,6 +307,9 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['accessing annotation', 'comment']});
 
   add.method('category', function () {
+    var cds = this.slotThatIAmCopiedDownFrom();
+    if (cds) { return cds.category(); }
+    
     return category.create(organization.current.categoryForSlot(this));
   }, {category: ['accessing annotation', 'category']});
 
@@ -325,7 +329,13 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
         return false;
       }
     }.bind(this));
-  }, {category: ['testing']});
+  }, {category: ['copy-down parents']});
+
+  add.method('slotThatIAmCopiedDownFrom', function () {
+    var cdp = this.copyDownParentThatIAmFrom();
+    if (cdp) { return reflect(cdp.parent).slotAt(this.name()); }
+    return null;
+  }, {category: ['copy-down parents']});
 
   add.method('wellKnownImplementors', function () {
     return avocado.implementorsFinder.create(this.name()).go();

@@ -56,7 +56,7 @@ thisModule.addSlots(transporter, function(add) {
 
   add.method('errorFilingOut', function (msg, errors, evt) {
     avocado.ui.showObjects(this.objectsToShowForErrors(errors), "file-out errors", evt);
-    avocadi.ui.showError(msg, evt);
+    avocado.ui.showError(msg, evt);
   }, {category: ['user interface', 'error reporting']});
 
   add.method('objectsToShowForErrors', function (errors) {
@@ -504,26 +504,9 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('fileOutWith', function (filerOuter) {
     var info = this.fileOutInfo();
-      
     var contents = this.contents();
-
-    var slotAnnoToStringify = {};
-    var slotAnno = this.annotation();
-    if (slotAnno.comment                                      ) { slotAnnoToStringify.comment      = slotAnno.comment;      }
-    if (slotAnno.category      && slotAnno.category.length > 0) { slotAnnoToStringify.category     = slotAnno.category;     }
-    if (slotAnno.initializeTo                                 ) { slotAnnoToStringify.initializeTo = slotAnno.initializeTo; }
-    var slotAnnoExpr = reflect(slotAnnoToStringify).expressionEvaluatingToMe();
-
-    var objectAnnoExpr;
-    if (info.isCreator) {
-      var objectAnnoToStringify = {};
-      var objectAnno = contents.annotation();
-      if (objectAnno) {
-        if (objectAnno.comment        ) {objectAnnoToStringify.comment         = objectAnno.comment;        }
-        if (objectAnno.copyDownParents) {objectAnnoToStringify.copyDownParents = objectAnno.copyDownParents;}
-        objectAnnoExpr = reflect(objectAnnoToStringify).expressionEvaluatingToMe();
-      }
-    }
+    var slotAnnoExpr = this.annotation().asExpressionForTransporter();
+    var objectAnnoExpr = info.isCreator && contents.annotation() ? contents.annotation().asExpressionForTransporter() : null;
     
     // The fileout looks a bit prettier if we don't bother showing ", {}, {}" all over the place.
     var optionalArgs = "";
@@ -545,6 +528,31 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     }
   }, {category: ['transporting']});
 
+});
+
+
+thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
+
+  add.method('asExpressionForTransporter', function () {
+    var objectAnnoToStringify = {};
+    if (this.comment        ) { objectAnnoToStringify.comment         = this.comment;         }
+    if (this.copyDownParents) { objectAnnoToStringify.copyDownParents = this.copyDownParents; }
+    return reflect(objectAnnoToStringify).expressionEvaluatingToMe();
+  }, {category: ['transporting']});
+  
+});
+
+
+thisModule.addSlots(avocado.annotator.slotAnnotationPrototype, function(add) {
+
+  add.method('asExpressionForTransporter', function () {
+    var slotAnnoToStringify = {};
+    if (this.comment                                  ) { slotAnnoToStringify.comment      = this.comment;      }
+    if (this.category      && this.category.length > 0) { slotAnnoToStringify.category     = this.category;     }
+    if (this.initializeTo                             ) { slotAnnoToStringify.initializeTo = this.initializeTo; }
+    return reflect(slotAnnoToStringify).expressionEvaluatingToMe();
+  }, {category: ['transporting']});
+  
 });
 
 
@@ -630,11 +638,27 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
   }, {category: ['writing']});
 
   add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
-    this._buffer.append("  avocado.annotator.annotationOf(");
-    this._buffer.append(parentSlot.contents().creatorSlotChainExpression());
-    this._buffer.append(").setCreatorSlot(").append(parentSlot.name().inspect());
+    var parent = parentSlot.contents();
+    var objectAnnoExpr = parent.annotation() ? parent.annotation().asExpressionForTransporter() : 'null';
+    
+    this._buffer.append("  avocado.annotator.loadObjectAnnotation(");
+    this._buffer.append(parent.creatorSlotChainExpression());
+    this._buffer.append(", ").append(objectAnnoExpr);
+    this._buffer.append(", ").append(parentSlot.name().inspect());
     this._buffer.append(", ").append(parentSlot.holder().creatorSlotChainExpression());
     this._buffer.append(");\n\n");
+    
+    /* aaa - Hmm, maybe it's OK for parent slots to have annotations, now that I have this hack?
+    var slotAnnoExpr = parentSlot.annotation().asExpressionForTransporter();
+    if (slotAnnoExpr) {
+      this._buffer.append("  Object.extend(avocado.annotator.annotationOf(");
+      this._buffer.append(parentSlot.holder().creatorSlotChainExpression());
+      this._buffer.append(").slotAnnotation(").append(parentSlot.name().inspect());
+      this._buffer.append("), ").append(slotAnnoExpr).append(");\n");
+    }
+    */
+    
+    this._buffer.append("\n");
   }, {category: ['writing']});
 
 });

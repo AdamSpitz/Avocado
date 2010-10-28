@@ -366,7 +366,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('addCommandsTo', function (cmdList) {
     var copyDown = this.slot().copyDownParentThatIAmFrom();
-    var isModifiable = this.mirrorMorph().shouldAllowModification();
+    var isModifiable = !window.isInCodeOrganizingMode;
 
     if (copyDown) {
       var copyDownParentMir = reflect(copyDown.parent);
@@ -410,13 +410,13 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
       if (isModifiable && this.slot().setModule) {
         cmdList.addItem({label: "set module...", go: function(evt) {
-          transporter.chooseOrCreateAModule(evt, this.mirrorMorph().modules(), this, "To which module?", function(m, evt) {this.setModule(m, evt);}.bind(this));
+          transporter.chooseOrCreateAModule(evt, this.slot().holder().modules(), this, "To which module?", function(m, evt) {this.setModule(m, evt);}.bind(this));
         }.bind(this)});
       }
 
       if (isModifiable && this.slot().setModuleRecursively) {
         cmdList.addItem({label: "set module recursively...", go: function(evt) {
-          transporter.chooseOrCreateAModule(evt, this.mirrorMorph().modules(), this, "To which module?", function(m, evt) {this.setModuleRecursively(m, evt);}.bind(this));
+          transporter.chooseOrCreateAModule(evt, this.slot().holder().modules(), this, "To which module?", function(m, evt) {this.setModuleRecursively(m, evt);}.bind(this));
         }.bind(this)});
       }
 

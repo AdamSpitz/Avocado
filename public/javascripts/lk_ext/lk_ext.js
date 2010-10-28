@@ -91,7 +91,7 @@ thisModule.addSlots(avocado.ui, function(add) {
   });
 
   add.method('showError', function (err, evt) {
-    avocado.MessageNotifierMorph.showError(msg, evt);
+    avocado.MessageNotifierMorph.showError(err, evt);
   });
 
   add.method('showMenu', function (cmdList, target, caption, evt) {
