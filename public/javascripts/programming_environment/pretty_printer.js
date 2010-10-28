@@ -218,6 +218,19 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
+    case WHILE:
+      this._buffer.append("while (");
+      this.prettyPrint(node.condition);
+      this._buffer.append(") ");
+      this.prettyPrint(node.body);
+      break;
+    case DO:
+      this._buffer.append("do ");
+      this.prettyPrint(node.body);
+      this._buffer.append(" while (");
+      this.prettyPrint(node.condition);
+      this._buffer.append(");");
+      break;
     case FOR_IN:
       this._buffer.append("for (");
       if (node.varDecl) { this._buffer.append("var "); }
@@ -267,6 +280,10 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       break;
     case NOT:
       this._buffer.append("!");
+      this.prettyPrint(node[0]);
+      break;
+    case UNARY_MINUS:
+      this._buffer.append("-");
       this.prettyPrint(node[0]);
       break;
     case INCREMENT:
@@ -376,7 +393,7 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
       --i;
       i--;
     }
-    for (i = 0; i < n; i++) { something(); }
+    for (i = -2; i < n; i++) { something(); }
     new f['three'];
     delete f.pleh;
     f.match(/abc/g);
@@ -400,6 +417,14 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
     }
   });
   
+  add.method('functionToFormat5', function () {
+    while (true) { doSomething(); }
+    do {
+      one();
+      two();
+    } while (x < 4);
+  });
+  
   add.method('checkFunction', function (f) {
     // Gotta start with indentationLevel 2 because that's how we write all the
     // code in the source files here. -- Adam
@@ -420,6 +445,10 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
   
   add.method('test4', function () {
     this.checkFunction(this.functionToFormat4);
+  });
+  
+  add.method('test5', function () {
+    this.checkFunction(this.functionToFormat5);
   });
   
 });
