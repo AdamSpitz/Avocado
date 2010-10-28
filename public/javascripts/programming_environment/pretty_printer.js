@@ -218,6 +218,27 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
+    case FOR_IN:
+      this._buffer.append("for (");
+      if (node.varDecl) { this._buffer.append("var "); }
+      this.prettyPrint(node.iterator);
+      this._buffer.append(" in ");
+      this.prettyPrint(node.object);
+      this._buffer.append(") ");
+      this.prettyPrint(node.body);
+      break;
+    case TRY:
+      this._buffer.append("try ");
+      this.prettyPrint(node.tryBlock);
+      node.catchClauses.each(function(catchClause) {
+        this._buffer.append(" catch (").append(catchClause.varName).append(") ");
+        this.prettyPrint(catchClause.block);
+      }.bind(this));
+      if (node.finallyBlock) {
+        this._buffer.append(" finally ");
+        this.prettyPrint(node.finallyBlock);
+      }
+      break;
     case WITH:
       this._buffer.append("with (");
       this.prettyPrint(node.object);
@@ -366,6 +387,17 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
     function localFunc() { argle(); }
     if (typeof(3) === typeof 4) { return 'good'; }
     with (window) { eval('"something"'); }
+    try {
+      one();
+      two();
+    } catch (ex) {
+      nothing();
+      doStuff();
+    } finally {
+      yeah();
+      for (n in o) { alsoGreat(); }
+      for (var n in o) { great(); }
+    }
   });
   
   add.method('checkFunction', function (f) {
