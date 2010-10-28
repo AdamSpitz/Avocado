@@ -87,6 +87,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
     case TRUE:
     case FALSE:
     case NUMBER:
+    case REGEXP:
       this._buffer.append(node.value);
       break;
     case STRING:
@@ -132,8 +133,16 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this.prettyPrint(node[1]);
       this._buffer.append(")");
       break;
+    case DELETE:
+      this._buffer.append("delete ");
+      this.prettyPrint(node[0]);
+      break;
+    case NEW:
+      this._buffer.append("new ");
+      this.prettyPrint(node[0]);
+      break;
     case NEW_WITH_ARGS:
-    this._buffer.append("new ");
+      this._buffer.append("new ");
       this.prettyPrint(node[0]);
       this._buffer.append("(");
       this.prettyPrint(node[1]);
@@ -150,9 +159,17 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this.prettyPrint(node[i]);
       }
       break;
+    case INDEX:
+      this.prettyPrint(node[0]);
+      this._buffer.append("[");
+      this.prettyPrint(node[1]);
+      this._buffer.append("]");
+      break;
     case FUNCTION:
-      if (node.functionForm === EXPRESSED_FORM) {
-        this._buffer.append("function (");
+      if (node.functionForm === EXPRESSED_FORM || node.functionForm === DECLARED_FORM) {
+        this._buffer.append("function ");
+        if (node.name) { this._buffer.append(node.name); }
+        this._buffer.append("(");
         for (i = 0; i < node.params.length; ++i) {
           if (i > 0) { this._buffer.append(", "); }
           this._buffer.append(node.params[i]);
@@ -178,7 +195,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         break;
       }
       reflect(node).morph().grabMe();
-      throw new Error("prettyPrinter encountered unknown FUNCTION type: " + tokens[node.type]);
+      throw new Error("prettyPrinter encountered unknown FUNCTION type: " + node.functionForm);
     case IF:
       this._buffer.append("if (");
       this.prettyPrint(node.condition);
@@ -201,6 +218,12 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
+    case WITH:
+      this._buffer.append("with (");
+      this.prettyPrint(node.object);
+      this._buffer.append(") ");
+      this.prettyPrint(node.body);
+      break;
     case RETURN:
       if (typeof(node.value) === 'object') {
         this._buffer.append("return ");
@@ -214,6 +237,12 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append("throw ");
       this.prettyPrint(node.exception);
       this._buffer.append(";");
+      break;
+    case TYPEOF:
+      this._buffer.append("typeof");
+      // I sometimes write typeof(3), sometimes typeof 3.
+      if (node[0].type !== GROUP) { this._buffer.append(" "); }
+      this.prettyPrint(node[0]);
       break;
     case NOT:
       this._buffer.append("!");
@@ -317,7 +346,9 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
       return;
     }
     if (false) { bleh(); } else { blah(); }
-    // can this thing do comments?
+  });
+  
+  add.method('functionToFormat3', function () {
     for (var i = 0; i < n; i++) {
       throw new Error("blah blah");
       ++i;
@@ -325,7 +356,16 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
       i--;
     }
     for (i = 0; i < n; i++) { something(); }
+    new f['three'];
+    delete f.pleh;
+    f.match(/abc/g);
     return 'lalala';
+  });
+  
+  add.method('functionToFormat4', function () {
+    function localFunc() { argle(); }
+    if (typeof(3) === typeof 4) { return 'good'; }
+    with (window) { eval('"something"'); }
   });
   
   add.method('checkFunction', function (f) {
@@ -340,6 +380,14 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
   
   add.method('test2', function () {
     this.checkFunction(this.functionToFormat2);
+  });
+  
+  add.method('test3', function () {
+    this.checkFunction(this.functionToFormat3);
+  });
+  
+  add.method('test4', function () {
+    this.checkFunction(this.functionToFormat4);
   });
   
 });
