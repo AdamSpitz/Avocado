@@ -137,6 +137,9 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append("delete ");
       this.prettyPrint(node[0]);
       break;
+    case BREAK:
+      this._buffer.append("break;");
+      break;
     case NEW:
       this._buffer.append("new ");
       this.prettyPrint(node[0]);
@@ -257,6 +260,30 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this.prettyPrint(node.object);
       this._buffer.append(") ");
       this.prettyPrint(node.body);
+      break;
+    case SWITCH:
+      this._buffer.append("switch (");
+      this.prettyPrint(node.discriminant);
+      this._buffer.append(") {");
+      this.newLine();
+      for (i = 0; i < node.cases.length; ++i) {
+        var c = node.cases[i];
+        if (i === node.defaultIndex) {
+          this._buffer.append("default");
+        } else {
+          this._buffer.append("case ");
+          this.prettyPrint(c.caseLabel);
+        }
+        this._buffer.append(":");
+        this.indent();
+        c.statements.each(function(s) {
+          this.newLine();
+          this.prettyPrint(s);
+        }.bind(this));
+        this.unindent();
+        this.newLine();
+      }
+      this._buffer.append("}");
       break;
     case RETURN:
       if (typeof(node.value) === 'object') {
@@ -423,6 +450,13 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
       one();
       two();
     } while (x < 4);
+    switch (x) {
+    case 3:
+      blah();
+      break;
+    default:
+      noodle();
+    }
   });
   
   add.method('checkFunction', function (f) {
