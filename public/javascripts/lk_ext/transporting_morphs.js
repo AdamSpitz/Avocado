@@ -52,32 +52,6 @@ thisModule.addSlots(Node.prototype, function(add) {
 });
 
 
-thisModule.addSlots(Point.prototype, function(add) {
-
-  add.method('storeString', function () {
-    return ['new Point(', this.x, ', ', this.y, ')'].join('');
-  }, {category: ['transporting']});
-
-  add.method('storeStringNeeds', function () {
-    return Point.prototype;
-  }, {category: ['transporting']});
-
-});
-
-
-thisModule.addSlots(Rectangle.prototype, function(add) {
-
-  add.method('storeString', function () {
-    return ['new Rectangle(', this.x, ', ', this.y, ', ', this.width, ', ', this.height, ')'].join('');
-  }, {category: ['transporting']});
-
-  add.method('storeStringNeeds', function () {
-    return Rectangle.prototype;
-  }, {category: ['transporting']});
-
-});
-
-
 thisModule.addSlots(Color.prototype, function(add) {
 
   add.method('storeString', function () {

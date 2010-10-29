@@ -34,6 +34,22 @@ thisModule.addSlots(Number.prototype, function(add) {
 
 thisModule.addSlots(Point.prototype, function(add) {
 
+  add.method('equals', function(other) {
+    return other && other.constructor && other.constructor === Point && this.eqPt(other);
+  });
+
+  add.method('hashCode', function() {
+    return this.x.hashCode() + this.y.hashCode();
+  });
+
+  add.method('storeString', function () {
+    return ['new Point(', this.x, ', ', this.y, ')'].join('');
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return Point.prototype;
+  }, {category: ['transporting']});
+
   add.method('r', function () {
     // Optimization: don't create a new Point object in the process of calculating this.
     return Math.sqrt(this.rSquared());
@@ -105,6 +121,14 @@ thisModule.addSlots(Rectangle.prototype, function(add) {
   add.method('area', function () {return this.width * this.height;});
 
   add.method('vertices', function () {return [this.topLeft(), this.topRight(), this.bottomLeft(), this.bottomRight()];});
+
+  add.method('storeString', function () {
+    return ['new Rectangle(', this.x, ', ', this.y, ', ', this.width, ', ', this.height, ')'].join('');
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return Rectangle.prototype;
+  }, {category: ['transporting']});
 
 });
 

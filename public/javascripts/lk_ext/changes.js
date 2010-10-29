@@ -156,47 +156,6 @@ Class.newInitializer = function(name) {
   return c;
 };
 
-TestCase.addMethods({        
-  areEqual: function(firstValue, secondValue) {
-    if (firstValue === secondValue) { return true; }
-    if (firstValue && firstValue.equals && firstValue.equals(secondValue)) { return true; } // changed this to check a general 'equals' method. -- Adam
-    if (firstValue == secondValue) { return true; }
-    return false;
-  },
-
-  assertEqual: function(firstValue, secondValue, msg) {
-    if (! this.areEqual(firstValue, secondValue)) {
-      throw {isAssertion: true, message: (msg ? msg	 : "") + " (" + firstValue + " != " + secondValue + ") "};
-    }
-  },
-
-  assertNotEqual: function(firstValue, secondValue, msg) {
-    if (this.areEqual(firstValue, secondValue)) {
-      throw {isAssertion: true, message: (msg ? msg	 : "") + " (" + firstValue + " == " + secondValue + ") "};
-    }
-  },
-
-  assertThrowsException: function(func, msg) {
-    var thrown = false;
-    try {
-      func();
-    } catch (ex) {
-      thrown = true;
-    }
-    this.assert(thrown, msg); // can't put this inside the try because it works by throwing an exception
-  }
-});
-
-Point.addMethods({        
-  equals: function(other) {
-    return other && other.constructor && other.constructor === Point && this.eqPt(other);
-  },
-
-  hashCode: function() {
-    return this.x.hashCode() + this.y.hashCode();
-  }
-});
-
 Morph.addMethods({
     morphMenu: function(evt) {
         var items = [

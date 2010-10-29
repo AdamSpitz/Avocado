@@ -94,6 +94,10 @@ thisModule.addSlots(avocado.ui, function(add) {
     avocado.MessageNotifierMorph.showError(err, evt);
   });
 
+  add.method('showMessage', function (msg, evt) {
+    new avocado.MessageNotifierMorph(msg, Color.green).showTemporarilyInCenterOfWorld(this.worldFor(evt));
+  });
+
   add.method('showMenu', function (cmdList, target, caption, evt) {
     var menu = MenuMorph.fromCommandList(cmdList, target);
     var world = this.worldFor(evt);

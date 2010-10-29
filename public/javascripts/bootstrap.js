@@ -998,7 +998,7 @@ thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add)
   add.method('onSuccess', function (m, transport, callWhenDone) {
     var statusCodeIfAny = parseInt(transport.responseText);
     if (!isNaN(statusCodeIfAny)) {
-      avocado.MessageNotifierMorph.showError("Failed to file out " + m + " module; status code " + statusCodeIfAny, Event.createFake());
+      avocado.ui.showError("Failed to file out " + m + " module; status code " + statusCodeIfAny);
     } else {
       if (this.shouldShowNewFileContentsInNewWindow) {
         var urlToDownload = transport.responseText;
