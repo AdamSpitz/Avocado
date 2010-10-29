@@ -21,6 +21,7 @@ thisModule.addSlots(avocado, function(add) {
       [['libraries', 'MooTools'], ['$family', 'MooTools', 'addEvent', 'addEvents', 'addListener', 'cloneEvents', 'eliminate', 'fireEvent', 'getCoordinates', 'getDocument', 'getHeight', 'getLeft', 'getPosition', 'getScroll', 'getScrollHeight', 'getScrollLeft', 'getScrollSize', 'getScrollTop', 'getScrollWidth', 'getSize', 'getTop', 'getWidth', 'getWindow', 'removeEvent', 'removeEvents', 'removeListener', 'retrieve', 'store', 'uid']],
       [['avocado', 'libraries', 'Moousture'], ['Moousture']],
       [['avocado', 'libraries', 'JSLint'], ['JSLINT']],
+      [['avocado', 'libraries', 'JSParse'], ['jsParse']],
       [['avocado', 'lively kernel'], ['$morph', 'anonymous_module_0', 'ClipboardHack', 'Config', 'ContextJS', 'Converter', 'CustomJSON', 'DisplayThemes', 'Functions', 'Global', 'GlobalLayers', 'LayerStack', 'LayerableObjectTrait', 'LivelyNS', 'Loader', 'ModelMigration', 'NetRequestReporterTrait', 'NodeFactory', 'NodeStyle', 'Properties', 'Strings', 'UserAgent', 'ViewTrait', 'XHTMLNS', 'XLinkNS', 'basicResize', 'classes', 'composeLayers', 'computerLayersFor', 'connect', 'cop', 'createLayer', 'currentLayers', 'dbgOn', 'disableLayer', 'disconnect', 'disconnectAll', 'enableLayer', 'ensurePartialLayer', 'equals', 'functions', 'gather', 'getCurrentContext', 'getLayerDefinitionForObject', 'getStack', 'halt', 'initialize', 'inspect', 'interactiveEval', 'layerClass', 'layerClassAndSubclasses', 'layerGetterMethod', 'layerMethod', 'layerObject', 'layerProperty', 'layerPropertyWithShadow', 'layerSetterMethod', 'lively', 'logError', 'logStack', 'makePropertyLayerAware', 'module', 'namespace', 'namespaceIdentifier', 'newDragnDropListPane', 'newListPane', 'newPrintPane', 'newRealListPane', 'newTextListPane', 'newTextPane', 'newXenoPane', 'openStackViewer', 'printError', 'printStack', 'pt', 'rect', 'require', 'resetLayerStack', 'signal', 'subNamespaces', 'updateAttributeConnection', 'using', 'withLayers', 'withoutLayers', 'constructor']]
     ];
 
@@ -31,7 +32,6 @@ thisModule.addSlots(avocado, function(add) {
     if (window.Enumerable) {
       avocado.annotator.annotationOf(Enumerable).categorize(['enumerating'], ['all', 'any', 'collect', 'detect', 'each', 'eachSlice', 'entries', 'every', 'filter', 'find', 'findAll', 'grep', 'include', 'inGroupsOf', 'inject', 'inspect', 'invoke', 'map', 'max', 'member', 'min', 'partition', 'pluck', 'reject', 'select', 'size', 'some', 'sortBy', 'toArray', 'zip']);
     }
-    
 
   }, {category: ['avocado', 'miscellaneous']});
 

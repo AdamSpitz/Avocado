@@ -162,7 +162,7 @@ thisModule.addSlots(TestCase, function(add) {
       Array.prototype.tests,
       avocado.dependencies.tests,
       avocado.list.tests,
-      // avocado.prettyPrinter.tests,  // not included by default yet
+      avocado.prettyPrinter.tests,
       organization.tests
     ];
   });

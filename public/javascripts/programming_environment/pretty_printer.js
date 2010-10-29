@@ -38,16 +38,16 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
     var i;
     // console.log("prettyPrint encountered node type: " + tokens[node.type]);
     
-    var NodeTypes = window; // aaa get them out of the global namespace
+    var nodeTypes = jsParse.nodeTypes; // aaa get them out of the global namespace
     
     switch(node.type) {
-    case NodeTypes.SCRIPT:
+    case nodeTypes.SCRIPT:
       for (i = 0; i < node.length; ++i) {
         if (i > 0) { this.newLine(); }
         this.prettyPrint(node[i]);
       }
       break;
-    case NodeTypes.BLOCK:
+    case nodeTypes.BLOCK:
       this._buffer.append("{");
       if (node.length === 0) {
       } else if (node.length === 1) {
@@ -65,7 +65,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       this._buffer.append("}");
       break;
-    case NodeTypes.VAR:
+    case nodeTypes.VAR:
       this._buffer.append("var ");
       for (i = 0; i < node.length; ++i) {
         if (i > 0) { this._buffer.append(", "); }
@@ -73,31 +73,31 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       this._buffer.append(";");
       break;
-    case NodeTypes.SEMICOLON:
+    case nodeTypes.SEMICOLON:
       this.prettyPrint(node.expression);
       this._buffer.append(";");
       break;
-    case NodeTypes.IDENTIFIER:
+    case nodeTypes.IDENTIFIER:
       this._buffer.append(node.value);
       if (node.initializer) {
         this._buffer.append(" = ");
         this.prettyPrint(node.initializer);
       }
       break;
-    case NodeTypes.THIS:
-    case NodeTypes.NULL:
-    //case NodeTypes.UNDEFINED:
-    case NodeTypes.TRUE:
-    case NodeTypes.FALSE:
-    case NodeTypes.NUMBER:
-    case NodeTypes.REGEXP:
+    case nodeTypes.THIS:
+    case nodeTypes.NULL:
+    //case nodeTypes.UNDEFINED:
+    case nodeTypes.TRUE:
+    case nodeTypes.FALSE:
+    case nodeTypes.NUMBER:
+    case nodeTypes.REGEXP:
       this._buffer.append(node.value);
       break;
-    case NodeTypes.STRING:
+    case nodeTypes.STRING:
       var rightKindOfQuote = node.tokenizer.source[node.start];
       this._buffer.append(rightKindOfQuote).append(node.value).append(rightKindOfQuote);
       break;
-    case NodeTypes.OBJECT_INIT:
+    case nodeTypes.OBJECT_INIT:
       this._buffer.append("{");
       for (i = 0; i < node.length; ++i) {
         if (i > 0) { this._buffer.append(", "); }
@@ -105,12 +105,12 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       this._buffer.append("}");
       break;
-    case NodeTypes.PROPERTY_INIT:
+    case nodeTypes.PROPERTY_INIT:
       this.prettyPrint(node[0]);
       this._buffer.append(": ");
       this.prettyPrint(node[1]);
       break;
-    case NodeTypes.ARRAY_INIT:
+    case nodeTypes.ARRAY_INIT:
       this._buffer.append("[");
       for (i = 0; i < node.length; ++i) {
         if (i > 0) { this._buffer.append(", "); }
@@ -118,61 +118,61 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       this._buffer.append("]");
       break;
-    case NodeTypes.ASSIGN:
+    case nodeTypes.ASSIGN:
       this.prettyPrint(node[0]);
       this._buffer.append(" = ");
       this.prettyPrint(node[1]);
       break;
-    case NodeTypes.GROUP:
+    case nodeTypes.GROUP:
       if (node.value !== '(') { throw new Error("aaa, group but not open-paren?"); }
       this._buffer.append("(");
       if (node.length !== 1) { throw new Error("aaa, group but not just one member?"); }
       this.prettyPrint(node[0]);
       this._buffer.append(")");
       break;
-    case NodeTypes.CALL:
+    case nodeTypes.CALL:
       this.prettyPrint(node[0]);
       this._buffer.append("(");
       this.prettyPrint(node[1]);
       this._buffer.append(")");
       break;
-    case NodeTypes.DELETE:
+    case nodeTypes.DELETE:
       this._buffer.append("delete ");
       this.prettyPrint(node[0]);
       break;
-    case NodeTypes.BREAK:
+    case nodeTypes.BREAK:
       this._buffer.append("break;");
       break;
-    case NodeTypes.NEW:
+    case nodeTypes.NEW:
       this._buffer.append("new ");
       this.prettyPrint(node[0]);
       break;
-    case NodeTypes.NEW_WITH_ARGS:
+    case nodeTypes.NEW_WITH_ARGS:
       this._buffer.append("new ");
       this.prettyPrint(node[0]);
       this._buffer.append("(");
       this.prettyPrint(node[1]);
       this._buffer.append(")");
       break;
-    case NodeTypes.DOT:
+    case nodeTypes.DOT:
       this.prettyPrint(node[0]);
       this._buffer.append(".");
       this.prettyPrint(node[1]);
       break;
-    case NodeTypes.LIST:
+    case nodeTypes.LIST:
       for (i = 0; i < node.length; ++i) {
         if (i > 0) { this._buffer.append(", "); }
         this.prettyPrint(node[i]);
       }
       break;
-    case NodeTypes.INDEX:
+    case nodeTypes.INDEX:
       this.prettyPrint(node[0]);
       this._buffer.append("[");
       this.prettyPrint(node[1]);
       this._buffer.append("]");
       break;
-    case NodeTypes.FUNCTION:
-      if (node.functionForm === EXPRESSED_FORM || node.functionForm === DECLARED_FORM) {
+    case nodeTypes.FUNCTION:
+      if (node.functionForm === jsParse.functionForms.EXPRESSED_FORM || node.functionForm === jsParse.functionForms.DECLARED_FORM) {
         this._buffer.append("function ");
         if (node.name) { this._buffer.append(node.name); }
         this._buffer.append("(");
@@ -202,7 +202,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       reflect(node).morph().grabMe();
       throw new Error("prettyPrinter encountered unknown FUNCTION type: " + node.functionForm);
-    case NodeTypes.IF:
+    case nodeTypes.IF:
       this._buffer.append("if (");
       this.prettyPrint(node.condition);
       this._buffer.append(") ");
@@ -212,11 +212,11 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this.prettyPrint(node.elsePart);
       }
       break;
-    case NodeTypes.FOR:
+    case nodeTypes.FOR:
       this._buffer.append("for (");
       this.prettyPrint(node.setup);
       // hack - sometimes the setup is an expression, sometimes it's a var statement; is there a clean way to do this? -- Adam
-      if (node.setup.type !== VAR) { this._buffer.append(";"); }
+      if (node.setup.type !== nodeTypes.VAR) { this._buffer.append(";"); }
       this._buffer.append(" ");
       this.prettyPrint(node.condition);
       this._buffer.append("; ");
@@ -224,20 +224,20 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
-    case NodeTypes.WHILE:
+    case nodeTypes.WHILE:
       this._buffer.append("while (");
       this.prettyPrint(node.condition);
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
-    case NodeTypes.DO:
+    case nodeTypes.DO:
       this._buffer.append("do ");
       this.prettyPrint(node.body);
       this._buffer.append(" while (");
       this.prettyPrint(node.condition);
       this._buffer.append(");");
       break;
-    case NodeTypes.FOR_IN:
+    case nodeTypes.FOR_IN:
       this._buffer.append("for (");
       if (node.varDecl) { this._buffer.append("var "); }
       this.prettyPrint(node.iterator);
@@ -246,7 +246,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
-    case NodeTypes.TRY:
+    case nodeTypes.TRY:
       this._buffer.append("try ");
       this.prettyPrint(node.tryBlock);
       node.catchClauses.each(function(catchClause) {
@@ -258,13 +258,13 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this.prettyPrint(node.finallyBlock);
       }
       break;
-    case NodeTypes.WITH:
+    case nodeTypes.WITH:
       this._buffer.append("with (");
       this.prettyPrint(node.object);
       this._buffer.append(") ");
       this.prettyPrint(node.body);
       break;
-    case NodeTypes.SWITCH:
+    case nodeTypes.SWITCH:
       this._buffer.append("switch (");
       this.prettyPrint(node.discriminant);
       this._buffer.append(") {");
@@ -288,7 +288,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       }
       this._buffer.append("}");
       break;
-    case NodeTypes.RETURN:
+    case nodeTypes.RETURN:
       if (typeof(node.value) === 'object') {
         this._buffer.append("return ");
         this.prettyPrint(node.value);
@@ -297,27 +297,27 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this._buffer.append("return;");
       }
       break;
-    case NodeTypes.THROW:
+    case nodeTypes.THROW:
       this._buffer.append("throw ");
       this.prettyPrint(node.exception);
       this._buffer.append(";");
       break;
-    case NodeTypes.TYPEOF:
+    case nodeTypes.TYPEOF:
       this._buffer.append("typeof");
       // I sometimes write typeof(3), sometimes typeof 3.
-      if (node[0].type !== GROUP) { this._buffer.append(" "); }
+      if (node[0].type !== nodeTypes.GROUP) { this._buffer.append(" "); }
       this.prettyPrint(node[0]);
       break;
-    case NodeTypes.NOT:
+    case nodeTypes.NOT:
       this._buffer.append("!");
       this.prettyPrint(node[0]);
       break;
-    case NodeTypes.UNARY_MINUS:
+    case nodeTypes.UNARY_MINUS:
       this._buffer.append("-");
       this.prettyPrint(node[0]);
       break;
-    case NodeTypes.INCREMENT:
-    case NodeTypes.DECREMENT:
+    case nodeTypes.INCREMENT:
+    case nodeTypes.DECREMENT:
       if (node.postfix) {
         this.prettyPrint(node[0]);
         this._buffer.append(node.value);
@@ -326,22 +326,22 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this.prettyPrint(node[0]);
       }
       break;
-    case NodeTypes.OR:
-    case NodeTypes.AND:
-    case NodeTypes.BITWISE_OR:
-    case NodeTypes.BITWISE_XOR:
-    case NodeTypes.BITWISE_AND:
-    case NodeTypes.EQ: case NodeTypes.NE: case NodeTypes.STRICT_EQ: case NodeTypes.STRICT_NE:
-    case NodeTypes.LT: case NodeTypes.LE: case NodeTypes.GE: case NodeTypes.GT:
-    case NodeTypes.INSTANCEOF:
-    case NodeTypes.LSH: case NodeTypes.RSH: case NodeTypes.URSH:
-    case NodeTypes.PLUS: case NodeTypes.MINUS:
-    case NodeTypes.MUL: case NodeTypes.DIV: case NodeTypes.MOD:
+    case nodeTypes.OR:
+    case nodeTypes.AND:
+    case nodeTypes.BITWISE_OR:
+    case nodeTypes.BITWISE_XOR:
+    case nodeTypes.BITWISE_AND:
+    case nodeTypes.EQ: case nodeTypes.NE: case nodeTypes.STRICT_EQ: case nodeTypes.STRICT_NE:
+    case nodeTypes.LT: case nodeTypes.LE: case nodeTypes.GE: case nodeTypes.GT:
+    case nodeTypes.INSTANCEOF:
+    case nodeTypes.LSH: case nodeTypes.RSH: case nodeTypes.URSH:
+    case nodeTypes.PLUS: case nodeTypes.MINUS:
+    case nodeTypes.MUL: case nodeTypes.DIV: case nodeTypes.MOD:
       this.prettyPrint(node[0]);
       this._buffer.append(" ").append(node.value).append(" ");
       this.prettyPrint(node[1]);
       break;
-    case NodeTypes.HOOK:
+    case nodeTypes.HOOK:
       this.prettyPrint(node[0]);
       this._buffer.append(" ? ");
       this.prettyPrint(node[1]);
@@ -350,7 +350,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       break;
     default:
       reflect(node).morph().grabMe();
-      var errorMsg = "prettyPrinter encountered unknown node type: " + tokens[node.type];
+      var errorMsg = "prettyPrinter encountered unknown node type: " + jsParse.tokens[node.type];
       console.log(errorMsg);
       throw new Error(errorMsg);
     }
@@ -387,7 +387,7 @@ thisModule.addSlots(mirror, function(add) {
     var expr = this.expressionEvaluatingToMe(true);
     var stmt = avocado.stringBuffer.create('var ___contents___ = (').append(expr).append(');').toString();
     // need the assignment and the semicolon so that the parser doesn't gripe about not having a function name
-    var rootNode = parse(stmt);
+    var rootNode = jsParse.parse(stmt);
     var contentsNode = rootNode[0][0].initializer[0]; // bypass the nodes for the __contents__ statement
     return avocado.prettyPrinter.create(contentsNode, options).result();
   });

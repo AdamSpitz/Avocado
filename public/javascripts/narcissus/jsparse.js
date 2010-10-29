@@ -48,7 +48,13 @@
  * separately to take advantage of the simple switch-case constant propagation
  * done by SpiderMonkey.
  */
-const GLOBAL = this;
+ 
+// Enclose this whole thing in a function, to avoid polluting the global namespace. -- Adam
+(function() {
+
+const GLOBAL = window;
+const nodeTypes = {};
+
 
 var tokens = [
     // End of source.
@@ -150,21 +156,22 @@ var opTypeNames = {
 var keywords = {__proto__: null};
 
 // Define const END, etc., based on the token names.  Also map name to index.
-var consts = "const ";
+
+// Let's also put them in a nodeTypes object. -- Adam
 for (var i = 0, j = tokens.length; i < j; i++) {
-    if (i > 0)
-        consts += ", ";
+    var consts = "const ";
     var t = tokens[i];
+    var name;
     if (/^[a-z]/.test(t)) {
-        consts += t.toUpperCase();
+        name = t.toUpperCase();
         keywords[t] = i;
     } else {
-        consts += (/^\W/.test(t) ? opTypeNames[t] : t);
+        name = (/^\W/.test(t) ? opTypeNames[t] : t);
     }
-    consts += " = " + i;
+    consts += name + " = nodeTypes." + name + " = "+ i;
     tokens[t] = i;
+    eval(consts + ";");
 }
-eval(consts + ";");
 
 // Map assignment operators to their indexes in the tokens array.
 var assignOps = ['|', '^', '&', '<<', '>>', '>>>', '+', '-', '*', '/', '%'];
@@ -361,10 +368,10 @@ Tokenizer.prototype = {
             var op = match[0];
             if (assignOps[op] && input[op.length] == '=') {
                 token.type = ASSIGN;
-                token.assignOp = GLOBAL[opTypeNames[op]];
+                token.assignOp = nodeTypes[opTypeNames[op]];
                 match[0] += '=';
             } else {
-                token.type = GLOBAL[opTypeNames[op]];
+                token.type = nodeTypes[opTypeNames[op]];
                 if (this.scanOperand &&
                     (token.type == PLUS || token.type == MINUS)) {
                     token.type += UNARY_PLUS - PLUS;
@@ -522,7 +529,7 @@ function Block(t, x) {
     return n;
 }
 
-const DECLARED_FORM = 0, EXPRESSED_FORM = 1, STATEMENT_FORM = 2;
+const functionForms = {DECLARED_FORM: 0, EXPRESSED_FORM: 1, STATEMENT_FORM: 2};
 
 function Statement(t, x) {
     var i, label, n, n2, ss, tt = t.get();
@@ -533,8 +540,8 @@ function Statement(t, x) {
       case FUNCTION:
         return FunctionDefinition(t, x, true,
                                   (x.stmtStack.length > 1)
-                                  ? STATEMENT_FORM
-                                  : DECLARED_FORM);
+                                  ? functionForms.STATEMENT_FORM
+                                  : functionForms.DECLARED_FORM);
 
       case LEFT_CURLY:
         n = Statements(t, x);
@@ -802,7 +809,7 @@ function FunctionDefinition(t, x, requireName, functionForm) {
     f.end = t.token.end;
 
     f.functionForm = functionForm;
-    if (functionForm == DECLARED_FORM)
+    if (functionForm == functionForms.DECLARED_FORM)
         x.funDecls.push(f);
     return f;
 }
@@ -856,7 +863,7 @@ var opPrecedence = {
 
 // Map operator type code to precedence.
 for (i in opPrecedence)
-    opPrecedence[GLOBAL[i]] = opPrecedence[i];
+    opPrecedence[nodeTypes[i]] = opPrecedence[i];
 
 var opArity = {
     COMMA: -2,
@@ -881,7 +888,7 @@ var opArity = {
 
 // Map operator type code to arity.
 for (i in opArity)
-    opArity[GLOBAL[i]] = opArity[i];
+    opArity[nodeTypes[i]] = opArity[i];
 
 function Expression(t, x, stop) {
     var n, id, tt, operators = [], operands = [];
@@ -1023,7 +1030,7 @@ loop:
           case FUNCTION:
             if (!t.scanOperand)
                 break loop;
-            operands.push(FunctionDefinition(t, x, false, EXPRESSED_FORM));
+            operands.push(FunctionDefinition(t, x, false, functionForms.EXPRESSED_FORM));
             t.scanOperand = false;
             break;
 
@@ -1084,7 +1091,7 @@ loop:
                         t.peek() == IDENTIFIER) {
                         if (x.ecmaStrictMode)
                             throw t.newSyntaxError("Illegal property accessor");
-                        n.push(FunctionDefinition(t, x, true, EXPRESSED_FORM));
+                        n.push(FunctionDefinition(t, x, true, functionForms.EXPRESSED_FORM));
                     } else {
                         switch (tt) {
                           case IDENTIFIER:
@@ -1198,3 +1205,13 @@ function parse(s, f, l) {
         throw t.newSyntaxError("Syntax error");
     return n;
 }
+
+// Here's the stuff that needs to be visible to the outside. -- Adam
+window.jsParse = {
+  parse: parse,
+  tokens: tokens,
+  functionForms: functionForms,
+  nodeTypes: nodeTypes
+};
+
+})();
