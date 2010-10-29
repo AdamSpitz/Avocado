@@ -7,7 +7,7 @@ requires('lk_ext/rows_and_columns');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.method('EvaluatorMorph', function EvaluatorMorph() { Class.initializer.apply(this, arguments); }, {category: ['avocado', 'miscellaneous']});
+  add.method('EvaluatorMorph', function EvaluatorMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
 
 });
 

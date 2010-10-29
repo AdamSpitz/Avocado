@@ -33,7 +33,7 @@ thisModule.addSlots(avocado, function(add) {
       avocado.annotator.annotationOf(Enumerable).categorize(['enumerating'], ['all', 'any', 'collect', 'detect', 'each', 'eachSlice', 'entries', 'every', 'filter', 'find', 'findAll', 'grep', 'include', 'inGroupsOf', 'inject', 'inspect', 'invoke', 'map', 'max', 'member', 'min', 'partition', 'pluck', 'reject', 'select', 'size', 'some', 'sortBy', 'toArray', 'zip']);
     }
 
-  }, {category: ['avocado', 'miscellaneous']});
+  }, {category: ['categorizing']});
 
 });
 
