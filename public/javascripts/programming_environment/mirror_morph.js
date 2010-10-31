@@ -343,19 +343,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['creator slots']});
 
   add.method('showAKAMenu', function (evt) {
-    var akaMenu = avocado.command.list.create();
-    var mir = this.mirror();
-    mir.possibleCreatorSlotsSortedByLikelihood().each(function(s) {
-      var chain = s.creatorSlotChainEndingWithMe('theCreatorSlot');
-      if (chain) {
-        var chainName = mir.convertCreatorSlotChainToString(chain);
-        akaMenu.addItem([chainName, function(evt) {
-          s.beCreator();
-          this.updateAppearance();
-        }.bind(this)]);
-      }
-    }.bind(this));
-    avocado.ui.showMenu(akaMenu, this, "Other possible names:", evt);
+    this.mirror().chooseAmongPossibleCreatorSlotChains(function() {this.updateAppearance();}.bind(this), evt);
   }, {category: ['creator slots']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
@@ -376,9 +364,9 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('constructUIStateMemento', function () {
     var mem = {
-      isExpanded: this.expander().isExpanded(),
-      isCommentOpen: this._commentToggler.isOn(),
-      isAnnotationOpen: this._annotationToggler.isOn(),
+      isExpanded:       this.expander()        .constructUIStateMemento(),
+      isCommentOpen:    this._commentToggler   .constructUIStateMemento(),
+      isAnnotationOpen: this._annotationToggler.constructUIStateMemento(),
       categories: [],
       slots: []
     };
@@ -392,9 +380,9 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('assumeUIState', function (uiState, evt) {
     if (!uiState) { return; }
     evt = evt || Event.createFake();
-    this._commentToggler   .setValue( uiState.isCommentOpen,    evt );
-    this._annotationToggler.setValue( uiState.isAnnotationOpen, evt );
-    this.expander().setExpanded(uiState.isExpanded);
+    this._commentToggler   .assumeUIState(uiState.isCommentOpen,    evt);
+    this._annotationToggler.assumeUIState(uiState.isAnnotationOpen, evt);
+    this.expander()        .assumeUIState(uiState.isExpanded,       evt);
     uiState.categories.each(function(a) { this.categoryMorphFor(     category.create(a[0])).assumeUIState(a[1]); }.bind(this));
     uiState.slots     .each(function(a) { this.    slotMorphFor(this.mirror().slotAt(a[0])).assumeUIState(a[1]); }.bind(this));
   }, {category: ['UI state']});

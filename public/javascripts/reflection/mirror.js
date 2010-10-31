@@ -637,6 +637,21 @@ thisModule.addSlots(mirror, function(add) {
     }.bind(this), evt);
   }, {category: ['user interface', 'setting modules']});
 
+  add.method('chooseAmongPossibleCreatorSlotChains', function (callback, evt) {
+    var akaMenu = avocado.command.list.create();
+    this.possibleCreatorSlotsSortedByLikelihood().each(function(s) {
+      var chain = s.creatorSlotChainEndingWithMe('theCreatorSlot');
+      if (chain) {
+        var chainName = this.convertCreatorSlotChainToString(chain);
+        akaMenu.addItem([chainName, function(evt) {
+          s.beCreator();
+          if (callback) { callback(); }
+        }]);
+      }
+    }.bind(this));
+    avocado.ui.showMenu(akaMenu, this, "Other possible names:", evt);
+  }, {category: ['user interface', 'creator slots']});
+
   add.method('canHaveAnnotation', function () {
     return this.canHaveSlots();
   }, {category: ['annotations']});

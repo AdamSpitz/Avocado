@@ -43,7 +43,15 @@ ButtonMorph.subclass("ExpanderMorph", {
    isExpanded: function( ) {return !!this.getModel().getValue();},
        expand: function( ) {this.setExpanded(true );},
      collapse: function( ) {this.setExpanded(false);},
-  setExpanded: function(b) {if (this.isExpanded() !== !!b) {this.setValue(!!b); this.updateView("all");}}
+  setExpanded: function(b) {if (this.isExpanded() !== !!b) {this.setValue(!!b); this.updateView("all");}},
+
+  constructUIStateMemento: function () {
+    return this.isExpanded();
+  },
+
+  assumeUIState: function (uiState, evt) {
+    this.setExpanded(uiState);
+  }
 });
 
 // Not sure I like this, but for now I think I want expanders to look different from regular buttons.

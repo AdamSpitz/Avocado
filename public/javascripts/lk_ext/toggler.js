@@ -39,6 +39,14 @@ thisModule.addSlots(avocado.toggler, function(add) {
     return typeof(m) === 'function' ? m() : m;
   });
 
+  add.method('constructUIStateMemento', function () {
+    return this.isOn();
+  }, {category: ['UI state']});
+
+  add.method('assumeUIState', function (uiState, evt) {
+    this.setValue(uiState, evt || Event.createFake());
+  }, {category: ['UI state']});
+
 });
 
 
