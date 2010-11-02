@@ -2028,7 +2028,9 @@ Morph.subclass("MenuMorph", {
     },
 
     textStyle: {
-        textColor: Color.blue
+        textColor: Color.blue,
+        padding: Rectangle.inset(4, 1), // added by Adam
+        fontSize: 14  // added by Adam
     },
 
     labelStyle: {
@@ -2156,7 +2158,7 @@ Morph.subclass("MenuMorph", {
 		for (var i = 0; i < this.items.length; i++)
 		    if (this.items[i].name.length > maxWidth) maxWidth = this.items[i].name.length;
 		var protoPadding = Rectangle.inset(6, 4);
-		return maxWidth*proto.fontSize/2 + protoPadding.left() + protoPadding.right();
+		return maxWidth *   (this.textStyle.fontSize || /* added by Adam */ proto.fontSize)/2 + protoPadding.left() + protoPadding.right();
     },
 
     openIn: function(parentMorph, loc, remainOnScreen, captionIfAny) { 

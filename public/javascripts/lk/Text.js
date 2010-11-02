@@ -1080,6 +1080,10 @@ BoxMorph.subclass('TextMorph', {
 		if (spec.textColor !== undefined) {
 			this.setTextColor(spec.textColor);
 		}
+		// Added by Adam so that we can make the menu font size bigger without taking up huge amounts of space on padding.
+		if (spec.padding !== undefined) {
+		  this.padding = spec.padding;
+		}
 		return this;
 	},
 
