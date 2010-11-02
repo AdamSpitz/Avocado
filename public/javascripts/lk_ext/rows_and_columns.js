@@ -185,12 +185,11 @@ thisModule.addSlots(avocado.RowOrColumnMorph.prototype, function(add) {
     }.bind(this));
     forward += direction.forwardPadding2(padding);
 
-    if (this.debugMyLayout) { console.log("Gonna set newExtent to availableSpaceToUse: " + availableSpaceToUse); }
-    var newExtent = availableSpaceToUse.scaleBy(this.getScale());
+    if (this.debugMyLayout) { console.log("Gonna set newExtent to availableSpaceToUse: " + availableSpaceToUse + ", current scale is " + this.getScale()); }
+    var newExtent = availableSpaceToUse; // .scaleBy(this.getScale());  // aaa - Why was this here? It seems to just break stuff. -- Adam, Nov. 2010
     if (! newExtent.eqPt(this.getExtent())) {
       this.setExtent(newExtent);
       //this.smoothlyResizeTo(newExtent); // aaa - doesn't quite work right yet
-      if (this.debugMyLayout) { console.log("Setting bounds to " + b); }
     }
     this._layoutIsStillValid = true;
     return newExtent;

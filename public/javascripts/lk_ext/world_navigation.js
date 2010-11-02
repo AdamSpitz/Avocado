@@ -28,7 +28,9 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   }, {category: ['navigation']});
 
   add.method('zoomBy', function (factor) {
-    this.staySameSizeAndSmoothlyScaleTo(this.getScale() * factor);
+    this.staySameSizeAndSmoothlyScaleTo(this.getScale() * factor, function() {
+      this.hands.forEach(function(h) { h.scaleBy(1 / factor); });
+    }.bind(this));
   }, {category: ['navigation']});
 
 });

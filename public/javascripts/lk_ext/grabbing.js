@@ -91,9 +91,10 @@ Morph.addMethods({
   },
 
   growFromNothing: function(evt, callWhenDone) {
-    this.setScale(0.01);
+    var desiredScale = 1;
+    this.setScale(desiredScale * 0.01);
     this.grabMeWithoutZoomingAroundFirst(evt);
-    this.stayCenteredAndSmoothlyScaleTo(1, pt(0,0), function() {
+    this.stayCenteredAndSmoothlyScaleTo(desiredScale, pt(0,0), function() {
       if (this.owner === evt.hand) { // might have been dropped while growing
         evt.hand.showAsGrabbed(this); // to make the drop shadow look right
       }
@@ -102,9 +103,10 @@ Morph.addMethods({
   },
 
   growFromNothingAt: function(p, callWhenDone) {
-    this.setScale(0.01);
+    var desiredScale = 1;
+    this.setScale(desiredScale * 0.01);
     this.setPosition(p);
-    this.stayCenteredAndSmoothlyScaleTo(1, p, callWhenDone);
+    this.stayCenteredAndSmoothlyScaleTo(desiredScale, p, callWhenDone);
   }
 
 });

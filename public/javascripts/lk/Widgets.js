@@ -2228,8 +2228,9 @@ Morph.subclass("MenuMorph", {
 
     // Added by Adam
     startOpeningAnimation: function() {
-      this.setScale(0.01);
-      this.smoothlyScaleTo(1 * (Config.fatFingers ? 1.5 : 1));
+      var desiredScale = (Config.fatFingers ? 1.5 : 1) / this.world().getScale();
+      this.setScale(desiredScale * 0.01);
+      this.smoothlyScaleTo(desiredScale);
     },
     
     selectedItemIndex: function(evt) {

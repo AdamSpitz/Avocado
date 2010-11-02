@@ -57,25 +57,6 @@ thisModule.addSlots(avocado, function(add) {
     if (this.debugMode) {
       cmdList.addLine();
 
-      cmdList.addItem(["scroll-pane experiment 1", function(evt) {
-        var tm = new TextMorph(pt(400,300).extentAsRectangle(), "lalala", false);
-        var m = ScrollPane.containing(tm, pt(400,300));
-        m.grabMe();
-      }.bind(this)]);
-
-      cmdList.addItem(["scroll-pane experiment 2", function(evt) {
-        var tm = new Morph(new lively.scene.Rectangle(pt(800,600).extentAsRectangle()));
-        tm.setFill(lively.paint.defaultFillWithColor(Color.red.darker()));
-        var m = ScrollPane.containing(tm, pt(400,300));
-        m.grabMe();
-      }.bind(this)]);
-
-      cmdList.addItem(["scroll-pane experiment 3", function(evt) {
-        var tm = new TextMorph(pt(400,300).extentAsRectangle(), "lalala\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\na\nblah", false);
-        var m = ScrollPane.containing(tm, pt(400,300));
-        m.grabMe();
-      }.bind(this)]);
-
       if (organization.current === organizationUsingAnnotations) {
         cmdList.addItem(["use JSQuiche organization", function(evt) {
           organization.setCurrent(organizationChain.create(organization.named(organization.name()), organizationUsingAnnotations));
