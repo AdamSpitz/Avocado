@@ -1,12 +1,12 @@
-transporter.module.create('programming_environment/code_organizer', function(requires) {
+transporter.module.create('lk_programming_environment/code_organizer', function(requires) {
 
 requires('avocado_lib');
 requires('lk_ext/poses');
 requires('programming_environment/categorize_libraries');
-requires('programming_environment/category_morph');
-requires('programming_environment/slot_morph');
-requires('programming_environment/slice_morph');
-requires('programming_environment/mirror_morph');
+requires('lk_programming_environment/category_morph');
+requires('lk_programming_environment/slot_morph');
+requires('lk_programming_environment/slice_morph');
+requires('lk_programming_environment/mirror_morph');
 
 }, function(thisModule) {
 

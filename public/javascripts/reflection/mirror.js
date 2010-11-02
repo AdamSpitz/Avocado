@@ -675,6 +675,13 @@ thisModule.addSlots(mirror, function(add) {
     if (a) { this._cachedAnnotation = a; }
     return a;
   }, {category: ['annotations']});
+  
+  add.method('evalCodeString', function(__codeToRun__) {
+    // run the code with "this" set to my reflectee
+    return (function() {
+      return eval("//@ sourceURL=evaluator\n(" + __codeToRun__ + ")");
+    }).call(this.reflectee());
+  }, {category: ['evaluating']});
 
   add.method('wellKnownChildren', function () {
     return avocado.childFinder.create(this.reflectee()).go();

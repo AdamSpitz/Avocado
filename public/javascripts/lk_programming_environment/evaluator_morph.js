@@ -1,4 +1,4 @@
-transporter.module.create('programming_environment/evaluator', function(requires) {
+transporter.module.create('lk_programming_environment/evaluator_morph', function(requires) {
 
 requires('lk_ext/rows_and_columns');
 
@@ -66,9 +66,7 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
   add.method('wasJustShown', function (evt) { this._textMorph.wasJustShown(evt); }, {category: ['events']});
 
   add.method('runTheCode', function () {
-    var __codeToRun__ = this._textMorph.getText();
-    // run the code with "this" set to the mirror's object
-    return (function() { return eval("//@ sourceURL=evaluator\n(" + __codeToRun__ + ")"); }).call(this.mirrorMorph().mirror().reflectee());
+    return this.mirrorMorph().mirror().evalCodeString(this._textMorph.getText());
   }, {category: ['running the code']});
 
   add.method('doIt', function (evt) {

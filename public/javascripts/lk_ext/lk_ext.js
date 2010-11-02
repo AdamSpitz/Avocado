@@ -68,10 +68,14 @@ thisModule.addSlots(avocado.ui, function(add) {
     m.grabMe(evt);
     return m;
   });
+  
+  add.method('poseManager', function(evt) {
+    return this.worldFor(evt).poseManager();
+  });
 
   add.method('showObjects', function (objs, name, evt) {
-    var w = this.worldFor(evt);
-    w.assumePose(w.listPoseOfMorphsFor(objs, name));
+    var pm = this.poseManager(evt);
+    pm.assumePose(pm.listPoseOfMorphsFor(objs, name));
   });
 
   add.method('showNextTo', function (objToBeNextTo, objToShow, evt) {

@@ -1,4 +1,4 @@
-transporter.module.create('programming_environment/module_morph', function(requires) {
+transporter.module.create('lk_programming_environment/module_morph', function(requires) {
 
 requires('lk_ext/rows_and_columns');
 requires('transporter/transporter');

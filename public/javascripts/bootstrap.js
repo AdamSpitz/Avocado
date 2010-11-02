@@ -762,7 +762,7 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAllOfAvocado', function () {
-    if (modules['programming_environment/programming_environment'] || modules['programming_environment/code_organizer']) {
+    if (modules['lk_programming_environment/programming_environment'] || modules['lk_programming_environment/code_organizer']) {
       this.isDoneLoadingProgrammingEnvironment = true;
       this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
     }
@@ -783,12 +783,12 @@ thisModule.addSlots(transporter, function(add) {
     // This is a total hack, not meant to be secure; I'm just putting it
     // in here to show how it's possible to avoid loading in the
     // programming environment. -- Adam
-    if (name === "programming_environment/programming_environment") {
+    if (name === "lk_programming_environment/programming_environment") {
       if (UserAgent.isIPhone) { return false; }
       if (window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
       //if (window.wasServedFromGoogleAppEngine) { return currentUser && currentUser.isAdmin; }
     }
-    if (name === "programming_environment/code_organizer") {
+    if (name === "lk_programming_environment/code_organizer") {
       if (! window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
     }
     return true;
@@ -806,8 +806,8 @@ thisModule.addSlots(transporter, function(add) {
         
         transporter.fileInIfWanted("avocado_lib", function() {
           transporter.doBootstrappingStep('doneLoadingAvocadoLib');
-          transporter.fileInIfWanted("programming_environment/code_organizer", function() {
-            transporter.fileInIfWanted("programming_environment/programming_environment", function() {
+          transporter.fileInIfWanted("lk_programming_environment/code_organizer", function() {
+            transporter.fileInIfWanted("lk_programming_environment/programming_environment", function() {
               transporter.doBootstrappingStep('doneLoadingAllOfAvocado');
             });
           });

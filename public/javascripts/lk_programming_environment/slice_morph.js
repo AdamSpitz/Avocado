@@ -1,4 +1,4 @@
-transporter.module.create('programming_environment/slice_morph', function(requires) {
+transporter.module.create('lk_programming_environment/slice_morph', function(requires) {
 
 requires('lk_ext/rows_and_columns');
 

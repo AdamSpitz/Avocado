@@ -1,4 +1,4 @@
-transporter.module.create('programming_environment/slot_morph', function(requires) {
+transporter.module.create('lk_programming_environment/slot_morph', function(requires) {
 
 requires('reflection/reflection');
 requires('lk_ext/rows_and_columns');

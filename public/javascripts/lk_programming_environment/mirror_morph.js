@@ -1,7 +1,7 @@
-transporter.module.create('programming_environment/mirror_morph', function(requires) {
+transporter.module.create('lk_programming_environment/mirror_morph', function(requires) {
 
 requires('reflection/reflection');
-requires('programming_environment/category_morph');
+requires('lk_programming_environment/category_morph');
 
 }, function(thisModule) {
 
@@ -297,7 +297,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       var w = evt.hand.world();
       var parentFunction = function(o) { return o.mirror().hasParent() ? w.morphFor(o.mirror().parent()) : null; };
       var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.morphFor(reflect(child)); }); };
-      w.assumePose(Object.newChildOf(avocado.poses.tree, this.mirror().inspect() + " inheritance tree", this, parentFunction, childrenFunction));
+      avocado.ui.poseManager(evt).assumePose(Object.newChildOf(avocado.poses.tree, this.mirror().inspect() + " inheritance tree", this, parentFunction, childrenFunction));
     }.bind(this)});
   }, {category: ['menu']});
 

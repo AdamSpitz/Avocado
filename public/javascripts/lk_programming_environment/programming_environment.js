@@ -1,19 +1,19 @@
-transporter.module.create('programming_environment/programming_environment', function(requires) {
+transporter.module.create('lk_programming_environment/programming_environment', function(requires) {
 
 requires('avocado_lib');
 requires('lk_ext/core_sampler');
 requires('lk_ext/poses');
 requires('lk_ext/morph_factories');
 requires('transporter/snapshotter');
-requires('programming_environment/module_morph');
 requires('programming_environment/categorize_libraries');
-requires('programming_environment/category_morph');
-requires('programming_environment/slot_morph');
-requires('programming_environment/evaluator');
-requires('programming_environment/slice_morph');
-requires('programming_environment/mirror_morph');
-requires('programming_environment/test_case_morph');
 requires('programming_environment/pretty_printer');
+requires('lk_programming_environment/module_morph');
+requires('lk_programming_environment/category_morph');
+requires('lk_programming_environment/slot_morph');
+requires('lk_programming_environment/evaluator_morph');
+requires('lk_programming_environment/slice_morph');
+requires('lk_programming_environment/mirror_morph');
+requires('lk_programming_environment/test_case_morph');
 
 }, function(thisModule) {
 
