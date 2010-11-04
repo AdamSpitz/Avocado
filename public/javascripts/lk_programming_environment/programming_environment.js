@@ -11,8 +11,8 @@ requires('lk_programming_environment/module_morph');
 requires('lk_programming_environment/category_morph');
 requires('lk_programming_environment/slot_morph');
 requires('lk_programming_environment/evaluator_morph');
-requires('lk_programming_environment/slice_morph');
 requires('lk_programming_environment/mirror_morph');
+requires('lk_programming_environment/searching');
 requires('lk_programming_environment/test_case_morph');
 
 }, function(thisModule) {

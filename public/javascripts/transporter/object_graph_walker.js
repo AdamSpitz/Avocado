@@ -50,10 +50,12 @@ thisModule.addSlots(avocado.implementorsFinder, function(add) {
   add.method('inspect', function () { return "Well-known implementors of '" + this.slotNameToSearchFor + "'"; });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
-    if (slotName === this.slotNameToSearchFor && reflect(holder).isWellKnown('probableCreatorSlot')) {
+    if (slotName === this.slotNameToSearchFor && holder !== avocado.senders.byID && reflect(holder).isWellKnown('probableCreatorSlot')) {
       this._results.push(reflect(holder).slotAt(slotName));
     }
   });
+  
+  add.data('resultsAreSlots', true);
 
 });
 
@@ -82,6 +84,8 @@ thisModule.addSlots(avocado.referenceFinder, function(add) {
       this._results.push(mir.parentSlot());
     }
   });
+  
+  add.data('resultsAreSlots', true);
 
 });
 
@@ -346,6 +350,8 @@ thisModule.addSlots(avocado.senders.finder, function(add) {
     });
   });
 
+  add.data('resultsAreSlots', true);
+  
 });
 
 

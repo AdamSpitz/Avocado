@@ -5,8 +5,8 @@ requires('lk_ext/poses');
 requires('programming_environment/categorize_libraries');
 requires('lk_programming_environment/category_morph');
 requires('lk_programming_environment/slot_morph');
-requires('lk_programming_environment/slice_morph');
 requires('lk_programming_environment/mirror_morph');
+requires('lk_programming_environment/searching');
 
 }, function(thisModule) {
 

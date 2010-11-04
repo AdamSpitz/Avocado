@@ -284,7 +284,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     cmdList.addLine();
 
     cmdList.addItem({label: "well-known references", go: function(evt) {
-      avocado.ui.grab(avocado.referenceFinder.create(this.mirror().reflectee()), evt).redo();
+      avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.referenceFinder.create(this.mirror().reflectee()), evt)).redo();
     }.bind(this)});
     
     cmdList.addItem({label: "well-known children", go: function(evt) {

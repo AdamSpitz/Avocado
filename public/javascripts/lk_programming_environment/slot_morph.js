@@ -14,6 +14,20 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     return new this.Morph(this);
   }, {category: ['user interface']});
 
+  add.method('showInSitu', function (inSituButton) {
+    var w = inSituButton.world();
+    var m = w.morphFor(this.holder());
+    m.ensureIsInWorld(w, inSituButton.worldPoint(pt(150,0)), true, true, true, function() {
+      m.expandCategory(this.category());
+    }.bind(this));
+  }, {category: ['user interface', 'slices']});
+
+  add.method('createRowForSearchResults', function () {
+    var inSituButton = ButtonMorph.createButton("in situ", function() { this.showInSitu(inSituButton); }.bind(this), 2);
+    return avocado.RowMorph.createSpaceFilling([TextMorph.createLabel(this.holder().name()), Morph.createSpacer(), this.newMorph(), inSituButton],
+                                               {top: 0, bottom: 0, left: 3, right: 3, between: 3});
+  }, {category: ['user interface', 'slices']});
+
 });
 
 
@@ -431,13 +445,13 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     
     if (this.slot().wellKnownImplementors) {
       cmdList.addItem({label: "implementors", go: function(evt) {
-        avocado.ui.grab(avocado.implementorsFinder.create(this.slot().name()), evt).redo();
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.implementorsFinder.create(this.slot().name()), evt)).redo();
       }.bind(this)});
     }
 
     if (this.slot().wellKnownSenders) {
       cmdList.addItem({label: "senders", go: function(evt) {
-        avocado.ui.grab(avocado.senders.finder.create(this.slot().name()), evt).redo();
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.senders.finder.create(this.slot().name()), evt)).redo();
       }.bind(this)});
     }
     
