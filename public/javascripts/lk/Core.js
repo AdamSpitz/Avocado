@@ -2268,7 +2268,7 @@ Morph.addMethods({
 
 	containsWorldPoint: function(p) { // p is in world coordinates
 		if (this.owner == null) return this.containsPoint(p);
-		return this.containsPoint(this.owner.localize(p)); 
+		return this.containsPoint(this.ownerLocalize(p)); 
 	},
 
 	fullContainsPoint: function(p) { // p is in owner coordinates
@@ -2276,8 +2276,10 @@ Morph.addMethods({
 	},
 
 	fullContainsWorldPoint: function(p) { // p is in world coordinates
-		if (this.owner == null) return this.fullContainsPoint(p);
-		return this.fullContainsPoint(this.owner.localize(p)); 
+		// Changed all uses of owner.localize to ownerLocalize. -- Adam
+		// Commented out the following line because ownerLocalize works fine now for WorldMorphs. -- Adam
+		// if (this.owner == null) return this.fullContainsPoint(p);
+		return this.fullContainsPoint(this.ownerLocalize(p)); 
 	},
 
 	addNonMorph: function(node) {
@@ -2604,7 +2606,7 @@ Morph.addMethods({
 		var globalTransform = new lively.scene.Similitude();
 		var world = this.world();
 		// var trace = [];
-		for (var morph = this; morph != world; morph = morph.owner) {
+		for (var morph = this; morph != null; morph = morph.owner) { // changed morph != world to morph != null, to allow world-scaling -- Adam
 			globalTransform.preConcatenate(morph.getTransform());
 			// trace.push(globalTransform.copy());
 		}
@@ -3265,10 +3267,10 @@ addAllHandles: function(evt) {
     },
 
 	dragMe: function(evt) {
-		var offset = this.getPosition().subPt(this.owner.localize(evt.point()));
+		var offset = this.getPosition().subPt(this.ownerLocalize(evt.point()));
 		var mouseRelay= {
 			captureMouseEvent: function(e) { 
-				if (e.type == "MouseMove")  this.setPosition(this.owner.localize(e.hand.getPosition()).addPt(offset));
+				if (e.type == "MouseMove")  this.setPosition(this.ownerLocalize(e.hand.getPosition()).addPt(offset));
 				if (e.type == "MouseDown" || e.type == "MouseUp")  e.hand.setMouseFocus(null); 
 			}.bind(this),
 		};

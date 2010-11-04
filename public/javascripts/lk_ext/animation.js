@@ -9,7 +9,7 @@ requires('core/animation_math');
 
     add.method('isOnScreen', function () {
       var w = this.world();
-      return w && (w === this || w.bounds().containsPoint(this.owner.worldPoint(this.getPosition())));
+      return w && (w === this || w.bounds().containsPoint(this.owner.worldPoint(this.getPosition()).matrixTransform(w.getTransform())));
     }, {category: ['testing']});
 
     add.method('startZoomingOuttaHere', function () {
@@ -154,25 +154,6 @@ requires('core/animation_math');
         this.moveOriginBy(center.negated());
         if (functionToCallWhenDone) { functionToCallWhenDone(); }
       }.bind(this));
-    }, {category: ['scaling']});
-
-    add.method('staySameSizeAndSmoothlyScaleTo', function (desiredScale, functionToCallWhenDone) {
-      var desiredSize = this.getExtent().scaleBy(this.getScale());
-      var originalBounds = this.innerBounds();
-      var desiredPos = originalBounds.topLeft();
-      //console.log("Before scaling, originalBounds is " + originalBounds);
-      var accessor = {
-        getValue: function(m) {return m.getScale();},
-        setValue: function(m, v) {
-          m.setScale(v);
-          var newBounds = desiredPos.extent(desiredSize.scaleBy(1 / v));
-          //console.log("Setting new bounds to " + newBounds);
-          m.setBounds(newBounds);
-          m.translateBy(desiredPos.negated());
-        }
-      };
-      var animator = avocado.animation.newSpeedStepper(this, desiredScale, accessor, 200, 80);
-      this.startAnimating(animator, functionToCallWhenDone);
     }, {category: ['scaling']});
 
   });

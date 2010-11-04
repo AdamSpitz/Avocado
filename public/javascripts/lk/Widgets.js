@@ -635,7 +635,7 @@ onMouseDown: function(evt) {
 		if (!evt.mouseButtonPressed) {
 			if (this.showingAllHandles) return;  // Showing all handles; just let mouse roll over
 			if (this.rollover) {  // Mouse up: Remove handle if mouse drifts away
-				if (this.owner && !this.bounds().expandBy(5).containsPoint(this.owner.localize(evt.mousePoint))) {
+				if (this.owner && !this.bounds().expandBy(5).containsPoint(this.ownerLocalize(evt.mousePoint))) {
 					evt.hand.setMouseFocus(null);
 					this.hideHelp();
 					this.remove();
@@ -646,7 +646,7 @@ onMouseDown: function(evt) {
 		if (!this.owner) { console.warn("Handle " + this + " has no owner in onMouseMove!" ); return; }
 		//console.log("handle move");
 		// When dragged, I drag the designated control point of my target
-		this.align(this.bounds().center(), this.owner.localize(evt.mousePoint));
+		this.align(this.bounds().center(), this.ownerLocalize(evt.mousePoint));
 		var p0 = evt.hand.lastMouseDownPoint; // in world coords
 		var p1 = evt.mousePoint;
 		if (!this.initialScale) this.initialScale = this.targetMorph.getScale();

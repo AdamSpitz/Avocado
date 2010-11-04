@@ -1,3 +1,8 @@
+Wednesday, November 3, 2010
+
+  - Lots more cleanup work.
+  - Improved world-scaling, though it's not perfect yet.
+
 Tuesday, October 19, 2010
 
   - Moved some objects into the "avocado" namespace, so that they don't clutter up the global namespace.

@@ -2,8 +2,9 @@ WorldMorph.addMethods({
   onMouseDown: function($super, evt) {
       // Added by Adam, Feb. 2008, because sometimes it's useful
       // to have no keyboard focus (so that, for example, I can
-      // hit Cmd-t to open a new tab)
-      evt.hand.setKeyboardFocus(null);
+      // hit Cmd-t to open a new tab), or to have the focus be
+      // the world.
+      evt.hand.setKeyboardFocus(this);
 
       if (this.shouldSlideIfClickedAtEdge) { this.slideIfClickedAtEdge(evt); }
       return $super(evt);
@@ -209,6 +210,22 @@ Morph.addMethods({
 Morph.addMethods({
   addMorphCentered: function(m, callWhenDone) {
     this.animatedAddMorphAt(m, this.getExtent().subPt(m.getExtent()).scaleBy(0.5), callWhenDone);
+  }
+});
+
+
+Morph.addMethods({
+  ownerLocalize: function(pt) {
+		if (! this.owner) { return pt; }
+    return this.owner.localize(pt);
+  }
+});
+
+
+WorldMorph.addMethods({
+  ownerLocalize: function(pt) {
+		if (pt == null) console.log('null pt in ownerLocalize');   
+		return pt.matrixTransform(this.getTransform());
   }
 });
 

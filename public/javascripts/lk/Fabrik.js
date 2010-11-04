@@ -683,7 +683,7 @@ Morph.subclass('PinMorph', {
     
     onMouseMove: function(evt) {
         if (evt.isMetaDown() && evt.hand.mouseButtonPressed) {
-            this.snapToPointInside(this.owner.localize(evt.mousePoint))
+            this.snapToPointInside(this.ownerLocalize(evt.mousePoint))
         }
     },
 
@@ -1819,7 +1819,7 @@ BoxMorph.subclass('ComponentMorph', {
             this.addMorph(this.halos);
             this.updateHaloItemPositions();
             this.handObserver = new HandPositionObserver(function(value) {
-                if (!self.owner || !self.bounds().expandBy(10).containsPoint(self.owner.localize(value))) {
+                if (!self.owner || !self.bounds().expandBy(10).containsPoint(self.ownerLocalize(value))) {
                     self.removeMorph(self.halos);
                     self.adjustForNewBounds();
                     this.stop();
@@ -3274,7 +3274,7 @@ Object.subclass("PointSnapper", {
             this.formalModel.setSnapped(false);
             return
         };
-        var newPos = this.morph.owner.localize(newPosInWorld);
+        var newPos = this.morph.ownerLocalize(newPosInWorld);
         this.updatePosition(newPos.addPt(this.offset));
         this.formalModel.setSnapped(true);
     },

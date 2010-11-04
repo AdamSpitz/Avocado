@@ -53,7 +53,7 @@ thisModule.addSlots(avocado.animation, function(add) {
       morph.setPosition((typeof centerFnOrPt === 'function') ? centerFnOrPt() : centerFnOrPt || centerPt);
     }));
 
-    return this.simultaneous.create("wiggler", [wigglerizer]);
+    return wigglerizer;
   });
 
   add.method('newMovement', function (morph, kindOfPath, destinationFnOrPt, speed, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd) {

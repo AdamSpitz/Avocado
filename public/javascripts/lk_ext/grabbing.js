@@ -18,7 +18,10 @@ Morph.addMethods({
 
         //if (droppingMorph) {console.log(this.inspect() + ">>morphToGrabOrReceive starting");}
 
-        if (!this.fullContainsWorldPoint(evt.mousePoint)) return null; // not contained anywhere
+        if (this.owner) { // added by Adam; otherwise we have problems with world-scaling; the world should contain everything.
+          if (!this.fullContainsWorldPoint(evt.mousePoint)) return null; // not contained anywhere
+        }
+        
         // First check all the submorphs, front first
         for (var i = this.submorphs.length - 1; i >= 0; i--) {
             var hit = this.submorphs[i].morphToGrabOrReceive(evt, droppingMorph, checkForDnD);

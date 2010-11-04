@@ -80,18 +80,6 @@ thisModule.addSlots(avocado, function(add) {
         this.createAnotherMorph(w, w.bounds(), 1000);
       }.bind(this)]);
 
-      cmdList.addItem(["zoom in to the world", function(evt) {
-        evt.hand.world().zoomBy(2);
-      }]);
-
-      cmdList.addItem(["zoom out from the world", function(evt) {
-        evt.hand.world().zoomBy(0.5);
-      }]);
-
-      cmdList.addItem(["unscale the world", function(evt) {
-        evt.hand.world().staySameSizeAndSmoothlyScaleTo(1.0);
-      }]);
-
       var b = window.shouldNotDoAnyPeriodicalMorphUpdating;
       cmdList.addItem([(b ? "enable" : "disable") + " periodical updating", function(evt) {
         window.shouldNotDoAnyPeriodicalMorphUpdating = !b;
