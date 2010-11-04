@@ -362,7 +362,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
 
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
-    var newCategory = this.category().copySlots(this.mirror(), newMirror);
+    var newCategory = this.category().copyInto(this.mirror(), newMirror);
     var newCategoryPresenter = Object.newChildOf(category.Presenter, newMirror, newCategory);
     var newCategoryMorph = new category.Morph(newCategoryPresenter);
     newCategoryMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
@@ -384,26 +384,25 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnMirror', function (mirMorph) {
-    var newCategory = this.category().copySlots(this.mirror(), mirMorph.mirror());
-    mirMorph.expandCategory(newCategory);
-    this.remove();
-    mirMorph.updateAppearance();
+    this.copyToMirrorMorph(mirMorph, category.root());
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnCategory', function (categoryMorph) {
-    var newCategory = this.category().copySlots(this.mirror(), categoryMorph.mirrorMorph().mirror(), categoryMorph.category());
-    categoryMorph.mirrorMorph().expandCategory(newCategory);
-    this.remove();
-    categoryMorph.mirrorMorph().updateAppearance();
+    this.copyToMirrorMorph(categoryMorph.mirrorMorph(), categoryMorph.category());
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnWorld', function (world) {
     if (! this._shouldOnlyBeDroppedOnThisParticularMirror) {
-      var mirMorph = world.morphFor(this.mirror());
+      var mirMorph = world.morphFor(reflect({}));
       world.addMorphAt(mirMorph, this.position());
-      mirMorph.expandCategory(this.category());
-      this.remove();
+      this.copyToMirrorMorph(mirMorph, category.root());
     }
+  }, {category: ['drag and drop']});
+  
+  add.method('copyToMirrorMorph', function (mirMorph, cat) {
+    var newCategory = this.category().copyInto(this.mirror(), mirMorph.mirror(), cat);
+    mirMorph.expandCategory(newCategory);
+    this.remove();
   }, {category: ['drag and drop']});
 
 });

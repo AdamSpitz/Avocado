@@ -164,7 +164,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     if (! c.isRoot()) { this.expandCategory(c.supercategory()); }
     var m = c.isRoot() ? this : this.categoryMorphFor(c);
     m.expander().expand();
-    m._categoryPresenter.populateSlotsPanel();
+    this.updateAppearance();
   }, {category: ['categories']});
 
   add.method('slotMorphFor', function (s) {

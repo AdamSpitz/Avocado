@@ -229,22 +229,20 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('constructUIStateMemento', function () {
     return {
-      isSourceOpen: this._sourceToggler.isOn(),
-      isCommentOpen: this._commentToggler.isOn(),
-      isAnnotationOpen: this._annotationToggler.isOn(),
-      isArrowVisible: ! this.contentsPointer().arrow.noLongerNeedsToBeUpdated
+      isSourceOpen: this._sourceToggler.constructUIStateMemento(),
+      isCommentOpen: this._commentToggler.constructUIStateMemento(),
+      isAnnotationOpen: this._annotationToggler.constructUIStateMemento(),
+      isArrowVisible: this.contentsPointer().arrow.constructUIStateMemento()
     };
   }, {category: ['UI state']});
 
   add.method('assumeUIState', function (uiState, evt) {
     if (!uiState) { return; }
     evt = evt || Event.createFake();
-    this._sourceToggler    .setValue( uiState.isSourceOpen,     evt );
-    this._commentToggler   .setValue( uiState.isCommentOpen,    evt );
-    this._annotationToggler.setValue( uiState.isAnnotationOpen, evt );
-    
-    var arrow = this.contentsPointer().arrow;
-    if (uiState.isArrowVisible) {arrow.needsToBeVisible();} else {arrow.noLongerNeedsToBeVisible();}
+    this._sourceToggler         .assumeUIState( uiState.isSourceOpen,     evt );
+    this._commentToggler        .assumeUIState( uiState.isCommentOpen,    evt );
+    this._annotationToggler     .assumeUIState( uiState.isAnnotationOpen, evt );
+    this.contentsPointer().arrow.assumeUIState( uiState.isArrowVisible,   evt );
   }, {category: ['UI state']});
 
   add.method('slot', function () { return this._slot; }, {category: ['accessing']});
@@ -307,26 +305,37 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnMirror', function (mirMorph) {
-    this.slot().copyTo(mirMorph.mirror());
-    mirMorph.expander().expand();
-    this.remove();
-    mirMorph.updateAppearance();
+    this.copyToMirrorMorph(mirMorph, category.root());
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnCategory', function (categoryMorph) {
-    var newSlot = this.slot().copyTo(categoryMorph.mirrorMorph().mirror(), categoryMorph.category());
-    categoryMorph.expander().expand();
-    this.remove();
-    categoryMorph.mirrorMorph().updateAppearance();
+    this.copyToMirrorMorph(categoryMorph.mirrorMorph(), categoryMorph.category());
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnWorld', function (world) {
     if (! this._shouldOnlyBeDroppedOnThisParticularMirror) {
-      var mirMorph = world.morphFor(this.slot().mirror());
+      var mirMorph = world.morphFor(reflect({}));
       world.addMorphAt(mirMorph, this.position());
-      mirMorph.expander().expand();
-      this.remove();
+      this.copyToMirrorMorph(mirMorph, category.root());
     }
+  }, {category: ['drag and drop']});
+  
+  add.method('copyToMirrorMorph', function (mirMorph, cat) {
+    var newSlot = this.slot().copyTo(mirMorph.mirror(), cat);
+    mirMorph.expandCategory(newSlot.category());
+    this.remove();
+  }, {category: ['drag and drop']});
+
+  add.method('grabCopy', function (evt) {
+    var newMirror = reflect({});
+    var newSlot = this.slot().copyTo(newMirror);
+    var newSlotMorph = newSlot.newMorph();
+    newSlotMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
+    newSlotMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
+    newSlotMorph.forceLayoutRejiggering();
+    if (! this.mirrorMorph().shouldAllowModification()) { newSlotMorph._shouldOnlyBeDroppedOnThisParticularMirror = this.mirrorMorph().mirror(); }
+    evt.hand.grabMorphWithoutAskingPermission(newSlotMorph, evt);
+    return newSlotMorph;
   }, {category: ['drag and drop']});
 
   add.method('setModule', function (m, evt) {
@@ -365,18 +374,6 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     if (contentsMirMorph) { contentsMirMorph.updateAppearance(); }
     this.updateAppearance();
   }, {category: ['creator slots']});
-
-  add.method('grabCopy', function (evt) {
-    var newMirror = reflect({});
-    var newSlot = this.slot().copyTo(newMirror);
-    var newSlotMorph = newSlot.newMorph();
-    newSlotMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
-    newSlotMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
-    newSlotMorph.forceLayoutRejiggering();
-    if (! this.mirrorMorph().shouldAllowModification()) { newSlotMorph._shouldOnlyBeDroppedOnThisParticularMirror = this.mirrorMorph().mirror(); }
-    evt.hand.grabMorphWithoutAskingPermission(newSlotMorph, evt);
-    return newSlotMorph;
-  }, {category: ['drag and drop']});
 
   add.method('addCommandsTo', function (cmdList) {
     var copyDown = this.slot().copyDownParentThatIAmFrom();

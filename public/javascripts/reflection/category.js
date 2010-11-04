@@ -93,17 +93,19 @@ thisModule.addSlots(category, function(add) {
     return true;
   }, {category: ['comparing']});
 
-  add.method('copySlots', function (sourceMir, targetMir, targetCat) {
+  add.method('copyInto', function (sourceMir, targetMir, targetCat) {
+    if (this.isRoot()) { throw new Error("Cannot use copyInto on the root category; maybe you meant to use copyContentsInto?"); }
+    return this.copyContentsInto(sourceMir, targetMir, (targetCat || category.root()).subcategory(this.lastPart()));
+  }, {category: ['copying']});
+
+  add.method('copyContentsInto', function (sourceMir, targetMir, targetCat) {
     targetCat = targetCat || category.root();
-    var numPartsToLopOffTheBeginning = this.parts().length - 1;
-    if (numPartsToLopOffTheBeginning < 0) { throw "something is wrong - can't copy the root category"; } // aaa - wait, why not?
+    var numPartsToLopOffTheBeginning = this.parts().length;
 
     sourceMir.eachSlotNestedSomewhereUnderCategory(this, function(slot) {
-      var newSlot = slot.copyTo(targetMir);
-      var newCategory = targetCat.concat(slot.category().withoutFirstParts(numPartsToLopOffTheBeginning));
-      newSlot.setCategory(newCategory);
-    }.bind(this));
-    return targetCat.concat(this.withoutFirstParts(numPartsToLopOffTheBeginning));
+      slot.copyTo(targetMir, targetCat.concat(slot.category().withoutFirstParts(numPartsToLopOffTheBeginning)));
+    });
+    return targetCat;
   }, {category: ['copying']});
 
   add.method('removeSlots', function (mir) {

@@ -1065,11 +1065,11 @@ thisModule.addSlots(mirror.tests, function(add) {
       var o = {};
       var mir = reflect(o);
       this.createSlot(mir, 'a', 42, ['letters', 'vowels']);
-      this.createSlot(mir, 'b', 42, ['letters', 'consonants']);
-      this.createSlot(mir, 'c', 42, ['letters', 'consonants']);
-      this.createSlot(mir, 'd', 42, ['letters', 'consonants']);
-      this.createSlot(mir, 'e', 42, ['letters', 'vowels']);
-      this.createSlot(mir, 'y', 42, ['letters']);
+      this.createSlot(mir, 'b', 43, ['letters', 'consonants']);
+      this.createSlot(mir, 'c', 44, ['letters', 'consonants']);
+      this.createSlot(mir, 'd', 45, ['letters', 'consonants']);
+      this.createSlot(mir, 'e', 46, ['letters', 'vowels']);
+      this.createSlot(mir, 'y', 47, ['letters']);
       
       var root = category.root();
       this.assertEqual('letters', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root).toArray().join(', '));
@@ -1082,6 +1082,20 @@ thisModule.addSlots(mirror.tests, function(add) {
       
       this.assertEqual('b slot, c slot, d slot', avocado.enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root.subcategory('letters').subcategory('consonants')).toArray().sort().join(', '));
       this.assertEqual('a slot, b slot, c slot, d slot, e slot, y slot', avocado.enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root).toArray().sort().join(', '));
+      
+      var o2 = {};
+      var mir2 = reflect(o2);
+      category.create(['letters']).copyInto(mir, mir2, category.create(['glyphs']));
+      this.assertEqual(42, o2.a);
+      this.assertEqual(category.create(['glyphs', 'letters', 'vowels']), mir2.slotAt('a').category());
+      
+      category.create(['letters', 'vowels']).copyInto(mir, mir2, category.create([]));
+      this.assertEqual(42, o2.a);
+      this.assertEqual(category.create(['vowels']), mir2.slotAt('a').category());
+      
+      category.create([]).copyContentsInto(mir, mir2, category.create(['stuff']));
+      this.assertEqual(42, o2.a);
+      this.assertEqual(category.create(['stuff', 'letters', 'vowels']), mir2.slotAt('a').category());
     }.bind(this));
   });
 
