@@ -67,11 +67,4 @@ thisModule.addSlots(jsQuiche, function(add) {
 });
 
 
-thisModule.addSlots(jsQuiche.menuItemContributors, function(add) {
-
-  add.data('0', avocado.poses);
-
-});
-
-
 });

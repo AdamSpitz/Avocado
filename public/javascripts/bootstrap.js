@@ -372,7 +372,7 @@ window.modules = {};
 annotator.annotationOf(modules).setCreatorSlot('modules', window);
 annotator.annotationOf(window).setSlotAnnotation('modules', {category: ['transporter']});
 
-window.transporter = {};
+if (! window.hasOwnProperty('transporter')) { window.transporter = {}; }
 annotator.annotationOf(transporter).setCreatorSlot('transporter', window);
 annotator.annotationOf(window).setSlotAnnotation('transporter', {category: ['transporter']});
 
