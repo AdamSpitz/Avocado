@@ -2207,14 +2207,15 @@ Morph.subclass("MenuMorph", {
         }
 
         // If menu and/or caption is off screen, move it back so it is visible
-       /*var menuRect = this.bounds();  //includes caption if any
+       var menuRect = this.bounds();  //includes caption if any
+       menuRect = menuRect.topLeft().extent(menuRect.extent().scaleBy(1 / this.getScale())); // adjust for the menu's scale -- Adam
 		var bounds = (this.world() || WorldMorph.current()).visibleBounds();
-                console.log("Visible Bounds for World Morph: " + WorldMorph.current().visibleBounds());
+                //console.log("Visible Bounds for World Morph: " + WorldMorph.current().visibleBounds());  // commented out, annoying -- Adam
 		var visibleRect = menuRect.intersection(bounds);
         var delta = visibleRect.topLeft().subPt(menuRect.topLeft());  // delta to fix topLeft off screen
         delta = delta.addPt(visibleRect.bottomRight().subPt(menuRect.bottomRight()));  // same for bottomRight
         if (delta.dist(pt(0, 0)) > 1) this.moveBy(delta);  // move if significant
-*/
+
         this.startOpeningAnimation(); // Added by Adam; must be down here so that the bounds calculations use the full size
 
         this.listMorph.relayMouseEvents(this);
