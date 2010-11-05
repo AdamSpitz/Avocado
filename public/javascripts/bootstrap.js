@@ -259,10 +259,24 @@ var annotator = {
   }
 };
 
+if (! window.hasOwnProperty('avocado')) { window.avocado = {}; }
+annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
+annotator.annotationOf(window).setSlotAnnotation('avocado', {category: ['avocado']});
+
+avocado.annotator = annotator;
+annotator.annotationOf(avocado.annotator).setCreatorSlot('annotator', avocado);
+annotator.annotationOf(avocado).setSlotAnnotation('annotator', {category: ['annotations']});
+
+avocado.javascript = {};
+annotator.annotationOf(avocado.javascript).setCreatorSlot('javascript', avocado);
+annotator.annotationOf(avocado).setSlotAnnotation('javascript', {category: ['javascript']});
+
+avocado.javascript.reservedWords = {'abstract': true, 'boolean': true, 'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true, 'class': true, 'const': true, 'continue': true, 'debugger': true, 'default': true, 'delete': true, 'do': true, 'double': true, 'else': true, 'enum': true, 'export': true, 'extends': true, 'false': true, 'final': true, 'finally': true, 'float': true, 'for': true, 'function': true, 'goto': true, 'if': true, 'implements': true, 'import': true, 'in': true, 'instanceof': true, 'int': true, 'interface': true, 'long': true, 'native': true, 'new': true, 'null': true, 'package': true, 'private': true, 'protected': true, 'public': true, 'return': true, 'short': true, 'static': true, 'super': true, 'switch': true, 'synchronized': true, 'this': true, 'throw': true, 'throws': true, 'transient': true, 'true': true, 'try': true, 'typeof': true, 'var': true, 'volatile': true, 'void': true, 'while': true, 'with': true};
+
 // aaa - Copied from Base.js. Just a hack to make $super work. Not really sure
 // what the right solution is in the long run - how do we make this work with
 // both prototype-style inheritance and class-style inheritance?
-window.hackToMakeSuperWork = function(holder, property, contents) {
+avocado.hackToMakeSuperWork = function(holder, property, contents) {
   var value = contents;
   var superclass = holder.constructor && this === holder.constructor.prototype && holder.constructor.superclass;
   var ancestor = superclass ? superclass.prototype : holder['__proto__']; // using [] to fool JSLint
@@ -284,20 +298,8 @@ window.hackToMakeSuperWork = function(holder, property, contents) {
   }
   return value;
 };
-
-if (! window.hasOwnProperty('avocado')) { window.avocado = {}; }
-annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
-annotator.annotationOf(window).setSlotAnnotation('avocado', {category: ['avocado']});
-
-avocado.annotator = annotator;
-annotator.annotationOf(avocado.annotator).setCreatorSlot('annotator', avocado);
-annotator.annotationOf(avocado).setSlotAnnotation('annotator', {category: ['annotations']});
-
-avocado.javascript = {};
-annotator.annotationOf(avocado.javascript).setCreatorSlot('javascript', avocado);
-annotator.annotationOf(avocado).setSlotAnnotation('javascript', {category: ['javascript']});
-
-avocado.javascript.reservedWords = {'abstract': true, 'boolean': true, 'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true, 'class': true, 'const': true, 'continue': true, 'debugger': true, 'default': true, 'delete': true, 'do': true, 'double': true, 'else': true, 'enum': true, 'export': true, 'extends': true, 'false': true, 'final': true, 'finally': true, 'float': true, 'for': true, 'function': true, 'goto': true, 'if': true, 'implements': true, 'import': true, 'in': true, 'instanceof': true, 'int': true, 'interface': true, 'long': true, 'native': true, 'new': true, 'null': true, 'package': true, 'private': true, 'protected': true, 'public': true, 'return': true, 'short': true, 'static': true, 'super': true, 'switch': true, 'synchronized': true, 'this': true, 'throw': true, 'throws': true, 'transient': true, 'true': true, 'try': true, 'typeof': true, 'var': true, 'volatile': true, 'void': true, 'while': true, 'with': true};
+annotator.annotationOf(avocado.hackToMakeSuperWork).setCreatorSlot('hackToMakeSuperWork', avocado);
+annotator.annotationOf(avocado).setSlotAnnotation('hackToMakeSuperWork', {category: ['inheritance']});
 
 // Seems like Chrome doesn't actually enumerate the "prototype" slot.
 // This is just a simple test to see.
@@ -496,7 +498,7 @@ transporter.module.slotAdder = {
 
   method: function(name, contents, slotAnnotation) {
     contents.displayName = name; // this'll show up in the Safari debugger
-    this.creator(name, hackToMakeSuperWork(this.holder, name, contents), slotAnnotation);
+    this.creator(name, avocado.hackToMakeSuperWork(this.holder, name, contents), slotAnnotation);
   }
 };
 
@@ -508,7 +510,7 @@ transporter.module.addSlots = function(holder, block) {
   block(slotAdder);
 };
 
-annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__oid__', 'bootstrapTheModuleSystem', 'hackToMakeSuperWork', 'livelyBaseURL', 'loadTheLKTestFramework', 'modules', 'transporter', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
+annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__oid__', 'bootstrapTheModuleSystem', 'livelyBaseURL', 'loadTheLKTestFramework', 'modules', 'transporter', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
 
 transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
 };

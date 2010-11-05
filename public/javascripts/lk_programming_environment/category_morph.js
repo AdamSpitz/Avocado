@@ -348,12 +348,12 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   }, {category: ['drag and drop']});
 
   add.method('constructUIStateMemento', function () {
-    return { isExpanded: this.expander().isExpanded() };
+    return { isExpanded: this.expander().constructUIStateMemento() };
   }, {category: ['UI state']});
 
   add.method('assumeUIState', function (uiState, evt) {
     if (!uiState) { return; }
-    this.expander().setExpanded(uiState.isExpanded);
+    this.expander().assumeUIState(uiState.isExpanded, evt);
   }, {category: ['UI state']});
 
   add.method('addCommandsTo', function (cmdList) {

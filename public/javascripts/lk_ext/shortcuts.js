@@ -36,7 +36,7 @@ Morph.createEitherOrMorph = function(m1, m2, condition) {
   var t1 =  Object.newChildOf(avocado.toggler, function() {}, m1);
   var t2 =  Object.newChildOf(avocado.toggler, function() {}, m2);
   r.setPotentialContent([t1, t2]);
-  r.refreshContent = hackToMakeSuperWork(r, "refreshContent", function($super) {
+  r.refreshContent = avocado.hackToMakeSuperWork(r, "refreshContent", function($super) {
     var c = condition();
     var evt = Event.createFake();
     t1.setValue(!!c, evt);

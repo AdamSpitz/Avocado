@@ -229,10 +229,10 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('constructUIStateMemento', function () {
     return {
-      isSourceOpen: this._sourceToggler.constructUIStateMemento(),
-      isCommentOpen: this._commentToggler.constructUIStateMemento(),
+      isSourceOpen:     this._sourceToggler.constructUIStateMemento(),
+      isCommentOpen:    this._commentToggler.constructUIStateMemento(),
       isAnnotationOpen: this._annotationToggler.constructUIStateMemento(),
-      isArrowVisible: this.contentsPointer().arrow.constructUIStateMemento()
+      isArrowVisible:   this.contentsPointer().arrow.constructUIStateMemento()
     };
   }, {category: ['UI state']});
 
