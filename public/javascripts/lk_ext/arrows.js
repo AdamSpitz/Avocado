@@ -70,9 +70,9 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
   add.method('assumeUIState', function (uiState, evt) {
     if (uiState) {
       // aaa - Why isn't this using showMe() like toggleVisibility does?
-      arrow.needsToBeVisible();
+      this.needsToBeVisible();
     } else {
-      arrow.noLongerNeedsToBeVisible();
+      this.noLongerNeedsToBeVisible();
     }
   }, {category: ['UI state']});
 
