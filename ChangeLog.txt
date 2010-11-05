@@ -1,3 +1,7 @@
+Friday, November 5, 2010
+
+  - When you activate the arrow to something, bring the thing to the front.
+
 Wednesday, November 3, 2010
 
   - Lots more cleanup work.

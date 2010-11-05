@@ -280,12 +280,16 @@ thisModule.addSlots(avocado.ArrowEndpoint.prototype, function(add) {
           this._animator = this.startZoomingInAStraightLineTo(globalNewLoc, false, false, false, function() {
             var wasAlreadyAttachedToThisMorph = morphToAttachTo === this.owner;
             morphToAttachTo.addMorphAt(this, localNewLoc);
-            if (!wasAlreadyAttachedToThisMorph) { morphToAttachTo.wiggle(100); }
+            if (!wasAlreadyAttachedToThisMorph) {
+              morphToAttachTo.bringToFront();
+              morphToAttachTo.wiggle(100);
+            }
             delete this._animator;
           }.bind(this));
           this._animator.isZoomingTo = morphToAttachTo;
         } else {
           morphToAttachTo.addMorphAt(this, localNewLoc);
+          morphToAttachTo.bringToFront();
         }
         
         this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = true;
