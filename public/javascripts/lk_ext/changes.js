@@ -1,13 +1,18 @@
 WorldMorph.addMethods({
   onMouseDown: function($super, evt) {
-      // Added by Adam, Feb. 2008, because sometimes it's useful
-      // to have no keyboard focus (so that, for example, I can
-      // hit Cmd-t to open a new tab), or to have the focus be
-      // the world.
-      evt.hand.setKeyboardFocus(this);
+    // Added by Adam, Feb. 2008, because sometimes it's useful
+    // to have no keyboard focus (so that, for example, I can
+    // hit Cmd-t to open a new tab).
+    //
+    // NOTE: I once tried making this line say setKeyboardFocus(this),
+    // and for some reason Style Editors broke. (They're probably
+    // not the only thing that broke, but that was the thing I
+    // noticed.) I have no idea why, but it's not important right
+    // now, so I'm letting it go. -- Adam, Nov. 2010
+    evt.hand.setKeyboardFocus(null);
 
-      if (this.shouldSlideIfClickedAtEdge) { this.slideIfClickedAtEdge(evt); }
-      return $super(evt);
+    if (this.shouldSlideIfClickedAtEdge) { this.slideIfClickedAtEdge(evt); }
+    return $super(evt);
   }
 });
 

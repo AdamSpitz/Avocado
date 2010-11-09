@@ -1,3 +1,7 @@
+Tuesday, November 9, 2010
+
+  - Workaround for a bug that was causing Style Editors to break when the WorldMorph had the keyboard focus.
+
 Friday, November 5, 2010
 
   - When you activate the arrow to something, bring the thing to the front.
