@@ -36,8 +36,8 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     this.shape.roundEdgesBy(10);
     this.closeDnD();
 
-    this._resultsPanel = new avocado.ColumnMorph().beInvisible();
-    this._resultsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
+    this._resultsPanel = new avocado.TableMorph().beInvisible();
+    this._resultsPanel.setPadding({top: 3, bottom: 3, left: 3, right: 3, between: {x: 3, y: 3}});
 
     this._expander = new ExpanderMorph(this);
     this.titleLabel = TextMorph.createLabel(function() {return this.inspect();}.bind(this));
@@ -45,9 +45,9 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     this.dismissButton = this.createDismissButton();
 
     this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton],
-                                                          {top: 0, bottom: 0, left: 3, right: 3, between: 3});
+                                                          {top: 0, bottom: 0, left: 3, right: 3, between: {x: 3, y: 3}});
 
-    this.setPotentialContent([this._headerRow, Morph.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
+    this.setPotentialRows([this._headerRow, Morph.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
     this.refreshContent();
   });
 
@@ -69,12 +69,12 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
   });
 
   add.method('redo', function () {
-    this._resultsPanel.setRows([]);
+    this._resultsPanel.replaceContentWith(avocado.tableContents.createWithRows([[]]));
     var results = this.searcher().go();
     var sortCrit = this.searcher().sortingCriteriaForSearchResults();
     if (sortCrit) { results = results.sortBy(sortCrit); }
-    var resultRows = results.map(function(o) { return o.createRowForSearchResults(); });
-    this._resultsPanel.setRows(resultRows);
+    var resultRows = results.map(function(o) { return o.createMorphsForSearchResults(); });
+    this._resultsPanel.replaceContentWith(avocado.tableContents.createWithRows(resultRows));
     this.expander().expand();
   });
 

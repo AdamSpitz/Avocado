@@ -42,7 +42,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     $super();
     this._mirror = m;
 
-    this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 2});
+    this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}});
     this.shape.roundEdgesBy(10);
 
     this._slotMorphs     = avocado.dictionary.copyRemoveAll();
@@ -76,14 +76,14 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     var optionalCommentButtonMorph = Morph.createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
     
     this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton].compact(),
-                                                  {top: 0, bottom: 0, left: 0, right: 0, between: 3});
+                                                  {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}});
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
     this.optionalSlotsPanel = Morph.createOptionalMorph(function() {return this._categoryPresenter.slotsPanel();}.bind(this),
                                                   function() {return this.expander().isExpanded();}.bind(this),
                                                   {horizontalLayoutMode: LayoutModes.SpaceFill, verticalLayoutMode: LayoutModes.ShrinkWrap});
 
-    this.setPotentialContent([this._headerRow, this._annotationToggler, this._commentToggler, this.optionalSlotsPanel, this._evaluatorsPanel]);
+    this.setPotentialRows([this._headerRow, this._annotationToggler, this._commentToggler, this.optionalSlotsPanel, this._evaluatorsPanel]);
 
     this.refreshContent();
 
@@ -97,7 +97,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('category', function () { return this._categoryPresenter.category(); }, {category: ['accessing']});
 
   add.method('createRow', function (m) {
-    var r = avocado.RowMorph.createSpaceFilling([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    var r = avocado.RowMorph.createSpaceFilling([m], {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}});
     r.wasJustShown = function(evt) { m.requestKeyboardFocus(evt.hand); };
     return r;
   }, {category: ['creating']});
@@ -206,6 +206,10 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     this._evaluatorsPanel.addRow(e);
     e.wasJustShown(evt);
     return e;
+  }, {category: ['evaluators']});
+  
+  add.method('closeEvaluator', function(evaluatorMorph) {
+    this._evaluatorsPanel.removeRow(evaluatorMorph);
   }, {category: ['evaluators']});
 
   add.method('getParent', function (evt) {

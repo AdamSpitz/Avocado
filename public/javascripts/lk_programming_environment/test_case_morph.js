@@ -11,7 +11,7 @@ thisModule.addSlots(TestCase.prototype, function(add) {
     var m = new avocado.RowMorph();
     m._testCaseProto = this;
 
-    m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 3});
+    m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}});
     m.setFill(lively.paint.defaultFillWithColor(Color.purple.darker()));
     m.shape.roundEdgesBy(10);
     m.closeDnD();
@@ -35,7 +35,7 @@ thisModule.addSlots(TestResult.prototype, function(add) {
     var m = new avocado.ColumnMorph();
     m._testResult = this;
 
-    m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 2});
+    m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}});
     m.setFill(lively.paint.defaultFillWithColor(this.anyFailed() ? Color.red : Color.green));
     m.shape.roundEdgesBy(10);
     m.closeDnD();

@@ -13,7 +13,7 @@ thisModule.addSlots(transporter.module, function(add) {
     var module = this;
     m._module = module;
 
-    m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 3});
+    m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}});
     m.setFill(lively.paint.defaultFillWithColor(Color.red.lighter()));
     m.shape.roundEdgesBy(10);
     m.closeDnD();

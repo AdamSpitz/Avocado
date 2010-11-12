@@ -22,10 +22,9 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     }.bind(this));
   }, {category: ['user interface', 'slices']});
 
-  add.method('createRowForSearchResults', function () {
+  add.method('createMorphsForSearchResults', function () {
     var inSituButton = ButtonMorph.createButton("in situ", function() { this.showInSitu(inSituButton); }.bind(this), 2);
-    return avocado.RowMorph.createSpaceFilling([TextMorph.createLabel(this.holder().name()), Morph.createSpacer(), this.newMorph(), inSituButton],
-                                               {top: 0, bottom: 0, left: 3, right: 3, between: 3});
+    return [TextMorph.createLabel(this.holder().name()), this.newMorph(), inSituButton];
   }, {category: ['user interface', 'slices']});
 
 });
@@ -76,7 +75,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
     var signatureRowContent = [nameMorph, optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph];
     this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; },
-                                                    {left: 0, right: 2, top: 0, bottom: 0, between: 0});
+                                                    {left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}});
 
     this.updateAppearance();
   }, {category: ['creating']});
@@ -155,7 +154,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('createRow', function (getOrCreateContent) {
     var spacer = Morph.createSpacer();
-    var r = avocado.RowMorph.createSpaceFilling(function() {return [getOrCreateContent(), spacer];}, {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    var r = avocado.RowMorph.createSpaceFilling(function() {return [getOrCreateContent(), spacer];}, {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}});
     r.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
     return r;
   }, {category: ['creating']});
@@ -185,12 +184,14 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = new avocado.ColumnMorph(this).beInvisible();
-    m.setPadding({left: 0, right: 0, top: 0, bottom: 0, between: 2});
+    m = this._annotationMorph = new avocado.TableMorph().beInvisible();
+    m.setPadding({left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}});
     this._moduleNameMorph  = new TextMorphRequiringExplicitAcceptance(this.moduleName.bind(this), this.setModuleName.bind(this));
     this._initializerMorph = new TextMorphRequiringExplicitAcceptance(this.initializationExpression.bind(this), this.setInitializationExpression.bind(this));
-    m.setRows([avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Module:"       ), this._moduleNameMorph   ]),
-               avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Initialize to:"), this._initializerMorph])]);
+    m.replaceContentWith(avocado.tableContents.createWithRows([
+      [TextMorph.createLabel("Module:"       ), this._moduleNameMorph ],
+      [TextMorph.createLabel("Initialize to:"), this._initializerMorph]
+    ]));
     return m;
   }, {category: ['annotation']});
 
@@ -291,7 +292,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('potentialContent', function () {
-    return [this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler];
+    return avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler]]);
   }, {category: ['updating']});
 
   add.method('canBeDroppedOnCategory', function (categoryMorph) {

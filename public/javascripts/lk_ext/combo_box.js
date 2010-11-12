@@ -92,7 +92,7 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
     this.setColumns([this._textMorph, Morph.createSpacer(), this._button]);
   }, {category: ['creating']});
 
-  add.data('padding', {left: 1, right: 1, top: 1, bottom: 1, between: 0}, {initializeTo: '{left: 1, right: 1, top: 1, bottom: 1, between: 0}'});
+  add.data('padding', {left: 1, right: 1, top: 1, bottom: 1, between: {x: 0, y: 0}}, {initializeTo: '{left: 1, right: 1, top: 1, bottom: 1, between: {x: 0, y: 0}}'});
 
   add.method('value', function () {
     return this._textMorph.getText();

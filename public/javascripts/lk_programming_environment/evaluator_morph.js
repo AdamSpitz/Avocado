@@ -54,7 +54,7 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
     
     var buttons = [ButtonMorph.createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)).setHelpText('Run the code in the box'),
                    ButtonMorph.createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)).setHelpText('Run the code in the box and get the result'),
-                   ButtonMorph.createButton("Close",  function(evt) {this.remove(  );}.bind(this))];
+                   ButtonMorph.createButton("Close",  function(evt) {mirrorMorph.closeEvaluator(this);}.bind(this))];
 
     this.setRows([avocado.RowMorph.createSpaceFilling([tm]), avocado.RowMorph.createSpaceFilling(buttons)]);
   }, {category: ['creating']});

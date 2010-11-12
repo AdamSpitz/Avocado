@@ -56,6 +56,11 @@ thisModule.addSlots(avocado, function(add) {
 
     if (this.debugMode) {
       cmdList.addLine();
+    
+      // useful for testing TableMorph
+      cmdList.addItem({label: "senders of exitValueOf", go: function(evt) {
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.senders.finder.create("exitValueOf"), evt)).redo();
+      }.bind(this)});
 
       if (organization.current === organizationUsingAnnotations) {
         cmdList.addItem(["use JSQuiche organization", function(evt) {

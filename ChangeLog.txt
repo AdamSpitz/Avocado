@@ -1,3 +1,7 @@
+Friday, November 12, 2010
+
+  - Generalized RowOrColumnMorph into TableMorph, so we can have proper grids with everything lined up nicely.
+
 Tuesday, November 9, 2010
 
   - Workaround for a bug that was causing Style Editors to break when the WorldMorph had the keyboard focus.

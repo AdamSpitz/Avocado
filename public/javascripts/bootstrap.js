@@ -174,15 +174,21 @@ var annotator = {
   _nextOID: 2,
 
   oidOf: function(o) {
+    var oid = this.existingOidOf(o);
+    if (oid !== null) { return oid; }
+    oid = this._nextOID++;
+    o.__oid__ = oid;
+    return oid;
+  },
+
+  existingOidOf: function(o) {
     // HACK: Damned JavaScript. Adding attributes to Object.prototype and stuff like that
     // is a bad idea, because people use for..in loops to enumerate their attributes.
     // So we'll hard-code their OIDs here.
     if (o === Object.prototype) { return 0; }
     if (o ===  Array.prototype) { return 1; }
     if (o.hasOwnProperty('__oid__')) { return o.__oid__; }
-    var oid = this._nextOID++;
-    o.__oid__ = oid;
-    return oid;
+    return null;
   },
 
   _annotations: [],

@@ -35,7 +35,7 @@ Morph.createEitherOrMorph = function(m1, m2, condition) {
   var r = new avocado.RowMorph().beInvisible();
   var t1 =  Object.newChildOf(avocado.toggler, function() {}, m1);
   var t2 =  Object.newChildOf(avocado.toggler, function() {}, m2);
-  r.setPotentialContent([t1, t2]);
+  r.setPotentialColumns([t1, t2]);
   r.refreshContent = avocado.hackToMakeSuperWork(r, "refreshContent", function($super) {
     var c = condition();
     var evt = Event.createFake();

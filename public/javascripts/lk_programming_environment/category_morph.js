@@ -42,7 +42,7 @@ thisModule.addSlots(category.Presenter, function(add) {
   add.method('createModulesLabelRow', function () {
     var modulesLabel = TextMorph.createLabel(function() {return this.modulesSummaryString();}.bind(this));
     // modulesLabel.setFontSize(modulesLabel.getFontSize() - 1); // aaa - why does this create a little space at the beginning of the label?
-    this._modulesLabelRow = avocado.RowMorph.createSpaceFilling([modulesLabel], {left: 0, right: 0, top: 0, bottom: 2, between: 0});
+    this._modulesLabelRow = avocado.RowMorph.createSpaceFilling([modulesLabel], {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}});
     this._modulesLabelRow.updateAppearance = function() { modulesLabel.refreshText(); };
     return this._modulesLabelRow;
   }, {category: ['creating']});
@@ -51,7 +51,7 @@ thisModule.addSlots(category.Presenter, function(add) {
     var sp = this._slotsPanel;
     if (sp) { return sp; }
     sp = this._slotsPanel = new avocado.ColumnMorph().beInvisible();
-    sp.setPadding({top: 0, bottom: 0, left: 10, right: 0, between: 0});
+    sp.setPadding({top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}});
     sp.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.populateSlotsPanel();
     return sp;
@@ -287,7 +287,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     $super();
     this._categoryPresenter = categoryPresenter;
 
-    this.setPadding({top: 0, bottom: 0, left: 2, right: 2, between: 2});
+    this.setPadding({top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}});
     this.closeDnD();
     this.beUngrabbable();
     this.setFill(null);
@@ -303,8 +303,8 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     this.titleLabel.ignoreEvents();
 
     this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel],
-                                                  {top: 0, bottom: 0, left: 0, right: 0, between: 3});
-    this.replaceThingiesWith([this._headerRow]);
+                                                  {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}});
+    this.setRows([this._headerRow]);
   }, {category: ['creating']});
 
   add.method('mirrorMorph', function () { return this._categoryPresenter.mirrorMorph(); }, {category: ['accessing']});
@@ -325,9 +325,9 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
 
   add.method('updateExpandedness', function () {
     if (! this.world()) {return;}
-    var thingies = [this._headerRow];
-    if (this.expander().isExpanded()) { thingies.push(this._categoryPresenter.slotsPanel()); }
-    this.replaceThingiesWith(thingies);
+    var rows = [this._headerRow];
+    if (this.expander().isExpanded()) { rows.push(this._categoryPresenter.slotsPanel()); }
+    this.setRows(rows);
   }, {category: ['updating']});
 
   add.method('rename', function (newName, evt) {
