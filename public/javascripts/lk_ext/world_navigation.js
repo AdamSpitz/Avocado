@@ -22,7 +22,8 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     if (           p.y <= 50) { v = pt(0, -amountToSlide); }
     if (b.maxX() - p.x <= 50) { v = pt( amountToSlide, 0); }
     if (b.maxY() - p.y <= 50) { v = pt(0,  amountToSlide); }
-    this.slideBy(v.scaleBy(1 / this.getScale()));
+    
+    if (v) { this.slideBy(v.scaleBy(1 / this.getScale())); }
   }, {category: ['navigation']});
 
   add.method('slideBy', function (p) {
