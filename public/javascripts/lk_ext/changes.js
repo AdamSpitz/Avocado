@@ -169,8 +169,8 @@ Morph.addMethods({
             ["drill", this.showOwnerChain.curry(evt)],
             ["grab", this.pickMeUp.curry(evt)],
             ["drag", this.dragMe.curry(evt)],
-            this.isInEditMode ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
-                              : ["turn on edit mode" , function() { this.switchEditModeOn();  }.bind(this)],
+            this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
+                                : ["turn on edit mode" , function() { this.switchEditModeOn (); }.bind(this)],
             ["edit style", function() { new StylePanel(this).open()}],
             ["inspect", function(evt) { this.world().morphFor(reflect(this)).grabMe(evt); }], // OK, I just couldn't resist. -- Adam
             ["show class in browser", function(evt) { var browser = new SimpleBrowser(this);
