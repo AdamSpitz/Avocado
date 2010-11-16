@@ -5,6 +5,7 @@ requires('lk_ext/fixes');
 requires('lk_ext/changes');
 requires('lk_ext/change_notification');
 requires('lk_ext/menus');
+requires('lk_ext/commands');
 requires('lk_ext/applications');
 requires('lk_ext/grabbing');
 requires('lk_ext/highlighting');

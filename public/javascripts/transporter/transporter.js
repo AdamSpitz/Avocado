@@ -249,6 +249,8 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.method('toString', function () { return this.name(); }, {category: ['printing']});
 
+  add.method('inspect', function () { return this.name(); }, {category: ['printing']});
+
   add.method('uninstall', function () {
     this.eachSlot(function(s) { s.remove(); });
     reflect(modules).slotAt(this._name).remove();

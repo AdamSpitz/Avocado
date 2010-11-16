@@ -31,6 +31,25 @@ ButtonMorph.createButton = function (contents, f, padding) {
   return b;
 };
 
+Morph.createBox = function(obj, color) {
+  var m = new avocado.RowMorph();
+  m._model = obj;
+  
+  m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}});
+  m.setFill(lively.paint.defaultFillWithColor(color));
+  m.shape.roundEdgesBy(10);
+  m.closeDnD();
+
+  m.inspect = function () { return this._model.inspect(); };
+  m.addCommandsTo = function (cmdList) { this._model.addCommandsTo(cmdList); };
+  
+  return m;
+};
+
+Morph.prototype.createNameLabel = function() {
+  return TextMorph.createLabel(function() { return this.inspect(); }.bind(this));
+};
+
 Morph.createEitherOrMorph = function(m1, m2, condition) {
   var r = new avocado.RowMorph().beInvisible();
   var t1 =  Object.newChildOf(avocado.toggler, function() {}, m1);

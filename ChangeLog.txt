@@ -2,6 +2,7 @@ Tuesday, November 16, 2010
 
   - Added a transporter.shouldLog flag, for debugging problems with loading Avocado.
   - Added some shortcut methods useful for building objects reflectively.
+  - Made a "command" object to represent a UI command.
 
 Friday, November 12, 2010
 

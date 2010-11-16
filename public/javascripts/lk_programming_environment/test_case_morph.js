@@ -8,21 +8,12 @@ requires('lk_ext/rows_and_columns');
 thisModule.addSlots(TestCase.prototype, function(add) {
 
   add.method('newMorph', function () {
-    var m = new avocado.RowMorph();
+    var m = Morph.createBox(this, Color.purple.darker());
     m._testCaseProto = this;
 
-    m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}});
-    m.setFill(lively.paint.defaultFillWithColor(Color.purple.darker()));
-    m.shape.roundEdgesBy(10);
-    m.closeDnD();
-
-    var nameLabel = TextMorph.createLabel(function() { return m._testCaseProto.inspect(); });
-    var runButton = ButtonMorph.createButton('Run', function(evt) { m._testCaseProto.createAndRunAndShowResult(); }, 2);
-
-    m.inspect = function () { return m._testCaseProto.inspect(); };
-    m.addCommandsTo = function (cmdList) { m._testCaseProto.addCommandsTo(cmdList); };
+    var runButton = avocado.command.create('Run', function(evt) { m._testCaseProto.createAndRunAndShowResult(); }).newMorph();
     
-    m.setColumns([nameLabel, runButton, m.createDismissButton()]);
+    m.setColumns([m.createNameLabel(), runButton, m.createDismissButton()]);
     return m;
   }, {category: ['user interface']});
 
