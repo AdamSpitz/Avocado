@@ -364,6 +364,29 @@ thisModule.addSlots(mirror, function(add) {
     return subclass;
   }, {category: ['children']});
 
+  add.method('interposeNewParent', function () {
+    var p = this.parent().createChild();
+    this.setParent(p);
+    this.parentSlot().beCreator();
+    return p;
+  }, {category: ['children']});
+  
+  add.method('addData', function(slotName, slotContents) {
+    var s = this.slotAt(slotName);
+    s.setContents(reflect(slotContents));
+    return s;
+  }, {category: ['shortcuts']});
+  
+  add.method('addCreator', function(slotName, slotContents) {
+    var s = this.addData(slotName, slotContents);
+    s.beCreator();
+    return s;
+  }, {category: ['shortcuts']});
+  
+  add.method('addMethod', function(slotName, slotContents) {
+    this.addCreator(slotName, slotContents);
+  }, {category: ['shortcuts']});
+
   add.method('source', function () {
     if (! this.isReflecteeFunction()) { throw "not a function"; }
     return this.reflectee().toString();
