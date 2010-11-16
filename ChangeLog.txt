@@ -1,3 +1,7 @@
+Tuesday, November 16, 2010
+
+  - Added a transporter.shouldLog flag, for debugging problems with loading Avocado.
+
 Friday, November 12, 2010
 
   - Generalized RowOrColumnMorph into TableMorph, so we can have proper tables with everything lined up nicely.

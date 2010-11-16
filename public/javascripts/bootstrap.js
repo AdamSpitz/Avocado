@@ -386,6 +386,8 @@ transporter.loadedURLs = {};
 
 transporter.loadOrder = [];
 
+transporter.shouldLog = false;
+
 transporter.module = {};
 annotator.annotationOf(transporter.module).setCreatorSlot('module', transporter);
 
@@ -396,7 +398,7 @@ transporter.module.onLoadCallbacks = {};
 transporter.module.named = function(n) {
   var m = modules[n];
   if (m) {return m;}
-  //console.log("Creating module named " + n);
+  if (transporter.shouldLog) { console.log("Creating module named " + n); }
   m = modules[n] = Object.create(this);
   m._name = n;
   annotator.annotationOf(m).setCreatorSlot(n, modules);
@@ -414,7 +416,7 @@ transporter.module.create = function(n, reqBlock, contentsBlock) {
   }, function() {
     transporter.loadOrder.push({module: n});
     contentsBlock(newModule);
-    // console.log("Finished loading module: " + n);
+    if (transporter.shouldLog) { console.log("Finished loading module: " + n); }
     if (newModule.objectsWithAPostFileInMethod) {
       newModule.objectsWithAPostFileInMethod.each(function(o) {
         o.postFileIn();
@@ -695,12 +697,11 @@ thisModule.addSlots(transporter, function(add) {
     //Morph.suppressAllHandlesForever(); // those things are annoying // but useful for direct UI construction
     
     var canvas = document.getElementById("canvas");
-    //console.log("About to create the world on canvas: " + canvas);
     var world = new WorldMorph(canvas);
     world.displayOnCanvas(canvas);
     modules.init.markAsUnchanged(); // because displayOnCanvas sets the creator slot of the world
     if (navigator.appName == 'Opera') { window.onresize(); }
-    //console.log("The world should be visible now.");
+    if (transporter.shouldLog) { console.log("The world should be visible now."); }
     return world;
   }, {category: ['bootstrapping']});
 
@@ -857,7 +858,7 @@ thisModule.addSlots(transporter.repositories['abstract'], function(add) {
         // modules. So we consider the module to be loaded now, since the
         // file is loaded.
         transporter.loadOrder.push({externalScript: name});
-        //console.log("Finished loading external script: " + name);
+        if (transporter.shouldLog) { console.log("Finished loading external script: " + name); }
         transporter.module.doneLoadingModuleNamed(name);
       }
     });
@@ -886,7 +887,7 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
 
   add.method('loadModuleNamed', function (name, callWhenDone) {
     var url = this.urlForModuleName(name);
-    //console.log("About to try to loadModuleNamed " + name + " at URL " + url);
+    if (transporter.shouldLog) { console.log("About to try to loadModuleNamed " + name + " at URL " + url); }
     this.loadURL(url, callWhenDone);
   }, {category: ['loading']});
 
