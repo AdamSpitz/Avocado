@@ -140,8 +140,8 @@ thisModule.addSlots(avocado.hashTable.equalityComparator, function(add) {
 
   add.method('keysAreEqual', function (k1, k2) {
     if (k1 === k2) {return true;}
-    if (k1 === null || k1 === undefined) {return k2 === null || k2 === undefined;}
-    if (k2 === null || k2 === undefined) {return false;}
+    if (k1 === null || typeof(k1) === 'undefined') {return k2 === null || typeof(k2) === 'undefined';}
+    if (k2 === null || typeof(k2) === 'undefined') {return false;}
     if (typeof(k1) !== typeof(k2)) {return false;}
     if (typeof(k1.equals) === 'function') {
       return k1.equals(k2);
@@ -151,6 +151,7 @@ thisModule.addSlots(avocado.hashTable.equalityComparator, function(add) {
   }, {category: ['hashing']});
 
   add.method('hashCodeForKey', function (k) {
+    if (k === null || typeof(k) === 'undefined') {return 'null';}
     if (typeof(k.hashCode) === 'function') { return k.hashCode(); }
     return avocado.hashTable.identityComparator.hashCodeForKey(k);
   }, {category: ['hashing']});
