@@ -17,7 +17,7 @@ avocado.isLoadingStatically = true;
 <script>
 avocado.doneLoadingWindow = function() {
   transporter.callWhenDoneLoadingAvocado = function(world) {
-    new MessageNotifierMorph("Right-click the background to start", Color.green).ignoreEvents().showTemporarilyInCenterOfWorld(world);
+    new avocado.MessageNotifierMorph("Right-click the background to start", Color.green).ignoreEvents().showTemporarilyInCenterOfWorld(world);
   };
   transporter.isDoneLoadingWindow = true;
   transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
