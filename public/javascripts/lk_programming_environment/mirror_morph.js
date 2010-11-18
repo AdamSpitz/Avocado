@@ -95,6 +95,11 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('mirrorMorph', function () { return this; }, {comment: 'For compatibility with category.Morph.', category: ['accessing']});
 
   add.method('category', function () { return this._categoryPresenter.category(); }, {category: ['accessing']});
+  
+  add.method('eachAssociatedObject', function (f) {
+    f(this.mirror().reflectee());
+    f(this.mirror());
+  }, {category: ['associated objects']});
 
   add.method('createRow', function (m) {
     var r = avocado.RowMorph.createSpaceFilling([m], {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}});

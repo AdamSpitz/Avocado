@@ -525,6 +525,10 @@ thisModule.addSlots(avocado.tableContents, function(add) {
     });
     return n;
   }, {category: ['accessing']});
+
+  add.method('insertPrimaryLine', function(line, i) {
+    this._data.splice(i, 0, line);
+  }, {category: ['inserting']});
   
   add.method('selectThenMap', function(selectFn, mapFn) {
     var c = this.copyRemoveAll();

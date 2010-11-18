@@ -2998,8 +2998,9 @@ Morph.addMethods({
 			// Highlight morphs when you can drop something on them. -- Adam
 			if (typeof(this.beHighlighted) === 'function') {
 				if (typeof(this.acceptsDropping) === 'function') {
-					if (evt.hand.submorphs.find(function(m) {return this.acceptsDropping(m);}.bind(this))) {
-						this.beHighlighted();
+				  var ms = evt.hand.submorphs.select(function(m) {return this.acceptsDropping(m);}.bind(this));
+					if (ms.size() > 0) {
+						this.showPotentialDrops(ms, evt);
 					}
 				}
 			}
@@ -3007,13 +3008,23 @@ Morph.addMethods({
 			console.log("Exception in onMouseOver for " + this + ": " + ex);
 		}
 	},
+	
+	// Added by Adam
+	showPotentialDrops: function(potentialDrops, evt) {
+		this.beHighlighted();
+	},
+	
+	// Added by Adam
+	hidePotentialDrops: function(evt) {
+		this.beUnhighlighted();
+	},
 
 	onMouseOut: function(evt) { 
 		this.hideHelp();
 
 		// Highlight morphs when you can drop something on them. -- Adam
 		if (typeof(this.beUnhighlighted) === 'function') {
-			this.beUnhighlighted();
+			this.hidePotentialDrops();
 		}
 	}, 
 

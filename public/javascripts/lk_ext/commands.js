@@ -19,4 +19,23 @@ thisModule.addSlots(avocado.command, function(add) {
 });
 
 
+thisModule.addSlots(Morph.prototype, function(add) {
+  
+  add.method('eachAssociatedObject', function (f) {
+    // Children can override.
+    if (typeof(this._model) !== 'undefined') { f(this._model); }
+  }, {category: ['associated objects']});
+  
+  add.method('associatedObjectSatisfying', function (criterion) {
+    return exitValueOf(function(exit) {
+      this.eachAssociatedObject(function(o) {
+        if (!criterion || criterion(o)) { exit(o); }
+      });
+      return null;
+    }.bind(this));
+  }, {category: ['associated objects']});
+  
+});
+
+
 });

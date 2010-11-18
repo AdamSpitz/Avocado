@@ -19,6 +19,7 @@ requires('lk_ext/combo_box');
 requires('lk_ext/toggler');
 requires('lk_ext/layout');
 requires('lk_ext/rows_and_columns');
+requires('lk_ext/collection_morph');
 requires('lk_ext/animation');
 requires('lk_ext/scatter');
 requires('lk_ext/expander');

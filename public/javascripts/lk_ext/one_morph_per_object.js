@@ -15,12 +15,16 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
   add.method('morphFor', function (obj) {
     return this.morphsByObject().getOrIfAbsentPut(obj, function() {
-      if (typeof(obj.newMorph) === 'function') {
-        return obj.newMorph();
-      } else {
-        return new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
-      }
-    });
+      return this.newMorphFor(obj);
+    }.bind(this));
+  });
+
+  add.method('newMorphFor', function (obj) {
+    if (typeof(obj.newMorph) === 'function') {
+      return obj.newMorph();
+    } else {
+      return new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
+    }
   });
 
 });

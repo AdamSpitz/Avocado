@@ -80,7 +80,7 @@ HandMorph.addMethods({
         this.carriedMorphsDo( function(m) {
             m.dropMeOnMorph(receiver);
             this.showAsUngrabbed(m);
-            receiver.justReceivedDrop(m); // Added by Adam
+            receiver.justReceivedDrop(m, this); // Added by Adam
         });
         this.removeAllMorphs(); // remove any shadows or halos
     },
