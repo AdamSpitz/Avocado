@@ -416,16 +416,11 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['user interface', 'commands']});
 
   add.method('addCommandsTo', function (cmdList) {
-    if (this.canBeFiledOut()) {
-      cmdList.addItem({id: 'save', label: 'save as .js file', go: this.fileOutAndReportErrors.bind(this)});
-      // aaa - not working yet: cmdList.addItem({label: 'email me the source', go: this.emailTheSource.bind(this)});
-    }
+    cmdList.addItem({id: 'save', label: 'save as .js file', go: this.fileOutAndReportErrors.bind(this), isApplicable: this.canBeFiledOut.bind(this)});
+    // aaa - not working yet: cmdList.addItem({label: 'email me the source', go: this.emailTheSource.bind(this), isApplicable: this.canBeFiledOut.bind(this)});
 
     cmdList.addItem({label: 'print to console', go: this.printToConsole.bind(this)});
-
-    if (this.hasChangedSinceLastFileOut()) {
-      cmdList.addItem({label: 'forget I was changed', go: function(evt) { this.markAsUnchanged(); }.bind(this)});
-    }
+    cmdList.addItem({label: 'forget I was changed', go: function(evt) { this.markAsUnchanged(); }.bind(this), isApplicable: this.hasChangedSinceLastFileOut.bind(this)});
 
     cmdList.addLine();
 

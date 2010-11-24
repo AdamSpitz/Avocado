@@ -109,8 +109,10 @@ thisModule.addSlots(avocado.command.list, function(add) {
     for (var i = 0, n = this._commands.length; i < n; ++i) {
       var c = this._commands[i];
       if (c) {
-        var label = typeof(c.label) === 'function' ? c.label(target) : c.label;
-        menu.addItem([label, c.go]);
+        if (typeof(c.isApplicable) !== 'function' || c.isApplicable()) {
+          var label = typeof(c.label) === 'function' ? c.label(target) : c.label;
+          menu.addItem([label, c.go]);
+        }
       } else {
         if (i !== n - 1) { // no point if it's the last one
           menu.addLine();

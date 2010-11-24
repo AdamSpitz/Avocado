@@ -156,9 +156,7 @@ thisModule.addSlots(TestResult.prototype, function(add) {
   }, {category: ['user interface', 'commands']});
 
   add.method('addCommandsTo', function (cmdList) {
-    if (this.anyFailed()) {
-      cmdList.addItem({label: 'get error objects', go: this.getErrorObjects.bind(this)});
-    }
+    cmdList.addItem({label: 'get error objects', go: this.getErrorObjects.bind(this), isApplicable: this.anyFailed.bind(this)});
   }, {category: ['user interface', 'commands']});
 
 });
