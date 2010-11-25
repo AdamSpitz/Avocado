@@ -50,7 +50,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
     this.setFill(lively.paint.defaultFillWithColor(Color.neutral.gray.lighter()));
 
-    this._categoryPresenter = category.Presenter.create(this._mirror, category.root());
+    this._categoryPresenter = category.ofAParticularMirror.create(this._mirror, category.root());
     this.initializeCategoryUI(); // aaa - can be a bit slow
     
     this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible();
@@ -79,7 +79,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
                                                   {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}});
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
-    this.optionalSlotsPanel = Morph.createOptionalMorph(function() {return this._categoryPresenter.slotsPanel();}.bind(this),
+    this.optionalSlotsPanel = Morph.createOptionalMorph(function() {return this.slotsPanel();}.bind(this),
                                                   function() {return this.expander().isExpanded();}.bind(this),
                                                   {horizontalLayoutMode: LayoutModes.SpaceFill, verticalLayoutMode: LayoutModes.ShrinkWrap});
 
@@ -93,8 +93,6 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
 
   add.method('mirrorMorph', function () { return this; }, {comment: 'For compatibility with category.Morph.', category: ['accessing']});
-
-  add.method('category', function () { return this._categoryPresenter.category(); }, {category: ['accessing']});
   
   add.method('eachAssociatedObject', function (f) {
     f(this.mirror().reflectee());
@@ -182,7 +180,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('categoryMorphFor', function (c) {
     return this._categoryMorphs.getOrIfAbsentPut(c.fullName(), function() {
-      return new category.Morph(Object.newChildOf(category.Presenter, this.mirror(), c));
+      return new category.Morph(category.ofAParticularMirror.create(this.mirror(), c));
     }.bind(this));
   }, {category: ['categories']});
 

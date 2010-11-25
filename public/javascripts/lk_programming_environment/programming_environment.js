@@ -80,7 +80,7 @@ thisModule.addSlots(avocado, function(add) {
         var w = evt.hand.world();
         var m = w.morphFor(reflect(TextMorph.prototype));
         m.ensureIsInWorld(w, pt(300,200), true, false, false, function() {
-          m.expand(evt);
+          m.expander().expand(evt);
         });
       }.bind(this)]);
 

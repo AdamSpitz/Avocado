@@ -1,3 +1,7 @@
+Wednesday, November 24, 2010
+
+  - Separated some non-UI-specific code out from the category-morph code.
+
 Tuesday, November 16, 2010
 
   - Added a transporter.shouldLog flag, for debugging problems with loading Avocado.

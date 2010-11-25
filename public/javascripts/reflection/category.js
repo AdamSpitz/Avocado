@@ -10,6 +10,8 @@ thisModule.addSlots(window, function(add) {
 
 thisModule.addSlots(category, function(add) {
 
+  add.creator('ofAParticularMirror', {}, {category: ['prototypes']});
+
   add.method('create', function (parts) {
     return Object.newChildOf(this, parts);
   }, {category: ['creating']});
@@ -46,6 +48,8 @@ thisModule.addSlots(category, function(add) {
     return category.create(this._parts.slice(n));
   }, {category: ['creating']});
 
+  add.method('sortOrder', function () { return this.isRoot() ? '' : this.lastPart().toUpperCase(); }, {category: ['sorting']});
+  
   add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
 
   add.method('fullName', function () {
@@ -113,6 +117,97 @@ thisModule.addSlots(category, function(add) {
       slot.remove();
     }.bind(this));
   }, {category: ['removing']});
+
+});
+
+
+thisModule.addSlots(category.ofAParticularMirror, function(add) {
+
+  add.method('create', function (mir, cat) {
+    return Object.newChildOf(this, mir, cat);
+  }, {category: ['creating']});
+
+  add.method('initialize', function (mir, cat) {
+    this._mirror = mir;
+    this._category = cat;
+  }, {category: ['creating']});
+
+  add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
+
+  add.method('category', function () { return this._category; }, {category: ['accessing']});
+
+  add.method('isRoot', function () { return this._category.isRoot(); }, {category: ['testing']});
+
+  add.method('sortOrder', function () { return this._category.sortOrder(); }, {category: ['sorting']});
+  
+  add.method('subcategory', function (name) {
+    return category.ofAParticularMirror.create(this._mirror, this._category.subcategory(name));
+  });
+
+  add.method('eachSlot', function (f) {
+    if (this.category().isRoot()) {
+      this.mirror().eachFakeSlot(f);
+    }
+    this.mirror().eachSlotInCategory(this.category(), f);
+  }, {category: ['iterating']});
+
+  add.method('eachNormalSlotInMeAndSubcategories', function (f) {
+    this.mirror().eachSlotNestedSomewhereUnderCategory(this.category(), f);
+  }, {category: ['iterating']});
+
+  add.method('rename', function (newName) {
+    var c = this.category();
+    var oldCat = c.copy();
+    var oldCatPrefixParts = oldCat.parts().map(function(p) {return p;});
+    var slotCount = 0;
+    this.eachNormalSlotInMeAndSubcategories(function(s) {
+      slotCount += 1;
+      var newCatParts = s.category().parts().map(function(p) {return p;});
+      
+      // Just for the sake of sanity, let's check to make sure this slot really is in this category.
+      for (var i = 0; i < oldCatPrefixParts.length; ++i) {
+        if (newCatParts[i] !== oldCatPrefixParts[i]) {
+          throw new Error("Assertion failure: renaming a category, but trying to recategorize a slot that's not in that category. ('" + newCatParts[i] + "' !== '" + oldCatPrefixParts[i] + "')");
+        }
+      }
+
+      newCatParts[oldCatPrefixParts.length - 1] = newName;
+      var newCat = category.create(newCatParts);
+      //console.log("Changing the category of " + s.name() + " from " + oldCat + " to " + newCat);
+      s.setCategory(newCat);
+    });
+    c.setLastPart(newName);
+    return {oldCat: oldCat, newCat: c, numberOfRenamedSlots: slotCount};
+  }, {category: ['renaming']});
+
+  add.method('modules', function () {
+    var modules = [];
+    this.eachNormalSlotInMeAndSubcategories(function(s) {
+      if (! s.isFromACopyDownParent()) {
+        var m = s.module();
+        if (! modules.include(m)) { modules.push(m); }
+      }
+    });
+    return modules.sort();
+  }, {category: ['modules']});
+
+  add.method('modulesSummaryString', function () {
+    var modules = this.modules();
+    var n = modules.length;
+    if (n === 0) { return ""; }
+    if (n >=  5) { return n + " modules"; }
+    var s = avocado.stringBuffer.create(n === 1 ? "Module:  " : "Modules:  ");
+    var sep = "";
+    modules.map(function(m) { return m ? m.lastPartOfName() : '-'; }).sort().each(function(name) {
+      s.append(sep).append(name);
+      sep = ", ";
+    });
+    return s.toString();
+  }, {category: ['modules']});
+
+  add.method('eachImmediateSubcategory', function (f) {
+    this.mirror().eachImmediateSubcategoryOf(this.category(), f);
+  }, {category: ['slots panel']});
 
 });
 
