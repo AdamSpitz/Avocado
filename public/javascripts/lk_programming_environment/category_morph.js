@@ -239,13 +239,8 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     }
   }, {category: ['drag and drop']});
 
-  add.method('constructUIStateMemento', function () {
-    return { isExpanded: this.expander().constructUIStateMemento() };
-  }, {category: ['UI state']});
-
-  add.method('assumeUIState', function (uiState, evt) {
-    if (!uiState) { return; }
-    this.expander().assumeUIState(uiState.isExpanded, evt);
+  add.method('partsOfUIState', function () {
+    return { isExpanded: this.expander() };
   }, {category: ['UI state']});
 
   add.method('addCommandsTo', function (cmdList) {

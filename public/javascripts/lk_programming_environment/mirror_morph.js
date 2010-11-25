@@ -369,29 +369,22 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     $super();
   }, {category: ['removing']});
 
-  add.method('constructUIStateMemento', function () {
-    var mem = {
-      isExpanded:       this.expander()        .constructUIStateMemento(),
-      isCommentOpen:    this._commentToggler   .constructUIStateMemento(),
-      isAnnotationOpen: this._annotationToggler.constructUIStateMemento(),
-      categories: [],
-      slots: []
+  add.method('partsOfUIState', function () {
+    return {
+      isExpanded:       this.expander(),
+      isCommentOpen:    this._commentToggler,
+      isAnnotationOpen: this._annotationToggler,
+      categories: {
+        collection: this._categoryMorphs.values(),
+        keyOf: function(cm) { return cm.category().parts(); },
+        getPartWithKey: function(morph, catParts) { return morph.categoryMorphFor(category.create(catParts)); }
+      },
+      slots: {
+        collection: this._slotMorphs.values(),
+        keyOf: function(sm) { return sm.slot().name(); },
+        getPartWithKey: function(morph, name) { return morph.slotMorphFor(morph.mirror().slotAt(name)); }
+      }
     };
-    
-    this._categoryMorphs.eachValue(function(cm) { mem.categories.push([cm.category().parts(), cm.constructUIStateMemento()]); });
-    this.    _slotMorphs.eachValue(function(sm) { mem.slots     .push([sm.slot().name(),      sm.constructUIStateMemento()]); });
-
-    return mem;
-  }, {category: ['UI state']});
-
-  add.method('assumeUIState', function (uiState, evt) {
-    if (!uiState) { return; }
-    evt = evt || Event.createFake();
-    this._commentToggler   .assumeUIState(uiState.isCommentOpen,    evt);
-    this._annotationToggler.assumeUIState(uiState.isAnnotationOpen, evt);
-    this.expander()        .assumeUIState(uiState.isExpanded,       evt);
-    uiState.categories.each(function(a) { this.categoryMorphFor(     category.create(a[0])).assumeUIState(a[1]); }.bind(this));
-    uiState.slots     .each(function(a) { this.    slotMorphFor(this.mirror().slotAt(a[0])).assumeUIState(a[1]); }.bind(this));
   }, {category: ['UI state']});
 
 });

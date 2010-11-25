@@ -78,15 +78,10 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     this.expander().expand();
   });
 
-  add.method('constructUIStateMemento', function () {
+  add.method('partsOfUIState', function () {
     return {
-      isExpanded: this.expander().constructUIStateMemento(),
+      isExpanded: this.expander()
     };
-  }, {category: ['UI state']});
-
-  add.method('assumeUIState', function (uiState, evt) {
-    if (!uiState) { return; }
-    this.expander().assumeUIState(uiState.isExpanded);
   }, {category: ['UI state']});
 
 });

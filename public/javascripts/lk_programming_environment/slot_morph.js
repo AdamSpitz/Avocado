@@ -228,22 +228,13 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     }.bind(this), evt);
   }, {category: ['accessing']});
 
-  add.method('constructUIStateMemento', function () {
+  add.method('partsOfUIState', function () {
     return {
-      isSourceOpen:     this._sourceToggler.constructUIStateMemento(),
-      isCommentOpen:    this._commentToggler.constructUIStateMemento(),
-      isAnnotationOpen: this._annotationToggler.constructUIStateMemento(),
-      isArrowVisible:   this.contentsPointer().arrow.constructUIStateMemento()
+      isSourceOpen:     this._sourceToggler,
+      isCommentOpen:    this._commentToggler,
+      isAnnotationOpen: this._annotationToggler,
+      isArrowVisible:   this.contentsPointer().arrow
     };
-  }, {category: ['UI state']});
-
-  add.method('assumeUIState', function (uiState, evt) {
-    if (!uiState) { return; }
-    evt = evt || Event.createFake();
-    this._sourceToggler         .assumeUIState( uiState.isSourceOpen,     evt );
-    this._commentToggler        .assumeUIState( uiState.isCommentOpen,    evt );
-    this._annotationToggler     .assumeUIState( uiState.isAnnotationOpen, evt );
-    this.contentsPointer().arrow.assumeUIState( uiState.isArrowVisible,   evt );
   }, {category: ['UI state']});
 
   add.method('slot', function () { return this._slot; }, {category: ['accessing']});
