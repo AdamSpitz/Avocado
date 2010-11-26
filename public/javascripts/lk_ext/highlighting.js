@@ -21,6 +21,14 @@ thisModule.addSlots(Morph.prototype, function(add) {
       this._baseFill = undefined;
     }
   }, {category: ['highlighting']});
+  
+  add.method('setHighlighting', function (shouldBeOn) {
+    if (shouldBeOn) {
+      this.beHighlighted();
+    } else {
+      this.beUnhighlighted();
+    }
+  }, {category: ['highlighting']});
 
 });
 

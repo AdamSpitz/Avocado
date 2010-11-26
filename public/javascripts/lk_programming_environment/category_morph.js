@@ -16,6 +16,15 @@ thisModule.addSlots(category, function(add) {
 });
 
 
+thisModule.addSlots(category.ofAParticularMirror, function(add) {
+  
+  add.method('morph', function () {
+    return this.mirror().morph().categoryMorphFor(this);
+  }, {category: ['user interface']});
+  
+});
+
+
 thisModule.addSlots(category.MorphMixin, function(add) {
 
   add.method('initializeCategoryUI', function () {
@@ -26,6 +35,8 @@ thisModule.addSlots(category.MorphMixin, function(add) {
 
     this._modulesLabelRow = this.createModulesLabelRow();
   }, {category: ['initializing']});
+
+  add.method('categoryOfMirror', function () { return this._categoryPresenter; }, {category: ['accessing']});
 
   add.method('category', function () { return this._categoryPresenter.category(); }, {category: ['accessing']});
 
@@ -89,19 +100,18 @@ thisModule.addSlots(category.MorphMixin, function(add) {
   }, {category: ['slots panel']});
   
   add.method('nodeMorphFor', function (cat) {
-    // aaa - I kinda wish this method took a category.ofAParticularMirror, not just a category. -- Adam
     return this.mirrorMorph().categoryMorphFor(cat);
+  }, {category: ['slots panel']});
+  
+  add.method('expandThisCategory', function () {
+    this.mirrorMorph().expandCategory(this._categoryPresenter);
   }, {category: ['slots panel']});
 
   add.method('addSlot', function (initialContents, evt) {
-    var name = this.mirror().findUnusedSlotName(typeof initialContents === 'function' ? "function" : "attribute");
-    this.mirror().reflectee()[name] = initialContents;
-    var s = this.mirror().slotAt(name);
-    s.setCategory(this.category());
-    if (s.contents().isReflecteeFunction()) { s.beCreator(); }
+    var s = this.mirror().automaticallyChooseDefaultNameAndAddNewSlot(reflect(initialContents), this.category());
     var mirMorph = this.mirrorMorph();
     mirMorph.updateAppearance();
-    mirMorph.expandCategory(this.category());
+    this.expandThisCategory();
     mirMorph.slotMorphFor(s).wasJustAdded(evt);
   }, {category: ['adding']});
 
@@ -115,19 +125,9 @@ thisModule.addSlots(category.MorphMixin, function(add) {
     cm.titleLabel.beWritableAndSelectAll();
   }, {category: ['adding']});
 
-  add.method('modules', function () {
-    return this._categoryPresenter.modules();
-  }, {category: ['modules']});
-
   add.method('updateHighlighting', function () {
-    if (this.highlighter().isChecked()) {
-      this.beHighlighted();
-    } else {
-      this.beUnhighlighted();
-    }
+    this.setHighlighting(this._highlighter.isChecked());
   }, {category: ['highlighting']});
-
-  add.method('highlighter', function () { return this._highlighter; }, {category: ['highlighting']});
 
   add.method('addCategoryCommandsTo', function (cmdList) {
     var isModifiable = this.mirrorMorph().shouldAllowModification();
@@ -158,6 +158,10 @@ thisModule.addSlots(category.MorphMixin, function(add) {
       }
     }
   }, {category: ['menu']});
+  
+  add.method('addCategoryDragAndDropCommandsTo', function (cmdList) {
+    // aaa - do something like this, a general mechanism for drag-and-drop commands
+  }, {category: ['drag and drop']});
 
 });
 
@@ -206,7 +210,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   add.method('mirrorMorph', function () { return this.mirror().morph(); }, {category: ['accessing']});
 
   add.data('grabsShouldFallThrough', true, {category: ['grabbing']});
-
+  
   add.method('updateAppearance', function () {
     if (! this.world() || ! this.expander().isExpanded()) {return;}
     this.populateSlotsPanel();
@@ -249,8 +253,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
 
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
-    var newCategory = this.category().copyInto(this.mirror(), newMirror);
-    var newCategoryPresenter = category.ofAParticularMirror.create(newMirror, newCategory);
+    var newCategoryPresenter = this._categoryPresenter.copyInto(category.root().ofMirror(newMirror));
     var newCategoryMorph = new category.Morph(newCategoryPresenter);
     newCategoryMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
     newCategoryMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
@@ -287,8 +290,8 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   }, {category: ['drag and drop']});
   
   add.method('copyToMirrorMorph', function (mirMorph, cat) {
-    var newCategory = this.category().copyInto(this.mirror(), mirMorph.mirror(), cat);
-    mirMorph.expandCategory(newCategory);
+    var newCategoryPresenter = this._categoryPresenter.copyInto(cat.ofMirror(mirMorph.mirror()));
+    mirMorph.expandCategory(newCategoryPresenter);
     this.remove();
   }, {category: ['drag and drop']});
 

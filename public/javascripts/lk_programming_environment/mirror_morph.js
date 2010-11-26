@@ -50,7 +50,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
     this.setFill(lively.paint.defaultFillWithColor(Color.neutral.gray.lighter()));
 
-    this._categoryPresenter = category.ofAParticularMirror.create(this._mirror, category.root());
+    this._categoryPresenter = category.root().ofMirror(this._mirror);
     this.initializeCategoryUI(); // aaa - can be a bit slow
     
     this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible();
@@ -180,7 +180,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('categoryMorphFor', function (c) {
     return this._categoryMorphs.getOrIfAbsentPut(c.fullName(), function() {
-      return new category.Morph(category.ofAParticularMirror.create(this.mirror(), c));
+      return new category.Morph(c.ofMirror(this.mirror()));
     }.bind(this));
   }, {category: ['categories']});
 

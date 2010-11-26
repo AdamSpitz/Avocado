@@ -674,6 +674,15 @@ thisModule.addSlots(mirror, function(add) {
     }.bind(this));
     avocado.ui.showMenu(akaMenu, this, "Other possible names:", evt);
   }, {category: ['user interface', 'creator slots']});
+  
+  add.method('automaticallyChooseDefaultNameAndAddNewSlot', function (initialContentsMir, cat) {
+    var name = this.findUnusedSlotName(initialContentsMir.isReflecteeFunction() ? "function" : "attribute");
+    var s = this.slotAt(name);
+    s.setContents(initialContentsMir);
+    if (cat) { s.setCategory(cat); }
+    if (initialContentsMir.isReflecteeFunction()) { s.beCreator(); }
+    return s;
+  }, {category: ['user interface', 'slots']});
 
   add.method('canHaveAnnotation', function () {
     return this.canHaveSlots();
@@ -1108,15 +1117,15 @@ thisModule.addSlots(mirror.tests, function(add) {
       
       var o2 = {};
       var mir2 = reflect(o2);
-      category.create(['letters']).copyInto(mir, mir2, category.create(['glyphs']));
+      category.create(['letters']).ofMirror(mir).copyInto(category.create(['glyphs']).ofMirror(mir2));
       this.assertEqual(42, o2.a);
       this.assertEqual(category.create(['glyphs', 'letters', 'vowels']), mir2.slotAt('a').category());
       
-      category.create(['letters', 'vowels']).copyInto(mir, mir2, category.create([]));
+      category.create(['letters', 'vowels']).ofMirror(mir).copyInto(category.root().ofMirror(mir2));
       this.assertEqual(42, o2.a);
       this.assertEqual(category.create(['vowels']), mir2.slotAt('a').category());
       
-      category.create([]).copyContentsInto(mir, mir2, category.create(['stuff']));
+      category.create([]).ofMirror(mir).copyContentsInto(category.create(['stuff']).ofMirror(mir2));
       this.assertEqual(42, o2.a);
       this.assertEqual(category.create(['stuff', 'letters', 'vowels']), mir2.slotAt('a').category());
     }.bind(this));
