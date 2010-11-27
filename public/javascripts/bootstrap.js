@@ -603,8 +603,18 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('loadLivelyKernel', function (callWhenDone) {
-    if (document.body) { this.createCanvasIfNone(); } else { window.onload = this.createCanvasIfNone; }
+    if (document.body) {
+      this.createCanvasIfNone();
+      this.loadLivelyKernelCode(callWhenDone);
+    } else {
+      console.log("document.body doesn't exist yet; setting window.onload. I have a feeling that this doesn't work, though, at least in some browsers. -- Adam, Nov. 2010");
+      var that = this;
+      window.onload = function() { that.createCanvasIfNone(); };
+      this.loadLivelyKernelCode(callWhenDone);
+    }
+  }, {category: ['bootstrapping']});
 
+  add.method('loadLivelyKernelCode', function (callWhenDone) {
     // Later on could do something nicer with dependencies and stuff. For now,
     // let's just try dynamically loading the LK files in the same order we
     // loaded them when we were doing it statically in the .xhtml file.
@@ -804,7 +814,7 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('startAvocado', function (callWhenDone) {
-    this.callWhenDoneLoadingAvocado = callWhenDone;
+    if (typeof(callWhenDone) !== 'undefined') { this.callWhenDoneLoadingAvocado = callWhenDone; }
 
     this.doBootstrappingStep('initializeRepositories');
 
