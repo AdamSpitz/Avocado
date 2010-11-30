@@ -44,6 +44,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('isParent', function () { return false; }, {category: ['testing']});
 
+  add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
+
   add.method('copyDownParentThatIAmFrom', function () { return null; }, {category: ['copy-down parents']});
 
   add.method('isFromACopyDownParent', function () { return !! this.copyDownParentThatIAmFrom(); }, {category: ['copy-down parents']});
@@ -196,14 +198,19 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('toString', function () {
     if (this.name() === undefined) { return ""; }
-    return this.name() + " slot";
+    return this.name();
   }, {category: ['printing']});
 
-  add.method('copyTo', function (newMir, optionalCat) {
-    var newSlot = newMir.slotAt(this.name());
+  add.method('copyTo', function (targetCatOfNewMir) {
+    var newSlot = targetCatOfNewMir.mirror().slotAt(this.name());
     newSlot.setContents(this.contents());
-    if (optionalCat) { newSlot.setCategory(optionalCat); }
+    newSlot.setCategory(targetCatOfNewMir.category());
     return newSlot;
+  }, {category: ['copying']});
+
+  add.method('copyInto', function (targetCatOfNewMir) {
+    // for compatibility with categories
+    return this.copyTo(targetCatOfNewMir);
   }, {category: ['copying']});
 
   add.method('remove', function () {

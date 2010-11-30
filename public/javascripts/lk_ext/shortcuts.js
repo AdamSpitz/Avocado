@@ -41,7 +41,6 @@ Morph.createBox = function(obj, color) {
   m.closeDnD();
 
   m.inspect = function () { return this._model.inspect(); };
-  m.addCommandsTo = function (cmdList) { this._model.addCommandsTo(cmdList); };
   
   return m;
 };

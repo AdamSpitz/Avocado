@@ -23,16 +23,22 @@ Morph.addMethods({
 
   contextMenu: function (evt) {
     var cs = this.commands();
-    if (!cs) { return null; }
+    if (!cs || cs.size() === 0) { return null; }
     return MenuMorph.fromCommandList(cs, this);
   },
 
   commands: function () {
-    if (! this.addCommandsTo) { return null; }
-    var cmdList = avocado.command.list.create();
-    this.addCommandsTo(cmdList);
-    if (cmdList.size() === 0) { return null; }
-    return cmdList;
+    if (this._model && typeof(this._model.commands) === 'function') {
+      return this._model.commands().wrapForMorph(this);
+    }
+    return null;
+  },
+
+  dragAndDropCommands: function () {
+    if (this._model && typeof(this._model.dragAndDropCommands) === 'function') {
+      return this._model.dragAndDropCommands().wrapForMorph(this);
+    }
+    return null;
   }
 });
 

@@ -48,6 +48,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('initialize', function ($super, slot) {
     $super();
     this._slot = slot;
+    this._model = slot;
 
     this.setPadding(0);
     this.updateFill();
@@ -118,7 +119,9 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       slotMorph.setContents(mirMorph.mirror());
     };
 
-    m.addCommandsTo = function(cmdList) {
+    m.commands = function() {
+      var cmdList = avocado.command.list.create();
+      
       // aaa - To do "grab pointer" properly I think I need to do a more general drag-and-drop thing. Right
       // now nothing will get called if I drop the endpoint on something invalid (like the world or some
       // other morph), so the visibility will need to be toggled an extra time to get it back to normal.
@@ -131,6 +134,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       if (typeof(c) === 'boolean') {
         cmdList.addItem({label: "set to " + (!c), go: function(evt) { slot.setContents(reflect(!c)); } });
       }
+      
+      return cmdList;
     };
 
     m.inspect = function() { return slot.name() + " contents"; };
@@ -286,46 +291,26 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     return avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler]]);
   }, {category: ['updating']});
 
-  add.method('canBeDroppedOnCategory', function (categoryMorph) {
-    if (this._shouldOnlyBeDroppedOnThisParticularMirror) { return categoryMorph.mirror() === this._shouldOnlyBeDroppedOnThisParticularMirror; }
-    return true;
-  }, {category: ['drag and drop']});
-
-  add.method('canBeDroppedOnMirror', function (mirMorph) {
-    if (this._shouldOnlyBeDroppedOnThisParticularMirror) { return mirMorph.mirror() === this._shouldOnlyBeDroppedOnThisParticularMirror; }
-    return true;
-  }, {category: ['drag and drop']});
-
-  add.method('wasJustDroppedOnMirror', function (mirMorph) {
-    this.copyToMirrorMorph(mirMorph, category.root());
-  }, {category: ['drag and drop']});
-
-  add.method('wasJustDroppedOnCategory', function (categoryMorph) {
-    this.copyToMirrorMorph(categoryMorph.mirrorMorph(), categoryMorph.category());
-  }, {category: ['drag and drop']});
-
   add.method('wasJustDroppedOnWorld', function (world) {
-    if (! this._shouldOnlyBeDroppedOnThisParticularMirror) {
-      var mirMorph = world.morphFor(reflect({}));
+    if (! this._shouldOnlyBeDroppedOnThisParticularMorph || this._shouldOnlyBeDroppedOnThisParticularMorph === world) {
+      var mir = reflect({});
+      var newSlot = this.slot().copyTo(category.root().ofMirror(mir));
+      var mirMorph = world.morphFor(mir);
       world.addMorphAt(mirMorph, this.position());
-      this.copyToMirrorMorph(mirMorph, category.root());
+      mirMorph.expandCategory(newSlot.category());
+      if (this._shouldDisappearAfterCommandIsFinished) { this.remove(); }
     }
-  }, {category: ['drag and drop']});
-  
-  add.method('copyToMirrorMorph', function (mirMorph, cat) {
-    var newSlot = this.slot().copyTo(mirMorph.mirror(), cat);
-    mirMorph.expandCategory(newSlot.category());
-    this.remove();
   }, {category: ['drag and drop']});
 
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
-    var newSlot = this.slot().copyTo(newMirror);
+    var newSlot = this.slot().copyTo(category.root().ofMirror(newMirror));
     var newSlotMorph = newSlot.newMorph();
     newSlotMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
     newSlotMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
     newSlotMorph.forceLayoutRejiggering();
-    if (! this.mirrorMorph().shouldAllowModification()) { newSlotMorph._shouldOnlyBeDroppedOnThisParticularMirror = this.mirrorMorph().mirror(); }
+    newSlotMorph._shouldDisappearAfterCommandIsFinished = true;
+    if (! this.mirrorMorph().shouldAllowModification()) { newSlotMorph._shouldOnlyBeDroppedOnThisParticularMorph = this.mirrorMorph(); }
     evt.hand.grabMorphWithoutAskingPermission(newSlotMorph, evt);
     return newSlotMorph;
   }, {category: ['drag and drop']});
@@ -367,7 +352,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     this.updateAppearance();
   }, {category: ['creator slots']});
 
-  add.method('addCommandsTo', function (cmdList) {
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
     var copyDown = this.slot().copyDownParentThatIAmFrom();
     var isModifiable = !window.isInCodeOrganizingMode;
 
@@ -449,6 +435,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
         avocado.ui.grab(reflect(this.slot().contents().prettyPrint()), evt);
       }.bind(this)}]);
     }
+    
+    return cmdList;
   }, {category: ['menu']});
 
 });

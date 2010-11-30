@@ -244,8 +244,9 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     return !window.isInCodeOrganizingMode;
   });
 
-  add.method('addCommandsTo', function (cmdList) {
-    this.addCategoryCommandsTo(cmdList);
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
+    cmdList.addAllCommands(this.categoryCommands());
 
     cmdList.addLine();
     
@@ -306,7 +307,23 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.morphFor(reflect(child)); }); };
       avocado.ui.poseManager(evt).assumePose(Object.newChildOf(avocado.poses.tree, this.mirror().inspect() + " inheritance tree", this, parentFunction, childrenFunction));
     }.bind(this)});
+    
+    return cmdList;
   }, {category: ['menu']});
+
+  add.method('dragAndDropCommands', function () {
+    var cmdList = avocado.command.list.create();
+    
+    cmdList.addAllCommands(this.categoryDragAndDropCommands());
+    
+    cmdList.addItem(avocado.command.create("make attribute point to me", function(evt, arrowEndpoint) {
+      arrowEndpoint.wasJustDroppedOnMirror(this);
+    }.bind(this)).setArgumentSpecs([avocado.command.argumentSpec.create('arrowEndpoint').onlyAccepts(function(m) {
+      return typeof(m.wasJustDroppedOnMirror) === 'function';
+    })]));
+    
+    return cmdList;
+  }, {category: ['drag and drop']});
 
   add.method('createChild', function (evt) {
     var child = this.mirror().createChild();
@@ -352,17 +369,6 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('showAKAMenu', function (evt) {
     this.mirror().chooseAmongPossibleCreatorSlotChains(function() {this.updateAppearance();}.bind(this), evt);
   }, {category: ['creator slots']});
-
-  add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
-    if (typeof(m.canBeDroppedOnMirror) === 'function') { return m.canBeDroppedOnMirror(this); }
-    return typeof(m.wasJustDroppedOnMirror) === 'function';
-  }, {category: ['drag and drop']});
-
-  add.method('justReceivedDrop', function (m) {
-    if (this.acceptsDropping(m)) { 
-      m.wasJustDroppedOnMirror(this);
-    }
-  }, {category: ['drag and drop']});
 
   add.method('remove', function ($super) {
     this.detachArrowEndpoints();

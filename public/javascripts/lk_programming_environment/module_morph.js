@@ -12,19 +12,21 @@ thisModule.addSlots(transporter.module, function(add) {
     var m = Morph.createBox(this, Color.red.lighter());
     var module = this;
     m._module = module;
+    m._model = module;
 
     var optionalFileOutButton = avocado.command.create('Save as .js file', this.fileOutAndReportErrors.bind(this)).onlyApplicableIf(function() { return module.canBeFiledOut(); }).newMorph();
 
     var changeIndicator = TextMorph.createLabel(function() { return module.hasChangedSinceLastFileOut() ? ' has changed ' : ''; });
     changeIndicator.setTextColor(Color.green.darker());
 
-    m.addCommandsTo = function(cmdList) {
-      module.addCommandsTo(cmdList);
+    m.commands = function() {
+      var cmdList = module.commands().wrapForMorph(m);
       var saveCmd = cmdList.itemWith("id", "save");
       if (saveCmd) {
         saveCmd.pluralLabel = 'save modules as .js files';
         saveCmd.pluralGo = transporter.fileOutPluralMorphs.bind(transporter);
       }
+      return cmdList;
     };
 
     m.setColumns([m.createNameLabel(), changeIndicator, optionalFileOutButton, m.createDismissButton()]);

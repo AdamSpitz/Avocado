@@ -129,6 +129,8 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
   
   add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
 
+  add.method('parts', function () { return this._category.parts(); }, {category: ['accessing']});
+
   add.method('isRoot', function () { return this._category.isRoot(); }, {category: ['testing']});
 
   add.method('sortOrder', function () { return this._category.sortOrder(); }, {category: ['sorting']});
@@ -144,6 +146,10 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
   add.method('ofMirror', function (mir) {
     if (mir.equals(this._mirror)) { return this; }
     return this.category().ofMirror(mir);
+  }, {category: ['related categories']});
+
+  add.method('concat', function (otherCat) {
+    return this.category().concat(otherCat).ofMirror(this.mirror());
   }, {category: ['related categories']});
 
   add.method('eachSlot', function (f) {
@@ -207,6 +213,8 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     return s.toString();
   }, {category: ['modules']});
 
+  add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
+
   add.method('eachImmediateSubcategory', function (f) {
     this.mirror().eachImmediateSubcategoryOf(this.category(), f);
   }, {category: ['slots panel']});
@@ -220,10 +228,20 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     var numPartsToLopOffTheBeginning = this.category().parts().length;
 
     this.eachNormalSlotInMeAndSubcategories(function(slot) {
-      slot.copyTo(target.mirror(), target.category().concat(slot.category().withoutFirstParts(numPartsToLopOffTheBeginning)));
+      slot.copyTo(target.concat(slot.category().withoutFirstParts(numPartsToLopOffTheBeginning)));
     });
     return target;
   }, {category: ['copying']});
+  
+  add.method('dragAndDropCommands', function () {
+    var cmdList = avocado.command.list.create();
+    cmdList.addItem(avocado.command.create("add slot or category", function(evt, slotOrCat) {
+      return slotOrCat.copyInto(this);
+    }.bind(this)).setArgumentSpecs([avocado.command.argumentSpec.create('slotOrCat').onlyAccepts(function(o) {
+      return o && typeof(o.canBeAddedToCategory) === 'function' && o.canBeAddedToCategory();
+    })]));
+    return cmdList;
+  }, {category: ['user interface', 'drag and drop']});
 
 });
 

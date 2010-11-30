@@ -24,7 +24,7 @@ thisModule.addSlots(TestResult.prototype, function(add) {
 
   add.method('newMorph', function () {
     var m = new avocado.ColumnMorph();
-    m._testResult = this;
+    m._model = this;
 
     m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}});
     m.setFill(lively.paint.defaultFillWithColor(this.anyFailed() ? Color.red : Color.green));
@@ -33,8 +33,7 @@ thisModule.addSlots(TestResult.prototype, function(add) {
 
     var nameLabel = TextMorph.createLabel(this.inspect());
 
-    m.inspect = function () { return m._testResult.testCase.inspect(); };
-    m.addCommandsTo = function (cmdList) { m._testResult.addCommandsTo(cmdList); };
+    m.inspect = function () { return m._model.testCase.inspect(); };
 
     var rows = [nameLabel];
     this.failed.each(function(f) {

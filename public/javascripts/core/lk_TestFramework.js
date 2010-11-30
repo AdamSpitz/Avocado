@@ -90,12 +90,12 @@ thisModule.addSlots(TestCase.prototype, function(add) {
     avocado.ui.grab(reflect(this), evt);
   }, {category: ['user interface', 'commands']});
 
-  add.method('addCommandsTo', function (cmdList) {
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
     cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: this.createAndRunAndShowResult.bind(this)});
-  
     cmdList.addLine();
-
     cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject.bind(this)});
+    return cmdList;
   }, {category: ['user interface', 'commands']});
 
 });
@@ -155,8 +155,10 @@ thisModule.addSlots(TestResult.prototype, function(add) {
     });
   }, {category: ['user interface', 'commands']});
 
-  add.method('addCommandsTo', function (cmdList) {
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
     cmdList.addItem({label: 'get error objects', go: this.getErrorObjects.bind(this), isApplicable: this.anyFailed.bind(this)});
+    return cmdList;
   }, {category: ['user interface', 'commands']});
 
 });

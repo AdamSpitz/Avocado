@@ -48,7 +48,7 @@ thisModule.addSlots(mirror, function(add) {
     if (o === undefined) { return "a mirror on undefined"; }
     if (o === null     ) { return "a mirror on null";      }
     try {
-      if (o.identityHashCode) { return o.identityHashCode(); }
+      if (typeof(o.identityHashCode) === 'function') { return o.identityHashCode(); }
     } catch (ex) {
       // don't want mirrors to crash if the object is broken
     }
@@ -1109,11 +1109,11 @@ thisModule.addSlots(mirror.tests, function(add) {
       this.assertEqual('', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
       
       this.assertEqual('', avocado.enumerator.create(mir, 'eachSlotInCategory', root).toArray().sort().join(', '));
-      this.assertEqual('y slot', avocado.enumerator.create(mir, 'eachSlotInCategory', root.subcategory('letters')).toArray().sort().join(', '));
-      this.assertEqual('a slot, e slot', avocado.enumerator.create(mir, 'eachSlotInCategory', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
+      this.assertEqual('y', avocado.enumerator.create(mir, 'eachSlotInCategory', root.subcategory('letters')).toArray().sort().join(', '));
+      this.assertEqual('a, e', avocado.enumerator.create(mir, 'eachSlotInCategory', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
       
-      this.assertEqual('b slot, c slot, d slot', avocado.enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root.subcategory('letters').subcategory('consonants')).toArray().sort().join(', '));
-      this.assertEqual('a slot, b slot, c slot, d slot, e slot, y slot', avocado.enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root).toArray().sort().join(', '));
+      this.assertEqual('b, c, d', avocado.enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root.subcategory('letters').subcategory('consonants')).toArray().sort().join(', '));
+      this.assertEqual('a, b, c, d, e, y', avocado.enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root).toArray().sort().join(', '));
       
       var o2 = {};
       var mir2 = reflect(o2);

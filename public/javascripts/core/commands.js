@@ -12,6 +12,8 @@ thisModule.addSlots(avocado.command, function(add) {
 
   add.creator('list', {});
 
+  add.creator('argumentSpec', {});
+
   add.method('create', function () {
     var c = Object.create(this);
     c.initialize.apply(c, arguments);
@@ -23,10 +25,8 @@ thisModule.addSlots(avocado.command, function(add) {
     this.setFunction(runFn);
   }, {category: ['creating']});
 
-  add.method('label', function () {
-    return this._label;
-  }, {category: ['accessing']});
-
+  add.data('isCommand', true, {category: ['testing']});
+  
   add.method('helpText', function () {
     return this._helpText;
   }, {category: ['accessing']});
@@ -40,7 +40,7 @@ thisModule.addSlots(avocado.command, function(add) {
   }, {category: ['accessing']});
 
   add.method('setLabel', function (label) {
-    this._label = label;
+    this.label = label;
     return this;
   }, {category: ['accessing']});
 
@@ -53,11 +53,74 @@ thisModule.addSlots(avocado.command, function(add) {
     this._functionToRun = f;
     return this;
   }, {category: ['accessing']});
+  
+  add.method('toString', function () {
+    return this.label;
+  }, {category: ['printing']});
+  
+  add.method('wrapFunction', function (newFn) {
+    var oldFunctionToRun = this._functionToRun;
+    return this.setFunction(function() {
+      return newFn.apply(this, [oldFunctionToRun].concat($A(arguments)));
+    });
+  }, {category: ['accessing']});
 
   add.method('onlyApplicableIf', function (f) {
     this._applicabilityFunction = f;
     return this;
   }, {category: ['accessing']});
+
+  add.method('argumentSpecs', function () {
+    return this._argumentSpecs;
+  }, {category: ['accessing']});
+
+  add.method('setArgumentSpecs', function (specs) {
+    this._argumentSpecs = specs;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('canAcceptArguments', function (args) {
+    if (!this._argumentSpecs) { return args.length === 0; }
+    var n = this._argumentSpecs.length;
+    if (n !== args.length) { return false; }
+    for (var i = 0; i < n; ++i) {
+      var spec = this._argumentSpecs[i];
+      var arg = args[i];
+      if (! spec.canAccept(arg)) { return false; }
+    }
+    return true;
+  }, {category: ['accessing']});
+
+  add.method('go', function () {
+    var f = this.functionToRun();
+    var rcvr = this; // aaa - shouldn't be this, we should have a way of actually specifying the receiver
+    return f.apply(rcvr, $A(arguments));
+  }, {category: ['accessing']});
+
+});
+
+
+thisModule.addSlots(avocado.command.argumentSpec, function(add) {
+  
+  add.method('create', function () {
+    var c = Object.create(this);
+    c.initialize.apply(c, arguments);
+    return c;
+  }, {category: ['creating']});
+
+  add.method('initialize', function (name) {
+    this._name = name;
+  }, {category: ['creating']});
+  
+  add.method('onlyAccepts', function (f) {
+    this._acceptanceFunction = f;
+    return this;
+  }, {category: ['accessing']});
+  
+  add.method('canAccept', function (arg) {
+    if (! this._acceptanceFunction) { return true; }
+    return this._acceptanceFunction(arg);
+  }, {category: ['testing']});
 
 });
 
@@ -76,6 +139,10 @@ thisModule.addSlots(avocado.command.list, function(add) {
     return this._commands.size();
   }, {category: ['accessing']});
 
+  add.method('commands', function () {
+    return this._commands;
+  }, {category: ['iterating']});
+
   add.method('eachCommand', function (f) {
     this._commands.each(function(c) { if (c) { f(c); } });
   }, {category: ['iterating']});
@@ -83,7 +150,14 @@ thisModule.addSlots(avocado.command.list, function(add) {
   add.method('addItem', function (c) {
     // for compatibility with MenuMorph
     if (reflect(c).isReflecteeArray()) {
-      c = {label: c[0], go: c[1]};
+      c = avocado.command.create(c[0], c[1]);
+    } else if (c && !c.isCommand) {
+      // aaa - maybe just create the commands in the caller, don't do this stupid translation thing
+      var newC = avocado.command.create(c.label, c.go);
+      if (c.hasOwnProperty("isApplicable")) { newC.onlyApplicableIf(c.isApplicable); }
+      if (c.hasOwnProperty("pluralGo")) { newC.pluralGo = c.pluralGo; }
+      if (c.hasOwnProperty("pluralLabel")) { newC.pluralLabel = c.pluralLabel; }
+      c = newC;
     }
 
     this._commands.push(c);
@@ -91,6 +165,10 @@ thisModule.addSlots(avocado.command.list, function(add) {
 
   add.method('addItems', function (items) {
     items.forEach(function(item) { this.addItem(item); }.bind(this));
+  }, {category: ['adding']});
+
+  add.method('addAllCommands', function (cmdList) {
+    this.addItems(cmdList.commands());
   }, {category: ['adding']});
 
   add.method('addLine', function (c) {
@@ -106,19 +184,21 @@ thisModule.addSlots(avocado.command.list, function(add) {
   }, {category: ['adding']});
 
   add.method('addItemsToMenu', function (menu, target) {
-    for (var i = 0, n = this._commands.length; i < n; ++i) {
-      var c = this._commands[i];
+    var i = 0;
+    var n = this._commands.length;
+    this._commands.each(function(c) {
       if (c) {
         if (typeof(c.isApplicable) !== 'function' || c.isApplicable()) {
           var label = typeof(c.label) === 'function' ? c.label(target) : c.label;
-          menu.addItem([label, c.go]);
+          menu.addItem([label, function() { c.go.apply(c, arguments); }]);
         }
       } else {
         if (i !== n - 1) { // no point if it's the last one
           menu.addLine();
         }
       }
-    }
+      i += 1;
+    }.bind(this));
   }, {category: ['converting']});
 
   add.method('itemWith', function (attrName, attrValue) {

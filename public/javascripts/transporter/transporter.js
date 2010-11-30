@@ -415,7 +415,8 @@ thisModule.addSlots(transporter.module, function(add) {
     avocado.ui.showObjects(objectsToShow, "objects in module " + this.name(), evt);
   }, {category: ['user interface', 'commands']});
 
-  add.method('addCommandsTo', function (cmdList) {
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
     cmdList.addItem({id: 'save', label: 'save as .js file', go: this.fileOutAndReportErrors.bind(this), isApplicable: this.canBeFiledOut.bind(this)});
     // aaa - not working yet: cmdList.addItem({label: 'email me the source', go: this.emailTheSource.bind(this), isApplicable: this.canBeFiledOut.bind(this)});
 
@@ -430,6 +431,7 @@ thisModule.addSlots(transporter.module, function(add) {
     cmdList.addLine();
 
     cmdList.addItem({label: 'all objects', go: this.showAllObjects.bind(this)});
+    return cmdList;
   }, {category: ['user interface', 'commands']});
 
   add.method('eachModule', function (f) {
@@ -858,7 +860,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     var slot = this.chooseSlotToTryToBreakCycle();
     dbgOn(!slot);
     if (!slot) { throw new Error("Could not find a slot to use as a cycle-breaker."); }
-    var cycleBreakerSlot = slot.copyTo(this._cycleBreakersMir).rename(this._cycleBreakersMir.findUnusedSlotName('breaker'));
+    var cycleBreakerSlot = slot.copyTo(category.root().ofMirror(this._cycleBreakersMir)).rename(this._cycleBreakersMir.findUnusedSlotName('breaker'));
     var initExpr = slot.initializationExpression();
     if (initExpr) { cycleBreakerSlot.setInitializationExpression(initExpr); }
     this._slotDeps. holderDeps.removeDependency(slot, slot.holder().theCreatorSlot());

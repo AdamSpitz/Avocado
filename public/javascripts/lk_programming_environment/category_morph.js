@@ -129,7 +129,8 @@ thisModule.addSlots(category.MorphMixin, function(add) {
     this.setHighlighting(this._highlighter.isChecked());
   }, {category: ['highlighting']});
 
-  add.method('addCategoryCommandsTo', function (cmdList) {
+  add.method('categoryCommands', function () {
+    var cmdList = avocado.command.list.create();
     var isModifiable = this.mirrorMorph().shouldAllowModification();
     
     if (this.mirror().canHaveSlots()) {
@@ -157,10 +158,19 @@ thisModule.addSlots(category.MorphMixin, function(add) {
         }
       }
     }
+    return cmdList;
   }, {category: ['menu']});
   
-  add.method('addCategoryDragAndDropCommandsTo', function (cmdList) {
-    // aaa - do something like this, a general mechanism for drag-and-drop commands
+  add.method('categoryDragAndDropCommands', function () {
+    var cmdList = this._categoryPresenter.dragAndDropCommands().wrapForMorph(this);
+    var mirMorph = this.mirrorMorph();
+    
+    cmdList.itemWith("label", "add slot or category").wrapFunction(function(oldFunctionToRun, evt, slotOrCatMorph) {
+      var result = oldFunctionToRun(evt, slotOrCatMorph);
+      mirMorph.expandCategory(result.category());
+    });
+    
+    return cmdList;
   }, {category: ['drag and drop']});
 
 });
@@ -184,6 +194,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   add.method('initialize', function ($super, categoryPresenter) {
     $super();
     this._categoryPresenter = categoryPresenter;
+    this._model = categoryPresenter;
 
     this.setPadding({top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}});
     this.closeDnD();
@@ -217,8 +228,6 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     this.slotsPanel().submorphs.each(function(m) { m.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?;
   }, {category: ['updating']});
 
-  add.method('inspect', function () {return this.category().toString();}, {category: ['printing']});
-
   add.method('updateExpandedness', function () {
     if (! this.world()) {return;}
     var rows = [this._headerRow];
@@ -232,25 +241,18 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     this.mirrorMorph().justRenamedCategoryMorphFor(result.oldCat, result.newCat, result.numberOfRenamedSlots === 0);
   }, {category: ['renaming']});
 
-  add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
-    if (typeof(m.canBeDroppedOnCategory) === 'function') { return m.canBeDroppedOnCategory(this); }
-    return typeof(m.wasJustDroppedOnCategory) === 'function';
-  }, {category: ['drag and drop']});
-
-  add.method('justReceivedDrop', function (m) {
-    if (this.acceptsDropping(m)) { 
-      m.wasJustDroppedOnCategory(this);
-    }
-  }, {category: ['drag and drop']});
-
   add.method('partsOfUIState', function () {
     return { isExpanded: this.expander() };
   }, {category: ['UI state']});
 
-  add.method('addCommandsTo', function (cmdList) {
-    this.addCategoryCommandsTo(cmdList);
+  add.method('commands', function () {
+    return this.categoryCommands();
   }, {category: ['menu']});
 
+  add.method('dragAndDropCommands', function () {
+    return this.categoryDragAndDropCommands();
+  }, {category: ['drag and drop']});
+    
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
     var newCategoryPresenter = this._categoryPresenter.copyInto(category.root().ofMirror(newMirror));
@@ -258,41 +260,21 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     newCategoryMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
     newCategoryMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
     newCategoryMorph.forceLayoutRejiggering();
-    if (! this.mirrorMorph().shouldAllowModification()) { newCategoryMorph._shouldOnlyBeDroppedOnThisParticularMirror = this.mirrorMorph().mirror(); }
+    newCategoryMorph._shouldDisappearAfterCommandIsFinished = true;
+    if (! this.mirrorMorph().shouldAllowModification()) { newCategoryMorph._shouldOnlyBeDroppedOnThisParticularMorph = this.mirrorMorph(); }
     evt.hand.grabMorphWithoutAskingPermission(newCategoryMorph, evt);
     return newCategoryMorph;
   }, {category: ['drag and drop']});
 
-  add.method('canBeDroppedOnCategory', function (categoryMorph) {
-    if (this._shouldOnlyBeDroppedOnThisParticularMirror) { return categoryMorph.mirror() === this._shouldOnlyBeDroppedOnThisParticularMirror; }
-    return true;
-  }, {category: ['drag and drop']});
-
-  add.method('canBeDroppedOnMirror', function (mirMorph) {
-    if (this._shouldOnlyBeDroppedOnThisParticularMirror) { return mirMorph.mirror() === this._shouldOnlyBeDroppedOnThisParticularMirror; }
-    return true;
-  }, {category: ['drag and drop']});
-
-  add.method('wasJustDroppedOnMirror', function (mirMorph) {
-    this.copyToMirrorMorph(mirMorph, category.root());
-  }, {category: ['drag and drop']});
-
-  add.method('wasJustDroppedOnCategory', function (categoryMorph) {
-    this.copyToMirrorMorph(categoryMorph.mirrorMorph(), categoryMorph.category());
-  }, {category: ['drag and drop']});
-
   add.method('wasJustDroppedOnWorld', function (world) {
-    if (! this._shouldOnlyBeDroppedOnThisParticularMirror) {
-      var mirMorph = world.morphFor(reflect({}));
+    if (! this._shouldOnlyBeDroppedOnThisParticularMorph || this._shouldOnlyBeDroppedOnThisParticularMorph === world) {
+      var mir = reflect({});
+      var newCategoryPresenter = this._categoryPresenter.copyInto(category.root().ofMirror(mir));
+      var mirMorph = world.morphFor(mir);
       world.addMorphAt(mirMorph, this.position());
-      this.copyToMirrorMorph(mirMorph, category.root());
+      mirMorph.expandCategory(newCategoryPresenter);
+      if (this._shouldDisappearAfterCommandIsFinished) { this.remove(); }
     }
-  }, {category: ['drag and drop']});
-  
-  add.method('copyToMirrorMorph', function (mirMorph, cat) {
-    var newCategoryPresenter = this._categoryPresenter.copyInto(cat.ofMirror(mirMorph.mirror()));
-    mirMorph.expandCategory(newCategoryPresenter);
-    this.remove();
   }, {category: ['drag and drop']});
 
 });

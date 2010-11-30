@@ -192,6 +192,15 @@ Morph.addMethods({
         return menu;
     },
 
+  	inspect: function() {
+  		try {
+        if (this._model && typeof(this._model.inspect) === 'function') { return this._model.inspect(); } // added by Adam
+  			return this.toString();
+  		} catch (err) {
+  			return "#<inspect error: " + err + ">";
+  		}
+  	},
+
     toString: function() {
       return ""; // the default behaviour is annoying - makes morph mirrors very wide
     }
@@ -257,8 +266,10 @@ SelectionMorph.addMethods({
     return avocado.command.list.descriptionOfGroup(this.selectedMorphs);
   },
 
-  addCommandsTo: function (cmdList) {
+  commands: function () {
+    var cmdList = avocado.command.list.create();
     cmdList.addItemsFromGroup(this.selectedMorphs);
+    return cmdList;
   }
 });
 
