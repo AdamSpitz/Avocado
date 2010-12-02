@@ -192,7 +192,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     m = this._annotationMorph = new avocado.TableMorph().beInvisible();
     m.setPadding({left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}});
     this._moduleNameMorph  = new TextMorphRequiringExplicitAcceptance(this.moduleName.bind(this), this.setModuleName.bind(this));
-    this._initializerMorph = new TextMorphRequiringExplicitAcceptance(this.initializationExpression.bind(this), this.setInitializationExpression.bind(this));
+    this._initializerMorph = new TextMorphRequiringExplicitAcceptance(function() { return this.slot().initializationExpression(); }.bind(this),
+                                                                      function(e) { this.slot().setInitializationExpression(e); }.bind(this));
     m.replaceContentWith(avocado.tableContents.createWithRows([
       [TextMorph.createLabel("Module:"       ), this._moduleNameMorph ],
       [TextMorph.createLabel("Initialize to:"), this._initializerMorph]
@@ -265,13 +266,15 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     }.bind(this));
   }, {category: ['annotation', 'module']});
 
-  add.method('initializationExpression', function () {
-    return this.slot().initializationExpression();
-  }, {category: ['annotation', 'initialization expression']});
+  add.method('setModule', function (m, evt) {
+    this.slot().setModule(m);
+    this.updateAppearance();
+  }, {category: ['annotation', 'module']});
 
-  add.method('setInitializationExpression', function (e) {
-    this.slot().setInitializationExpression(e);
-  }, {category: ['annotation', 'initialization expression']});
+  add.method('setModuleRecursively', function (m, evt) {
+    this.slot().setModuleRecursively(m);
+    this.updateAppearance();
+  }, {category: ['annotation', 'module']});
 
   add.method('updateAppearance', function () { // aaa get rid of me once I'm being done through refreshContentOfMeAndSubmorphs from the mirror morph
     this.refreshContentOfMeAndSubmorphs();
@@ -314,16 +317,6 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     evt.hand.grabMorphWithoutAskingPermission(newSlotMorph, evt);
     return newSlotMorph;
   }, {category: ['drag and drop']});
-
-  add.method('setModule', function (m, evt) {
-    this.slot().setModule(m);
-    this.updateAppearance();
-  }, {category: ['annotation', 'module']});
-
-  add.method('setModuleRecursively', function (m, evt) {
-    this.slot().setModuleRecursively(m);
-    this.updateAppearance();
-  }, {category: ['annotation', 'module']});
 
   add.method('setContents', function (c, evt) {
     this.slot().setContents(c);

@@ -23,7 +23,9 @@ Morph.addMethods({
   	  if (c) {
   	    c.go(Event.createFake(), morph); // aaa - can't we get a real event?
   	  } else {
-        throw new Error("for drag-and-drop, children should implement either dragAndDropCommands or justReceivedDrop");
+  	    if (! this.openForDragAndDrop) {
+          throw new Error("for drag-and-drop, children should implement either dragAndDropCommands or justReceivedDrop");
+        }
       }
     },
 

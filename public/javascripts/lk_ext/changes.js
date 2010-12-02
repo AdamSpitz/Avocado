@@ -217,6 +217,12 @@ Morph.addMethods({
 Morph.addMethods({
   isSameTypeAs: function(m) {
     return m && m['__proto__'] === this['__proto__'];
+  },
+  
+  ownerSatisfying: function(condition) {
+    if (!this.owner) { return null; }
+    if (condition(this.owner)) { return this.owner; }
+    return this.owner.ownerSatisfying(condition);
   }
 });
 

@@ -30,15 +30,23 @@ thisModule.addSlots(category, function(add) {
 
   add.method('copy', function () {
     return category.create(this.parts().map(function(p) { return p; }));
-  }, {category: ['accessing']});
+  }, {category: ['copying']});
 
   add.method('supercategory', function () {
     return category.create(this._parts.slice(0, this._parts.length - 1));
-  }, {category: ['creating']});
+  }, {category: ['related categories']});
 
   add.method('subcategory', function (subcatName) {
     return category.create(this._parts.concat([subcatName]));
-  }, {category: ['creating']});
+  }, {category: ['related categories']});
+
+  add.method('supernode', function () {
+    return this.supercategory();
+  }, {category: ['related categories']});
+
+  add.method('subnode', function (subnodeName) {
+    return this.subcategory(subnodeName);
+  }, {category: ['related categories']});
   
   add.method('ofMirror', function (mir) {
     return category.ofAParticularMirror.create(mir, this);
@@ -46,11 +54,11 @@ thisModule.addSlots(category, function(add) {
 
   add.method('concat', function (otherCat) {
     return category.create(this._parts.concat(otherCat.parts()));
-  }, {category: ['creating']});
+  }, {category: ['related categories']});
 
   add.method('withoutFirstParts', function (n) {
     return category.create(this._parts.slice(n));
-  }, {category: ['creating']});
+  }, {category: ['related categories']});
 
   add.method('sortOrder', function () { return this.isRoot() ? '' : this.lastPart().toUpperCase(); }, {category: ['sorting']});
   
@@ -81,6 +89,10 @@ thisModule.addSlots(category, function(add) {
   add.method('equals', function (c) {
     if (this.parts().length !== c.parts().length) { return false; }
     return this.isEqualToOrSubcategoryOf(c);
+  }, {category: ['comparing']});
+  
+  add.method('hashCode', function () {
+    return this.parts().map(function(p) { return p.hashCode(); }).join();
   }, {category: ['comparing']});
 
   add.method('isImmediateSubcategoryOf', function (c) {
@@ -134,6 +146,17 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
   add.method('isRoot', function () { return this._category.isRoot(); }, {category: ['testing']});
 
   add.method('sortOrder', function () { return this._category.sortOrder(); }, {category: ['sorting']});
+
+  add.method('equals', function (c) {
+    if (c === null || typeof(c) === 'undefined') { return false; }
+    if (typeof(c.mirror)   !== 'function') { return false; }
+    if (typeof(c.category) !== 'function') { return false; }
+    return this.mirror().equals(c.mirror()) && this.category().equals(c.category());
+  }, {category: ['comparing']});
+  
+  add.method('hashCode', function () {
+    return this.mirror().hashCode() && this.category().hashCode();
+  }, {category: ['comparing']});
   
   add.method('supercategory', function () {
     return this._category.supercategory().ofMirror(this._mirror);
@@ -141,6 +164,14 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
   
   add.method('subcategory', function (name) {
     return this._category.subcategory(name).ofMirror(this._mirror);
+  }, {category: ['related categories']});
+
+  add.method('supernode', function () {
+    return this.supercategory();
+  }, {category: ['related categories']});
+
+  add.method('subnode', function (name) {
+    return this.subcategory(name);
   }, {category: ['related categories']});
   
   add.method('ofMirror', function (mir) {
@@ -152,6 +183,8 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     return this.category().concat(otherCat).ofMirror(this.mirror());
   }, {category: ['related categories']});
 
+  add.method('sortOrder', function () { return this.category().sortOrder(); }, {category: ['sorting']});
+  
   add.method('eachSlot', function (f) {
     if (this.category().isRoot()) {
       this.mirror().eachFakeSlot(f);
@@ -199,7 +232,7 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     return modules.sort();
   }, {category: ['modules']});
 
-  add.method('modulesSummaryString', function () {
+  add.method('contentsSummaryString', function () {
     var modules = this.modules();
     var n = modules.length;
     if (n === 0) { return ""; }
@@ -211,13 +244,22 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
       sep = ", ";
     });
     return s.toString();
-  }, {category: ['modules']});
+  }, {category: ['user interface']});
+
+  add.method('requiresContentsSummary', function () {
+    if (window.isInCodeOrganizingMode) { return false; }
+    return this.isRoot() || this.contentsSummaryString() !== this.supernode().contentsSummaryString();
+  }, {category: ['user interface']});
+  
+  add.method('nonNodeContents', function () {
+    return avocado.enumerator.create(this, 'eachSlot').sortBy(function(s) { return s.sortOrder(); });
+  }, {category: ['user interface']});
 
   add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
 
-  add.method('eachImmediateSubcategory', function (f) {
+  add.method('eachImmediateSubnode', function (f) {
     this.mirror().eachImmediateSubcategoryOf(this.category(), f);
-  }, {category: ['slots panel']});
+  }, {category: ['iterating']});
 
   add.method('copyInto', function (target) {
     if (this.isRoot()) { throw new Error("Cannot use copyInto on the root category; maybe you meant to use copyContentsInto?"); }
@@ -242,6 +284,10 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     })]));
     return cmdList;
   }, {category: ['user interface', 'drag and drop']});
+
+  add.method('automaticallyChooseDefaultNameAndAddNewSlot', function (initialContentsMir) {
+    return this.mirror().automaticallyChooseDefaultNameAndAddNewSlot(initialContentsMir, this.category());
+  }, {category: ['user interface', 'slots']});
 
 });
 

@@ -27,7 +27,7 @@ thisModule.addSlots(mirror.Morph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype), {}, {copyDownParents: [{parent: category.MorphMixin}]});
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype), {});
 
   add.data('type', 'mirror.Morph');
 
@@ -44,14 +44,15 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
     this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}});
     this.shape.roundEdgesBy(10);
+    this.closeDnD();
 
     this._slotMorphs     = avocado.dictionary.copyRemoveAll();
     this._categoryMorphs = avocado.dictionary.copyRemoveAll();
 
     this.setFill(lively.paint.defaultFillWithColor(Color.neutral.gray.lighter()));
 
-    this._categoryPresenter = category.root().ofMirror(this._mirror);
-    this.initializeCategoryUI(); // aaa - can be a bit slow
+    this._rootCategoryMorph = this.categoryMorphFor(category.root().ofMirror(this._mirror));
+    this._expander = this._rootCategoryMorph.expander();
     
     this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible();
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
@@ -79,11 +80,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
                                                   {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}});
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
-    this.optionalSlotsPanel = Morph.createOptionalMorph(function() {return this.slotsPanel();}.bind(this),
-                                                  function() {return this.expander().isExpanded();}.bind(this),
-                                                  {horizontalLayoutMode: LayoutModes.SpaceFill, verticalLayoutMode: LayoutModes.ShrinkWrap});
-
-    this.setPotentialRows([this._headerRow, this._annotationToggler, this._commentToggler, this.optionalSlotsPanel, this._evaluatorsPanel]);
+    this.setPotentialRows([this._headerRow, this._annotationToggler, this._commentToggler, this._rootCategoryMorph, this._evaluatorsPanel]);
 
     this.refreshContent();
 
@@ -135,7 +132,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('updateAppearance', function () {
     if (! this.world()) { return; }
-    this.populateSlotsPanelInMeAndExistingSubcategoryMorphs();
+    this._rootCategoryMorph.populateContentsPanelInMeAndExistingSubnodeMorphs();
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['updating']});
 
@@ -159,20 +156,22 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('updateExpandedness', function () {
     if (! this.world()) {return;}
-    this.optionalSlotsPanel.refreshContent();
+    this._rootCategoryMorph.refreshContent();
     this.refreshContent();
   }, {category: ['updating']});
 
   add.method('expandCategory', function (c) {
-    if (! c.isRoot()) { this.expandCategory(c.supercategory()); }
-    var m = c.isRoot() ? this : this.categoryMorphFor(c);
-    m.expander().expand();
+    this.expandCategoryMorph(this.categoryMorphFor(c));
+  }, {category: ['categories']});
+
+  add.method('expandCategoryMorph', function (cm) {
+    cm.expandMeAndAncestors();
     this.updateAppearance();
   }, {category: ['categories']});
 
   add.method('slotMorphFor', function (s) {
     return this._slotMorphs.getOrIfAbsentPut(s.name(), function() { return s.newMorph(); });
-  }, {category: ['slots panel']});
+  }, {category: ['contents panel']});
 
   add.method('existingCategoryMorphFor', function (c) {
     return this._categoryMorphs.get(c.fullName());
@@ -180,7 +179,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('categoryMorphFor', function (c) {
     return this._categoryMorphs.getOrIfAbsentPut(c.fullName(), function() {
-      return new category.Morph(c.ofMirror(this.mirror()));
+      return new category.Morph(c.ofMirror(this.mirror()), c.isRoot());
     }.bind(this));
   }, {category: ['categories']});
 
@@ -246,7 +245,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create();
-    cmdList.addAllCommands(this.categoryCommands());
+    cmdList.addAllCommands(this._rootCategoryMorph.commands());
 
     cmdList.addLine();
     
@@ -314,7 +313,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('dragAndDropCommands', function () {
     var cmdList = avocado.command.list.create();
     
-    cmdList.addAllCommands(this.categoryDragAndDropCommands());
+    cmdList.addAllCommands(this._rootCategoryMorph.dragAndDropCommands());
     
     cmdList.addItem(avocado.command.create("make attribute point to me", function(evt, arrowEndpoint) {
       arrowEndpoint.wasJustDroppedOnMirror(this);
@@ -376,8 +375,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['removing']});
 
   add.method('partsOfUIState', function () {
-    return {
-      isExpanded:       this.expander(),
+    return Object.extend({
       isCommentOpen:    this._commentToggler,
       isAnnotationOpen: this._annotationToggler,
       categories: {
@@ -390,7 +388,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
         keyOf: function(sm) { return sm.slot().name(); },
         getPartWithKey: function(morph, name) { return morph.slotMorphFor(morph.mirror().slotAt(name)); }
       }
-    };
+    }, this._rootCategoryMorph.partsOfUIState());
   }, {category: ['UI state']});
 
 });

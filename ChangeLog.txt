@@ -1,3 +1,7 @@
+Wednesday, December 1, 2010
+
+  - Factored some of the category-morph code out into a more-general tree-node morph.
+
 Monday, November 29, 2010
 
   - Generalized some of the drag-and-drop code. Should make it easier to port to new UI systems, and to enable drag-and-drop commands for other kinds of objects.
