@@ -87,6 +87,8 @@ thisModule.addSlots(category, function(add) {
   }, {category: ['testing']});
 
   add.method('equals', function (c) {
+    if (!c) { return false; }
+    if (typeof(c.parts) !== 'function') { return false; }
     if (this.parts().length !== c.parts().length) { return false; }
     return this.isEqualToOrSubcategoryOf(c);
   }, {category: ['comparing']});
@@ -148,7 +150,7 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
   add.method('sortOrder', function () { return this._category.sortOrder(); }, {category: ['sorting']});
 
   add.method('equals', function (c) {
-    if (c === null || typeof(c) === 'undefined') { return false; }
+    if (!c) { return false; }
     if (typeof(c.mirror)   !== 'function') { return false; }
     if (typeof(c.category) !== 'function') { return false; }
     return this.mirror().equals(c.mirror()) && this.category().equals(c.category());

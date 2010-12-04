@@ -1,5 +1,6 @@
 transporter.module.create('core/hash_table', function(requires) {
 
+requires('core/identity_hash');
 requires('core/lk_TestFramework');
 
 }, function(thisModule) {
@@ -165,9 +166,11 @@ thisModule.addSlots(avocado.hashTable.identityComparator, function(add) {
   }, {category: ['hashing']});
 
   add.method('hashCodeForKey', function (k) {
-    // aaa - Blecch, why does JS not support identity hashes?
-    if (k.identityHashCode) { return k.identityHashCode(); }
-    return 42;
+    try {
+      return avocado.identityHashFor(k);
+    } catch (ex) {
+      return "broken identity hash";
+    }
   }, {category: ['hashing']});
 
 });

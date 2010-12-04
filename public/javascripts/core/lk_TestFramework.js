@@ -98,6 +98,12 @@ thisModule.addSlots(TestCase.prototype, function(add) {
     return cmdList;
   }, {category: ['user interface', 'commands']});
 
+  add.method('buttonCommands', function () {
+    return avocado.command.list.create([
+      avocado.command.create('Run', function(evt) { this.createAndRunAndShowResult(); }.bind(this))
+    ]);
+  }, {category: ['user interface', 'commands']});
+
 });
 
 

@@ -20,9 +20,15 @@ thisModule.addSlots(avocado.command, function(add) {
     return c;
   }, {category: ['creating']});
 
-  add.method('initialize', function (label, runFn) {
+  add.method('initialize', function (label, runFnOrSubcmds) {
     this.setLabel(label);
-    this.setFunction(runFn);
+    if (typeof(runFnOrSubcmds) === 'function') {
+      this.setFunction(runFnOrSubcmds);
+    } else if (reflect(runFnOrSubcmds).isReflecteeArray()) {
+      this.setSubcommands(runFnOrSubcmds);
+    } else {
+      throw new Error("Trying to make a command, but don't know what this is: " + runFnOrSubcmds);
+    }
   }, {category: ['creating']});
 
   add.data('isCommand', true, {category: ['testing']});
@@ -35,6 +41,10 @@ thisModule.addSlots(avocado.command, function(add) {
     return this._functionToRun;
   }, {category: ['accessing']});
 
+  add.method('subcommands', function () {
+    return this._subcommands;
+  }, {category: ['accessing']});
+
   add.method('applicabilityFunction', function () {
     return this._applicabilityFunction;
   }, {category: ['accessing']});
@@ -44,13 +54,18 @@ thisModule.addSlots(avocado.command, function(add) {
     return this;
   }, {category: ['accessing']});
 
-  add.method('setHelpText', function (t) {
-    this._helpText = t;
+  add.method('setHelpText', function (textOrFn) {
+    this._helpText = textOrFn;
     return this;
   }, {category: ['accessing']});
 
   add.method('setFunction', function (f) {
     this._functionToRun = f;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('setSubcommands', function (subcmds) {
+    this._subcommands = subcmds;
     return this;
   }, {category: ['accessing']});
   
@@ -94,6 +109,7 @@ thisModule.addSlots(avocado.command, function(add) {
   add.method('go', function () {
     var f = this.functionToRun();
     var rcvr = this; // aaa - shouldn't be this, we should have a way of actually specifying the receiver
+    if (!f.apply) { reflect(f).morph().grabMe(); }
     return f.apply(rcvr, $A(arguments));
   }, {category: ['accessing']});
 
@@ -182,24 +198,6 @@ thisModule.addSlots(avocado.command.list, function(add) {
       cs.each(this.addItem.bind(this));
     }
   }, {category: ['adding']});
-
-  add.method('addItemsToMenu', function (menu, target) {
-    var i = 0;
-    var n = this._commands.length;
-    this._commands.each(function(c) {
-      if (c) {
-        if (typeof(c.isApplicable) !== 'function' || c.isApplicable()) {
-          var label = typeof(c.label) === 'function' ? c.label(target) : c.label;
-          menu.addItem([label, function() { c.go.apply(c, arguments); }]);
-        }
-      } else {
-        if (i !== n - 1) { // no point if it's the last one
-          menu.addLine();
-        }
-      }
-      i += 1;
-    }.bind(this));
-  }, {category: ['converting']});
 
   add.method('itemWith', function (attrName, attrValue) {
     return this.itemSuchThat(function(c) { return c[attrName] === attrValue; });

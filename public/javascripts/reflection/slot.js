@@ -38,6 +38,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('holder', function () { return this._mirror; }, {category: ['accessing']});
 
+  add.method('inspect', function () { return this.name(); }, {category: ['printing']});
+  
   add.method('sortOrder', function () { return this.name().toUpperCase(); }, {category: ['sorting']});
 
   add.method('isFunctionBody', function () { return false; }, {category: ['testing']});
@@ -100,8 +102,70 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     if (!c.explicitlySpecifiedCreatorSlot() && c.canHaveCreatorSlot()) {
       c.addPossibleCreatorSlot(this);
     }
-  }, {category: ['user interface']});
+  }, {category: ['user interface', 'creator slots']});
 
+  add.method('interactivelyBeCreator', function (evt) {
+    // aaa - Maybe the justChanged stuff should be put into the regular beCreator method.
+    this.beCreator();
+    avocado.ui.justChanged(this.contents());
+    avocado.ui.justChanged(this);
+  }, {category: ['user interface', 'creator slots']});
+
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
+    
+    var copyDown = this.copyDownParentThatIAmFrom();
+    if (copyDown) {
+      var copyDownParentMir = reflect(copyDown.parent);
+      cmdList.addItem({label: "copied down from " + copyDownParentMir.name(), go: function(evt) {
+        avocado.ui.grab(copyDownParentMir, evt);
+      }.bind(this)});
+    } else {
+      var isModifiable = !window.isInCodeOrganizingMode;
+      
+      if (isModifiable && this.beCreator && this.contents().canHaveCreatorSlot()) {
+        var cs = this.contents().explicitlySpecifiedCreatorSlot();
+        if (!cs || ! cs.equals(this)) {
+          cmdList.addItem({label: "be creator", go: function(evt) { this.interactivelyBeCreator(evt); }.bind(this)});
+        }
+      }
+
+      if (isModifiable && this.setModule) {
+        cmdList.addItem({label: "set module...", go: function(evt) {
+          this.interactivelySetModule(evt);
+        }.bind(this)});
+      }
+
+      if (isModifiable && this.setModuleRecursively) {
+        cmdList.addItem({label: "set module recursively...", go: function(evt) {
+          this.interactivelySetModuleRecursively(evt);
+        }.bind(this)});
+      }
+    }
+
+    cmdList.addLine();
+    
+    if (this.wellKnownImplementors) {
+      cmdList.addItem({label: "implementors", go: function(evt) {
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.implementorsFinder.create(this.name()), evt)).redo();
+      }.bind(this)});
+    }
+
+    if (this.wellKnownSenders) {
+      cmdList.addItem({label: "senders", go: function(evt) {
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.senders.finder.create(this.name()), evt)).redo();
+      }.bind(this)});
+    }
+    
+    if (isModifiable && this.contents().prettyPrint) {
+      cmdList.addSection([{label: "pretty-print", go: function(evt) {
+        avocado.ui.grab(reflect(this.contents().prettyPrint()), evt);
+      }.bind(this)}]);
+    }
+    
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
+    
 });
 
 
@@ -189,6 +253,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('equals', function (s) {
     if (!s) { return false; }
+    if (typeof(s.name) !== 'function' || typeof(s.mirror) !== 'function') { return false; }
     return this.name() === s.name() && this.mirror().equals(s.mirror());
   }, {category: ['comparing']});
 
@@ -287,6 +352,8 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     if (m)         { m.markAsChanged(); }
 
     this.contents().hackToMakeSureArrayIndexablesGetFiledOut(this);
+    
+    avocado.ui.justChanged(this);
   }, {category: ['accessing annotation', 'module']});
 
   add.method('setModuleRecursively', function (m) {
@@ -299,6 +366,29 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
       }
     }
   }, {category: ['accessing annotation', 'module']});
+
+  add.method('moduleName', function () {
+    var module = this.module();
+    return module ? module.name() : "";
+  }, {category: ['user interface', 'accessing annotation', 'module']});
+
+  add.method('setModuleName', function (n) {
+    var module = transporter.module.existingOneNamed(n);
+    if (module) { return this.setModule(module); }
+    avocado.ui.confirm("The '" + n + "' module does not exist. Create it?", function(b) {
+      if (b) {
+        this.setModule(transporter.module.named(n));
+      }
+    }.bind(this));
+  }, {category: ['user interface', 'accessing annotation', 'module']});
+
+  add.method('interactivelySetModule', function (evt) {
+    transporter.chooseOrCreateAModule(evt, this.holder().modules(), this, "To which module?", function(m, evt) {this.setModule(m);}.bind(this));
+  }, {category: ['user interface', 'accessing annotation', 'module']});
+
+  add.method('interactivelySetModuleRecursively', function (evt) {
+    transporter.chooseOrCreateAModule(evt, this.holder().modules(), this, "To which module?", function(m, evt) {this.setModuleRecursively(m);}.bind(this));
+  }, {category: ['user interface', 'accessing annotation', 'module']});
 
   add.method('initializationExpression', function () {
     if (! this.hasAnnotation()) { return ""; }

@@ -12,12 +12,15 @@ thisModule.addSlots(transporter.module, function(add) {
     var m = Morph.createBox(this, Color.red.lighter());
     var module = this;
     m._module = module;
-    m._model = module;
-
-    var optionalFileOutButton = avocado.command.create('Save as .js file', this.fileOutAndReportErrors.bind(this)).onlyApplicableIf(function() { return module.canBeFiledOut(); }).newMorph();
 
     var changeIndicator = TextMorph.createLabel(function() { return module.hasChangedSinceLastFileOut() ? ' has changed ' : ''; });
     changeIndicator.setTextColor(Color.green.darker());
+
+    var columns = [m.createNameLabel()];
+    columns.push(changeIndicator);
+    this.buttonCommands().commands().each(function(c) { columns.push(c.newMorph()); });
+    columns.push(m.createDismissButton());
+    m.setColumns(columns);
 
     m.commands = function() {
       var cmdList = module.commands().wrapForMorph(m);
@@ -28,8 +31,6 @@ thisModule.addSlots(transporter.module, function(add) {
       }
       return cmdList;
     };
-
-    m.setColumns([m.createNameLabel(), changeIndicator, optionalFileOutButton, m.createDismissButton()]);
 
     module.whenChangedNotify(m.updateAppearance.bind(m));
     m.startPeriodicallyUpdating();

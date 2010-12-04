@@ -10,7 +10,11 @@ thisModule.addSlots(String.prototype, function(add) {
   add.method('prependAOrAn', function () {
     return this.startsWithVowel() ? "an " + this : "a " + this;
   });
-
+  
+  add.method('capitalize', function() {
+     return this.replace( /(^|\s)([a-z])/g , function(m, p1, p2) { return p1+p2.toUpperCase(); } );
+  });
+  
   add.method('withoutSuffix', function (suffix) {
     return this.endsWith(suffix) ? this.substr(0, this.length - suffix.length) : this;
   });
@@ -33,6 +37,14 @@ thisModule.addSlots(String.prototype.tests, function(add) {
     this.assertEqual('argle', 'arglebargle'.withoutSuffix('bargle'));
     this.assertEqual('argleb', 'arglebargle'.withoutSuffix('argle'));
     this.assertEqual('arglebargle', 'arglebargle'.withoutSuffix('cargle'));
+  });
+
+  add.method('testCapitalize', function () {
+    this.assertEqual('Argle', 'argle'.capitalize());
+    this.assertEqual('Argle', 'Argle'.capitalize());
+    this.assertEqual('ArgleBargle', 'argleBargle'.capitalize());
+    this.assertEqual('Argle Bargle', 'argle bargle'.capitalize());
+    this.assertEqual('  \t\n ', '  \t\n '.capitalize());
   });
 
 });

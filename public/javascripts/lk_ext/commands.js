@@ -7,12 +7,22 @@ requires('core/commands');
 
 thisModule.addSlots(avocado.command, function(add) {
 
-  add.method('newMorph', function () {
-    var m = ButtonMorph.createButton(this.label, this.functionToRun(), 2);
-    if (this.applicabilityFunction()) {
-      m = Morph.createOptionalMorph(m, this.applicabilityFunction());
+  add.method('newMorph', function (optionalLabelMorph) {
+    var m = ButtonMorph.createButton(optionalLabelMorph || this.label, this.functionToRun(), 2);
+    
+    var ht = this.helpText();
+    if (typeof(ht) === 'function') {
+      m.getHelpText = ht;
+    } else if (typeof(ht) === 'string') {
+      m.setHelpText(ht);
+    }
+    
+    var af = this.applicabilityFunction();
+    if (af) {
+      m = Morph.createOptionalMorph(m, af);
       m.refreshContent();
     }
+    
     return m;
   }, {category: ['user interface']});
 
@@ -56,6 +66,28 @@ thisModule.addSlots(avocado.command.list, function(add) {
   add.method('wrapForMorph', function (morph) {
     return avocado.command.list.create(this._commands.map(function(c) { return c ? c.wrapForMorph(morph) : null; }))
   }, {category: ['user interface']});
+
+  add.method('addItemsToMenu', function (menu, target) {
+    var i = 0;
+    var n = this._commands.length;
+    this._commands.each(function(c) {
+      if (c) {
+        if (typeof(c.isApplicable) !== 'function' || c.isApplicable()) {
+          var label = typeof(c.label) === 'function' ? c.label(target) : c.label;
+          if (c.subcommands()) {
+            menu.addItem([label, c.subcommands()]);
+          } else {
+            menu.addItem([label, function() { c.go.apply(c, arguments); }]);
+          }
+        }
+      } else {
+        if (i !== n - 1) { // no point if it's the last one
+          menu.addLine();
+        }
+      }
+      i += 1;
+    }.bind(this));
+  }, {category: ['converting']});
 
 });
 

@@ -1,5 +1,5 @@
 TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
-  initialize: function($super, getFunction, setFunction) {
+  initialize: function($super, accessors) {
     $super();
     this.dontNotifyUntilTheActualModelChanges = true;
     this.connectModel({model: this, getText: "getSavedText", setText: "setSavedText"});
@@ -11,8 +11,10 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     this.beUngrabbable();
     this.setSavedText(this.textString); // aaa - what is this for?
     this.justAcceptedOrCancelled();
-    if (getFunction) { this.getSavedText = getFunction; }
-    if (setFunction) { this.setSavedText = setFunction; }
+    if (accessors) {
+      if (accessors.getter) { this.getSavedText = accessors.getter; }
+      if (accessors.setter) { this.setSavedText = accessors.setter; }
+    }
     this.refreshText();
   },
 
@@ -64,6 +66,20 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     return $super(evt);
   },
 
+  beWritableAndSelectAll: function(evt) {
+    this.beWritable();
+    this.requestKeyboardFocus(evt ? evt.hand : WorldMorph.current().firstHand());
+    this.doSelectAll();
+  },
+  
+  wasJustShown: function(evt) {
+    this.beWritableAndSelectAll(evt);
+  },
+  
+  beWritable: function() {
+    // nothing to do here, but children can override
+  },
+
   hasChangedFromSavedText: function() {
     return this._hasChangedFromSavedText;
   },
@@ -76,7 +92,9 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     if (this._isChangingRightNow) {return;}
     this._isChangingRightNow = true;
 
-    var hasChanged = this._hasChangedFromSavedText = this.getText() !== this.getSavedText();
+    var currentText = this.getText();
+    var savedText = this.getSavedText();
+    var hasChanged = this._hasChangedFromSavedText = (currentText !== savedText);
     if (! hasChanged) {
       this.setBorderColor(Color.black);
       this.setBorderWidth(this.normalBorderWidth);
@@ -137,24 +155,17 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
 
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
-    this.addMenuItemsTo(menu, evt);
+    this.editingCommands().addItemsToMenu(menu, this);
     return menu;
   },
 
-  addMenuItemsTo: function(menu, evt) {
-    this.addEditingMenuItemsTo(menu, evt);
-    this.addOtherMenuItemsTo(menu, evt);
-  },
-
-  addEditingMenuItemsTo: function(menu, evt) {
+  editingCommands: function() {
+    var cmdList = avocado.command.list.create();
     if (this.hasChangedFromSavedText()) {
-      menu.addSection([["accept    [alt+enter]", this.acceptChanges.bind(this)],
-                       ["cancel    [escape]"   , this.cancelChanges.bind(this)]]);
+      cmdList.addItem(["accept    [alt+enter]", this.acceptChanges.bind(this)]);
+      cmdList.addItem(["cancel    [escape]"   , this.cancelChanges.bind(this)]);
     }
-  },
-
-  addOtherMenuItemsTo: function(menu, evt) {
-    // override in children
+    return cmdList;
   }
 });
 
@@ -200,12 +211,6 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
     this.updateLayoutIfNecessary();
   },
 
-  beWritableAndSelectAll: function(evt) {
-    this.beWritable();
-    this.requestKeyboardFocus(evt ? evt.hand : WorldMorph.current().firstHand());
-    this.doSelectAll();
-  },
-
   onMouseDown: function($super, evt) {
     if (! this.isInWritableMode) {
       return this.checkForDoubleClick(evt);
@@ -226,10 +231,11 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
   
   nameOfEditCommand: 'edit',
 
-  addEditingMenuItemsTo: function($super, menu, evt) {
+  editingCommands: function($super) {
+    var cmdList = $super();
     if (!this.isInWritableMode && this.canBecomeWritable()) {
-      menu.addSection([[this.nameOfEditCommand, function() {this.beWritableAndSelectAll(evt);}.bind(this)]]);
+      cmdList.addItem([this.nameOfEditCommand, function(evt) {this.beWritableAndSelectAll(evt);}.bind(this)]);
     }
-    $super(menu, evt);
+    return cmdList;
   }
 });

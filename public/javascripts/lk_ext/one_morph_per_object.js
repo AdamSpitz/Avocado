@@ -13,11 +13,22 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     return this.morphsByObject().get(obj);
   }, {category: ['one morph per object']});
 
+  add.method('forgetAboutExistingMorphFor', function (obj, expectedOne) {
+    var existingOne = this.morphsByObject().get(obj);
+    if (existingOne === expectedOne) { this.morphsByObject().removeKey(obj); }
+  }, {category: ['one morph per object']});
+
+  add.method('removeObsoleteSlotMorph', function (sm) {
+    var n = sm.slot().name();
+    var existingOne = this._slotMorphs.get(n);
+    if (existingOne === sm) { this._slotMorphs.removeKey(n); }
+  }, {category: ['contents panel']});
+
   add.method('morphFor', function (obj) {
     return this.morphsByObject().getOrIfAbsentPut(obj, function() {
       return this.newMorphFor(obj);
     }.bind(this));
-  });
+  }, {category: ['one morph per object']});
 
   add.method('newMorphFor', function (obj) {
     if (typeof(obj.newMorph) === 'function') {
@@ -25,7 +36,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     } else {
       return new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
     }
-  });
+  }, {category: ['one morph per object']});
 
 });
 

@@ -433,6 +433,12 @@ thisModule.addSlots(transporter.module, function(add) {
     cmdList.addItem({label: 'all objects', go: this.showAllObjects.bind(this)});
     return cmdList;
   }, {category: ['user interface', 'commands']});
+  
+  add.method('buttonCommands', function () {
+    return avocado.command.list.create([
+      avocado.command.create('Save as .js file', this.fileOutAndReportErrors.bind(this)).onlyApplicableIf(this.canBeFiledOut.bind(this))
+    ]);
+  }, {category: ['user interface', 'commands']});
 
   add.method('eachModule', function (f) {
     reflect(modules).eachNormalSlot(function(s) { f(s.contents().reflectee()); });

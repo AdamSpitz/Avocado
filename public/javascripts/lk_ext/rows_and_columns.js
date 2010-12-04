@@ -132,6 +132,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   add.method('calculateMinimumExtentFor', function (morphs, direction) {
     var r = { biggestSideways: 0, canFillSpace: false };
     
+    if (this._debugMyLayout) { console.log("calculateMinimumExtentFor " + morphs.length + " morphs in direction " + direction); }
     morphs.each(function(m) {
       r.biggestSideways = Math.max(r.biggestSideways, direction.sideways.coord(m.minimumExtent()));
       
@@ -149,6 +150,8 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     this.eachDirection(function(dir) {
       var infoForThisDirection = dir.coord(layoutInfoForRowsAndColumns);
       
+      if (this._debugMyLayout) { console.log("In calculateOverallMinimumExtent, infoForThisDirection [" + dir + "] has " + infoForThisDirection.length + " elements"); }
+      
       var totalLineSizes = infoForThisDirection.inject(0, function(sum, r) {
         return sum + r.biggestSideways;
       });
@@ -162,6 +165,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     
     // keep it around, we'll need it when rejiggering the layout
     overallMinExt.layoutInfoForRowsAndColumns = layoutInfoForRowsAndColumns;
+    if (this._debugMyLayout) { console.log("overallMinExt: " + overallMinExt); }
     
     return overallMinExt;
   }, {category: ['layout']});
@@ -245,7 +249,6 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['layout']});
   
   add.method('setMorphPositionsAndSizes', function(actualCoordsAndSizes) {
-    if (this._debugMyLayout) { console.log("Starting off, availableSpace: " + availableSpace); }
     var direction = this._tableContent._direction2;
     this._tableContent.eachPrimaryLine(function(line, i) {
       line.each(function(m, j) {
@@ -294,6 +297,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   add.method('replaceContentWith', function (newContent) {
     if (this._tableContent && this._tableContent.equals(newContent)) { return; }
 
+    if (this._debugMyLayout) { console.log("About to replaceContentWith " + newContent.primaryLines().size() + " lines in direction " + newContent._direction2); }
     this._tableContent = newContent;
     
     var old = $A(this.submorphs);
@@ -556,7 +560,6 @@ thisModule.addSlots(avocado.ColumnMorph.prototype, function(add) {
   add.method('addRow', function (m) {
     if (this._tableContent && this._tableContent.primaryLines().length > 0) {
       this.setRows(this._tableContent.primaryLine(0).concat([m]));
-      this.refreshContent();
     } else {
       this.setRows([m]);
     }
@@ -595,7 +598,9 @@ thisModule.addSlots(avocado.RowMorph.prototype, function(add) {
     this.setColumns(this._tableContent.primaryLine(0).reject(function(mm) { return m === mm; }));
   });
 
-  add.method('setColumns', function (ms) {this.replaceContentWith(avocado.tableContents.createWithRows([ms]));});
+  add.method('setColumns', function (ms) {
+    this.replaceContentWith(avocado.tableContents.createWithRows([ms]));
+  });
 
   add.method('setPotentialColumns', function (ms) {
     this.setPotentialContent(avocado.tableContents.createWithRows([ms]));

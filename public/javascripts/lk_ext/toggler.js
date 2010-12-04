@@ -10,6 +10,10 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.toggler, function(add) {
 
+  add.method('create', function (updateFunction, morphToShowOrHide) {
+    return Object.newChildOf(this, updateFunction, morphToShowOrHide);
+  });
+  
   add.method('initialize', function (updateFunction, morphToShowOrHide) {
     this._updateFunction = updateFunction;
     this._morphToShowOrHide = morphToShowOrHide;
@@ -46,6 +50,12 @@ thisModule.addSlots(avocado.toggler, function(add) {
   add.method('assumeUIState', function (uiState, evt) {
     this.setValue(uiState, evt || Event.createFake());
   }, {category: ['UI state']});
+  
+  add.method('commandForToggling', function (name, label) {
+    var c = avocado.command.create(label || (this.isOn() ? "hide " : "show ") + name, function(evt) { this.toggle(evt); }.bind(this));
+    c.setHelpText(function() { return (this.isOn() ? 'Hide ' : 'Show ') + name; }.bind(this));
+    return c;
+  }, {category: ['commands']});
 
 });
 

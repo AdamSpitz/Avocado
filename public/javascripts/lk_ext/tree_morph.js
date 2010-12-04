@@ -50,39 +50,34 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     sp = this._contentsPanel = new avocado.ColumnMorph().beInvisible();
     sp.setPadding({top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}});
     sp.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.populateContentsPanel();
+    sp.potentialContent = this.potentialContentsOfContentsPanel.bind(this);
+    sp.refreshContent();
     return sp;
   }, {category: ['contents panel']});
 
-  add.method('populateContentsPanel', function () {
-    if (! this._contentsPanel) { return this.contentsPanel(); } // that'll end up calling back here
+  add.method('potentialContentsOfContentsPanel', function () {
     var allSubmorphs = [];
     if (this.treeNode().requiresContentsSummary()) { allSubmorphs.push(this._contentsSummaryMorph); }
     this.nonNodeContentMorphsInOrder().each(function(sm ) {allSubmorphs.push(sm );});
-    this.subnodeMorphsInOrder().each(function(scm) {allSubmorphs.push(scm);});
+    this.       subnodeMorphsInOrder().each(function(scm) {allSubmorphs.push(scm);});
     allSubmorphs.each(function(m) { m.horizontalLayoutMode = LayoutModes.SpaceFill; });
-    this._contentsPanel.setRows(allSubmorphs);
+    return avocado.tableContents.createWithColumns([allSubmorphs]);
+  }, {category: ['contents panel']});
+  
+  add.method('expandMeAndAncestors', function () {
+    if (! this.treeNode().isRoot()) { this.supernodeMorph().expandMeAndAncestors(); }
+    this.expander().expand();
   }, {category: ['contents panel']});
 
-  add.method('populateContentsPanelInMeAndExistingSubnodeMorphs', function () {
-    if (! this.expander().isExpanded()) { return; }
-    this.populateContentsPanel();
-    this.contentsPanel().submorphs.each(function(m) {
-      if (typeof(m.populateContentsPanelInMeAndExistingSubnodeMorphs) === 'function') {
-        m.populateContentsPanelInMeAndExistingSubnodeMorphs();
-      }
-    });
-  }, {category: ['updating']});
-
   add.method('updateExpandedness', function () {
-    this.setRows(this.rowsToShow());
+    this.updateAppearance();
   }, {category: ['updating']});
 
-  add.method('rowsToShow', function () {
+  add.method('potentialContent', function () {
     var rows = [];
     if (! this._shouldOmitHeaderRow)   { rows.push(this.headerRow()); }
     if (this.expander().isExpanded()) { rows.push(this.contentsPanel()); }
-    return rows;
+    return avocado.tableContents.createWithColumns([rows]);
   }, {category: ['updating']});
 
   add.method('supernodeMorph', function () {

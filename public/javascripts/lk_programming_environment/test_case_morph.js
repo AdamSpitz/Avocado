@@ -9,11 +9,12 @@ thisModule.addSlots(TestCase.prototype, function(add) {
 
   add.method('newMorph', function () {
     var m = Morph.createBox(this, Color.purple.darker());
-    m._testCaseProto = this;
 
-    var runButton = avocado.command.create('Run', function(evt) { m._testCaseProto.createAndRunAndShowResult(); }).newMorph();
+    var columns = [m.createNameLabel()];
+    this.buttonCommands().commands().each(function(c) { columns.push(c.newMorph()); });
+    columns.push(m.createDismissButton());
+    m.setColumns(columns);
     
-    m.setColumns([m.createNameLabel(), runButton, m.createDismissButton()]);
     return m;
   }, {category: ['user interface']});
 

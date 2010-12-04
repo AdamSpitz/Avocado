@@ -111,6 +111,14 @@ thisModule.addSlots(avocado.ui, function(add) {
     menu.openIn(world, evt.point(), false, caption);
   });
 
+  add.method('justChanged', function (obj, evt) {
+    var ui = this;
+    setTimeout(function() {
+      var m = ui.worldFor(evt).existingMorphFor(obj);
+      if (m) { m.updateAppearance(); }
+    }, 0);
+  });
+
 });
 
 

@@ -1,6 +1,7 @@
 transporter.module.create('reflection/mirror', function(requires) {
 
 requires('core/enumerator');
+requires('core/identity_hash');
 requires('core/lk_TestFramework');
 
 }, function(thisModule) {
@@ -39,20 +40,16 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('equals', function (m) {
     if (!m) { return false; }
+    if (typeof(m.reflectee) !== 'function') { return false; }
     return this.reflectee() === m.reflectee();
   }, {category: ['comparing']});
 
   add.method('hashCode', function () {
-    // Damned JavaScript. Can I get a proper object ID hash somehow?;
-    var o = this.reflectee();
-    if (o === undefined) { return "a mirror on undefined"; }
-    if (o === null     ) { return "a mirror on null";      }
     try {
-      if (typeof(o.identityHashCode) === 'function') { return o.identityHashCode(); }
+      return avocado.identityHashFor(this.reflectee());
     } catch (ex) {
-      // don't want mirrors to crash if the object is broken
+      return "broken identity hash";
     }
-    return "a mirror";
   }, {category: ['comparing']});
 
   add.method('reflecteeToString', function () {
@@ -641,6 +638,10 @@ thisModule.addSlots(mirror, function(add) {
     return modules.sort();
   }, {category: ['annotations', 'module']});
 
+  add.method('getParent', function (evt) {
+    avocado.ui.grab(this.parent(), evt);
+  }, {category: ['menu']});
+
   add.method('chooseSourceModule', function (caption, callback, evt) {
     var which = avocado.command.list.create();
     which.addItem(["All", function(evt) {callback({}, evt);}]);
@@ -668,8 +669,9 @@ thisModule.addSlots(mirror, function(add) {
         var chainName = this.convertCreatorSlotChainToString(chain);
         akaMenu.addItem([chainName, function(evt) {
           s.beCreator();
+          avocado.ui.justChanged(this, evt);
           if (callback) { callback(); }
-        }]);
+        }.bind(this)]);
       }
     }.bind(this));
     avocado.ui.showMenu(akaMenu, this, "Other possible names:", evt);
@@ -1277,6 +1279,24 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertIdentity(null,         mirror.forObjectNamed(['blahblahnothing'])            );
     this.assertIdentity(mirror,       mirror.forObjectNamed(['mirror'         ]).reflectee());
     this.assertIdentity(mirror.tests, mirror.forObjectNamed(['mirror', 'tests']).reflectee());
+  });
+  
+  add.method('testHashing', function() {
+    var d = avocado.dictionary.copyRemoveAll();
+    var o1 = {};
+    var o2 = {};
+    d.put(reflect(3), 'three');
+    d.put(reflect(false), 'false');
+    d.put(reflect(null), 'null');
+    d.put(reflect(undefined), 'undefined');
+    d.put(reflect(o1), 'an object');
+    d.put(reflect(o2), 'another object');
+    this.assertIdentity('three', d.get(reflect(3)));
+    this.assertIdentity('false', d.get(reflect(false)));
+    this.assertIdentity('null', d.get(reflect(null)));
+    this.assertIdentity('undefined', d.get(reflect(undefined)));
+    this.assertIdentity('an object', d.get(reflect(o1)));
+    this.assertIdentity('another object', d.get(reflect(o2)));
   });
 
 });

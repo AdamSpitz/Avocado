@@ -1,5 +1,6 @@
 transporter.module.create('core/core', function(requires) {
 
+requires('core/accessors');
 requires('core/commands');
 requires('core/exit');
 requires('core/enumerator');

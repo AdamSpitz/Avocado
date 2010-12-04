@@ -15,8 +15,12 @@ thisModule.addSlots(category, function(add) {
 
 thisModule.addSlots(category.ofAParticularMirror, function(add) {
   
+  add.method('newMorph', function () {
+    return new category.Morph(this, this.isRoot());
+  }, {category: ['user interface']});
+
   add.method('morph', function () {
-    return this.mirror().morph().categoryMorphFor(this);
+    return WorldMorph.current().morphFor(this);
   }, {category: ['user interface']});
   
 });
@@ -50,7 +54,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     this._highlighter = avocado.booleanHolder.containing(true).addObserver(function() {this.updateHighlighting();}.bind(this));
     this._highlighter.setChecked(false);
 
-    this.updateExpandedness();
+    this.refreshContentOfMeAndSubmorphs();
   }, {category: ['creating']});
 
   add.method('categoryOfMirror', function () { return this._model; }, {category: ['accessing']});
@@ -64,8 +68,8 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   add.data('grabsShouldFallThrough', true, {category: ['grabbing']});
 
   add.method('createTitleLabel', function () {
-    var lbl = new TwoModeTextMorph(function( ) { return this.category().lastPart(); }.bind(this),
-                                   function(n) { this.rename(n, Event.createFake()); }.bind(this));
+    var lbl = new TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
+                                                            function(n) { this.rename(n); }.bind(this)));
     lbl.setEmphasis({style: 'italic'});
     lbl.nameOfEditCommand = "rename";
     lbl.backgroundColorWhenWritable = null;
@@ -99,8 +103,21 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   
   add.method('subnodeMorphsInOrder', function () {
     var subnodeMorphs = this.immediateSubnodeMorphs();
+    // aaa - Blecch, I hate this whole thing where the categories don't really exist until they've got a slot in them.
+    // Maybe make categories a bit more real, part of the object annotation or something, instead of just having them
+    // live inside the slot annotations?
     subnodeMorphs = subnodeMorphs.concat(this._contentsPanel.submorphs.select(function(m) {
-      return m.isNewCategory && ! this.mirrorMorph().existingCategoryMorphFor(m.category());
+      if (m.isNewCategory) {
+        var realCatMorph = this.mirrorMorph().existingCategoryMorphFor(m.category());
+        if (realCatMorph) {
+          m.transferUIStateTo(realCatMorph);
+          return false;
+        } else {
+          return true;
+        }
+      } else {
+        return false;
+      }
     }.bind(this)));
     return subnodeMorphs.sortBy(function(scm) { return scm.treeNode().sortOrder(); });
   }, {category: ['contents panel']});
@@ -111,11 +128,6 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   
   add.method('nonNodeMorphFor', function (slot) {
     return this.mirrorMorph().slotMorphFor(slot);
-  }, {category: ['contents panel']});
-  
-  add.method('expandMeAndAncestors', function () {
-    if (! this.categoryOfMirror().isRoot()) { this.supernodeMorph().expandMeAndAncestors(); }
-    this.expander().expand();
   }, {category: ['contents panel']});
   
   add.method('commands', function () {
@@ -134,7 +146,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
         cmdList.addLine();
 
         if (this.titleLabel) {
-          this.titleLabel.addEditingMenuItemsTo(cmdList, Event.createFake());
+          cmdList.addAllCommands(this.titleLabel.editingCommands());
         }
         
         cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }.bind(this)});
@@ -143,8 +155,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
           cmdList.addItem({label: "move", go: function(evt) {
             this.grabCopy(evt);
             this.category().removeSlots(this.mirror());
-            var mirMorph = this.mirrorMorph();
-            if (mirMorph) { mirMorph.updateAppearance(); }
+            avocado.ui.justChanged(this.mirror());
           }.bind(this)});
         }
       }
@@ -163,21 +174,14 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     
     return cmdList;
   }, {category: ['drag and drop']});
-  
-  add.method('updateAppearance', function () {
-    if (! this.world() || ! this.expander().isExpanded()) {return;}
-    this.populateContentsPanel();
-    this.contentsPanel().submorphs.each(function(m) { m.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?;
-  }, {category: ['updating']});
 
   add.method('updateHighlighting', function () {
     this.setHighlighting(this._highlighter.isChecked());
   }, {category: ['highlighting']});
   
-  add.method('wasJustAdded', function (evt) {
+  add.method('wasJustShown', function (evt) {
     this.isNewCategory = true;
-    this.horizontalLayoutMode = LayoutModes.SpaceFill;
-    if (this.titleLabel) { this.titleLabel.beWritableAndSelectAll(); }
+    if (this.titleLabel) { this.titleLabel.wasJustShown(evt); }
   }, {category: ['events']});
 
   add.method('rename', function (newName, evt) {
@@ -187,23 +191,25 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   }, {category: ['renaming']});
 
   add.method('addSlot', function (initialContents, evt) {
+    this.mirrorMorph().expandCategoryMorph(this);
     var s = this.categoryOfMirror().automaticallyChooseDefaultNameAndAddNewSlot(reflect(initialContents));
     var sm = this.mirrorMorph().slotMorphFor(s);
-    this.mirrorMorph().expandCategoryMorph(this);
-    sm.wasJustAdded(evt);
+    sm.wasJustShown(evt);
+    this.updateAppearance(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet)
   }, {category: ['adding']});
 
   add.method('addCategory', function (evt) {
     this.mirrorMorph().expandCategoryMorph(this);
-    var cm = new category.Morph(this.categoryOfMirror().subcategory(""));
+    var cm = this.categoryOfMirror().subcategory("").newMorph();
     this.contentsPanel().addRow(cm);
-    cm.wasJustAdded(evt);
+    cm.wasJustShown(evt);
+    // aaa blecch, I feel like this line should be here, but bad things happen: avocado.ui.justChanged(this.categoryOfMirror());
   }, {category: ['adding']});
     
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
     var newCategoryOfMir = this.categoryOfMirror().copyInto(category.root().ofMirror(newMirror));
-    var newCategoryMorph = new category.Morph(newCategoryOfMir);
+    var newCategoryMorph = newCategoryOfMir.morph();
     newCategoryMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
     newCategoryMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
     newCategoryMorph.forceLayoutRejiggering();
