@@ -15,6 +15,7 @@ requires('core/little_profiler');
 requires('core/math');
 requires('core/sound');
 requires('core/linked_list');
+requires('core/types');
 
 }, function(thisModule) {
 

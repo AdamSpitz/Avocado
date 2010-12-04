@@ -20,7 +20,7 @@ thisModule.addSlots(avocado.command, function(add) {
     return c;
   }, {category: ['creating']});
 
-  add.method('initialize', function (label, runFnOrSubcmds) {
+  add.method('initialize', function (label, runFnOrSubcmds, optionalContext) {
     this.setLabel(label);
     if (typeof(runFnOrSubcmds) === 'function') {
       this.setFunction(runFnOrSubcmds);
@@ -29,6 +29,7 @@ thisModule.addSlots(avocado.command, function(add) {
     } else {
       throw new Error("Trying to make a command, but don't know what this is: " + runFnOrSubcmds);
     }
+    if (typeof(optionalContext) !== undefined) { this.setContext(optionalContext); }
   }, {category: ['creating']});
 
   add.data('isCommand', true, {category: ['testing']});
@@ -51,6 +52,20 @@ thisModule.addSlots(avocado.command, function(add) {
 
   add.method('setLabel', function (label) {
     this.label = label;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('contextOrDefault', function () {
+    if (! this.hasContext()) { return {}; }
+    return this._context;
+  }, {category: ['accessing']});
+
+  add.method('hasContext', function () {
+    return typeof(this._context) !== 'undefined';
+  }, {category: ['accessing']});
+
+  add.method('setContext', function (context) {
+    this._context = context;
     return this;
   }, {category: ['accessing']});
 
@@ -87,12 +102,12 @@ thisModule.addSlots(avocado.command, function(add) {
 
   add.method('argumentSpecs', function () {
     return this._argumentSpecs;
-  }, {category: ['accessing']});
+  }, {category: ['arguments']});
 
   add.method('setArgumentSpecs', function (specs) {
     this._argumentSpecs = specs;
     return this;
-  }, {category: ['accessing']});
+  }, {category: ['arguments']});
 
   add.method('canAcceptArguments', function (args) {
     if (!this._argumentSpecs) { return args.length === 0; }
@@ -104,14 +119,43 @@ thisModule.addSlots(avocado.command, function(add) {
       if (! spec.canAccept(arg)) { return false; }
     }
     return true;
-  }, {category: ['accessing']});
+  }, {category: ['arguments']});
 
   add.method('go', function () {
     var f = this.functionToRun();
-    var rcvr = this; // aaa - shouldn't be this, we should have a way of actually specifying the receiver
-    if (!f.apply) { reflect(f).morph().grabMe(); }
+    var rcvr = this.contextOrDefault();
     return f.apply(rcvr, $A(arguments));
-  }, {category: ['accessing']});
+  }, {category: ['running']});
+
+  add.method('wrapWithPromptersForArguments', function () {
+    var argSpecs = this._argumentSpecs;
+    if (! argSpecs || argSpecs.size() === 0) { return this; }
+    
+    var c = Object.create(this);
+    
+    if (typeof(this.label) === 'string') { this.setLabel(this.label + "..."); }
+    
+    c.setArgumentSpecs([]);
+    
+    var oldFunctionToRun = c.functionToRun();
+    c.setFunction(function(evt) {
+      var rcvr = c.contextOrDefault();
+      var args = [evt];
+      var promptForArg = function(i) {
+        if (i < argSpecs.length) {
+          argSpecs[i].prompt(rcvr, evt, function(arg) {
+            args.push(arg);
+            promptForArg(i + 1);
+          });
+        } else {
+          return oldFunctionToRun.apply(rcvr, args);
+        }
+      };
+      promptForArg(0);
+    });
+
+    return c;
+  }, {category: ['prompting for arguments']});
 
 });
 
@@ -133,22 +177,52 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
     return this;
   }, {category: ['accessing']});
   
+  add.method('onlyAcceptsType', function (t) {
+    this._type = t;
+    this.onlyAccepts(function(o) { return t.doesTypeMatch(obj); });
+    return this;
+  }, {category: ['accessing']});
+  
+  add.method('setPrompter', function (p) {
+    this._prompter = p;
+    return this;
+  }, {category: ['accessing']});
+  
   add.method('canAccept', function (arg) {
     if (! this._acceptanceFunction) { return true; }
     return this._acceptanceFunction(arg);
   }, {category: ['testing']});
+  
+  add.method('prompter', function () {
+    var p = this._prompter;
+    if (p) { return p; }
+    var t = this._type;
+    if (t) {
+      if (typeof(t.prompter) === 'function') { return t.prompter(); }
+      if (typeof(t.prompter) === 'object'  ) { return t.prompter;   }
+    }
+    return null;
+  }, {category: ['accessing']});
+  
+  add.method('prompt', function (context, evt, callback) {
+    var p = this.prompter();
+    if (!p) { throw new Error('Cannot prompt for the "' + this._name + '" argument without a prompter'); }
+    return p.prompt(this._name, context, evt, callback);
+  }, {category: ['accessing']});
 
 });
 
 
 thisModule.addSlots(avocado.command.list, function(add) {
 
-  add.method('create', function (cs) {
-    return Object.newChildOf(this, cs);
+  add.method('create', function (optionalDefaultContext, optionalCommands) {
+    return Object.newChildOf(this, optionalDefaultContext, optionalCommands);
   }, {category: ['creating']});
 
-  add.method('initialize', function (cs) {
-    this._commands = cs || [];
+  add.method('initialize', function (optionalDefaultContext, optionalCommands) {
+    this._defaultContext = optionalDefaultContext;
+    this._commands = [];
+    if (optionalCommands) { this.addItems(optionalCommands); }
   }, {category: ['creating']});
 
   add.method('size', function () {
@@ -162,6 +236,10 @@ thisModule.addSlots(avocado.command.list, function(add) {
   add.method('eachCommand', function (f) {
     this._commands.each(function(c) { if (c) { f(c); } });
   }, {category: ['iterating']});
+  
+  add.method('hasDefaultContext', function () {
+    return typeof(this._defaultContext) !== 'undefined';
+  })
 
   add.method('addItem', function (c) {
     // for compatibility with MenuMorph
@@ -176,7 +254,15 @@ thisModule.addSlots(avocado.command.list, function(add) {
       c = newC;
     }
 
+    this.ifNecessaryPassOnDefaultContextTo(c);
+    
     this._commands.push(c);
+  }, {category: ['adding']});
+
+  add.method('ifNecessaryPassOnDefaultContextTo', function (c) {
+    if (c && !c.hasContext() && this.hasDefaultContext()) {
+      c.setContext(this._defaultContext);
+    }
   }, {category: ['adding']});
 
   add.method('addItems', function (items) {
@@ -259,6 +345,10 @@ thisModule.addSlots(avocado.command.list, function(add) {
     }.bind(this));
   }, {category: ['adding']});
 
+  add.method('wrapWithPromptersForArguments', function () {
+    return avocado.command.list.create(this._defaultContext, this._commands.map(function(c) { return c ? c.wrapWithPromptersForArguments() : null; }));
+  }, {category: ['prompting for arguments']});
+    
 });
 
 

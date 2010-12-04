@@ -8,7 +8,7 @@ requires('core/commands');
 thisModule.addSlots(avocado.command, function(add) {
 
   add.method('newMorph', function (optionalLabelMorph) {
-    var m = ButtonMorph.createButton(optionalLabelMorph || this.label, this.functionToRun(), 2);
+    var m = ButtonMorph.createButton(optionalLabelMorph || this.label, this.go.bind(this), 2);
     
     var ht = this.helpText();
     if (typeof(ht) === 'function') {
@@ -35,10 +35,10 @@ thisModule.addSlots(avocado.command, function(add) {
     
     var oldFunctionToRun = c.functionToRun();
     c.setFunction(function() {
-      var rcvr = this; // aaa - shouldn't be this, we should have a way of actually specifying the receiver
+      var rcvr = c.contextOrDefault();
       var args = $A(arguments);
       // first arg is the event
-      var result = oldFunctionToRun.apply(rcvr, args.map(function(o, i) { return i === 0 ? o : (o instanceof Morph ? o._model : o); }));
+      var result = oldFunctionToRun.apply(rcvr, args.map(function(o, i) { return i === 0 ? o : o._model; }));
       args.each(function(arg) { if (arg._shouldDisappearAfterCommandIsFinished) { arg.remove(); }});
       return result;
     });
@@ -53,9 +53,22 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
   
   add.method('wrapForMorph', function (morph) {
     var argSpecForModelCommand = this;
-    return avocado.command.argumentSpec.create(this._name).onlyAccepts(function(arg) {
-      return (arg instanceof Morph) && (! arg._shouldOnlyBeDroppedOnThisParticularMorph || arg._shouldOnlyBeDroppedOnThisParticularMorph === morph) && argSpecForModelCommand.canAccept(arg._model);
+    var argSpecForMorphCommand = avocado.command.argumentSpec.create(this._name);
+    
+    argSpecForMorphCommand.onlyAccepts(function(arg) {
+      return (typeof(arg) === 'object') &&
+             (! arg._shouldOnlyBeDroppedOnThisParticularMorph ||
+                arg._shouldOnlyBeDroppedOnThisParticularMorph === morph) &&
+             argSpecForModelCommand.canAccept(arg._model);
     });
+    
+    argSpecForMorphCommand.setPrompter({
+      prompt: function(caption, context, evt, callback) {
+        argSpecForModelCommand.prompter().prompt(caption, context, evt, function(arg) { callback({ _model: arg }); });
+      }
+    });
+    
+    return argSpecForMorphCommand;
   }, {category: ['user interface']});
 
 });
@@ -64,7 +77,7 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
 thisModule.addSlots(avocado.command.list, function(add) {
 
   add.method('wrapForMorph', function (morph) {
-    return avocado.command.list.create(this._commands.map(function(c) { return c ? c.wrapForMorph(morph) : null; }))
+    return avocado.command.list.create(this._defaultContext, this._commands.map(function(c) { return c ? c.wrapForMorph(morph) : null; }));
   }, {category: ['user interface']});
 
   add.method('addItemsToMenu', function (menu, target) {
@@ -72,6 +85,8 @@ thisModule.addSlots(avocado.command.list, function(add) {
     var n = this._commands.length;
     this._commands.each(function(c) {
       if (c) {
+        c = c.wrapWithPromptersForArguments();
+        
         if (typeof(c.isApplicable) !== 'function' || c.isApplicable()) {
           var label = typeof(c.label) === 'function' ? c.label(target) : c.label;
           if (c.subcommands()) {

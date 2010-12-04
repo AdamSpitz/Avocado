@@ -131,16 +131,16 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   }, {category: ['contents panel']});
   
   add.method('commands', function () {
-    var cmdList = avocado.command.list.create();
+    var cmdList = avocado.command.list.create(this);
     var isModifiable = this.mirrorMorph().shouldAllowModification();
     
     if (this.mirror().canHaveSlots()) {
       if (this.mirrorMorph().shouldAllowModification()) {
-        cmdList.addSection([{ label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); }.bind(this) },
-                            { label: "add function",  go: function(evt) { this.addSlot    (function() {}, evt); }.bind(this) }]);
+        cmdList.addSection([{ label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); } },
+                            { label: "add function",  go: function(evt) { this.addSlot    (function() {}, evt); } }]);
       }
       
-      cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(               evt); }.bind(this) }]);
+      cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(               evt); } }]);
 
       if (!this.category().isRoot()) {
         cmdList.addLine();
@@ -149,14 +149,14 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
           cmdList.addAllCommands(this.titleLabel.editingCommands());
         }
         
-        cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }.bind(this)});
+        cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }});
 
         if (isModifiable) {
           cmdList.addItem({label: "move", go: function(evt) {
             this.grabCopy(evt);
             this.category().removeSlots(this.mirror());
             avocado.ui.justChanged(this.mirror());
-          }.bind(this)});
+          }});
         }
       }
     }

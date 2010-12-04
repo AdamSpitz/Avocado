@@ -251,6 +251,12 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.method('inspect', function () { return this.name(); }, {category: ['printing']});
 
+  add.data('isAvocadoModule', true, {category: ['testing']});
+  
+  add.method('doesTypeMatch', function (obj) { return obj && obj.isAvocadoModule; }, {category: ['testing']});
+  
+  add.creator('prompter', {}, {category: ['user interface']});
+
   add.method('uninstall', function () {
     this.eachSlot(function(s) { s.remove(); });
     reflect(modules).slotAt(this._name).remove();
@@ -416,27 +422,27 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['user interface', 'commands']});
 
   add.method('commands', function () {
-    var cmdList = avocado.command.list.create();
-    cmdList.addItem({id: 'save', label: 'save as .js file', go: this.fileOutAndReportErrors.bind(this), isApplicable: this.canBeFiledOut.bind(this)});
-    // aaa - not working yet: cmdList.addItem({label: 'email me the source', go: this.emailTheSource.bind(this), isApplicable: this.canBeFiledOut.bind(this)});
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addItem({id: 'save', label: 'save as .js file', go: this.fileOutAndReportErrors, isApplicable: this.canBeFiledOut.bind(this)});
+    // aaa - not working yet: cmdList.addItem({label: 'email me the source', go: this.emailTheSource, isApplicable: this.canBeFiledOut.bind(this)});
 
-    cmdList.addItem({label: 'print to console', go: this.printToConsole.bind(this)});
-    cmdList.addItem({label: 'forget I was changed', go: function(evt) { this.markAsUnchanged(); }.bind(this), isApplicable: this.hasChangedSinceLastFileOut.bind(this)});
-
-    cmdList.addLine();
-
-    cmdList.addItem({label: 'rename',            go: this.interactiveRename.bind(this)});
-    cmdList.addItem({label: 'get module object', go: function(evt) { avocado.ui.grab(reflect(this), evt); }.bind(this)});
+    cmdList.addItem({label: 'print to console', go: this.printToConsole});
+    cmdList.addItem({label: 'forget I was changed', go: function(evt) { this.markAsUnchanged(); }, isApplicable: this.hasChangedSinceLastFileOut.bind(this)});
 
     cmdList.addLine();
 
-    cmdList.addItem({label: 'all objects', go: this.showAllObjects.bind(this)});
+    cmdList.addItem({label: 'rename',            go: this.interactiveRename});
+    cmdList.addItem({label: 'get module object', go: function(evt) { avocado.ui.grab(reflect(this), evt); }});
+
+    cmdList.addLine();
+
+    cmdList.addItem({label: 'all objects', go: this.showAllObjects});
     return cmdList;
   }, {category: ['user interface', 'commands']});
   
   add.method('buttonCommands', function () {
-    return avocado.command.list.create([
-      avocado.command.create('Save as .js file', this.fileOutAndReportErrors.bind(this)).onlyApplicableIf(this.canBeFiledOut.bind(this))
+    return avocado.command.list.create(this, [
+      avocado.command.create('Save as .js file', this.fileOutAndReportErrors).onlyApplicableIf(this.canBeFiledOut.bind(this))
     ]);
   }, {category: ['user interface', 'commands']});
 
@@ -448,6 +454,15 @@ thisModule.addSlots(transporter.module, function(add) {
     return Object.newChildOf(avocado.enumerator, this, 'eachModule').select(function(m) { return m.hasChangedSinceLastFileOut(); });
   }, {category: ['keeping track of changes']});
 
+});
+
+
+thisModule.addSlots(transporter.module.prompter, function(add) {
+  
+  add.method('prompt', function (caption, context, evt, callback) {
+    transporter.chooseOrCreateAModule(evt, context.likelyModules(), context, caption, function(m, evt) { callback(m); });
+  }, {category: ['prompting']});
+  
 });
 
 

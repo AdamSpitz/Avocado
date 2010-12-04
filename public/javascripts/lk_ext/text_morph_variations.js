@@ -160,10 +160,10 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
   },
 
   editingCommands: function() {
-    var cmdList = avocado.command.list.create();
+    var cmdList = avocado.command.list.create(this);
     if (this.hasChangedFromSavedText()) {
-      cmdList.addItem(["accept    [alt+enter]", this.acceptChanges.bind(this)]);
-      cmdList.addItem(["cancel    [escape]"   , this.cancelChanges.bind(this)]);
+      cmdList.addItem(["accept    [alt+enter]", this.acceptChanges]);
+      cmdList.addItem(["cancel    [escape]"   , this.cancelChanges]);
     }
     return cmdList;
   }

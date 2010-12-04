@@ -278,10 +278,10 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
   }, {category: ['copying']});
   
   add.method('dragAndDropCommands', function () {
-    var cmdList = avocado.command.list.create();
+    var cmdList = avocado.command.list.create(this);
     cmdList.addItem(avocado.command.create("add slot or category", function(evt, slotOrCat) {
       return slotOrCat.copyInto(this);
-    }.bind(this)).setArgumentSpecs([avocado.command.argumentSpec.create('slotOrCat').onlyAccepts(function(o) {
+    }).setArgumentSpecs([avocado.command.argumentSpec.create('slotOrCat').onlyAccepts(function(o) {
       return o && typeof(o.canBeAddedToCategory) === 'function' && o.canBeAddedToCategory();
     })]));
     return cmdList;

@@ -223,27 +223,27 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   });
 
   add.method('commands', function () {
-    var cmdList = avocado.command.list.create();
+    var cmdList = avocado.command.list.create(this);
     cmdList.addAllCommands(this._rootCategoryMorph.commands());
-
+    cmdList.addLine();
+    cmdList.addAllCommands(this.mirror().commands().wrapForMorph(this));
     cmdList.addLine();
     
     if (this.mirror().canHaveChildren()) {
       if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "create child", go: function(evt) { this.createChild(evt); }.bind(this)});
+        cmdList.addItem({label: "create child", go: function(evt) { this.createChild(evt); }});
       }
     }
 
     if (this.mirror().isReflecteeProbablyAClass()) {
       if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "create subclass", go: function(evt) { this.createSubclass(evt); }.bind(this)});
+        cmdList.addItem({label: "create subclass", go: function(evt) { this.createSubclass(evt); }});
       }
     }
 
     if (this.mirror().hasAccessibleParent()) {
-      cmdList.addItem({label: "get my parent", go: function(evt) { this.mirror().getParent(evt); }.bind(this)});
       if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "interpose new parent", go: function(evt) { this.interposeNewParent(evt); }.bind(this)});
+        cmdList.addItem({label: "interpose new parent", go: function(evt) { this.interposeNewParent(evt); }});
       }
     }
     
@@ -255,23 +255,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       }
 
       cmdList.addItem(this._annotationToggler.commandForToggling("annotation"));
-
-      if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "set module...", go: function(evt) {
-          this.mirror().interactivelySetModuleOfManySlots(evt);
-        }.bind(this)});
-      }
     }
-
-    cmdList.addLine();
-
-    cmdList.addItem({label: "well-known references", go: function(evt) {
-      avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.referenceFinder.create(this.mirror().reflectee()), evt)).redo();
-    }.bind(this)});
-    
-    cmdList.addItem({label: "well-known children", go: function(evt) {
-      avocado.ui.showObjects(this.mirror().wellKnownChildren().map(reflect), "well-known children of " + this.mirror().name(), evt);
-    }.bind(this)});
 
     cmdList.addLine();
     
@@ -280,19 +264,19 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       var parentFunction = function(o) { return o.mirror().hasParent() ? w.morphFor(o.mirror().parent()) : null; };
       var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.morphFor(reflect(child)); }); };
       avocado.ui.poseManager(evt).assumePose(Object.newChildOf(avocado.poses.tree, this.mirror().inspect() + " inheritance tree", this, parentFunction, childrenFunction));
-    }.bind(this)});
+    }});
     
     return cmdList;
   }, {category: ['menu']});
 
   add.method('dragAndDropCommands', function () {
-    var cmdList = avocado.command.list.create();
+    var cmdList = avocado.command.list.create(this);
     
     cmdList.addAllCommands(this._rootCategoryMorph.dragAndDropCommands());
     
     cmdList.addItem(avocado.command.create("make attribute point to me", function(evt, arrowEndpoint) {
       arrowEndpoint.wasJustDroppedOnMirror(this);
-    }.bind(this)).setArgumentSpecs([avocado.command.argumentSpec.create('arrowEndpoint').onlyAccepts(function(m) {
+    }).setArgumentSpecs([avocado.command.argumentSpec.create('arrowEndpoint').onlyAccepts(function(m) {
       return typeof(m.wasJustDroppedOnMirror) === 'function';
     })]));
     

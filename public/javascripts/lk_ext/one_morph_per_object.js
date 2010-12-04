@@ -18,12 +18,6 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     if (existingOne === expectedOne) { this.morphsByObject().removeKey(obj); }
   }, {category: ['one morph per object']});
 
-  add.method('removeObsoleteSlotMorph', function (sm) {
-    var n = sm.slot().name();
-    var existingOne = this._slotMorphs.get(n);
-    if (existingOne === sm) { this._slotMorphs.removeKey(n); }
-  }, {category: ['contents panel']});
-
   add.method('morphFor', function (obj) {
     return this.morphsByObject().getOrIfAbsentPut(obj, function() {
       return this.newMorphFor(obj);

@@ -46,6 +46,10 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('isParent', function () { return false; }, {category: ['testing']});
 
+  add.data('isAvocadoSlot', true, {category: ['testing']});
+  
+  add.method('doesTypeMatch', function (obj) { return obj && obj.isAvocadoSlot; }, {category: ['testing']});
+  
   add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
 
   add.method('copyDownParentThatIAmFrom', function () { return null; }, {category: ['copy-down parents']});
@@ -111,35 +115,43 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     avocado.ui.justChanged(this);
   }, {category: ['user interface', 'creator slots']});
 
+ add.method('likelyModules', function () {
+   return this.holder().likelyModules();
+ }, {category: ['user interface', 'modules']});
+
   add.method('commands', function () {
-    var cmdList = avocado.command.list.create();
+    var cmdList = avocado.command.list.create(this);
     
     var copyDown = this.copyDownParentThatIAmFrom();
     if (copyDown) {
       var copyDownParentMir = reflect(copyDown.parent);
       cmdList.addItem({label: "copied down from " + copyDownParentMir.name(), go: function(evt) {
         avocado.ui.grab(copyDownParentMir, evt);
-      }.bind(this)});
+      }});
     } else {
       var isModifiable = !window.isInCodeOrganizingMode;
       
       if (isModifiable && this.beCreator && this.contents().canHaveCreatorSlot()) {
         var cs = this.contents().explicitlySpecifiedCreatorSlot();
         if (!cs || ! cs.equals(this)) {
-          cmdList.addItem({label: "be creator", go: function(evt) { this.interactivelyBeCreator(evt); }.bind(this)});
+          cmdList.addItem({label: "be creator", go: function(evt) { this.interactivelyBeCreator(evt); }});
         }
       }
 
       if (isModifiable && this.setModule) {
-        cmdList.addItem({label: "set module...", go: function(evt) {
-          this.interactivelySetModule(evt);
-        }.bind(this)});
+        cmdList.addItem(avocado.command.create("set module", function(evt, module) {
+          this.setModule(module);
+        }).setArgumentSpecs([
+          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(transporter.module)
+        ]));
       }
 
       if (isModifiable && this.setModuleRecursively) {
-        cmdList.addItem({label: "set module recursively...", go: function(evt) {
-          this.interactivelySetModuleRecursively(evt);
-        }.bind(this)});
+        cmdList.addItem(avocado.command.create("set module recursively", function(evt, module) {
+          this.setModuleRecursively(module);
+        }).setArgumentSpecs([
+          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(transporter.module)
+        ]));
       }
     }
 
@@ -148,24 +160,24 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     if (this.wellKnownImplementors) {
       cmdList.addItem({label: "implementors", go: function(evt) {
         avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.implementorsFinder.create(this.name()), evt)).redo();
-      }.bind(this)});
+      }});
     }
 
     if (this.wellKnownSenders) {
       cmdList.addItem({label: "senders", go: function(evt) {
         avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.senders.finder.create(this.name()), evt)).redo();
-      }.bind(this)});
+      }});
     }
     
     if (isModifiable && this.contents().prettyPrint) {
       cmdList.addSection([{label: "pretty-print", go: function(evt) {
         avocado.ui.grab(reflect(this.contents().prettyPrint()), evt);
-      }.bind(this)}]);
+      }}]);
     }
     
     return cmdList;
   }, {category: ['user interface', 'commands']});
-    
+
 });
 
 
@@ -380,14 +392,6 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
         this.setModule(transporter.module.named(n));
       }
     }.bind(this));
-  }, {category: ['user interface', 'accessing annotation', 'module']});
-
-  add.method('interactivelySetModule', function (evt) {
-    transporter.chooseOrCreateAModule(evt, this.holder().modules(), this, "To which module?", function(m, evt) {this.setModule(m);}.bind(this));
-  }, {category: ['user interface', 'accessing annotation', 'module']});
-
-  add.method('interactivelySetModuleRecursively', function (evt) {
-    transporter.chooseOrCreateAModule(evt, this.holder().modules(), this, "To which module?", function(m, evt) {this.setModuleRecursively(m);}.bind(this));
   }, {category: ['user interface', 'accessing annotation', 'module']});
 
   add.method('initializationExpression', function () {

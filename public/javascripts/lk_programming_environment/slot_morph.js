@@ -269,20 +269,20 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['drag and drop']});
 
   add.method('commands', function () {
-    var cmdList = avocado.command.list.create();
+    var cmdList = avocado.command.list.create(this);
     
     if (! this.slot().copyDownParentThatIAmFrom()) {
       var isModifiable = !window.isInCodeOrganizingMode;
       
       if (isModifiable && this.slot().rename) { cmdList.addAllCommands(this._nameMorph.editingCommands()); }
       cmdList.addItem(this._sourceToggler.commandForToggling("contents"));
-      cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }.bind(this), isApplicable: function() { return this.slot().copyTo; }.bind(this)});
-      cmdList.addItem({label: "move", go: function(evt) { this.grabCopyAndRemoveMe(evt); }.bind(this), isApplicable: function() { return isModifiable && this.slot().remove; }.bind(this)});
+      cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }, isApplicable: function() { return this.slot().copyTo; }.bind(this)});
+      cmdList.addItem({label: "move", go: function(evt) { this.grabCopyAndRemoveMe(evt); }, isApplicable: function() { return isModifiable && this.slot().remove; }.bind(this)});
       cmdList.addItem(this._commentToggler.commandForToggling("comment").onlyApplicableIf(function() {return this.slot().comment; }.bind(this)));
       cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this.slot().annotation; }.bind(this)));
     }
     
-    cmdList.addAllCommands(this.slot().commands().wrapForMorph(this));
+    cmdList.addAllCommands(this.slot().commands().wrapWithPromptersForArguments().wrapForMorph(this));
     
     return cmdList;
   }, {category: ['menu']});

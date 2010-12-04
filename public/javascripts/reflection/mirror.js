@@ -652,14 +652,11 @@ thisModule.addSlots(mirror, function(add) {
     avocado.ui.showMenu(which, this, caption, evt);
   }, {category: ['user interface', 'setting modules']});
 
-  add.method('interactivelySetModuleOfManySlots', function (evt) {
-    this.chooseSourceModule("Of which slots?", function(sourceModuleName, evt) {
-      var slotsToReassign = this.slotsInModuleNamed(sourceModuleName);
-      transporter.chooseOrCreateAModule(evt, this.modules(), this, "To which module?", function(targetModule, evt) {
-        slotsToReassign.each(function(slot) { slot.setModule(targetModule); });
-      });
-    }.bind(this), evt);
-  }, {category: ['user interface', 'setting modules']});
+  add.method('likelyModules', function() {
+    return this.modules();
+  }, {category: ['user interface', 'setting modules']})
+  
+  add.creator('sourceModulePrompter', {}, {category: ['user interface', 'setting modules']});
 
   add.method('chooseAmongPossibleCreatorSlotChains', function (callback, evt) {
     var akaMenu = avocado.command.list.create();
@@ -685,6 +682,43 @@ thisModule.addSlots(mirror, function(add) {
     if (initialContentsMir.isReflecteeFunction()) { s.beCreator(); }
     return s;
   }, {category: ['user interface', 'slots']});
+
+  add.method('shouldAllowModification', function () {
+    return !window.isInCodeOrganizingMode;
+  }, {category: ['user interface']});
+
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+
+    if (this.hasAccessibleParent()) {
+      cmdList.addItem(avocado.command.create("get my parent", this.getParent));
+    }
+    
+    if (this.canHaveAnnotation()) {
+      cmdList.addLine();
+
+      if (this.shouldAllowModification()) {
+        cmdList.addItem(avocado.command.create("set module", function(evt, slotsToReassign, targetModule) {
+          slotsToReassign.each(function(slot) { slot.setModule(targetModule); });
+        }).setArgumentSpecs([
+          avocado.command.argumentSpec.create("Of which slots?").onlyAcceptsType(avocado.types.collection.of(avocado.slots['abstract'])).setPrompter(mirror.sourceModulePrompter),
+          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(transporter.module)
+        ]));
+      }
+    }
+
+    cmdList.addLine();
+
+    cmdList.addItem(avocado.command.create("well-known references", function(evt) {
+      avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.referenceFinder.create(this.reflectee()), evt)).redo();
+    }));
+    
+    cmdList.addItem(avocado.command.create("well-known children", function(evt) {
+      avocado.ui.showObjects(this.wellKnownChildren().map(reflect), "well-known children of " + this.name(), evt);
+    }));
+    
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
 
   add.method('canHaveAnnotation', function () {
     return this.canHaveSlots();
@@ -737,6 +771,18 @@ thisModule.addSlots(mirror, function(add) {
 
   add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
 
+});
+
+
+thisModule.addSlots(mirror.sourceModulePrompter, function(add) {
+  
+  add.method('prompt', function (caption, context, evt, callback) {
+    context.chooseSourceModule(caption, function(sourceModuleName) {
+      console.log("About to call slotsInModuleNamed");
+      callback(context.slotsInModuleNamed(sourceModuleName));
+    }, evt);
+  }, {category: ['prompting']});
+  
 });
 
 

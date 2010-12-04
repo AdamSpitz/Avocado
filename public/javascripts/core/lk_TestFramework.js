@@ -91,16 +91,16 @@ thisModule.addSlots(TestCase.prototype, function(add) {
   }, {category: ['user interface', 'commands']});
 
   add.method('commands', function () {
-    var cmdList = avocado.command.list.create();
-    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: this.createAndRunAndShowResult.bind(this)});
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: this.createAndRunAndShowResult});
     cmdList.addLine();
-    cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject.bind(this)});
+    cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject});
     return cmdList;
   }, {category: ['user interface', 'commands']});
 
   add.method('buttonCommands', function () {
-    return avocado.command.list.create([
-      avocado.command.create('Run', function(evt) { this.createAndRunAndShowResult(); }.bind(this))
+    return avocado.command.list.create(this, [
+      avocado.command.create('Run', this.createAndRunAndShowResult)
     ]);
   }, {category: ['user interface', 'commands']});
 
