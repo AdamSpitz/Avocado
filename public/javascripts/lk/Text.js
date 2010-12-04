@@ -811,7 +811,15 @@ thisModule.WrapStyle = Class.makeEnum([
 Morph.subclass('TextSelectionMorph', {
 
     documentation: "Visual representation of the text selection",
-    style: {fill: Color.primary.green, borderWidth: 0, borderRadius: 1},
+    style: {
+      // changed the fill -- Adam
+      fill: new lively.paint.LinearGradient([new lively.paint.Stop(0, Color.blue),
+                                             new lively.paint.Stop(1, Color.blue.lighter())],
+                                             lively.paint.LinearGradient.SouthNorth),
+      borderWidth: 0,
+      borderRadius: 1,
+      textColor: Color.white // textColor added by Adam
+    },
     isEpimorph: true,
     
     initialize: function($super) {

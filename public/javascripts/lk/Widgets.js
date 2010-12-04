@@ -1428,6 +1428,7 @@ BoxMorph.subclass("TextListMorph", {
     selectLineAt: function(lineNo, shouldUpdateModel) {  
         if (this.selectedLineNo in this.submorphs) { 
             this.submorphs[this.selectedLineNo].setFill(this.savedFill);
+            this.submorphs[this.selectedLineNo].setTextColor(this.savedTextColor); // added by Adam
         }
 
         this.selectedLineNo = lineNo;
@@ -1436,7 +1437,9 @@ BoxMorph.subclass("TextListMorph", {
         if (lineNo in this.submorphs) {
             var item = this.submorphs[lineNo];
             this.savedFill = item.getFill(); 
+            this.savedTextColor = item.getTextColor(); // added by Adam
             item.setFill(TextSelectionMorph.prototype.style.fill);
+            item.setTextColor(TextSelectionMorph.prototype.style.textColor); // added by Adam
             selectionContent = item.textString;
             this.scrollItemIntoView(item);
         }
@@ -2023,7 +2026,7 @@ Morph.subclass("MenuMorph", {
         borderWidth: 0.5,
         fill: Color.blue.lighter(5),
         borderRadius: 4, 
-        fillOpacity: 0.75, 
+        fillOpacity: 1, // used to say 0.75; haven't really decided yet which way I like better -- Adam
         wrapStyle: text.WrapStyle.Shrink
     },
 
