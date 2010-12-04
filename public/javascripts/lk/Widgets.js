@@ -1328,7 +1328,15 @@ BoxMorph.subclass("TextListMorph", {
 	generateSubmorphs: function(itemList) {
 		var rect = pt(this.baseWidth, TextMorph.prototype.fontSize).extentAsRectangle();
 		for (var i = 0; i < itemList.length; i++)  {
-			var m = new TextMorph(rect, itemList[i]).beListItem();
+		  
+			// Hacked to allow horizontal lines in menus. -- Adam
+			var m = itemList[i];
+			if (! (m instanceof Morph)) {
+				m = new TextMorph(rect, m).beListItem();
+			} else if (m.isMenuLine) {
+			  m.setVertices([pt(0, 0), pt(this.baseWidth, 0)])
+			}
+			
 			if (this.textStyle) m.applyStyle(this.textStyle);
 			this.addMorph(m);
 			m.relayMouseEvents(this);
@@ -1426,9 +1434,11 @@ BoxMorph.subclass("TextListMorph", {
     },
 
     selectLineAt: function(lineNo, shouldUpdateModel) {  
-        if (this.selectedLineNo in this.submorphs) { 
+        if (this.selectedLineNo in this.submorphs) {
+          if (this.submorphs[this.selectedLineNo] instanceof TextMorph) { // added by Adam to allow horizontal lines in menus
             this.submorphs[this.selectedLineNo].setFill(this.savedFill);
             this.submorphs[this.selectedLineNo].setTextColor(this.savedTextColor); // added by Adam
+          }
         }
 
         this.selectedLineNo = lineNo;
@@ -1437,9 +1447,9 @@ BoxMorph.subclass("TextListMorph", {
         if (lineNo in this.submorphs) {
             var item = this.submorphs[lineNo];
             this.savedFill = item.getFill(); 
-            this.savedTextColor = item.getTextColor(); // added by Adam
+            if (item.getTextColor) { this.savedTextColor = item.getTextColor(); } // added by Adam
             item.setFill(TextSelectionMorph.prototype.style.fill);
-            item.setTextColor(TextSelectionMorph.prototype.style.textColor); // added by Adam
+            if (item.setTextColor) { item.setTextColor(TextSelectionMorph.prototype.style.textColor); } // added by Adam
             selectionContent = item.textString;
             this.scrollItemIntoView(item);
         }
@@ -1960,6 +1970,7 @@ PseudoMorph.subclass('MenuItem', {
 		//console.log("-------------------------------------------")
 		var item = this;
 		//console.log("invoke "+ targetMorph)
+        if (! this.action) { return; } // added by Adam to make menu lines work
         if (this.action instanceof Function) { // alternative style, items ['menu entry', function] pairs
             this.action.call(targetMorph || this, evt);
         } else if (Object.isString(this.action.valueOf())) {
@@ -2026,7 +2037,7 @@ Morph.subclass("MenuMorph", {
         borderWidth: 0.5,
         fill: Color.blue.lighter(5),
         borderRadius: 4, 
-        fillOpacity: 1, // used to say 0.75; haven't really decided yet which way I like better -- Adam
+        fillOpacity: 0.75,
         wrapStyle: text.WrapStyle.Shrink
     },
 
@@ -2119,7 +2130,12 @@ Morph.subclass("MenuMorph", {
 
     addLine: function(item) { // Not yet supported
         // The idea is for this to add a real line on top of the text
-        this.items.push(this.addPseudoMorph(new MenuItem('-----')));
+        
+        // Hacked to make the lines look like real lines, not just -----. -- Adam
+        // this.items.push(this.addPseudoMorph(new MenuItem('-----')));
+        var line = Morph.makeLine([pt(0,5), pt(100,5)], 1, Color.gray);
+        line.isMenuLine = true;
+        this.items.push(new MenuItem(line));
     },
 
     addSubmenuItem: function(item) {

@@ -1,3 +1,8 @@
+Saturday, December 4, 2010
+
+  - Separated more non-UI-specific code out from the morph code.
+  - Made menus look prettier.
+
 Wednesday, December 1, 2010
 
   - Factored some of the category-morph code out into a more-general tree-node morph.
