@@ -267,9 +267,9 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
   }, {category: ['cleaning up']});
   
   add.method('poseChooser', function() {
-    var c = avocado.command.list.create();
+    var c = avocado.command.list.create(this);
     this.explicitlyRememberedPoses().eachValue(function(pose) {
-      c.addItem([pose.name(), function(evt) { this.assumePose(pose); }.bind(this)]);
+      c.addItem([pose.name(), function(evt) { this.assumePose(pose); }]);
     }.bind(this));
     return c;
   }, {category: ['menus']});

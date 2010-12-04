@@ -38,9 +38,19 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('holder', function () { return this._mirror; }, {category: ['accessing']});
 
+  add.method('inspect', function () { return this.name(); }, {category: ['printing']});
+  
+  add.method('sortOrder', function () { return this.name().toUpperCase(); }, {category: ['sorting']});
+
   add.method('isFunctionBody', function () { return false; }, {category: ['testing']});
 
   add.method('isParent', function () { return false; }, {category: ['testing']});
+
+  add.data('isAvocadoSlot', true, {category: ['testing']});
+  
+  add.method('doesTypeMatch', function (obj) { return obj && obj.isAvocadoSlot; }, {category: ['testing']});
+  
+  add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
 
   add.method('copyDownParentThatIAmFrom', function () { return null; }, {category: ['copy-down parents']});
 
@@ -96,7 +106,77 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     if (!c.explicitlySpecifiedCreatorSlot() && c.canHaveCreatorSlot()) {
       c.addPossibleCreatorSlot(this);
     }
-  }, {category: ['user interface']});
+  }, {category: ['user interface', 'creator slots']});
+
+  add.method('interactivelyBeCreator', function (evt) {
+    // aaa - Maybe the justChanged stuff should be put into the regular beCreator method.
+    this.beCreator();
+    avocado.ui.justChanged(this.contents());
+    avocado.ui.justChanged(this);
+  }, {category: ['user interface', 'creator slots']});
+
+ add.method('likelyModules', function () {
+   return this.holder().likelyModules();
+ }, {category: ['user interface', 'modules']});
+
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    
+    var copyDown = this.copyDownParentThatIAmFrom();
+    if (copyDown) {
+      var copyDownParentMir = reflect(copyDown.parent);
+      cmdList.addItem({label: "copied down from " + copyDownParentMir.name(), go: function(evt) {
+        avocado.ui.grab(copyDownParentMir, evt);
+      }});
+    } else {
+      var isModifiable = !window.isInCodeOrganizingMode;
+      
+      if (isModifiable && this.beCreator && this.contents().canHaveCreatorSlot()) {
+        var cs = this.contents().explicitlySpecifiedCreatorSlot();
+        if (!cs || ! cs.equals(this)) {
+          cmdList.addItem({label: "be creator", go: function(evt) { this.interactivelyBeCreator(evt); }});
+        }
+      }
+
+      if (isModifiable && this.setModule) {
+        cmdList.addItem(avocado.command.create("set module", function(evt, module) {
+          this.setModule(module);
+        }).setArgumentSpecs([
+          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(transporter.module)
+        ]));
+      }
+
+      if (isModifiable && this.setModuleRecursively) {
+        cmdList.addItem(avocado.command.create("set module recursively", function(evt, module) {
+          this.setModuleRecursively(module);
+        }).setArgumentSpecs([
+          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(transporter.module)
+        ]));
+      }
+    }
+
+    cmdList.addLine();
+    
+    if (this.wellKnownImplementors) {
+      cmdList.addItem({label: "implementors", go: function(evt) {
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.implementorsFinder.create(this.name()), evt)).redo();
+      }});
+    }
+
+    if (this.wellKnownSenders) {
+      cmdList.addItem({label: "senders", go: function(evt) {
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.senders.finder.create(this.name()), evt)).redo();
+      }});
+    }
+    
+    if (isModifiable && this.contents().prettyPrint) {
+      cmdList.addSection([{label: "pretty-print", go: function(evt) {
+        avocado.ui.grab(reflect(this.contents().prettyPrint()), evt);
+      }}]);
+    }
+    
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
 
 });
 
@@ -117,6 +197,8 @@ thisModule.addSlots(avocado.slots.functionBody, function(add) {
 thisModule.addSlots(avocado.slots.parent, function(add) {
 
   add.method('name', function () { return "__proto__"; }, {category: ['accessing']});
+
+  add.method('sortOrder', function () { return ''; }, {category: ['sorting'], comment: 'Should come first.'});
 
   add.method('isParent', function () { return true; }, {category: ['testing']});
 
@@ -183,6 +265,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('equals', function (s) {
     if (!s) { return false; }
+    if (typeof(s.name) !== 'function' || typeof(s.mirror) !== 'function') { return false; }
     return this.name() === s.name() && this.mirror().equals(s.mirror());
   }, {category: ['comparing']});
 
@@ -192,14 +275,19 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('toString', function () {
     if (this.name() === undefined) { return ""; }
-    return this.name() + " slot";
+    return this.name();
   }, {category: ['printing']});
 
-  add.method('copyTo', function (newMir, optionalCat) {
-    var newSlot = newMir.slotAt(this.name());
+  add.method('copyTo', function (targetCatOfNewMir) {
+    var newSlot = targetCatOfNewMir.mirror().slotAt(this.name());
     newSlot.setContents(this.contents());
-    if (optionalCat) { newSlot.setCategory(optionalCat); }
+    newSlot.setCategory(targetCatOfNewMir.category());
     return newSlot;
+  }, {category: ['copying']});
+
+  add.method('copyInto', function (targetCatOfNewMir) {
+    // for compatibility with categories
+    return this.copyTo(targetCatOfNewMir);
   }, {category: ['copying']});
 
   add.method('remove', function () {
@@ -276,6 +364,8 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     if (m)         { m.markAsChanged(); }
 
     this.contents().hackToMakeSureArrayIndexablesGetFiledOut(this);
+    
+    avocado.ui.justChanged(this);
   }, {category: ['accessing annotation', 'module']});
 
   add.method('setModuleRecursively', function (m) {
@@ -288,6 +378,21 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
       }
     }
   }, {category: ['accessing annotation', 'module']});
+
+  add.method('moduleName', function () {
+    var module = this.module();
+    return module ? module.name() : "";
+  }, {category: ['user interface', 'accessing annotation', 'module']});
+
+  add.method('setModuleName', function (n) {
+    var module = transporter.module.existingOneNamed(n);
+    if (module) { return this.setModule(module); }
+    avocado.ui.confirm("The '" + n + "' module does not exist. Create it?", function(b) {
+      if (b) {
+        this.setModule(transporter.module.named(n));
+      }
+    }.bind(this));
+  }, {category: ['user interface', 'accessing annotation', 'module']});
 
   add.method('initializationExpression', function () {
     if (! this.hasAnnotation()) { return ""; }

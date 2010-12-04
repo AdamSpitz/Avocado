@@ -1,5 +1,6 @@
 transporter.module.create('core/core', function(requires) {
 
+requires('core/accessors');
 requires('core/commands');
 requires('core/exit');
 requires('core/enumerator');
@@ -14,6 +15,7 @@ requires('core/little_profiler');
 requires('core/math');
 requires('core/sound');
 requires('core/linked_list');
+requires('core/types');
 
 }, function(thisModule) {
 

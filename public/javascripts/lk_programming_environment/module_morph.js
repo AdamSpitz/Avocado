@@ -9,35 +9,28 @@ requires('transporter/transporter');
 thisModule.addSlots(transporter.module, function(add) {
 
   add.method('newMorph', function () {
-    var m = new avocado.RowMorph();
+    var m = Morph.createBox(this, Color.red.lighter());
     var module = this;
     m._module = module;
-
-    m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}});
-    m.setFill(lively.paint.defaultFillWithColor(Color.red.lighter()));
-    m.shape.roundEdgesBy(10);
-    m.closeDnD();
-
-    var nameLabel = TextMorph.createLabel(function() { return module.name(); });
-
-    var fileOutButton = ButtonMorph.createButton('Save as .js file', module.fileOutAndReportErrors.bind(module), 2);
-    var optionalFileOutButton = Morph.createOptionalMorph(fileOutButton, function() { return module.canBeFiledOut(); });
-    optionalFileOutButton.refreshContent();
 
     var changeIndicator = TextMorph.createLabel(function() { return module.hasChangedSinceLastFileOut() ? ' has changed ' : ''; });
     changeIndicator.setTextColor(Color.green.darker());
 
-    m.inspect = function () { return module.name(); };
-    m.addCommandsTo = function(cmdList) {
-      module.addCommandsTo(cmdList);
+    var columns = [m.createNameLabel()];
+    columns.push(changeIndicator);
+    this.buttonCommands().commands().each(function(c) { columns.push(c.newMorph()); });
+    columns.push(m.createDismissButton());
+    m.setColumns(columns);
+
+    m.commands = function() {
+      var cmdList = module.commands().wrapForMorph(m);
       var saveCmd = cmdList.itemWith("id", "save");
       if (saveCmd) {
         saveCmd.pluralLabel = 'save modules as .js files';
         saveCmd.pluralGo = transporter.fileOutPluralMorphs.bind(transporter);
       }
+      return cmdList;
     };
-
-    m.setColumns([nameLabel, changeIndicator, optionalFileOutButton, m.createDismissButton()]);
 
     module.whenChangedNotify(m.updateAppearance.bind(m));
     m.startPeriodicallyUpdating();

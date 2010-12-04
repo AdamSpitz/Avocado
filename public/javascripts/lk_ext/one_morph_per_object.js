@@ -13,15 +13,24 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     return this.morphsByObject().get(obj);
   }, {category: ['one morph per object']});
 
+  add.method('forgetAboutExistingMorphFor', function (obj, expectedOne) {
+    var existingOne = this.morphsByObject().get(obj);
+    if (existingOne === expectedOne) { this.morphsByObject().removeKey(obj); }
+  }, {category: ['one morph per object']});
+
   add.method('morphFor', function (obj) {
     return this.morphsByObject().getOrIfAbsentPut(obj, function() {
-      if (typeof(obj.newMorph) === 'function') {
-        return obj.newMorph();
-      } else {
-        return new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
-      }
-    });
-  });
+      return this.newMorphFor(obj);
+    }.bind(this));
+  }, {category: ['one morph per object']});
+
+  add.method('newMorphFor', function (obj) {
+    if (typeof(obj.newMorph) === 'function') {
+      return obj.newMorph();
+    } else {
+      return new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
+    }
+  }, {category: ['one morph per object']});
 
 });
 

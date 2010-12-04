@@ -1,6 +1,32 @@
 Morph.addMethods({
-    justReceivedDrop: function(m) {
-      // children can override
+	
+	  applicableCommandForDropping: function(morph) { 
+	    var cmdList = this.dragAndDropCommands();
+  	  if (cmdList) {
+  	    var args = [morph];
+  	    var applicableCmd = cmdList.itemSuchThat(function(c) { return c.canAcceptArguments(args); });
+  	    return applicableCmd;
+  	  }
+  	  return null;
+    },
+
+  	acceptsDropping: function(morph) {
+  	  // More general drag-and-drop mechanism, added by Adam.
+  	  var c = this.applicableCommandForDropping(morph);
+  	  if (c) { return true; }
+
+  		return this.openForDragAndDrop && !(morph instanceof WindowMorph);
+  	},
+  
+    justReceivedDrop: function(morph) {
+  	  var c = this.applicableCommandForDropping(morph);
+  	  if (c) {
+  	    c.go(Event.createFake(), morph); // aaa - can't we get a real event?
+  	  } else {
+  	    if (! this.openForDragAndDrop) {
+          throw new Error("for drag-and-drop, children should implement either dragAndDropCommands or justReceivedDrop");
+        }
+      }
     },
 
     onMouseMove: function(evt, hasFocus) { //default behavior

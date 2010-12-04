@@ -1,4 +1,8 @@
-transporter.module.create('lk_ext/arrows', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/arrows', function(requires) {
+  
+requires('core/commands');
+  
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -17,6 +21,41 @@ thisModule.addSlots(avocado.ArrowMorph, function(add) {
   add.creator('prototype', Object.create(Morph.prototype));
 
   add.data('type', 'avocado.ArrowMorph');
+
+  add.method('createButtonForToggling', function(pointer) {
+    // aaa - This is still a bit of a mess.
+
+    var arrow;
+    var m = avocado.command.create("Toggle arrow", function() { arrow.toggleVisibility(); }).newMorph(pointer.labelMorph());
+    m.beArrowEndpoint();
+
+    arrow = m.arrow = new avocado.ArrowMorph(pointer.association(), m, null);
+    arrow.noLongerNeedsToBeUpdated = true;
+    arrow.prepareToBeShown = pointer.prepareToBeShown.bind(pointer);
+
+    pointer.notifiersToUpdateOn().each(function(notifier) { notifier.addObserver(arrow.notificationFunction); });
+
+    m.commands = function() {
+      var cmdList = avocado.command.list.create();
+
+      // aaa - To do "grab pointer" properly I think I need to do a more general drag-and-drop thing. Right
+      // now nothing will get called if I drop the endpoint on something invalid (like the world or some
+      // other morph), so the visibility will need to be toggled an extra time to get it back to normal.
+      cmdList.addItem({label: "grab pointer", go: function(evt) {
+        arrow.needsToBeVisible();
+        arrow.endpoint2.grabMeWithoutZoomingAroundFirst(evt);
+      }});
+
+      pointer.addExtraCommandsTo(cmdList);
+
+      return cmdList;
+    };
+
+    m.inspect = function() { return pointer.inspect(); };
+    m.getHelpText = function() { return arrow.noLongerNeedsToBeUpdated ? pointer.helpTextForShowing() : pointer.helpTextForHiding(); };
+
+    return m;
+  }, {category: ['toggling buttons']});
 
 });
 
@@ -211,13 +250,13 @@ thisModule.addSlots(avocado.ArrowEndpoint.prototype, function(add) {
 
   add.data('constructor', avocado.ArrowEndpoint);
 
-  add.method('initialize', function ($super, tr, a) {
+  add.method('initialize', function ($super, assoc, arrow) {
     $super(new lively.scene.Rectangle(pt(0, 0).extent(pt(10, 10))));
     this.relativeLineEndpoint = pt(5, 5);
     this.isArrowEndpoint = true;
     this.shouldNotBePartOfRowOrColumn = true;
-    this.topicRef = tr;
-    this.arrow = a;
+    this.association = assoc;
+    this.arrow = arrow;
     this.setFill(Color.black);
   }, {category: ['creating']});
 
@@ -234,7 +273,7 @@ thisModule.addSlots(avocado.ArrowEndpoint.prototype, function(add) {
   }, {category: ['attaching']});
 
   add.method('whichMorphToAttachTo', function () {
-    var slotContents = this.topicRef.contents();
+    var slotContents = this.association.contents();
     var morph = WorldMorph.current().existingMorphFor(slotContents);
     return morph ? (morph.world() ? morph : null) : null;
   }, {category: ['attaching']});

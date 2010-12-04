@@ -249,6 +249,14 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.method('toString', function () { return this.name(); }, {category: ['printing']});
 
+  add.method('inspect', function () { return this.name(); }, {category: ['printing']});
+
+  add.data('isAvocadoModule', true, {category: ['testing']});
+  
+  add.method('doesTypeMatch', function (obj) { return obj && obj.isAvocadoModule; }, {category: ['testing']});
+  
+  add.creator('prompter', {}, {category: ['user interface']});
+
   add.method('uninstall', function () {
     this.eachSlot(function(s) { s.remove(); });
     reflect(modules).slotAt(this._name).remove();
@@ -413,26 +421,29 @@ thisModule.addSlots(transporter.module, function(add) {
     avocado.ui.showObjects(objectsToShow, "objects in module " + this.name(), evt);
   }, {category: ['user interface', 'commands']});
 
-  add.method('addCommandsTo', function (cmdList) {
-    if (this.canBeFiledOut()) {
-      cmdList.addItem({id: 'save', label: 'save as .js file', go: this.fileOutAndReportErrors.bind(this)});
-      // aaa - not working yet: cmdList.addItem({label: 'email me the source', go: this.emailTheSource.bind(this)});
-    }
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addItem({id: 'save', label: 'save as .js file', go: this.fileOutAndReportErrors, isApplicable: this.canBeFiledOut.bind(this)});
+    // aaa - not working yet: cmdList.addItem({label: 'email me the source', go: this.emailTheSource, isApplicable: this.canBeFiledOut.bind(this)});
 
-    cmdList.addItem({label: 'print to console', go: this.printToConsole.bind(this)});
-
-    if (this.hasChangedSinceLastFileOut()) {
-      cmdList.addItem({label: 'forget I was changed', go: function(evt) { this.markAsUnchanged(); }.bind(this)});
-    }
+    cmdList.addItem({label: 'print to console', go: this.printToConsole});
+    cmdList.addItem({label: 'forget I was changed', go: function(evt) { this.markAsUnchanged(); }, isApplicable: this.hasChangedSinceLastFileOut.bind(this)});
 
     cmdList.addLine();
 
-    cmdList.addItem({label: 'rename',            go: this.interactiveRename.bind(this)});
-    cmdList.addItem({label: 'get module object', go: function(evt) { avocado.ui.grab(reflect(this), evt); }.bind(this)});
+    cmdList.addItem({label: 'rename',            go: this.interactiveRename});
+    cmdList.addItem({label: 'get module object', go: function(evt) { avocado.ui.grab(reflect(this), evt); }});
 
     cmdList.addLine();
 
-    cmdList.addItem({label: 'all objects', go: this.showAllObjects.bind(this)});
+    cmdList.addItem({label: 'all objects', go: this.showAllObjects});
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
+  
+  add.method('buttonCommands', function () {
+    return avocado.command.list.create(this, [
+      avocado.command.create('Save as .js file', this.fileOutAndReportErrors).onlyApplicableIf(this.canBeFiledOut.bind(this))
+    ]);
   }, {category: ['user interface', 'commands']});
 
   add.method('eachModule', function (f) {
@@ -443,6 +454,15 @@ thisModule.addSlots(transporter.module, function(add) {
     return Object.newChildOf(avocado.enumerator, this, 'eachModule').select(function(m) { return m.hasChangedSinceLastFileOut(); });
   }, {category: ['keeping track of changes']});
 
+});
+
+
+thisModule.addSlots(transporter.module.prompter, function(add) {
+  
+  add.method('prompt', function (caption, context, evt, callback) {
+    transporter.chooseOrCreateAModule(evt, context.likelyModules(), context, caption, function(m, evt) { callback(m); });
+  }, {category: ['prompting']});
+  
 });
 
 
@@ -861,7 +881,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     var slot = this.chooseSlotToTryToBreakCycle();
     dbgOn(!slot);
     if (!slot) { throw new Error("Could not find a slot to use as a cycle-breaker."); }
-    var cycleBreakerSlot = slot.copyTo(this._cycleBreakersMir).rename(this._cycleBreakersMir.findUnusedSlotName('breaker'));
+    var cycleBreakerSlot = slot.copyTo(category.root().ofMirror(this._cycleBreakersMir)).rename(this._cycleBreakersMir.findUnusedSlotName('breaker'));
     var initExpr = slot.initializationExpression();
     if (initExpr) { cycleBreakerSlot.setInitializationExpression(initExpr); }
     this._slotDeps. holderDeps.removeDependency(slot, slot.holder().theCreatorSlot());

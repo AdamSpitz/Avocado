@@ -19,6 +19,13 @@ TextMorph.createLabel = function(textOrFunction, pos, extent) {
   return tf;
 };
 
+TextMorph.createInputBox = function(initialText, extent) {
+  var tm = new this(pt(5, 10).extent(extent || pt(50, 20)), initialText || "");
+  tm.closeDnD();
+  tm.suppressHandles = true;
+  return tm;
+};
+
 ButtonMorph.createButton = function (contents, f, padding) {
   var contentsMorph = (typeof contents === 'string' || typeof contents === 'function') ? TextMorph.createLabel(contents) : contents;
   var p = (padding !== null && padding !== undefined) ? padding : 5;
@@ -31,10 +38,28 @@ ButtonMorph.createButton = function (contents, f, padding) {
   return b;
 };
 
+Morph.createBox = function(obj, color) {
+  var m = new avocado.RowMorph();
+  m._model = obj;
+  
+  m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}});
+  m.setFill(lively.paint.defaultFillWithColor(color));
+  m.shape.roundEdgesBy(10);
+  m.closeDnD();
+
+  m.inspect = function () { return this._model.inspect(); };
+  
+  return m;
+};
+
+Morph.prototype.createNameLabel = function() {
+  return TextMorph.createLabel(function() { return this.inspect(); }.bind(this));
+};
+
 Morph.createEitherOrMorph = function(m1, m2, condition) {
   var r = new avocado.RowMorph().beInvisible();
-  var t1 =  Object.newChildOf(avocado.toggler, function() {}, m1);
-  var t2 =  Object.newChildOf(avocado.toggler, function() {}, m2);
+  var t1 = avocado.toggler.create(function() {}, m1);
+  var t2 = avocado.toggler.create(function() {}, m2);
   r.setPotentialColumns([t1, t2]);
   r.refreshContent = avocado.hackToMakeSuperWork(r, "refreshContent", function($super) {
     var c = condition();

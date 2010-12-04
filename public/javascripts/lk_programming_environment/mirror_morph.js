@@ -27,7 +27,7 @@ thisModule.addSlots(mirror.Morph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype), {}, {copyDownParents: [{parent: category.MorphMixin}]});
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype), {});
 
   add.data('type', 'mirror.Morph');
 
@@ -41,35 +41,35 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('initialize', function ($super, m) {
     $super();
     this._mirror = m;
+    this._model = m;
 
     this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}});
     this.shape.roundEdgesBy(10);
+    this.closeDnD();
 
     this._slotMorphs     = avocado.dictionary.copyRemoveAll();
     this._categoryMorphs = avocado.dictionary.copyRemoveAll();
 
     this.setFill(lively.paint.defaultFillWithColor(Color.neutral.gray.lighter()));
 
-    this._categoryPresenter = category.Presenter.create(this._mirror, category.root());
-    this.initializeCategoryUI(); // aaa - can be a bit slow
+    this._rootCategoryMorph = this.categoryMorphFor(category.root().ofMirror(this._mirror));
+    this._expander = this._rootCategoryMorph.expander();
     
     this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible();
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     this.titleLabel = TextMorph.createLabel(function() {return m.inspect();});
 
-    this._commentToggler    = Object.newChildOf(avocado.toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ? this.createRow(this.   commentMorph()) : null);
-    this._annotationToggler = Object.newChildOf(avocado.toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ?                this.annotationMorph()  : null);
+    this._commentToggler    = avocado.toggler.create(this.updateAppearance.bind(this), this.mirror().canHaveAnnotation() ? this.createRow(this.   commentMorph()) : null);
+    this._annotationToggler = avocado.toggler.create(this.updateAppearance.bind(this), this.mirror().canHaveAnnotation() ? this.createRow(this.annotationMorph()): null);
 
-    this.akaButton         = ButtonMorph.createButton("AKA", function(evt) { this.showAKAMenu(evt);            }.bind(this), 1);
-    this.commentButton     = ButtonMorph.createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
-    this.parentButton      = ButtonMorph.createButton("^",     function(evt) { this.getParent(evt);              }.bind(this), 1).setHelpText('Get my parent');
+    this.commentButton     = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
+    this.akaButton         = avocado.command.create("AKA",   function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
+    this.parentButton      = avocado.command.create("^",     function(evt) { this.mirror().getParent(evt);     }.bind(this)).setHelpText('Get my parent').newMorph();
     if (window.avocado && avocado.EvaluatorMorph) {
-      this.evaluatorButton = ButtonMorph.createButton("E",     function(evt) { this.openEvaluator(evt);          }.bind(this), 1).setHelpText('Show an evaluator box');
+      this.evaluatorButton = avocado.command.create("E",     function(evt) { this.openEvaluator(evt);          }.bind(this)).setHelpText('Show an evaluator box').newMorph();
     }
     this.dismissButton   = this.createDismissButton();
-
-    this.commentButton.getHelpText = function() { return (this._commentToggler.isOn() ? 'Hide' : 'Show') + ' my comment'; }.bind(this);
 
     var optionalAKAButtonMorph     = Morph.createOptionalMorph(this.    akaButton, function() { return this.mirror().hasMultiplePossibleNames(); }.bind(this));
     var optionalParentButtonMorph  = Morph.createOptionalMorph(this. parentButton, function() { return this.mirror().hasAccessibleParent(); }.bind(this));
@@ -79,11 +79,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
                                                   {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}});
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
-    this.optionalSlotsPanel = Morph.createOptionalMorph(function() {return this._categoryPresenter.slotsPanel();}.bind(this),
-                                                  function() {return this.expander().isExpanded();}.bind(this),
-                                                  {horizontalLayoutMode: LayoutModes.SpaceFill, verticalLayoutMode: LayoutModes.ShrinkWrap});
-
-    this.setPotentialRows([this._headerRow, this._annotationToggler, this._commentToggler, this.optionalSlotsPanel, this._evaluatorsPanel]);
+    this.setPotentialRows([this._headerRow, this._annotationToggler, this._commentToggler, this._rootCategoryMorph, this._evaluatorsPanel]);
 
     this.refreshContent();
 
@@ -92,13 +88,14 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
 
-  add.method('mirrorMorph', function () { return this; }, {comment: 'For compatibility with category.Morph.', category: ['accessing']});
-
-  add.method('category', function () { return this._categoryPresenter.category(); }, {category: ['accessing']});
+  add.method('eachAssociatedObject', function (f) {
+    f(this.mirror().reflectee());
+    f(this.mirror());
+  }, {category: ['associated objects']});
 
   add.method('createRow', function (m) {
     var r = avocado.RowMorph.createSpaceFilling([m], {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}});
-    r.wasJustShown = function(evt) { m.requestKeyboardFocus(evt.hand); };
+    r.wasJustShown = function(evt) { m.wasJustShown(evt); };
     return r;
   }, {category: ['creating']});
 
@@ -109,7 +106,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     m.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
-    this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(this.copyDownParentsString.bind(this), this.setCopyDownParentsString.bind(this));
+    this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString'));
     this._copyDownParentsLabel.suppressHandles = true;
     m.setRows([avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Copy-down parents:"), this._copyDownParentsLabel])]);
     return m;
@@ -123,53 +120,35 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     avocado.ui.showMessageIfErrorDuring(function() {
       this.mirror().setCopyDownParents(eval(str));
     }.bind(this));
-    this.updateAppearance(); // to make the copied-down slots appear;
+    avocado.ui.justChanged(this.mirror()); // to make the copied-down slots appear;
     
     // Sometimes the text doesn't come out quite identical; this makes sure the
     // editor doesn't stay red.
     if (this._copyDownParentsLabel) { this._copyDownParentsLabel.cancelChanges(); }
   }, {category: ['annotation']});
 
-  add.method('updateAppearance', function () {
-    if (! this.world()) { return; }
-    this.populateSlotsPanelInMeAndExistingSubcategoryMorphs();
-    this.refreshContentOfMeAndSubmorphs();
-  }, {category: ['updating']});
-
-  add.method('refreshContent', function ($super) {
-    $super();
-    this.updateTitleLabelFont();
-  }, {category: ['updating']});
-
-  add.method('updateTitleLabelFont', function () {
-    if (this.mirror().reflectee() === window || this.mirror().theCreatorSlot()) {
-      // this.titleLabel.setFontFamily('serif'); // not sure I like it
-
-      // aaa - This causes weird freezes when changing the name of an object. Fix it sometime. -- Adam
-      // this.titleLabel.setEmphasis({style: 'bold'});
-    } else {
-      // this.titleLabel.setEmphasis({style: 'unbold'});
-    }
-  }, {category: ['updating']});
-
-  add.method('inspect', function () {return this.mirror().inspect();}, {category: ['printing']});
-
   add.method('updateExpandedness', function () {
-    if (! this.world()) {return;}
-    this.optionalSlotsPanel.refreshContent();
-    this.refreshContent();
+    this.updateAppearance();
   }, {category: ['updating']});
 
   add.method('expandCategory', function (c) {
-    if (! c.isRoot()) { this.expandCategory(c.supercategory()); }
-    var m = c.isRoot() ? this : this.categoryMorphFor(c);
-    m.expander().expand();
-    this.updateAppearance();
+    this.expandCategoryMorph(this.categoryMorphFor(c));
+  }, {category: ['categories']});
+
+  add.method('expandCategoryMorph', function (cm) {
+    cm.expandMeAndAncestors();
+    this.updateAppearance(); /// aaa maybe this isn't necessary?
   }, {category: ['categories']});
 
   add.method('slotMorphFor', function (s) {
-    return this._slotMorphs.getOrIfAbsentPut(s.name(), function() { return s.newMorph(); });
-  }, {category: ['slots panel']});
+    return this._slotMorphs.getOrIfAbsentPut(s.name(), function() { return s.morph(); });
+  }, {category: ['contents panel']});
+
+  add.method('removeObsoleteSlotMorph', function (sm) {
+    var n = sm.slot().name();
+    var existingOne = this._slotMorphs.get(n);
+    if (existingOne === sm) { this._slotMorphs.removeKey(n); }
+  }, {category: ['contents panel']});
 
   add.method('existingCategoryMorphFor', function (c) {
     return this._categoryMorphs.get(c.fullName());
@@ -177,7 +156,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('categoryMorphFor', function (c) {
     return this._categoryMorphs.getOrIfAbsentPut(c.fullName(), function() {
-      return new category.Morph(Object.newChildOf(category.Presenter, this.mirror(), c));
+      return c.ofMirror(this.mirror()).morph();
     }.bind(this));
   }, {category: ['categories']});
 
@@ -194,9 +173,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   add.method('commentMorph', function () {
     var m = this._commentMorph;
     if (m) { return m; }
-    var thisMirMorph = this;
-    m = new TextMorphRequiringExplicitAcceptance(function( ) { return thisMirMorph.mirror().comment(); },
-                                                 function(c) { thisMirMorph.mirror().setComment(c); });
+    m = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.mirror(), 'comment'));
     this._commentMorph = m;
     return m;
   }, {category: ['comment']});
@@ -212,10 +189,14 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     this._evaluatorsPanel.removeRow(evaluatorMorph);
   }, {category: ['evaluators']});
 
-  add.method('getParent', function (evt) {
-    avocado.ui.grab(this.mirror().parent(), evt);
-  }, {category: ['menu']});
-
+  add.method('grabResult', function(resultMirMorph, evt) {
+    if (resultMirMorph === this) {
+      this.wiggle();
+    } else {
+      resultMirMorph.grabMe(evt);
+    }
+  }, {category: ['evaluators']});
+  
   add.method('interposeNewParent', function (evt) {
     var world = this.world();
     var oldParent = this.mirror().parent();
@@ -241,27 +222,28 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     return !window.isInCodeOrganizingMode;
   });
 
-  add.method('addCommandsTo', function (cmdList) {
-    this.addCategoryCommandsTo(cmdList);
-
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addAllCommands(this._rootCategoryMorph.commands());
+    cmdList.addLine();
+    cmdList.addAllCommands(this.mirror().commands().wrapForMorph(this));
     cmdList.addLine();
     
     if (this.mirror().canHaveChildren()) {
       if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "create child", go: function(evt) { this.createChild(evt); }.bind(this)});
+        cmdList.addItem({label: "create child", go: function(evt) { this.createChild(evt); }});
       }
     }
 
     if (this.mirror().isReflecteeProbablyAClass()) {
       if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "create subclass", go: function(evt) { this.createSubclass(evt); }.bind(this)});
+        cmdList.addItem({label: "create subclass", go: function(evt) { this.createSubclass(evt); }});
       }
     }
 
     if (this.mirror().hasAccessibleParent()) {
-      cmdList.addItem({label: "get my parent", go: function(evt) { this.getParent(evt); }.bind(this)});
       if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "interpose new parent", go: function(evt) { this.interposeNewParent(evt); }.bind(this)});
+        cmdList.addItem({label: "interpose new parent", go: function(evt) { this.interposeNewParent(evt); }});
       }
     }
     
@@ -269,31 +251,11 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       cmdList.addLine();
 
       if (this.mirror().comment) {
-        cmdList.addItem({label: this._commentToggler.isOn() ? "hide comment" : "show comment", go: function(evt) {
-          this._commentToggler.toggle(evt);
-        }.bind(this)});
+        cmdList.addItem(this._commentToggler.commandForToggling("comment"));
       }
 
-      cmdList.addItem({label: this._annotationToggler.isOn() ? "hide annotation" : "show annotation", go: function(evt) {
-        this._annotationToggler.toggle(evt);
-      }.bind(this)});
-
-      if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "set module...", go: function(evt) {
-          this.mirror().interactivelySetModuleOfManySlots(evt);
-        }.bind(this)});
-      }
+      cmdList.addItem(this._annotationToggler.commandForToggling("annotation"));
     }
-
-    cmdList.addLine();
-
-    cmdList.addItem({label: "well-known references", go: function(evt) {
-      avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.referenceFinder.create(this.mirror().reflectee()), evt)).redo();
-    }.bind(this)});
-    
-    cmdList.addItem({label: "well-known children", go: function(evt) {
-      avocado.ui.showObjects(this.mirror().wellKnownChildren().map(reflect), "well-known children of " + this.mirror().name(), evt);
-    }.bind(this)});
 
     cmdList.addLine();
     
@@ -302,8 +264,24 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
       var parentFunction = function(o) { return o.mirror().hasParent() ? w.morphFor(o.mirror().parent()) : null; };
       var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.morphFor(reflect(child)); }); };
       avocado.ui.poseManager(evt).assumePose(Object.newChildOf(avocado.poses.tree, this.mirror().inspect() + " inheritance tree", this, parentFunction, childrenFunction));
-    }.bind(this)});
+    }});
+    
+    return cmdList;
   }, {category: ['menu']});
+
+  add.method('dragAndDropCommands', function () {
+    var cmdList = avocado.command.list.create(this);
+    
+    cmdList.addAllCommands(this._rootCategoryMorph.dragAndDropCommands());
+    
+    cmdList.addItem(avocado.command.create("make attribute point to me", function(evt, arrowEndpoint) {
+      arrowEndpoint.wasJustDroppedOnMirror(this);
+    }).setArgumentSpecs([avocado.command.argumentSpec.create('arrowEndpoint').onlyAccepts(function(m) {
+      return typeof(m.wasJustDroppedOnMirror) === 'function';
+    })]));
+    
+    return cmdList;
+  }, {category: ['drag and drop']});
 
   add.method('createChild', function (evt) {
     var child = this.mirror().createChild();
@@ -346,49 +324,26 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     }
   }, {category: ['creator slots']});
 
-  add.method('showAKAMenu', function (evt) {
-    this.mirror().chooseAmongPossibleCreatorSlotChains(function() {this.updateAppearance();}.bind(this), evt);
-  }, {category: ['creator slots']});
-
-  add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
-    if (typeof(m.canBeDroppedOnMirror) === 'function') { return m.canBeDroppedOnMirror(this); }
-    return typeof(m.wasJustDroppedOnMirror) === 'function';
-  }, {category: ['drag and drop']});
-
-  add.method('justReceivedDrop', function (m) {
-    if (this.acceptsDropping(m)) { 
-      m.wasJustDroppedOnMirror(this);
-    }
-  }, {category: ['drag and drop']});
-
   add.method('remove', function ($super) {
     this.detachArrowEndpoints();
     $super();
   }, {category: ['removing']});
 
-  add.method('constructUIStateMemento', function () {
-    var mem = {
-      isExpanded:       this.expander()        .constructUIStateMemento(),
-      isCommentOpen:    this._commentToggler   .constructUIStateMemento(),
-      isAnnotationOpen: this._annotationToggler.constructUIStateMemento(),
-      categories: [],
-      slots: []
-    };
-    
-    this._categoryMorphs.eachValue(function(cm) { mem.categories.push([cm.category().parts(), cm.constructUIStateMemento()]); });
-    this.    _slotMorphs.eachValue(function(sm) { mem.slots     .push([sm.slot().name(),      sm.constructUIStateMemento()]); });
-
-    return mem;
-  }, {category: ['UI state']});
-
-  add.method('assumeUIState', function (uiState, evt) {
-    if (!uiState) { return; }
-    evt = evt || Event.createFake();
-    this._commentToggler   .assumeUIState(uiState.isCommentOpen,    evt);
-    this._annotationToggler.assumeUIState(uiState.isAnnotationOpen, evt);
-    this.expander()        .assumeUIState(uiState.isExpanded,       evt);
-    uiState.categories.each(function(a) { this.categoryMorphFor(     category.create(a[0])).assumeUIState(a[1]); }.bind(this));
-    uiState.slots     .each(function(a) { this.    slotMorphFor(this.mirror().slotAt(a[0])).assumeUIState(a[1]); }.bind(this));
+  add.method('partsOfUIState', function () {
+    return Object.extend({
+      isCommentOpen:    this._commentToggler,
+      isAnnotationOpen: this._annotationToggler,
+      categories: {
+        collection: this._categoryMorphs.values(),
+        keyOf: function(cm) { return cm.category().parts(); },
+        getPartWithKey: function(morph, catParts) { return morph.categoryMorphFor(category.create(catParts)); }
+      },
+      slots: {
+        collection: this._slotMorphs.values(),
+        keyOf: function(sm) { return sm.slot().name(); },
+        getPartWithKey: function(morph, name) { return morph.slotMorphFor(morph.mirror().slotAt(name)); }
+      }
+    }, this._rootCategoryMorph.partsOfUIState());
   }, {category: ['UI state']});
 
 });

@@ -5,6 +5,7 @@ requires('lk_ext/fixes');
 requires('lk_ext/changes');
 requires('lk_ext/change_notification');
 requires('lk_ext/menus');
+requires('lk_ext/commands');
 requires('lk_ext/applications');
 requires('lk_ext/grabbing');
 requires('lk_ext/highlighting');
@@ -18,6 +19,8 @@ requires('lk_ext/combo_box');
 requires('lk_ext/toggler');
 requires('lk_ext/layout');
 requires('lk_ext/rows_and_columns');
+requires('lk_ext/collection_morph');
+requires('lk_ext/tree_morph');
 requires('lk_ext/animation');
 requires('lk_ext/scatter');
 requires('lk_ext/expander');
@@ -106,6 +109,14 @@ thisModule.addSlots(avocado.ui, function(add) {
     var menu = MenuMorph.fromCommandList(cmdList, target);
     var world = this.worldFor(evt);
     menu.openIn(world, evt.point(), false, caption);
+  });
+
+  add.method('justChanged', function (obj, evt) {
+    var ui = this;
+    setTimeout(function() {
+      var m = ui.worldFor(evt).existingMorphFor(obj);
+      if (m) { m.updateAppearance(); }
+    }, 0);
   });
 
 });

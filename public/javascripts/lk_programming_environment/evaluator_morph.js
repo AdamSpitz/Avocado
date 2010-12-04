@@ -31,17 +31,14 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
     $super();
     this._mirrorMorph = mirrorMorph;
     
-    this.setFill(null);
-    this.closeDnD();
-    this.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.ignoreEvents(); // so we can drag through it, since it doesn't need a menu
+    this.beInvisible();
+    this.setPadding(10);
 
-    var tm = this._textMorph = new TextMorph(pt(5, 10).extent(pt(150, 60)), "");
-    tm.closeDnD();
-    tm.setBorderWidth(0);
+    var tm = this._textMorph = TextMorph.createInputBox("", pt(150, 60));
     tm.setFill(Color.white);
-    // tm.horizontalLayoutMode = LayoutModes.SpaceFill; // doesn't work yet
     tm.setFontFamily('monospace');
+    tm.setLayoutModes({horizontalLayoutMode: LayoutModes.SpaceFill});
+    
     var thisEvaluator = this;
     tm.onKeyDown = function(evt) {
       if (evt.getKeyCode() == Event.KEY_RETURN && (evt.isMetaDown() || evt.isAltDown() || evt.isCtrlDown())) {
@@ -52,18 +49,20 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
       return TextMorph.prototype.onKeyDown.call(this, evt);
     };
     
-    var buttons = [ButtonMorph.createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)).setHelpText('Run the code in the box'),
-                   ButtonMorph.createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)).setHelpText('Run the code in the box and get the result'),
-                   ButtonMorph.createButton("Close",  function(evt) {mirrorMorph.closeEvaluator(this);}.bind(this))];
+    var buttons = this.buttonCommands().map(function(c) { return c.newMorph(); });
 
-    this.setRows([avocado.RowMorph.createSpaceFilling([tm]), avocado.RowMorph.createSpaceFilling(buttons)]);
+    this.setRows([tm, avocado.RowMorph.createSpaceFilling(buttons)]);
   }, {category: ['creating']});
 
   add.method('mirrorMorph', function () { return this._mirrorMorph;  }, {category: ['accessing']});
 
-  add.method('textMorph', function () { return this._textMorph;  }, {category: ['accessing']});
-
   add.method('wasJustShown', function (evt) { this._textMorph.wasJustShown(evt); }, {category: ['events']});
+  
+  add.method('buttonCommands', function () {
+    return [avocado.command.create("Do it",  function(evt) {this. doIt(evt);}.bind(this)).setHelpText('Run the code in the box'),
+            avocado.command.create("Get it", function(evt) {this.getIt(evt);}.bind(this)).setHelpText('Run the code in the box and get the result'),
+            avocado.command.create("Close",  function(evt) {this.mirrorMorph().closeEvaluator(this);}.bind(this))];
+  }, {category: ['creating']});
 
   add.method('runTheCode', function () {
     return this.mirrorMorph().mirror().evalCodeString(this._textMorph.getText());
@@ -76,11 +75,7 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
   add.method('getIt', function (evt) {
     avocado.ui.showMessageIfErrorDuring(function() {
       var resultMirMorph = evt.hand.world().morphFor(reflect(this.runTheCode()));
-      if (resultMirMorph === this.mirrorMorph()) {
-        resultMirMorph.wiggle();
-      } else {
-        resultMirMorph.grabMe(evt);
-      }
+      this.mirrorMorph().grabResult(resultMirMorph, evt);
     }.bind(this), evt);
   }, {category: ['running the code']});
 

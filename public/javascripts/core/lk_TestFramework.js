@@ -90,12 +90,18 @@ thisModule.addSlots(TestCase.prototype, function(add) {
     avocado.ui.grab(reflect(this), evt);
   }, {category: ['user interface', 'commands']});
 
-  add.method('addCommandsTo', function (cmdList) {
-    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: this.createAndRunAndShowResult.bind(this)});
-  
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: this.createAndRunAndShowResult});
     cmdList.addLine();
+    cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject});
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
 
-    cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject.bind(this)});
+  add.method('buttonCommands', function () {
+    return avocado.command.list.create(this, [
+      avocado.command.create('Run', this.createAndRunAndShowResult)
+    ]);
   }, {category: ['user interface', 'commands']});
 
 });
@@ -155,10 +161,10 @@ thisModule.addSlots(TestResult.prototype, function(add) {
     });
   }, {category: ['user interface', 'commands']});
 
-  add.method('addCommandsTo', function (cmdList) {
-    if (this.anyFailed()) {
-      cmdList.addItem({label: 'get error objects', go: this.getErrorObjects.bind(this)});
-    }
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
+    cmdList.addItem({label: 'get error objects', go: this.getErrorObjects.bind(this), isApplicable: this.anyFailed.bind(this)});
+    return cmdList;
   }, {category: ['user interface', 'commands']});
 
 });

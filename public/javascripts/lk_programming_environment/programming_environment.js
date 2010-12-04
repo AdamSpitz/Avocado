@@ -57,6 +57,10 @@ thisModule.addSlots(avocado, function(add) {
     if (this.debugMode) {
       cmdList.addLine();
     
+      cmdList.addItem({label: "a collection morph", go: function(evt) {
+        [1, 2, 3].newMorph(['toString', 'sqrt'], function(o) { return typeof(o) === 'number'; }).grabMe(evt);
+      }.bind(this)});
+
       // useful for testing TableMorph
       cmdList.addItem({label: "senders of exitValueOf", go: function(evt) {
         avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.senders.finder.create("exitValueOf"), evt)).redo();
@@ -76,7 +80,7 @@ thisModule.addSlots(avocado, function(add) {
         var w = evt.hand.world();
         var m = w.morphFor(reflect(TextMorph.prototype));
         m.ensureIsInWorld(w, pt(300,200), true, false, false, function() {
-          m.expand(evt);
+          m.expander().expand(evt);
         });
       }.bind(this)]);
 

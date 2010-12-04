@@ -52,12 +52,47 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['poses']});
 
   add.method('constructUIStateMemento', function () {
-    // override this and assumeUIState in children if you want them to be recalled in a particular state
+    // override constructUIStateMemento and assumeUIState, or uiStateParts, in children if you want them to be recalled in a particular state
+    
+    if (this.partsOfUIState) {
+      var parts = typeof(this.partsOfUIState) === 'function' ? this.partsOfUIState() : this.partsOfUIState;
+      var uiState = {};
+      reflect(parts).eachNormalSlot(function(slot) {
+        var partName = slot.name();
+        var part = slot.contents().reflectee();
+        if (!(part instanceof Morph) && part.collection && part.keyOf && part.getPartWithKey) {
+          uiState[partName] = part.collection.map(function(elem) {
+            return { key: part.keyOf(elem), uiState: elem.constructUIStateMemento() };
+          });
+        } else {
+          uiState[partName] = part.constructUIStateMemento();
+        }
+      });
+      return uiState;
+    }
+    
     return null;
   }, {category: ['poses']});
 
-  add.method('assumeUIState', function (uiState) {
-    // override this and constructUIStateMemento in children if you want them to be recalled in a particular state;
+  add.method('assumeUIState', function (uiState, evt) {
+    // override constructUIStateMemento and assumeUIState, or uiStateParts, in children if you want them to be recalled in a particular state
+
+    if (this.partsOfUIState) {
+      if (!uiState) { return; }
+      evt = evt || Event.createFake();
+      var parts = typeof(this.partsOfUIState) === 'function' ? this.partsOfUIState() : this.partsOfUIState;
+      reflect(parts).eachNormalSlot(function(slot) {
+        var partName = slot.name();
+        var part = slot.contents().reflectee();
+        if (!(part instanceof Morph) && part.collection && part.keyOf && part.getPartWithKey) {
+          uiState[partName].each(function(elemKeyAndUIState) {
+            part.getPartWithKey(this, elemKeyAndUIState.key).assumeUIState(elemKeyAndUIState.uiState);
+          }.bind(this));
+        } else {
+          part.assumeUIState(uiState[partName], evt);
+        }
+      }.bind(this));
+    }
   }, {category: ['poses']});
 
   add.method('transferUIStateTo', function (otherMorph, evt) {
