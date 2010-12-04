@@ -282,3 +282,45 @@ SelectionMorph.addMethods({
 Object.extend(lively.scene.Rectangle.prototype, {
   area: function() { return this.bounds().area(); }
 });
+
+Object.extend(lively.paint.Gradient.prototype, {
+  // Copied over from Color.
+  
+	darker: function(recursion) { 
+		if (recursion == 0) 
+			return this;
+		var result = this.mixedWith(Color.black, 0.5);
+		return recursion > 1  ? result.darker(recursion - 1) : result;
+	},
+
+	lighter: function(recursion) { 
+		if (recursion == 0) 
+			return this;
+		var result = this.mixedWith(Color.white, 0.5);
+		return recursion > 1 ? result.lighter(recursion - 1) : result;
+	},
+
+	mixedWith: function(color, proportion) {
+		var result = this.copyRemoveAll();
+		for (var i = 0; i < this.stops.length; ++i) {
+			result.addStop(this.stops[i].offset(), this.stops[i].color().mixedWith(color, proportion));
+		}
+		return result;
+	}
+});
+
+Object.extend(lively.paint.LinearGradient.prototype, {
+    copyRemoveAll: function() {
+        return new this.constructor([], this.vector);
+    }
+});
+
+Object.extend(lively.paint.RadialGradient.prototype, {
+    copyRemoveAll: function() {
+        return new this.constructor([], this.focus());
+    },
+    
+    focus: function() {
+        return pt(this.getTrait('fx'), this.getTrait('fy'));
+    }
+});

@@ -2945,6 +2945,8 @@ this.Gradient.subclass("lively.paint.LinearGradient", {
 		return this;
 	},
 
+    /*
+    Was this here in the first place, or did I add it? Anyway, I'm implementing it up on Gradient over in changes.js. -- Adam
 	mixedWith: function(color, proportion) {
 		var result = new lively.paint.LinearGradient([]);
 		for (var i = 0; i < this.stops.length; ++i) {
@@ -2953,6 +2955,7 @@ this.Gradient.subclass("lively.paint.LinearGradient", {
 		}
 		return result;
 	}
+	*/
 
 });
 

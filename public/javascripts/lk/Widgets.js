@@ -133,6 +133,8 @@ BoxMorph.subclass('ButtonMorph', {
 
   	initColor: function() {
     	var gfx = lively.paint;
+    	
+    	/* This code confuses me. -- Adam
         if (this.baseFill instanceof gfx.LinearGradient) {
             var base = this.baseFill.stops[0].color().lighter(0);
 	    	this.normalFill =
@@ -159,7 +161,13 @@ BoxMorph.subclass('ButtonMorph', {
 		} else {
 			throw new Error('unsupported fill type ' + this.baseFill);
 		}
-    },
+		*/
+
+        if (this.baseFill) {
+            this.normalFill  = this.baseFill;
+            this.lighterFill = this.baseFill.lighter();
+		}
+	},
 
 	applyStyle: function($super, spec) {
 		$super(spec);
