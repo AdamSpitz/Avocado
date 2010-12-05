@@ -72,6 +72,12 @@ thisModule.addSlots(avocado.ui, function(add) {
     return m;
   });
 
+  add.method('growFromNothing', function (obj, evt) {
+    var m = this.worldFor(evt).morphFor(obj);
+    m.grabMe(evt);
+    return m;
+  });
+
   add.method('poseManager', function (evt) {
     return this.worldFor(evt).poseManager();
   });

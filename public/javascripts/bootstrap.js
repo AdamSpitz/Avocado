@@ -640,18 +640,7 @@ thisModule.addSlots(transporter, function(add) {
   add.method('createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded', function () {
     if (transporter.isDoneLoadingAvocadoLib && transporter.isDoneLoadingWindow) {
       avocado.world = transporter.createAvocadoWorld();
-      this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
-    }
-  }, {category: ['bootstrapping']});
-
-  add.method('initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated', function (callWhenDone) {
-    if (this.isDoneLoadingProgrammingEnvironment && avocado.world) {
-      var shouldPrintLoadOrder = false;
-      if (shouldPrintLoadOrder) { this.printLoadOrder(); }
-
-      var app = window.isInCodeOrganizingMode ? window.jsQuiche : window.avocado;
-      app.initialize();
-      avocado.world.addApplication(app);
+      if (avocado.theApplication && avocado.world.addApplication) { avocado.world.addApplication(avocado.theApplication); }
     }
   }, {category: ['bootstrapping']});
 
@@ -661,11 +650,6 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAllOfAvocado', function () {
-    if (this.wasProgrammingEnvironmentLoaded()) {
-      this.isDoneLoadingProgrammingEnvironment = true;
-      this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
-    }
-
     if (this.callWhenDoneLoadingAvocado) {
       this.callWhenDoneLoadingAvocado(avocado.world);
       delete this.callWhenDoneLoadingAvocado;

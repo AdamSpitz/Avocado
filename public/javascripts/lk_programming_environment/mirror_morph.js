@@ -2,6 +2,7 @@ transporter.module.create('lk_programming_environment/mirror_morph', function(re
 
 requires('reflection/reflection');
 requires('lk_programming_environment/category_morph');
+requires('lk_programming_environment/slot_morph');
 
 }, function(thisModule) {
 

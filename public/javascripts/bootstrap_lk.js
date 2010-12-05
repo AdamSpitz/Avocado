@@ -22,11 +22,6 @@ thisModule.addSlots(transporter, function(add) {
     return true;
   }, {category: ['bootstrapping']});
   
-  add.method('wasProgrammingEnvironmentLoaded', function () {
-    // aaa - There's gotta be a better way to do this. Have the application object do something?
-    return modules['lk_programming_environment/programming_environment'] || modules['lk_programming_environment/code_organizer'];
-  }, {category: ['bootstrapping']});
-  
 });
 
 

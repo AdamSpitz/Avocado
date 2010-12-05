@@ -8,14 +8,33 @@ requires('transporter/snapshotter');
 requires('programming_environment/categorize_libraries');
 requires('programming_environment/pretty_printer');
 requires('lk_programming_environment/module_morph');
-requires('lk_programming_environment/category_morph');
-requires('lk_programming_environment/slot_morph');
-requires('lk_programming_environment/evaluator_morph');
 requires('lk_programming_environment/mirror_morph');
+requires('lk_programming_environment/evaluator_morph');
 requires('lk_programming_environment/searching');
 requires('lk_programming_environment/test_case_morph');
 
 }, function(thisModule) {
+
+  
+thisModule.addSlots(modules['lk_programming_environment/programming_environment'], function(add) {
+
+  add.method('postFileIn', function () {
+    var shouldPrintLoadOrder = false;
+    if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
+
+    avocado.categorizeGlobals();
+
+    // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
+    reflect(window).categorizeUncategorizedSlotsAlphabetically();
+    
+    avocado.theApplication = avocado;
+    
+    if (avocado.world) {
+      avocado.world.addApplication(avocado);
+    }
+  });
+  
+});
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -47,11 +66,11 @@ thisModule.addSlots(avocado, function(add) {
     cmdList.addLine();
     
     cmdList.addItem(["create new object", function(evt) {
-      evt.hand.world().morphFor(reflect({})).growFromNothing(evt);
+      avocado.ui.growFromNothing(reflect({}), evt);
     }]);
 
     cmdList.addItem(["get the window object", function(evt) {
-      evt.hand.world().morphFor(reflect(window)).grabMe(evt);
+      avocado.ui.grab(reflect(window), evt);
     }]);
 
     if (this.debugMode) {
@@ -108,16 +127,6 @@ thisModule.addSlots(avocado, function(add) {
     });
 
   }, {category: ['menu']});
-
-  add.method('initialize', function () {
-    // I'm confused. Why is this here if it's already called from putUnownedSlotsInInitModule? -- Adam
-    // avocado.creatorSlotMarker.annotateExternalObjects(true);
-    
-    avocado.categorizeGlobals();
-
-    // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
-    reflect(window).categorizeUncategorizedSlotsAlphabetically();
-  }, {category: ['initializing']});
 
 });
 

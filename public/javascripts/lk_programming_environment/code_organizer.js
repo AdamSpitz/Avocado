@@ -3,12 +3,31 @@ transporter.module.create('lk_programming_environment/code_organizer', function(
 requires('avocado_lib');
 requires('lk_ext/poses');
 requires('programming_environment/categorize_libraries');
-requires('lk_programming_environment/category_morph');
-requires('lk_programming_environment/slot_morph');
 requires('lk_programming_environment/mirror_morph');
 requires('lk_programming_environment/searching');
 
 }, function(thisModule) {
+
+
+thisModule.addSlots(modules['lk_programming_environment/code_organizer'], function(add) {
+
+  add.method('postFileIn', function () {
+    var shouldPrintLoadOrder = false;
+    if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
+
+    avocado.categorizeGlobals();
+
+    // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
+    reflect(window).categorizeUncategorizedSlotsAlphabetically();
+    
+    avocado.theApplication = jsQuiche;
+    
+    if (avocado.world) {
+      avocado.world.addApplication(jsQuiche);
+    }
+  });
+
+});
 
 
 thisModule.addSlots(window, function(add) {
@@ -31,7 +50,7 @@ thisModule.addSlots(jsQuiche, function(add) {
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
     cmdList.addItem(["get the window object", function(evt) {
-      evt.hand.world().morphFor(reflect(window)).grabMe(evt);
+      avocado.ui.grab(reflect(window), evt);
     }]);
 
     this.menuItemContributors.each(function(c) {
@@ -55,9 +74,6 @@ thisModule.addSlots(jsQuiche, function(add) {
   }, {category: ['menu']});
 
   add.method('initialize', function () {
-    // I'm confused. Why is this here if it's already called from putUnownedSlotsInInitModule? -- Adam
-    // avocado.creatorSlotMarker.annotateExternalObjects(true);
-    
     avocado.categorizeGlobals();
 
     // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
