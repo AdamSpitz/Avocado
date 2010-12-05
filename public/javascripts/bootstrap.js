@@ -518,9 +518,10 @@ transporter.module.addSlots = function(holder, block) {
   block(slotAdder);
 };
 
-annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__oid__', 'bootstrapTheModuleSystem', 'livelyBaseURL', 'loadTheLKTestFramework', 'modules', 'transporter', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
+annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__oid__', 'bootstrapTheModuleSystem', 'loadTheLKTestFramework', 'modules', 'transporter', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
 
 transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
+transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_lk', function() {}); // aaa lk-specific
 };
 bootstrapTheModuleSystem();
 
@@ -573,86 +574,8 @@ thisModule.addSlots(transporter, function(add) {
     });
   }, {category: ['bootstrapping']});
 
-  add.method('createCanvasIfNone', function () {
-    var canvas = document.getElementById("canvas");
-    if (! canvas) {
-      canvas = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
-      canvas.setAttribute('id', 'canvas');
-      canvas.setAttribute('width',  '100%');
-      canvas.setAttribute('height', '600');
-      canvas.setAttribute('xmlns', "http://www.w3.org/2000/svg");
-      canvas.setAttribute('xmlns:lively', "http://www.experimentalstuff.com/Lively");
-      canvas.setAttribute('xmlns:xlink', "http://www.w3.org/1999/xlink");
-      canvas.setAttribute('xmlns:xhtml', "http://www.w3.org/1999/xhtml");
-      canvas.setAttribute('xml:space', "preserve");
-      canvas.setAttribute('zoomAndPan', "disable");
-
-      var title = document.createElement('title');
-      title.appendChild(document.createTextNode('Lively canvas'));
-      canvas.appendChild(title);
-      
-      // Put the canvas inside a div, because for some reason FireFox isn't calculating
-      // offsetLeft and offsetTop for the canvas itself. Also, allow people to specify
-      // an 'avocadoDiv' element so they can control where Avocado goes on the page.
-      var avocadoDiv = document.getElementById('avocadoDiv');
-      if (! avocadoDiv) {
-        avocadoDiv = document.createElement('div');
-        document.body.appendChild(avocadoDiv);
-      }
-      avocadoDiv.appendChild(canvas);
-    }
-    return canvas;
-  }, {category: ['bootstrapping']});
-
-  add.method('loadLivelyKernel', function (callWhenDone) {
-    if (document.body) {
-      this.createCanvasIfNone();
-      this.loadLivelyKernelCode(callWhenDone);
-    } else {
-      console.log("document.body doesn't exist yet; setting window.onload. I have a feeling that this doesn't work, though, at least in some browsers. -- Adam, Nov. 2010");
-      var that = this;
-      window.onload = function() { that.createCanvasIfNone(); };
-      this.loadLivelyKernelCode(callWhenDone);
-    }
-  }, {category: ['bootstrapping']});
-
-  add.method('loadLivelyKernelCode', function (callWhenDone) {
-    // Later on could do something nicer with dependencies and stuff. For now,
-    // let's just try dynamically loading the LK files in the same order we
-    // loaded them when we were doing it statically in the .xhtml file.
-    this.loadExternal(
-      ["prototype/prototype",
-       "lk/JSON",
-       "lk/defaultconfig",
-       "local-LK-config",
-       "lk/Base",
-       "lk/scene",
-       "lk/Core",
-       "lk/Text",
-       "lk/Widgets",
-       "lk/Network",
-       "lk/Data",
-       "lk/Storage",
-       "lk/bindings",
-       "lk/Tools",
-       "lk/TestFramework",
-       "lk/TouchSupport",
-       "lk/cop/Layers",
-       "moousture/mootools-1.2.4-core-nc",
-       "moousture/Moousture",
-       "moousture/iPhoneProbe",
-       "jslint"
-      ], function() {
-        if (callWhenDone) { callWhenDone(); }
-      }
-    );
-  }, {category: ['bootstrapping']});
-
-  add.method('doneLoadingLivelyKernel', function () {
-  }, {category: ['bootstrapping']});
-
   add.method('initializeRepositories', function () {
-    var baseURL = window.livelyBaseURL;
+    var baseURL = transporter.avocadoBaseURL;
     if (baseURL === undefined) { baseURL = document.documentURI; }
     baseURL = baseURL.substring(0, baseURL.lastIndexOf("/")) + '/';
     var repoURL = baseURL + "javascripts/";
@@ -704,96 +627,47 @@ thisModule.addSlots(transporter, function(add) {
     }).join("\n"));
   }, {category: ['bootstrapping']});
 
-  add.method('initializeAvocado', function () {
-    Morph.prototype.suppressBalloonHelp = true; // I love the idea of balloon help, but it's just broken - balloons keep staying up when they shouldn't
-    //Morph.suppressAllHandlesForever(); // those things are annoying // but useful for direct UI construction
-    
-    var canvas = document.getElementById("canvas");
-    
-    var baseColor = Color.rgb(0x53, 0x82, 0xC1);
-  	DisplayThemes['lively'].world.fill = new lively.paint.LinearGradient([new lively.paint.Stop(0, baseColor.lighter()), new lively.paint.Stop(1, baseColor)]);
-  	
-    var world = new WorldMorph(canvas);
-    world.displayOnCanvas(canvas);
-    modules.init.markAsUnchanged(); // because displayOnCanvas sets the creator slot of the world
-    if (navigator.appName == 'Opera') { window.onresize(); }
-    if (transporter.shouldLog) { console.log("The world should be visible now."); }
-    return world;
-  }, {category: ['bootstrapping']});
-
   add.method('createAvocadoWorld', function () {
     Event.prepareEventSystem();
-    var world = transporter.initializeAvocado();
-    this.initializeGestures();
+    var world = transporter.userInterfaceInitializer.createAvocadoWorld();
     if (this.callWhenDoneCreatingAvocadoWorld) {
       this.callWhenDoneCreatingAvocadoWorld(world);
       delete this.callWhenDoneCreatingAvocadoWorld;
     }
-  }, {category: ['bootstrapping']});
-
-  add.method('initializeGestures', function () {
-    // aaa - big mess, just trying to see if it works
-    var gstr = new Moousture.ReducedLevenMatcher({reduceConsistency: 1});
-    var probe = new (UserAgent.isTouch ? Moousture.iPhoneProbe : Moousture.MouseProbe)(WorldMorph.current()); //$(document));
-    var recorder = new Moousture.Recorder({maxSteps: 20, minSteps: 8, matcher: gstr});
-    var monitor = new Moousture.Monitor(20, 1);
-    //CCW circle motion vectors
-    //gstr.addGesture([3,2,1,0,7,6,5,4], ccwCircle);
-    //Make a triangle
-    function triMov(error){
-      if (error * 10 >= 8) { return; }
-      WorldMorph.current().showContextMenu(Event.createFake());
-    }
-
-    gstr.addGesture([7, 1, 7, 1], triMov);
-    //Zig zag swipe vectors
-    //gstr.addGesture([4, 0, 4, 0], swipeMouse);
-    
-    //var swipeProbe = new Moousture.iPhoneProbe(WorldMorph.current().rawNode);
-    //var swipeMonitor = new Moousture.Monitor(20, 1);
-    //var swipeMatcher = new Moousture.ReducedLevenMatcher({reduceConsistency: 4});
-    //var swipeRecorder = new Moousture.Recorder({maxSteps: 50, minSteps: 2, matcher: swipeMatcher});
-    
-    //swipeMatcher.addGesture([0], rightSwipe);
-    //swipeMatcher.addGesture([4], leftSwipe);
-    
-    monitor.start(probe, recorder);
-    //swipeMonitor.start(swipeProbe, swipeRecorder);
+    return world;
   }, {category: ['bootstrapping']});
 
   add.method('createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded', function () {
     if (transporter.isDoneLoadingAvocadoLib && transporter.isDoneLoadingWindow) {
-      transporter.createAvocadoWorld();
-      avocado.worldHasBeenCreated = true;
+      avocado.world = transporter.createAvocadoWorld();
       this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
     }
   }, {category: ['bootstrapping']});
 
   add.method('initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated', function (callWhenDone) {
-    if (this.isDoneLoadingProgrammingEnvironment && avocado.worldHasBeenCreated) {
+    if (this.isDoneLoadingProgrammingEnvironment && avocado.world) {
       var shouldPrintLoadOrder = false;
       if (shouldPrintLoadOrder) { this.printLoadOrder(); }
 
       var app = window.isInCodeOrganizingMode ? window.jsQuiche : window.avocado;
       app.initialize();
-      WorldMorph.current().addApplication(app);
+      avocado.world.addApplication(app);
     }
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAvocadoLib', function () {
-    transporter.doneLoadingLivelyKernel();
     transporter.isDoneLoadingAvocadoLib = true;
     transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAllOfAvocado', function () {
-    if (modules['lk_programming_environment/programming_environment'] || modules['lk_programming_environment/code_organizer']) {
+    if (this.wasProgrammingEnvironmentLoaded()) {
       this.isDoneLoadingProgrammingEnvironment = true;
       this.initializeProgrammingEnvironmentIfTheCodeIsLoadedAndTheWorldIsCreated();
     }
 
     if (this.callWhenDoneLoadingAvocado) {
-      this.callWhenDoneLoadingAvocado(WorldMorph.current());
+      this.callWhenDoneLoadingAvocado(avocado.world);
       delete this.callWhenDoneLoadingAvocado;
     }
   }, {category: ['bootstrapping']});
@@ -804,37 +678,20 @@ thisModule.addSlots(transporter, function(add) {
     return this[name].call(this);
   }, {category: ['bootstrapping']});
 
-  add.method('shouldLoadModule', function (name) {
-    // This is a total hack, not meant to be secure; I'm just putting it
-    // in here to show how it's possible to avoid loading in the
-    // programming environment. -- Adam
-    if (name === "lk_programming_environment/programming_environment") {
-      if (UserAgent.isIPhone) { return false; }
-      if (window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
-      //if (window.wasServedFromGoogleAppEngine) { return currentUser && currentUser.isAdmin; }
-    }
-    if (name === "lk_programming_environment/code_organizer") {
-      if (! window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
-    }
-    return true;
-  }, {category: ['bootstrapping']});
-
   add.method('startAvocado', function (callWhenDone) {
     if (typeof(callWhenDone) !== 'undefined') { this.callWhenDoneLoadingAvocado = callWhenDone; }
 
     this.doBootstrappingStep('initializeRepositories');
 
-    transporter.loadLivelyKernel(function() {
+    transporter.userInterfaceInitializer.loadUserInterface(function() {
 
       transporter.fileInIfWanted("transporter/object_graph_walker", function() {
         transporter.doBootstrappingStep('putUnownedSlotsInInitModule');
         
         transporter.fileInIfWanted("avocado_lib", function() {
           transporter.doBootstrappingStep('doneLoadingAvocadoLib');
-          transporter.fileInIfWanted("lk_programming_environment/code_organizer", function() {
-            transporter.fileInIfWanted("lk_programming_environment/programming_environment", function() {
-              transporter.doBootstrappingStep('doneLoadingAllOfAvocado');
-            });
+          transporter.userInterfaceInitializer.loadProgrammingEnvironmentIfWanted(function() {
+            transporter.doBootstrappingStep('doneLoadingAllOfAvocado');
           });
         });
       });
@@ -980,6 +837,7 @@ thisModule.addSlots(transporter.repositories.httpWithWebDAV, function(add) {
       };
       req.send(codeToFileOut);
     } else {
+      // aaa LK-specific!!!!!!!
       var urlObj = new URL(url);
       var status = new Resource(Record.newPlainInstance({URL: urlObj})).store(codeToFileOut, true).getStatus();
       if (status.isSuccess()) {

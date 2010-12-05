@@ -106,7 +106,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['source']});
 
   add.method('createIconForButton', function (path) {
-    return new ImageMorph(pt(10,10).extentAsRectangle(), (window.livelyBaseURL || "") + path).beLabel();
+    return new ImageMorph(pt(10,10).extentAsRectangle(), (transporter.avocadoBaseURL || "") + path).beLabel();
   }, {category: ['creating']});
 
   add.method('createRow', function (getOrCreateContent) {
