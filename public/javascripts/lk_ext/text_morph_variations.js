@@ -4,11 +4,9 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     this.dontNotifyUntilTheActualModelChanges = true;
     this.connectModel({model: this, getText: "getSavedText", setText: "setSavedText"});
     this.acceptInput = true;
-    this.setFill(this.backgroundColorWhenWritable || null);
-    this.closeDnD();
-    this.setWrapStyle(lively.Text.WrapStyle.Shrink);
+    this.applyStyle(this.basicStyle);
+    this.setFill(this.backgroundColorWhenWritable || null),
     this.changed();
-    this.suppressGrabbing = true;
     this.setSavedText(this.textString); // aaa - what is this for?
     this.justAcceptedOrCancelled();
     if (accessors) {
@@ -19,6 +17,12 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
   },
 
   defaultBounds: pt(5, 10).extent(pt(140, 20)),
+  
+  basicStyle: {
+    openForDragAndDrop: false,
+    wrapStyle: lively.Text.WrapStyle.Shrink,
+    suppressGrabbing: true
+  },
 
   getSavedText: function( )  {
     return this.savedTextString;
@@ -175,12 +179,11 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
   beUnwritable: function() {
     this.acceptInput = false;
     this.setFill(this.backgroundColorWhenUnwritable || null);
-    this.setWrapStyle(lively.Text.WrapStyle.Shrink);
+    this.applyStyle(this.basicStyle);
     this.setNullSelectionAt(0);
     var w = this.world();
     if (w) {this.relinquishKeyboardFocus(w.firstHand());}
     this.changed();
-    this.suppressGrabbing = true;
     this.mouseHandler = this.oldMouseHandler;
     delete this.oldMouseHandler;
     this.isInWritableMode = false;
@@ -190,9 +193,8 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
   beWritable: function() {
     this.acceptInput = true;
     this.setFill(this.backgroundColorWhenWritable || null);
-    this.setWrapStyle(lively.Text.WrapStyle.Shrink);
+    this.applyStyle(this.basicStyle);
     this.changed();
-    this.suppressGrabbing = true;
     this.oldMouseHandler = this.mouseHandler;
     this.enableEvents();
     this.isInWritableMode = true;
