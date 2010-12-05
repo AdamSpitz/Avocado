@@ -45,9 +45,6 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
     this.applyStyle(this.defaultStyle);
 
-    this._slotMorphs     = avocado.dictionary.copyRemoveAll();
-    this._categoryMorphs = avocado.dictionary.copyRemoveAll();
-
     this._rootCategoryMorph = this.categoryMorphFor(category.root().ofMirror(this._mirror));
     this._expander = this._rootCategoryMorph.expander();
     
@@ -137,41 +134,34 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
   }, {category: ['categories']});
 
   add.method('slotMorphFor', function (s) {
-    return this._slotMorphs.getOrIfAbsentPut(s.name(), function() { return s.morph(); });
-  }, {category: ['contents panel']});
-
-  add.method('removeObsoleteSlotMorph', function (sm) {
-    var n = sm.slot().name();
-    var existingOne = this._slotMorphs.get(n);
-    if (existingOne === sm) { this._slotMorphs.removeKey(n); }
+    return s.morph();
   }, {category: ['contents panel']});
 
   add.method('existingCategoryMorphFor', function (c) {
-    return this._categoryMorphs.get(c.fullName());
+    return c.ofMirror(this.mirror()).existingMorph();
   }, {category: ['categories']});
 
   add.method('categoryMorphFor', function (c) {
-    return this._categoryMorphs.getOrIfAbsentPut(c.fullName(), function() {
-      return c.ofMirror(this.mirror()).morph();
-    }.bind(this));
+    return c.ofMirror(this.mirror()).morph();
   }, {category: ['categories']});
 
   add.method('justRenamedCategoryMorphFor', function (oldCat, newCat, isEmpty) {
-    if (! this._categoryMorphs) { return; } // nothing to do, since we haven't expanded this mirror yet
-    var oldCatMorph = this._categoryMorphs.removeKey(oldCat.fullName());
-    if (oldCatMorph && !isEmpty) {
-      var newCatMorph = this.categoryMorphFor(newCat);
-      this.updateAppearance();
-      oldCatMorph.transferUIStateTo(newCatMorph, Event.createFake());
+    // aaa - Um, I don't think this code could ever have really worked right. When we
+    // rename a category, it's going to screw with all the subcategories - they *all*
+    // have different names now. What can we do about this?
+    var oldCatMorph = this.existingCategoryMorphFor(oldCat);
+    if (oldCatMorph) {
+      WorldMorph.current().forgetAboutExistingMorphFor(oldCat, oldCatMorph);
+      if (!isEmpty) {
+        var newCatMorph = this.categoryMorphFor(newCat);
+        this.updateAppearance();
+        oldCatMorph.transferUIStateTo(newCatMorph, Event.createFake());
+      }
     }
   }, {category: ['categories']});
 
   add.method('commentMorph', function () {
-    var m = this._commentMorph;
-    if (m) { return m; }
-    m = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.mirror(), 'comment'));
-    this._commentMorph = m;
-    return m;
+    return this._commentMorph || (this._commentMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.mirror(), 'comment')));
   }, {category: ['comment']});
 
   add.method('openEvaluator', function (evt) {
@@ -327,19 +317,11 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('partsOfUIState', function () {
     return Object.extend({
+      isExpanded:       this._expander,  // the root category already has this, but we want it at the top level so "clean up" can set it
       isCommentOpen:    this._commentToggler,
       isAnnotationOpen: this._annotationToggler,
-      categories: {
-        collection: this._categoryMorphs.values(),
-        keyOf: function(cm) { return cm.category().parts(); },
-        getPartWithKey: function(morph, catParts) { return morph.categoryMorphFor(category.create(catParts)); }
-      },
-      slots: {
-        collection: this._slotMorphs.values(),
-        keyOf: function(sm) { return sm.slot().name(); },
-        getPartWithKey: function(morph, name) { return morph.slotMorphFor(morph.mirror().slotAt(name)); }
-      }
-    }, this._rootCategoryMorph.partsOfUIState());
+      rootCategory:     this._rootCategoryMorph
+    });
   }, {category: ['UI state']});
 
 });

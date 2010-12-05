@@ -33,6 +33,9 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     this._model = treeNode;
     this._expander = new ExpanderMorph(this);
 
+    this._subnodeMorphs = [];
+    this._nonNodeContentMorphs = [];
+
     this._contentsSummaryMorph = this.createContentsSummaryMorph();
   }, {category: ['initializing']});
 
@@ -41,7 +44,19 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.method('expander', function () { return this._expander; }, {category: ['expanding and collapsing']});
 
   add.method('partsOfUIState', function () {
-    return { isExpanded: this.expander() };
+    return {
+      isExpanded: this.expander(),
+      nodes: {
+        collection: this._subnodeMorphs.toArray(),
+        keyOf: function(cm) { return cm._model; },
+        getPartWithKey: function(morph, node) { return WorldMorph.current().morphFor(node); }
+      },
+      nonNodes: {
+        collection: this._nonNodeContentMorphs,
+        keyOf: function(cm) { return cm._model; },
+        getPartWithKey: function(morph, nonNode) { return WorldMorph.current().morphFor(nonNode); }
+      }
+    };
   }, {category: ['UI state']});
 
   add.method('contentsPanel', function () {
@@ -58,8 +73,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.method('potentialContentsOfContentsPanel', function () {
     var allSubmorphs = [];
     if (this.treeNode().requiresContentsSummary()) { allSubmorphs.push(this._contentsSummaryMorph); }
-    this.nonNodeContentMorphsInOrder().each(function(sm ) {allSubmorphs.push(sm );});
-    this.       subnodeMorphsInOrder().each(function(scm) {allSubmorphs.push(scm);});
+    this._nonNodeContentMorphs = this.nonNodeContentMorphsInOrder();
+    this._subnodeMorphs = this.subnodeMorphsInOrder();
+    this._nonNodeContentMorphs.each(function(sm ) {allSubmorphs.push(sm );});
+    this._subnodeMorphs.each(function(scm) {allSubmorphs.push(scm);});
     allSubmorphs.each(function(m) { m.horizontalLayoutMode = LayoutModes.SpaceFill; });
     return avocado.tableContents.createWithColumns([allSubmorphs]);
   }, {category: ['contents panel']});

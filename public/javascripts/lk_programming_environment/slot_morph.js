@@ -85,18 +85,13 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.creator('annotationStyle', {}, {category: ['styles']});
 
+  add.creator('sourceMorphStyle', {}, {category: ['styles']});
+
   add.creator('signatureRowStyle', {}, {category: ['styles']});
 
   add.method('mirrorMorph', function () {
     return WorldMorph.current().existingMorphFor(this.slot().mirror());
   }, {category: ['accessing']});
-
-  add.data('grabsShouldFallThrough', true, {category: ['grabbing']});
-
-  add.method('updateAppearance', function ($super) {
-    this.refreshContentOfMeAndSubmorphs();
-    $super();
-  }, {category: ['updating']});
 
   add.method('showContentsArrow', function (callWhenDone) {
     this._contentsPointer.arrow.showMe(callWhenDone);
@@ -126,14 +121,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['source']});
 
   add.method('sourceMorph', function () {
-    var m = this._sourceMorph;
-    if (m) { return m; }
-    m = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'sourceCode'));
-    m.setFontFamily('monospace');
-    m.setLayoutModes({horizontalLayoutMode: LayoutModes.SpaceFill});
-    m.suppressHandles = true;
-    this._sourceMorph = m;
-    return m;
+    return this._sourceMorph || (this._sourceMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'sourceCode')).applyStyle(this.sourceMorphStyle));
   }, {category: ['source']});
 
   add.method('annotationMorph', function () {
@@ -211,8 +199,6 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['accessing']});
 
   add.method('justBecameObsolete', function () {
-    var mirMorph = this.mirrorMorph();
-    if (mirMorph) { mirMorph.removeObsoleteSlotMorph(this); }
     WorldMorph.current().forgetAboutExistingMorphFor(this.slot(), this);
   }, {category: ['renaming']});
 
@@ -301,6 +287,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.defaultStyle, func
 
   add.data('suppressGrabbing', true);
 
+  add.data('grabsShouldFallThrough', true);
+
   add.data('openForDragAndDrop', false);
 
   add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
@@ -318,6 +306,17 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.copyDownStyle, fun
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.annotationStyle, function(add) {
 
   add.data('padding', {left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}'});
+
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.sourceMorphStyle, function(add) {
+
+  add.data('fontFamily', 'monospace');
+  
+  add.data('horizontalLayoutMode', LayoutModes.SpaceFill);
+  
+  add.data('suppressHandles', true);
 
 });
 

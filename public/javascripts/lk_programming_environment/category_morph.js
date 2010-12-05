@@ -23,6 +23,10 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     return WorldMorph.current().morphFor(this);
   }, {category: ['user interface']});
 
+  add.method('existingMorph', function () {
+    return WorldMorph.current().existingMorphFor(this);
+  }, {category: ['user interface']});
+
 });
 
 
@@ -92,6 +96,12 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     this._headerRow = hr;
     return hr;
   }, {category: ['creating']});
+
+  add.method('partsOfUIState', function ($super) {
+    var parts = $super();
+    if (this._shouldOmitHeaderRow) { delete parts['isExpanded']; } // the mirror will handle it
+    return parts;
+  }, {category: ['UI state']});
 
   add.method('nonNodeContentMorphsInOrder', function () {
     return this.treeNode().nonNodeContents().map(function(s) { return this.nonNodeMorphFor(s); }.bind(this));
