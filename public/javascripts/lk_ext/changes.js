@@ -191,6 +191,11 @@ Morph.addMethods({
         menu.addItems(this.subMenuItems(evt));
         return menu;
     },
+    
+    setModel: function(m) {
+      this._model = m;
+      return this;
+    },
 
   	inspect: function() {
   		try {
@@ -259,11 +264,15 @@ ButtonMorph.addMethods({
 
 ImageMorph.addMethods({
   beLabel: function() {
-    this.setFill(null);
-    this.beUngrabbable();
-    this.ignoreEvents();
-    this.closeDnD();
+    this.applyStyle(this.labelStyle);
     return this;
+  },
+  
+  labelStyle: {
+    fill: null,
+    suppressGrabbing: true,
+    shouldIgnoreEvents: true,
+    openForDragAndDrop: false
   }
 });
 

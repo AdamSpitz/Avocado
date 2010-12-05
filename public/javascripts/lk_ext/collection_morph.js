@@ -1,6 +1,7 @@
 transporter.module.create('lk_ext/collection_morph', function(requires) {
   
 requires('lk_ext/rows_and_columns');
+requires('lk_ext/shortcuts');
   
 }, function(thisModule) {
 
@@ -63,14 +64,13 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
     });
     this._dropCriteria = dropCriteria;
     
-    this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}});
-    this.setFill(lively.paint.defaultFillWithColor(this._collection.morphColor || Color.orange.lighter()));
-    this.shape.roundEdgesBy(10);
-    this.closeDnD();
+    this.applyStyle(this.defaultStyle);
     
     this._headerRow = this._columnsToShow.map(function(c) { return this.headerMorphFor(c.name); }.bind(this));
     this.refreshContent();
   }, {category: ['creating']});
+  
+  add.creator('defaultStyle', {}, {category: ['styles']});
   
   add.method('headerMorphFor', function(name) {
     var m = ButtonMorph.createButton(name, function(evt) {}, 1);
@@ -158,6 +158,19 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
     return this._collection.canInsert || reflect(this._collection).isReflecteeArray();
   }, {category: ['testing']});
   
+});
+
+
+thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
+  
+  add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}'});
+  
+  add.data('fill', lively.paint.defaultFillWithColor(Color.orange.lighter()));
+  
+  add.data('borderRadius', 10);
+  
+  add.data('openForDragAndDrop', false);
+
 });
 
 

@@ -106,7 +106,7 @@ BoxMorph.subclass('ButtonMorph', {
     
     onMouseDown: function(evt) {
 		if (!this.getIsActive() && this.getIsActive() !== undefined) return;
-        this.requestKeyboardFocus(evt.hand);
+        // this.requestKeyboardFocus(evt.hand); // commented out by Adam, because I don't like it
         if (!this.toggle) {
             this.setValue(true); 
             this.changeAppearanceFor(true); 

@@ -66,21 +66,18 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
 
   add.method('initialize', function ($super, assoc, ep1, ep2) {
     $super(new lively.scene.Polyline([pt(0,0), pt(0,0)]));
-    this.setBorderWidth(1);
-    this.setBorderColor(Color.black);
-    this.setFill(null);
+    this.applyStyle(this.defaultStyle);
     this.notificationFunction = function() {setTimeout(this.putVerticesInTheRightPlace.bind(this), 0);}.bind(this);
     this.endpoint1 = ep1 || new avocado.ArrowEndpoint(assoc, this);
     this.endpoint2 = ep2 || new avocado.ArrowEndpoint(assoc, this);
     this.endpoint1.otherEndpoint = this.endpoint2;
     this.endpoint2.otherEndpoint = this.endpoint1;
-    this.closeDnD();
-    this.ignoreEvents();
-    this.beUngrabbable();
     this.needsToBeVisible();
   }, {category: ['creating']});
 
   add.data('shouldGrowSmoothly', true);
+  
+  add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('stopUpdating', function () {
     if (this._updateProcess) {
@@ -221,6 +218,23 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
 
   add.method('shouldIgnorePoses', function (uiState) { return true; }, {category: ['poses']});
 
+});
+
+
+thisModule.addSlots(avocado.ArrowMorph.prototype.defaultStyle, function(add) {
+
+  add.data('borderColor', Color.black);
+  
+  add.data('borderWidth', 1);
+  
+  add.data('fill', null);
+  
+  add.data('suppressGrabbing', true);
+  
+  add.data('openForDragAndDrop', false);
+  
+  add.data('shouldIgnoreEvents', true);
+  
 });
 
 

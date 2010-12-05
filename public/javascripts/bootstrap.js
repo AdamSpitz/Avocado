@@ -707,6 +707,10 @@ thisModule.addSlots(transporter, function(add) {
     //Morph.suppressAllHandlesForever(); // those things are annoying // but useful for direct UI construction
     
     var canvas = document.getElementById("canvas");
+    
+    var baseColor = Color.rgb(0x53, 0x82, 0xC1);
+  	DisplayThemes['lively'].world.fill = new lively.paint.LinearGradient([new lively.paint.Stop(0, baseColor.lighter()), new lively.paint.Stop(1, baseColor)]);
+  	
     var world = new WorldMorph(canvas);
     world.displayOnCanvas(canvas);
     modules.init.markAsUnchanged(); // because displayOnCanvas sets the creator slot of the world

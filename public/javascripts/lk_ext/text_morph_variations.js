@@ -8,7 +8,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     this.closeDnD();
     this.setWrapStyle(lively.Text.WrapStyle.Shrink);
     this.changed();
-    this.beUngrabbable();
+    this.suppressGrabbing = true;
     this.setSavedText(this.textString); // aaa - what is this for?
     this.justAcceptedOrCancelled();
     if (accessors) {
@@ -84,8 +84,12 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     return this._hasChangedFromSavedText;
   },
 
-  normalBorderWidth:       1,
-  borderWidthWhenModified: 2,
+  normalStyle: TextMorph.prototype.style,
+  
+  modifiedStyle: {
+    borderWidth: 2,
+    borderColor: Color.red
+  },
 
   changed: function($super) {
     // Avoid infinite recursion when setting the border stuff.
@@ -95,13 +99,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     var currentText = this.getText();
     var savedText = this.getSavedText();
     var hasChanged = this._hasChangedFromSavedText = (currentText !== savedText);
-    if (! hasChanged) {
-      this.setBorderColor(Color.black);
-      this.setBorderWidth(this.normalBorderWidth);
-    } else {
-      this.setBorderColor(Color.red);
-      this.setBorderWidth(this.borderWidthWhenModified);
-    }
+    this.applyStyle(hasChanged ? this.modifiedStyle : this.normalStyle);
     this.minimumExtentMayHaveChanged();
     delete this._isChangingRightNow;
     $super();
@@ -182,7 +180,7 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
     var w = this.world();
     if (w) {this.relinquishKeyboardFocus(w.firstHand());}
     this.changed();
-    this.beUngrabbable();
+    this.suppressGrabbing = true;
     this.mouseHandler = this.oldMouseHandler;
     delete this.oldMouseHandler;
     this.isInWritableMode = false;
@@ -194,7 +192,7 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
     this.setFill(this.backgroundColorWhenWritable || null);
     this.setWrapStyle(lively.Text.WrapStyle.Shrink);
     this.changed();
-    this.beUngrabbable();
+    this.suppressGrabbing = true;
     this.oldMouseHandler = this.mouseHandler;
     this.enableEvents();
     this.isInWritableMode = true;
@@ -204,7 +202,7 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
   switchEditModeOn:  function() { this.beWritable(); },
   switchEditModeOff: function() { this.beUnwritable(); },
 
-  normalBorderWidth: 0,
+  normalStyle: Object.extend(Object.create(TextMorph.prototype.style), {borderWidth: 0}),
 
   justAcceptedOrCancelled: function() {
     this.beUnwritable();
@@ -230,6 +228,11 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
   },
   
   nameOfEditCommand: 'edit',
+  
+  setNameOfEditCommand: function(n) {
+    this.nameOfEditCommand = n;
+    return this;
+  },
 
   editingCommands: function($super) {
     var cmdList = $super();
@@ -239,3 +242,5 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
     return cmdList;
   }
 });
+
+TextMorph.prototype.style. borderColor = new Color(0.6, 0.6, 0.6);

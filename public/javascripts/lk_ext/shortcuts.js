@@ -32,24 +32,21 @@ ButtonMorph.createButton = function (contents, f, padding) {
   if (Config.fatFingers) { p = Math.max(p, 10); }
   var b = new ButtonMorph(pt(0,0).extent(contentsMorph.bounds().extent().addXY(p * 2, p * 2)));
   b.run = f;
-  b.closeDnD();
   b.addMorphAt(contentsMorph, pt(p, p));
   b.connectModel({model: {morph: b, Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {this.morph.run(Event.createFake());}}}, setValue: "setValue", getValue: "getValue"});
   return b;
 };
 
-Morph.createBox = function(obj, color) {
-  var m = new avocado.RowMorph();
-  m._model = obj;
-  
-  m.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}});
-  m.setFill(lively.paint.defaultFillWithColor(color));
-  m.shape.roundEdgesBy(10);
-  m.closeDnD();
+Object.extend(DisplayThemes['lively'].button, {
+  fill: new lively.paint.LinearGradient([new lively.paint.Stop(0, Color.gray.lighter()),
+                                         new lively.paint.Stop(1, Color.gray.darker())]),
+  openForDragAndDrop: false
+});
 
-  m.inspect = function () { return this._model.inspect(); };
-  
-  return m;
+Morph.boxStyle = {
+  padding: {top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}},
+  borderRadius: 10,
+  openForDragAndDrop: false
 };
 
 Morph.prototype.createNameLabel = function() {
@@ -58,8 +55,8 @@ Morph.prototype.createNameLabel = function() {
 
 Morph.createEitherOrMorph = function(m1, m2, condition) {
   var r = new avocado.RowMorph().beInvisible();
-  var t1 = avocado.toggler.create(function() {}, m1);
-  var t2 = avocado.toggler.create(function() {}, m2);
+  var t1 = avocado.toggler.create(null, m1);
+  var t2 = avocado.toggler.create(null, m2);
   r.setPotentialColumns([t1, t2]);
   r.refreshContent = avocado.hackToMakeSuperWork(r, "refreshContent", function($super) {
     var c = condition();

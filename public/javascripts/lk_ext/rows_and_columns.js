@@ -97,6 +97,15 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     }
   }, {category: ['layout']});
   
+	add.method('applyStyle', function($super, specs) {
+		for (var i = 0; i < arguments.length; ++i) {
+			var spec = arguments[i];
+			if (!spec) { return; }
+  	  if (typeof(spec.padding) !== 'undefined') { this.setPadding(spec.padding); }
+		}
+	  return $super.apply(this, arguments);
+  }, {category: ['styles']});
+  
   add.method('eachDirection', function(f) {
     f(avocado.HorizontalDirection);
     f(avocado.VerticalDirection);
@@ -336,15 +345,28 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   add.data('suppressHandles', true, {category: ['handles']});
 
   add.method('beInvisible', function () {
-    this.setPadding(0);
-    this.setFill(null);
-    this.setBorderWidth(0);
-    this.beUngrabbable();
-    this.ignoreEvents(); // allows dragging through me, I think
-    this.closeDnD(); // allows dropping through me
-    return this;
+    return this.applyStyle(this.invisibleStyle);
   }, {category: ['shortcuts']});
+  
+  add.creator('invisibleStyle', {}, {category: ['styles']});
 
+});
+
+
+thisModule.addSlots(avocado.TableMorph.prototype.invisibleStyle, function(add) {
+  
+  add.data('padding', 0);
+  
+  add.data('borderWidth', 0);
+  
+  add.data('fill', null);
+  
+  add.data('suppressGrabbing', true);
+  
+  add.data('shouldIgnoreEvents', true);
+  
+  add.data('openForDragAndDrop', false);
+  
 });
 
 

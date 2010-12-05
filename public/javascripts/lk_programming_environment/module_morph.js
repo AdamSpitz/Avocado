@@ -1,5 +1,6 @@
 transporter.module.create('lk_programming_environment/module_morph', function(requires) {
 
+requires('lk_ext/shortcuts');
 requires('lk_ext/rows_and_columns');
 requires('transporter/transporter');
 
@@ -9,9 +10,8 @@ requires('transporter/transporter');
 thisModule.addSlots(transporter.module, function(add) {
 
   add.method('newMorph', function () {
-    var m = Morph.createBox(this, Color.red.lighter());
+    var m = new avocado.RowMorph().setModel(this).applyStyle(this.defaultMorphStyle);
     var module = this;
-    m._module = module;
 
     var changeIndicator = TextMorph.createLabel(function() { return module.hasChangedSinceLastFileOut() ? ' has changed ' : ''; });
     changeIndicator.setTextColor(Color.green.darker());
@@ -36,6 +36,15 @@ thisModule.addSlots(transporter.module, function(add) {
     m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});
+  
+  add.creator('defaultMorphStyle', Object.create(Morph.boxStyle), {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(transporter.module.defaultMorphStyle, function(add) {
+  
+  add.data('fill', lively.paint.defaultFillWithColor(Color.red.lighter()));
 
 });
 
@@ -45,7 +54,7 @@ thisModule.addSlots(transporter, function(add) {
   add.method('fileOutPluralMorphs', function (morphsAndCommands, evt) {
     // aaa - This is a hack. Come up with a more general, cleaner way of doing
     // plural commands that can handle both SelectionMorph and other mechanisms.
-    morphsAndCommands.each(function(x) { x.module = x.morph._module; });
+    morphsAndCommands.each(function(x) { x.module = x.morph._model; });
     transporter.fileOutPlural(morphsAndCommands, evt);
   }, {category: ['user interface', 'commands', 'filing out']});
 

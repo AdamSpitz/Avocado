@@ -23,12 +23,6 @@ ButtonMorph.subclass("ExpanderMorph", {
   },
 
   changeAppearanceFor: function($super, value) {
-	var fill = this.getFill();
-    var baseColor = fill ? ((fill instanceof lively.paint.Gradient) ? fill.stops[0].color() : fill) : null;
-    var direction = value ? lively.paint.LinearGradient.SouthNorth : lively.paint.LinearGradient.WestEast;
-    var stops = [new lively.paint.Stop(0, baseColor          ),
-                 new lively.paint.Stop(1, baseColor.lighter())];
-    var gradient = new lively.paint.LinearGradient(stops, direction);
     if (this.shape.setVertices) {
       this.shape.setVertices(this.verticesForValue(value));
     } else {
@@ -36,7 +30,6 @@ ButtonMorph.subclass("ExpanderMorph", {
       this.setShape(new lively.scene.Polygon(this.verticesForValue(false)));
       this.applyStyle(oldStyle); // workaround for ButtonMorphs having to start off being a rectangle
     }
-    this.setFill(gradient);
     // $super(value); // Messes things up, I think. -- Adam
   },
 
@@ -55,4 +48,7 @@ ButtonMorph.subclass("ExpanderMorph", {
 });
 
 // Not sure I like this, but for now I think I want expanders to look different from regular buttons.
-DisplayThemes['lively'].expander = {fill: Color.blue};
+DisplayThemes['lively'].expander = {
+  fill: new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.75, 0.75, 0.95)),
+                                         new lively.paint.Stop(1, new Color(0.5, 0.5, 0.9))])
+};

@@ -30,7 +30,7 @@ thisModule.addSlots(mirror.Morph, function(add) {
   add.creator('prototype', Object.create(avocado.ColumnMorph.prototype), {});
 
   add.data('type', 'mirror.Morph');
-
+  
 });
 
 
@@ -43,25 +43,20 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     this._mirror = m;
     this._model = m;
 
-    this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}});
-    this.shape.roundEdgesBy(10);
-    this.closeDnD();
+    this.applyStyle(this.defaultStyle);
 
     this._slotMorphs     = avocado.dictionary.copyRemoveAll();
     this._categoryMorphs = avocado.dictionary.copyRemoveAll();
 
-    this.setFill(lively.paint.defaultFillWithColor(Color.neutral.gray.lighter()));
-
     this._rootCategoryMorph = this.categoryMorphFor(category.root().ofMirror(this._mirror));
     this._expander = this._rootCategoryMorph.expander();
     
-    this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible();
-    this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
+    this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: LayoutModes.SpaceFill});
 
     this.titleLabel = TextMorph.createLabel(function() {return m.inspect();});
 
-    this._commentToggler    = avocado.toggler.create(this.updateAppearance.bind(this), this.mirror().canHaveAnnotation() ? this.createRow(this.   commentMorph()) : null);
-    this._annotationToggler = avocado.toggler.create(this.updateAppearance.bind(this), this.mirror().canHaveAnnotation() ? this.createRow(this.annotationMorph()): null);
+    this._commentToggler    = avocado.toggler.create(this, this.mirror().canHaveAnnotation() ? this.createRow(this.   commentMorph()) : null);
+    this._annotationToggler = avocado.toggler.create(this, this.mirror().canHaveAnnotation() ? this.createRow(this.annotationMorph()): null);
 
     this.commentButton     = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
     this.akaButton         = avocado.command.create("AKA",   function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
@@ -75,8 +70,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     var optionalParentButtonMorph  = Morph.createOptionalMorph(this. parentButton, function() { return this.mirror().hasAccessibleParent(); }.bind(this));
     var optionalCommentButtonMorph = Morph.createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
     
-    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton].compact(),
-                                                  {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}});
+    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton].compact(), this.defaultStyle.headerRowPadding);
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
     this.setPotentialRows([this._headerRow, this._annotationToggler, this._commentToggler, this._rootCategoryMorph, this._evaluatorsPanel]);
@@ -92,9 +86,11 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     f(this.mirror().reflectee());
     f(this.mirror());
   }, {category: ['associated objects']});
+  
+  add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('createRow', function (m) {
-    var r = avocado.RowMorph.createSpaceFilling([m], {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}});
+    var r = avocado.RowMorph.createSpaceFilling([m], this.defaultStyle.internalPadding);
     r.wasJustShown = function(evt) { m.wasJustShown(evt); };
     return r;
   }, {category: ['creating']});
@@ -346,6 +342,27 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     }, this._rootCategoryMorph.partsOfUIState());
   }, {category: ['UI state']});
 
+});
+
+
+thisModule.addSlots(mirror.Morph.prototype.defaultStyle, function(add) {
+  
+  add.data('borderColor', new Color(0.6, 0.6, 0.6));
+  
+  add.data('borderWidth', 1);
+  
+  add.data('borderRadius', 10);
+  
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, Color.gray.lighter()), new lively.paint.Stop(1, Color.gray)]));
+  
+  add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}'});
+  
+  add.data('openForDragAndDrop', false);
+  
+  add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
+  
+  add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
+  
 });
 
 

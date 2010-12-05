@@ -45,15 +45,15 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['UI state']});
   
   add.method('contentsPanel', function () {
-    var sp = this._contentsPanel;
-    if (sp) { return sp; }
-    sp = this._contentsPanel = new avocado.ColumnMorph().beInvisible();
-    sp.setPadding({top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}});
-    sp.horizontalLayoutMode = LayoutModes.SpaceFill;
-    sp.potentialContent = this.potentialContentsOfContentsPanel.bind(this);
-    sp.refreshContent();
-    return sp;
+    var cp = this._contentsPanel;
+    if (cp) { return cp; }
+    cp = this._contentsPanel = new avocado.ColumnMorph().beInvisible().applyStyle(this.contentsPanelStyle);
+    cp.potentialContent = this.potentialContentsOfContentsPanel.bind(this);
+    cp.refreshContent();
+    return cp;
   }, {category: ['contents panel']});
+
+  add.creator('contentsPanelStyle', {}, {category: ['styles']});
 
   add.method('potentialContentsOfContentsPanel', function () {
     var allSubmorphs = [];
@@ -94,6 +94,15 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     this.treeNode().eachImmediateSubnode(function(sn) { f(this.nodeMorphFor(sn)); }.bind(this));
   }, {category: ['contents panel']});
 
+});
+
+
+thisModule.addSlots(avocado.TreeNodeMorph.prototype.contentsPanelStyle, function(add) {
+  
+  add.data('padding', {top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}}, {initializeTo: '{top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}}'});
+  
+  add.data('horizontalLayoutMode', LayoutModes.SpaceFill);
+  
 });
 
 

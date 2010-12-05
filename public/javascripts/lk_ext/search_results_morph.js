@@ -36,22 +36,24 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     this.shape.roundEdgesBy(10);
     this.closeDnD();
 
-    this._resultsPanel = new avocado.TableMorph().beInvisible();
-    this._resultsPanel.setPadding({top: 3, bottom: 3, left: 3, right: 3, between: {x: 3, y: 3}});
+    this._resultsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.resultsPanelStyle);
 
     this._expander = new ExpanderMorph(this);
     this.titleLabel = TextMorph.createLabel(function() {return this.inspect();}.bind(this));
     this.redoButton = ButtonMorph.createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
 
-    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton],
-                                                          {top: 0, bottom: 0, left: 3, right: 3, between: {x: 3, y: 3}});
+    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton], this.headerRowStyle.padding);
 
     this.setPotentialRows([this._headerRow, Morph.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
     this.refreshContent();
   });
 
   add.method('searcher', function () { return this._searcher; });
+  
+  add.creator('headerRowStyle', {}, {category: ['styles']});
+  
+  add.creator('resultsPanelStyle', {}, {category: ['styles']});
 
   add.method('updateAppearance', function () {
     if (! this.world()) { return; }
@@ -84,6 +86,20 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     };
   }, {category: ['UI state']});
 
+});
+
+
+thisModule.addSlots(avocado.SearchResultsMorph.prototype.headerRowStyle, function(add) {
+  
+  add.data('padding', {top: 0, bottom: 0, left: 3, right: 3, between: {x: 3, y: 3}}, {top: 0, bottom: 0, left: 3, right: 3, between: {x: 3, y: 3}});
+  
+});
+
+
+thisModule.addSlots(avocado.SearchResultsMorph.prototype.resultsPanelStyle, function(add) {
+  
+  add.data('padding', {top: 3, bottom: 3, left: 3, right: 3, between: {x: 3, y: 3}}, {initializeTo: '{top: 3, bottom: 3, left: 3, right: 3, between: {x: 3, y: 3}}'});
+  
 });
 
 

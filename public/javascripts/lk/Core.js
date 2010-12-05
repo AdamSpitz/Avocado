@@ -1981,6 +1981,13 @@ Morph.addMethods({
 			}
 			if (spec.suppressGrabbing !== undefined) this.suppressGrabbing = spec.suppressGrabbing;
 			if (spec.suppressHandles !== undefined) this.suppressHandles = spec.suppressHandles;
+			
+			// All this stuff added by Adam
+			if (spec.openForDragAndDrop !== undefined) this.openForDragAndDrop = spec.openForDragAndDrop;
+			if (spec.grabsShouldFallThrough !== undefined) this.grabsShouldFallThrough = spec.grabsShouldFallThrough;
+			if (spec.horizontalLayoutMode !== undefined) this.horizontalLayoutMode = spec.horizontalLayoutMode;
+			if (spec.verticalLayoutMode !== undefined) this.verticalLayoutMode = spec.verticalLayoutMode;
+			if (spec.shouldIgnoreEvents) this.ignoreEvents();
 		}
 		return this;
 	},
@@ -6536,6 +6543,7 @@ Morph.subclass('BoxMorph', {
 				throw new TypeError(spec.padding + ' not a Rectangle');
 			this.padding = spec.padding;
 		}
+		return this; // added by Adam, I think it's just a bug that this was omitted
 	}
 
 });

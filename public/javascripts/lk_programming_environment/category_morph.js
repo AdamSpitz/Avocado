@@ -45,11 +45,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     $super(catOfMir);
     this._shouldOmitHeaderRow = shouldOmitHeaderRow;
 
-    this.setPadding({top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}});
-    this.setLayoutModes({horizontalLayoutMode: LayoutModes.SpaceFill});
-    this.closeDnD();
-    this.beUngrabbable();
-    this.setFill(null);
+    this.applyStyle(this.defaultStyle);
 
     this._highlighter = avocado.booleanHolder.containing(true).addObserver(function() {this.updateHighlighting();}.bind(this));
     this._highlighter.setChecked(false);
@@ -64,14 +60,14 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   add.method('mirrorMorph', function () { return this.mirror().morph(); }, {category: ['accessing']});
 
   add.method('category', function () { return this.categoryOfMirror().category(); }, {category: ['accessing']});
-
-  add.data('grabsShouldFallThrough', true, {category: ['grabbing']});
+  
+  add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('createTitleLabel', function () {
     var lbl = new TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
                                                             function(n) { this.rename(n); }.bind(this)));
     lbl.setEmphasis({style: 'italic'});
-    lbl.nameOfEditCommand = "rename";
+    lbl.setNameOfEditCommand("rename");
     lbl.backgroundColorWhenWritable = null;
     lbl.ignoreEvents();
     return lbl;
@@ -85,14 +81,14 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     // summaryLabel.setLayoutModes({horizontalLayoutMode: LayoutModes.SpaceFill});
     // return summaryLabel;
     
-    return avocado.RowMorph.createSpaceFilling([summaryLabel], {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}});
+    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding);
   }, {category: ['creating']});
   
   add.method('headerRow', function () {
     var hr = this._headerRow;
     if (hr) { return hr; }
     this.titleLabel = this.createTitleLabel();
-    hr = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel], {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}});
+    hr = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel], this.defaultStyle.headerRowPadding);
     this._headerRow = hr;
     return hr;
   }, {category: ['creating']});
@@ -229,6 +225,27 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
       if (this._shouldDisappearAfterCommandIsFinished) { this.remove(); }
     }
   }, {category: ['drag and drop']});
+
+});
+
+
+thisModule.addSlots(category.Morph.prototype.defaultStyle, function(add) {
+  
+  add.data('padding', {top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}, {initializeTo: '{top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}'});
+
+  add.data('horizontalLayoutMode', LayoutModes.SpaceFill);
+  
+  add.data('openForDragAndDrop', false);
+  
+  add.data('suppressGrabbing', false);
+
+  add.data('grabsShouldFallThrough', true);
+  
+  add.data('fill', null);
+  
+  add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
+  
+  add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
 
 });
 

@@ -87,9 +87,6 @@ Morph.addMethods({
 
     },
 
-    beUngrabbable: function() {if (!this.old_okToBeGrabbedBy) {this.old_okToBeGrabbedBy = this.okToBeGrabbedBy; this.okToBeGrabbedBy = function(evt) {return null;};}},
-    beGrabbable:   function() {if ( this.old_okToBeGrabbedBy) {this.okToBeGrabbedBy = this.old_okToBeGrabbedBy; this.old_okToBeGrabbedBy = null;}},
-
   grabMe: function(evt, inChasingMode) {
     evt = evt || Event.createFake(); // just for convenience; I call this method from evaluators pretty often
 

@@ -14,8 +14,8 @@ thisModule.addSlots(avocado.toggler, function(add) {
     return Object.newChildOf(this, updateFunction, morphToShowOrHide);
   });
   
-  add.method('initialize', function (updateFunction, morphToShowOrHide) {
-    this._updateFunction = updateFunction;
+  add.method('initialize', function (morphToUpdate, morphToShowOrHide) {
+    this._morphToUpdate = morphToUpdate;
     this._morphToShowOrHide = morphToShowOrHide;
     this._valueHolder = avocado.booleanHolder.containing(false);
     this._valueHolder.addObserver(this.valueChanged.bind(this));
@@ -32,7 +32,7 @@ thisModule.addSlots(avocado.toggler, function(add) {
   add.method('beOff', function (evt) { this.setValue(false, evt); });
 
   add.method('valueChanged', function (valueHolder, evt) {
-    this._updateFunction();
+    if (this._morphToUpdate) { this._morphToUpdate.updateAppearance(); }
     if (this.isOn()) { this.actualMorphToShow().wasJustShown(evt); }
   });
 

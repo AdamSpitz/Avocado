@@ -55,36 +55,37 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     $super();
     this._model = slot;
 
-    this.setPadding(0);
-    this.updateFill();
-    this.setBorderWidth(1);
-    this.setBorderColor(Color.black);
-    this.beUngrabbable();
-    this.closeDnD();
+    this.applyStyle(this.appropriateStyle());
 
-    this._sourceToggler     = avocado.toggler.create(this.updateAppearance.bind(this),                   this.createRow(function() {return this.     sourcePane();}.bind(this))       );
-    this._commentToggler    = avocado.toggler.create(this.updateAppearance.bind(this), slot.comment    ? this.createRow(function() {return this.   commentMorph();}.bind(this)) : null);
-    this._annotationToggler = avocado.toggler.create(this.updateAppearance.bind(this), slot.annotation ? this.createRow(function() {return this.annotationMorph();}.bind(this)) : null);
+    this._sourceToggler     = avocado.toggler.create(this,                   this.createRow(function() {return this.     sourcePane();}.bind(this))       );
+    this._commentToggler    = avocado.toggler.create(this, slot.comment    ? this.createRow(function() {return this.   commentMorph();}.bind(this)) : null);
+    this._annotationToggler = avocado.toggler.create(this, slot.annotation ? this.createRow(function() {return this.annotationMorph();}.bind(this)) : null);
 
     var nameMorph = this._nameMorph = new TwoModeTextMorph(avocado.accessors.forMethods(this, 'slotName'));
-    nameMorph.nameOfEditCommand = "rename";
+    nameMorph.setNameOfEditCommand("rename");
     nameMorph.ignoreEvents(); // so that the menu request passes through, though this breaks double-clicking-to-edit
 
-    var commentButton = ButtonMorph.createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
-    commentButton.getHelpText = function() { return (this._commentToggler.isOn() ? 'Hide' : 'Show') + ' my comment'; }.bind(this);
+    var commentButton = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
 
     var buttonChooserMorph = Morph.createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.slot().isSimpleMethod(); }.bind(this));
 
     var optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
 
     var signatureRowContent = [nameMorph, optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph];
-    this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; },
-                                                    {left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}});
+    this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
 
     this.updateAppearance();
   }, {category: ['creating']});
 
   add.method('slot', function () { return this._model; }, {category: ['accessing']});
+  
+  add.creator('defaultStyle', {}, {category: ['styles']});
+
+  add.creator('copyDownStyle', Object.create(avocado.slots['abstract'].Morph.prototype.defaultStyle), {category: ['styles']});
+
+  add.creator('annotationStyle', {}, {category: ['styles']});
+
+  add.creator('signatureRowStyle', {}, {category: ['styles']});
 
   add.method('mirrorMorph', function () {
     return WorldMorph.current().existingMorphFor(this.slot().mirror());
@@ -115,7 +116,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('createRow', function (getOrCreateContent) {
     var spacer = Morph.createSpacer();
-    var r = avocado.RowMorph.createSpaceFilling(function() {return [getOrCreateContent(), spacer];}, {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}});
+    var r = avocado.RowMorph.createSpaceFilling(function() {return [getOrCreateContent(), spacer];}, this.defaultStyle.internalPadding);
     r.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
     return r;
   }, {category: ['creating']});
@@ -138,8 +139,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = new avocado.TableMorph().beInvisible();
-    m.setPadding({left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}});
+    m = this._annotationMorph = new avocado.TableMorph().beInvisible().applyStyle(this.annotationStyle);
     m.replaceContentWith(avocado.tableContents.createWithRows([
       [TextMorph.createLabel("Module:"       ), new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'moduleName')) ],
       [TextMorph.createLabel("Initialize to:"), new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'initializationExpression'))]
@@ -226,12 +226,11 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['UI state']});
 
   add.method('updateFill', function () {
-    if (this.slot().isFromACopyDownParent()) {
-      this.setFill(Color.red.lighter().lighter());
-      this.setFillOpacity(0.5); 
-    } else {
-      this.setFill(null);
-    }
+    this.applyStyle(this.appropriateStyle());
+  }, {category: ['updating']});
+
+  add.method('appropriateStyle', function () {
+    return this.slot().isFromACopyDownParent() ? this.copyDownStyle : this.defaultStyle;
   }, {category: ['updating']});
 
   add.method('potentialContent', function () {
@@ -286,6 +285,46 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     
     return cmdList;
   }, {category: ['menu']});
+
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.defaultStyle, function(add) {
+  
+  add.data('borderColor', new Color(0.6, 0.6, 0.6));
+  
+  add.data('borderWidth', 1);
+  
+  add.data('fill', null);
+  
+  add.data('padding', 0);
+  
+  add.data('suppressGrabbing', true);
+  
+  add.data('openForDragAndDrop', false);
+  
+  add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
+
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.copyDownStyle, function(add) {
+  
+  add.data('fill', new Color(0.95, 0.75, 0.75));
+
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.annotationStyle, function(add) {
+  
+  add.data('padding', {left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}'});
+
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.signatureRowStyle, function(add) {
+  
+  add.data('padding', {left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}'});
 
 });
 
