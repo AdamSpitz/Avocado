@@ -55,6 +55,11 @@ thisModule.addSlots(avocado.command, function(add) {
     return this;
   }, {category: ['accessing']});
 
+  add.method('setID', function (id) {
+    this.id = id;
+    return this;
+  }, {category: ['accessing']});
+
   add.method('contextOrDefault', function () {
     if (! this.hasContext()) { return {}; }
     return this._context;
@@ -248,6 +253,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
     } else if (c && !c.isCommand) {
       // aaa - maybe just create the commands in the caller, don't do this stupid translation thing
       var newC = avocado.command.create(c.label, c.go);
+      if (c.hasOwnProperty("id")) { newC.setID(c.id); }
       if (c.hasOwnProperty("isApplicable")) { newC.onlyApplicableIf(c.isApplicable); }
       if (c.hasOwnProperty("pluralGo")) { newC.pluralGo = c.pluralGo; }
       if (c.hasOwnProperty("pluralLabel")) { newC.pluralLabel = c.pluralLabel; }
