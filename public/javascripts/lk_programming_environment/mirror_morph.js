@@ -27,10 +27,10 @@ thisModule.addSlots(mirror.Morph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype), {});
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
   add.data('type', 'mirror.Morph');
-  
+
 });
 
 
@@ -86,7 +86,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     f(this.mirror().reflectee());
     f(this.mirror());
   }, {category: ['associated objects']});
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('createRow', function (m) {
@@ -133,7 +133,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('expandCategoryMorph', function (cm) {
     cm.expandMeAndAncestors();
-    this.updateAppearance(); /// aaa maybe this isn't necessary?
+    this.updateAppearance(); /// aaa maybe this isn't necessary?;
   }, {category: ['categories']});
 
   add.method('slotMorphFor', function (s) {
@@ -180,19 +180,19 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     e.wasJustShown(evt);
     return e;
   }, {category: ['evaluators']});
-  
-  add.method('closeEvaluator', function(evaluatorMorph) {
+
+  add.method('closeEvaluator', function (evaluatorMorph) {
     this._evaluatorsPanel.removeRow(evaluatorMorph);
   }, {category: ['evaluators']});
 
-  add.method('grabResult', function(resultMirMorph, evt) {
+  add.method('grabResult', function (resultMirMorph, evt) {
     if (resultMirMorph === this) {
       this.wiggle();
     } else {
       resultMirMorph.grabMe(evt);
     }
   }, {category: ['evaluators']});
-  
+
   add.method('interposeNewParent', function (evt) {
     var world = this.world();
     var oldParent = this.mirror().parent();
@@ -346,23 +346,23 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
 
 thisModule.addSlots(mirror.Morph.prototype.defaultStyle, function(add) {
-  
+
   add.data('borderColor', new Color(0.6, 0.6, 0.6));
-  
+
   add.data('borderWidth', 1);
-  
+
   add.data('borderRadius', 10);
-  
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, Color.gray.lighter()), new lively.paint.Stop(1, Color.gray)]));
-  
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
+
   add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}'});
-  
+
   add.data('openForDragAndDrop', false);
-  
+
   add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
-  
+
   add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
-  
+
 });
 
 

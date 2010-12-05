@@ -1,7 +1,7 @@
 transporter.module.create('lk_ext/arrows', function(requires) {
-  
+
 requires('core/commands');
-  
+
 }, function(thisModule) {
 
 
@@ -22,7 +22,7 @@ thisModule.addSlots(avocado.ArrowMorph, function(add) {
 
   add.data('type', 'avocado.ArrowMorph');
 
-  add.method('createButtonForToggling', function(pointer) {
+  add.method('createButtonForToggling', function (pointer) {
     // aaa - This is still a bit of a mess.
 
     var arrow;
@@ -76,7 +76,7 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.data('shouldGrowSmoothly', true);
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('stopUpdating', function () {
@@ -223,18 +223,18 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
 
 thisModule.addSlots(avocado.ArrowMorph.prototype.defaultStyle, function(add) {
 
-  add.data('borderColor', Color.black);
-  
+  add.data('borderColor', new Color(0, 0, 0));
+
   add.data('borderWidth', 1);
-  
+
   add.data('fill', null);
-  
+
   add.data('suppressGrabbing', true);
-  
+
   add.data('openForDragAndDrop', false);
-  
+
   add.data('shouldIgnoreEvents', true);
-  
+
 });
 
 

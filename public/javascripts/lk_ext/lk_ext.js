@@ -71,8 +71,8 @@ thisModule.addSlots(avocado.ui, function(add) {
     m.grabMe(evt);
     return m;
   });
-  
-  add.method('poseManager', function(evt) {
+
+  add.method('poseManager', function (evt) {
     return this.worldFor(evt).poseManager();
   });
 

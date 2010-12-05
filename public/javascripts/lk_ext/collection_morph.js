@@ -1,8 +1,8 @@
 transporter.module.create('lk_ext/collection_morph', function(requires) {
-  
+
 requires('lk_ext/rows_and_columns');
 requires('lk_ext/shortcuts');
-  
+
 }, function(thisModule) {
 
 
@@ -69,22 +69,22 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
     this._headerRow = this._columnsToShow.map(function(c) { return this.headerMorphFor(c.name); }.bind(this));
     this.refreshContent();
   }, {category: ['creating']});
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
-  
-  add.method('headerMorphFor', function(name) {
+
+  add.method('headerMorphFor', function (name) {
     var m = ButtonMorph.createButton(name, function(evt) {}, 1);
     return m;
   }, {category: ['content']});
-  
-  add.method('cellMorphFor', function(o) {
+
+  add.method('cellMorphFor', function (o) {
     var s = "";
     if (o !== null && typeof(o) !== 'undefined') { s = o.toString(); }
     var m = TextMorph.createLabel(s);
     return m;
   }, {category: ['content']});
-  
-  add.method('rowOfCellMorphsFor', function(o) {
+
+  add.method('rowOfCellMorphsFor', function (o) {
     return this._columnsToShow.map(function(col) {
       var v;
       try {
@@ -95,18 +95,18 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
       return this.cellMorphFor(v);
     }.bind(this));
   }, {category: ['content']});
-  
+
   add.method('potentialContent', function () {
     return avocado.tableContents.createWithRows([this._headerRow].concat(this._collection.map(function(o) {
       return this.rowOfCellMorphsFor(o);
     }.bind(this))));
   }, {category: ['content']});
-  
-  add.method('acceptsDropping', function(m) {
+
+  add.method('acceptsDropping', function (m) {
     return m.associatedObjectSatisfying(this._dropCriteria) !== null;
   }, {category: ['drag and drop']});
-  
-  add.method('showPotentialDrops', function(potentialDrops, evt) {
+
+  add.method('showPotentialDrops', function (potentialDrops, evt) {
     this._potentialDropInsertionIndex = this.determineIndexForPotentialDrops(evt);
     var content = this.potentialContent();
     for (var j = potentialDrops.length - 1; j >= 0; --j) {
@@ -118,7 +118,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
     this.replaceContentWith(content);
   }, {category: ['drag and drop']});
 
-  add.method('determineIndexForPotentialDrops', function(evt) {
+  add.method('determineIndexForPotentialDrops', function (evt) {
     if (! this.insertionIndexMatters()) { return this._collection.size(); }
     
     var p = this.localize(evt.point());
@@ -130,13 +130,13 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
     }
     return i - 1;
   }, {category: ['drag and drop']});
-  
-  add.method('hidePotentialDrops', function(evt) {
+
+  add.method('hidePotentialDrops', function (evt) {
     delete this._potentialDropInsertionIndex;
     this.refreshContent();
   }, {category: ['drag and drop']});
-  
-  add.method('justReceivedDrop', function(m, hand) {
+
+  add.method('justReceivedDrop', function (m, hand) {
     var o = m.associatedObjectSatisfying(this._dropCriteria);
     if (o === null) { return; }
     if (this.insertionIndexMatters() && typeof(this._potentialDropInsertionIndex) === 'number') {
@@ -153,22 +153,17 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
 			previousOwner.addMorph(m);
 		});
   }, {category: ['drag and drop']});
-  
-  add.method('insertionIndexMatters', function() {
+
+  add.method('insertionIndexMatters', function () {
     return this._collection.canInsert || reflect(this._collection).isReflecteeArray();
   }, {category: ['testing']});
-  
-});
 
-
-thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
-  
   add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}'});
-  
-  add.data('fill', lively.paint.defaultFillWithColor(Color.orange.lighter()));
-  
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.4980392156862745)), new lively.paint.Stop(1, new Color(1, 0.9019607843137255, 0.7490196078431373))], lively.paint.LinearGradient.SouthNorth));
+
   add.data('borderRadius', 10);
-  
+
   add.data('openForDragAndDrop', false);
 
 });

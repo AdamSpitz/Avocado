@@ -54,7 +54,7 @@ thisModule.addSlots(avocado.implementorsFinder, function(add) {
       this._results.push(reflect(holder).slotAt(slotName));
     }
   });
-  
+
   add.data('resultsAreSlots', true);
 
 });
@@ -84,7 +84,7 @@ thisModule.addSlots(avocado.referenceFinder, function(add) {
       this._results.push(mir.parentSlot());
     }
   });
-  
+
   add.data('resultsAreSlots', true);
 
 });
@@ -351,7 +351,7 @@ thisModule.addSlots(avocado.senders.finder, function(add) {
   });
 
   add.data('resultsAreSlots', true);
-  
+
 });
 
 

@@ -39,7 +39,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   add.method('holder', function () { return this._mirror; }, {category: ['accessing']});
 
   add.method('inspect', function () { return this.name(); }, {category: ['printing']});
-  
+
   add.method('sortOrder', function () { return this.name().toUpperCase(); }, {category: ['sorting']});
 
   add.method('isFunctionBody', function () { return false; }, {category: ['testing']});
@@ -47,9 +47,9 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   add.method('isParent', function () { return false; }, {category: ['testing']});
 
   add.data('isAvocadoSlot', true, {category: ['testing']});
-  
+
   add.method('doesTypeMatch', function (obj) { return obj && obj.isAvocadoSlot; }, {category: ['testing']});
-  
+
   add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
 
   add.method('copyDownParentThatIAmFrom', function () { return null; }, {category: ['copy-down parents']});
@@ -115,7 +115,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     avocado.ui.justChanged(this);
   }, {category: ['user interface', 'creator slots']});
 
- add.method('likelyModules', function () {
+  add.method('likelyModules', function () {
    return this.holder().likelyModules();
  }, {category: ['user interface', 'modules']});
 
@@ -198,7 +198,7 @@ thisModule.addSlots(avocado.slots.parent, function(add) {
 
   add.method('name', function () { return "__proto__"; }, {category: ['accessing']});
 
-  add.method('sortOrder', function () { return ''; }, {category: ['sorting'], comment: 'Should come first.'});
+  add.method('sortOrder', function () { return ''; }, {comment: 'Should come first.', category: ['sorting']});
 
   add.method('isParent', function () { return true; }, {category: ['testing']});
 

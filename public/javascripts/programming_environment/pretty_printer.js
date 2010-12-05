@@ -9,18 +9,18 @@ requires('reflection/mirror');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('prettyPrinter', {}, {category: ['manipulating code'], comment: 'Not usable yet. Just an experiment I was trying. -- Adam'});
+  add.creator('prettyPrinter', {}, {comment: 'Not usable yet. Just an experiment I was trying. -- Adam', category: ['manipulating code']});
 
 });
 
 
 thisModule.addSlots(avocado.prettyPrinter, function(add) {
 
-  add.method('create', function(node, options) {
+  add.method('create', function (node, options) {
     return Object.newChildOf(this, node, options);
   }, {category: ['creating']});
-  
-  add.method('initialize', function(node, options) {
+
+  add.method('initialize', function (node, options) {
     this._rootNode = node;
     this._buffer = avocado.stringBuffer.create();
     this._indentationLevel = options.indentationLevel || 0;
@@ -29,12 +29,12 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
   }, {category: ['creating']});
 
   add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
-  
-  add.method('result', function() {
+
+  add.method('result', function () {
     return this._buffer.toString();
   }, {category: ['accessing']});
-  
-  add.method('prettyPrint', function(node) {
+
+  add.method('prettyPrint', function (node) {
     var i;
     // console.log("prettyPrint encountered node type: " + tokens[node.type]);
     
@@ -355,13 +355,13 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       throw new Error(errorMsg);
     }
   }, {category: ['formatting']});
-  
-  add.method('newLine', function() {
+
+  add.method('newLine', function () {
     this._buffer.append("\n");
     for (var i = 0; i < this._indentationLevel; ++i) { this._buffer.append(" "); }
   }, {category: ['formatting']});
-  
-  add.method('indentDuring', function(f) {
+
+  add.method('indentDuring', function (f) {
     this.indent();
     try {
       return f();
@@ -369,12 +369,12 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this.unindent();
     }
   }, {category: ['formatting']});
-  
-  add.method('indent', function(f) {
+
+  add.method('indent', function (f) {
     this._indentationLevel += this._spacesPerIndent;
   }, {category: ['formatting']});
-  
-  add.method('unindent', function(f) {
+
+  add.method('unindent', function (f) {
     this._indentationLevel -= this._spacesPerIndent;
   }, {category: ['formatting']});
 
@@ -383,7 +383,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
 
 thisModule.addSlots(mirror, function(add) {
 
-  add.method('prettyPrint', function(options) {
+  add.method('prettyPrint', function (options) {
     var expr = this.expressionEvaluatingToMe(true);
     var stmt = avocado.stringBuffer.create('var ___contents___ = (').append(expr).append(');').toString();
     // need the assignment and the semicolon so that the parser doesn't gripe about not having a function name
@@ -391,7 +391,7 @@ thisModule.addSlots(mirror, function(add) {
     var contentsNode = rootNode[0][0].initializer[0]; // bypass the nodes for the __contents__ statement
     return avocado.prettyPrinter.create(contentsNode, options).result();
   });
-  
+
 });
 
 
@@ -405,7 +405,7 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
     obj.a;
     f.callAMethod(3, obj);
   });
-  
+
   add.method('functionToFormat2', function () {
     f = this;
     var arr = obj.a < 3 ? [1, 2, 'three'] : null;
@@ -415,7 +415,7 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
     }
     if (false) { bleh(); } else { blah(); }
   });
-  
+
   add.method('functionToFormat3', function () {
     for (var i = 0; i < n; i++) {
       throw new Error("blah blah");
@@ -429,7 +429,7 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
     f.match(/abc/g);
     return 'lalala';
   });
-  
+
   add.method('functionToFormat4', function () {
     function localFunc() { argle(); }
     if (typeof(3) === typeof 4) { return 'good'; }
@@ -446,7 +446,7 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
       for (var n in o) { great(); }
     }
   });
-  
+
   add.method('functionToFormat5', function () {
     while (true) { doSomething(); }
     do {
@@ -461,33 +461,33 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
       noodle();
     }
   });
-  
+
   add.method('checkFunction', function (f) {
     // Gotta start with indentationLevel 2 because that's how we write all the
     // code in the source files here. -- Adam
     this.assertEqual(f.toString(), reflect(f).prettyPrint({indentationLevel: 2}));
   });
-  
+
   add.method('test1', function () {
     this.checkFunction(this.functionToFormat1);
   });
-  
+
   add.method('test2', function () {
     this.checkFunction(this.functionToFormat2);
   });
-  
+
   add.method('test3', function () {
     this.checkFunction(this.functionToFormat3);
   });
-  
+
   add.method('test4', function () {
     this.checkFunction(this.functionToFormat4);
   });
-  
+
   add.method('test5', function () {
     this.checkFunction(this.functionToFormat5);
   });
-  
+
 });
 
 

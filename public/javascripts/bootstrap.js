@@ -552,7 +552,9 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['loading']});
 
   add.method('fileOut', function (m, repo, codeToFileOut, successBlock, failBlock) {
-    (repo || m._repository).fileOutModule(m, codeToFileOut.replace(/[\r]/g, "\n"), successBlock, failBlock);
+    var r = repo || m._repository;
+    if (!r) { throw new Error("Don't have a repository for: " + m); }
+    r.fileOutModule(m, codeToFileOut.replace(/[\r]/g, "\n"), successBlock, failBlock);
   }, {category: ['saving']});
 
   add.method('fileInIfWanted', function (name, callWhenDone) {

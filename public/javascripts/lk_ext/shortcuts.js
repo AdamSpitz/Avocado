@@ -43,12 +43,6 @@ Object.extend(DisplayThemes['lively'].button, {
   openForDragAndDrop: false
 });
 
-Morph.boxStyle = {
-  padding: {top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}},
-  borderRadius: 10,
-  openForDragAndDrop: false
-};
-
 Morph.prototype.createNameLabel = function() {
   return TextMorph.createLabel(function() { return this.inspect(); }.bind(this));
 };

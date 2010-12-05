@@ -6,7 +6,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('isInEditMode', function () {
     return this._isInEditMode;
   }, {category: ['edit mode']});
-    
+
   add.method('switchEditModeOn', function () {
     if (this.isInEditMode()) { return; }
     this._isInEditMode = true;
@@ -26,13 +26,13 @@ thisModule.addSlots(Morph.prototype, function(add) {
     this.submorphs.each(function(m) { m.switchEditModeOff(); });
     return this;
   }, {category: ['edit mode']});
-  
+
   add.creator('editModeLayoutManagerTraits', {}, {category: ['edit mode']});
-  
+
   add.method('startUsingEditModeLayoutManager', function () {
     this.layoutManager = Object.extend(Object.create(this.layoutManager), this.editModeLayoutManagerTraits);
   }, {category: ['edit mode']});
-  
+
   add.method('stopUsingEditModeLayoutManager', function () {
     this.layoutManager = this.layoutManager['__proto__'];
   }, {category: ['edit mode']});
@@ -41,11 +41,11 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
 
 thisModule.addSlots(Morph.prototype.editModeLayoutManagerTraits, function(add) {
-  
-  add.method('beforeAddMorph', function(supermorph, submorph, isFront) {
+
+  add.method('beforeAddMorph', function (supermorph, submorph, isFront) {
     submorph.setPosition(submorph.getPosition().roundTo(10));
   });
-  
+
 });
 
 

@@ -43,7 +43,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.method('partsOfUIState', function () {
     return { isExpanded: this.expander() };
   }, {category: ['UI state']});
-  
+
   add.method('contentsPanel', function () {
     var cp = this._contentsPanel;
     if (cp) { return cp; }
@@ -63,7 +63,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     allSubmorphs.each(function(m) { m.horizontalLayoutMode = LayoutModes.SpaceFill; });
     return avocado.tableContents.createWithColumns([allSubmorphs]);
   }, {category: ['contents panel']});
-  
+
   add.method('expandMeAndAncestors', function () {
     if (! this.treeNode().isRoot()) { this.supernodeMorph().expandMeAndAncestors(); }
     this.expander().expand();
@@ -98,11 +98,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
 
 thisModule.addSlots(avocado.TreeNodeMorph.prototype.contentsPanelStyle, function(add) {
-  
+
   add.data('padding', {top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}}, {initializeTo: '{top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}}'});
-  
+
   add.data('horizontalLayoutMode', LayoutModes.SpaceFill);
-  
+
 });
 
 

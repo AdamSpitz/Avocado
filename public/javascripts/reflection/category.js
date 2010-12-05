@@ -47,7 +47,7 @@ thisModule.addSlots(category, function(add) {
   add.method('subnode', function (subnodeName) {
     return this.subcategory(subnodeName);
   }, {category: ['related categories']});
-  
+
   add.method('ofMirror', function (mir) {
     return category.ofAParticularMirror.create(mir, this);
   }, {category: ['related categories']});
@@ -61,7 +61,7 @@ thisModule.addSlots(category, function(add) {
   }, {category: ['related categories']});
 
   add.method('sortOrder', function () { return this.isRoot() ? '' : this.lastPart().toUpperCase(); }, {category: ['sorting']});
-  
+
   add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
 
   add.method('fullName', function () {
@@ -92,7 +92,7 @@ thisModule.addSlots(category, function(add) {
     if (this.parts().length !== c.parts().length) { return false; }
     return this.isEqualToOrSubcategoryOf(c);
   }, {category: ['comparing']});
-  
+
   add.method('hashCode', function () {
     return this.parts().map(function(p) { return p.hashCode(); }).join();
   }, {category: ['comparing']});
@@ -140,14 +140,14 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
   add.method('category', function () { return this._category; }, {category: ['accessing']});
 
   add.method('fullName', function () { return this._category.fullName(); }, {category: ['accessing']});
-  
+
   add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
 
   add.method('parts', function () { return this._category.parts(); }, {category: ['accessing']});
 
   add.method('isRoot', function () { return this._category.isRoot(); }, {category: ['testing']});
 
-  add.method('sortOrder', function () { return this._category.sortOrder(); }, {category: ['sorting']});
+  add.method('sortOrder', function () { return this.category().sortOrder(); }, {category: ['sorting']});
 
   add.method('equals', function (c) {
     if (!c) { return false; }
@@ -155,15 +155,15 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     if (typeof(c.category) !== 'function') { return false; }
     return this.mirror().equals(c.mirror()) && this.category().equals(c.category());
   }, {category: ['comparing']});
-  
+
   add.method('hashCode', function () {
     return this.mirror().hashCode() && this.category().hashCode();
   }, {category: ['comparing']});
-  
+
   add.method('supercategory', function () {
     return this._category.supercategory().ofMirror(this._mirror);
   }, {category: ['related categories']});
-  
+
   add.method('subcategory', function (name) {
     return this._category.subcategory(name).ofMirror(this._mirror);
   }, {category: ['related categories']});
@@ -175,7 +175,7 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
   add.method('subnode', function (name) {
     return this.subcategory(name);
   }, {category: ['related categories']});
-  
+
   add.method('ofMirror', function (mir) {
     if (mir.equals(this._mirror)) { return this; }
     return this.category().ofMirror(mir);
@@ -185,8 +185,6 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     return this.category().concat(otherCat).ofMirror(this.mirror());
   }, {category: ['related categories']});
 
-  add.method('sortOrder', function () { return this.category().sortOrder(); }, {category: ['sorting']});
-  
   add.method('eachSlot', function (f) {
     if (this.category().isRoot()) {
       this.mirror().eachFakeSlot(f);
@@ -252,7 +250,7 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     if (window.isInCodeOrganizingMode) { return false; }
     return this.isRoot() || this.contentsSummaryString() !== this.supernode().contentsSummaryString();
   }, {category: ['user interface']});
-  
+
   add.method('nonNodeContents', function () {
     return avocado.enumerator.create(this, 'eachSlot').sortBy(function(s) { return s.sortOrder(); });
   }, {category: ['user interface']});
@@ -276,7 +274,7 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     });
     return target;
   }, {category: ['copying']});
-  
+
   add.method('dragAndDropCommands', function () {
     var cmdList = avocado.command.list.create(this);
     cmdList.addItem(avocado.command.create("add slot or category", function(evt, slotOrCat) {

@@ -252,9 +252,9 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('inspect', function () { return this.name(); }, {category: ['printing']});
 
   add.data('isAvocadoModule', true, {category: ['testing']});
-  
+
   add.method('doesTypeMatch', function (obj) { return obj && obj.isAvocadoModule; }, {category: ['testing']});
-  
+
   add.creator('prompter', {}, {category: ['user interface']});
 
   add.method('uninstall', function () {
@@ -439,7 +439,7 @@ thisModule.addSlots(transporter.module, function(add) {
     cmdList.addItem({label: 'all objects', go: this.showAllObjects});
     return cmdList;
   }, {category: ['user interface', 'commands']});
-  
+
   add.method('buttonCommands', function () {
     return avocado.command.list.create(this, [
       avocado.command.create('Save as .js file', this.fileOutAndReportErrors).onlyApplicableIf(this.canBeFiledOut.bind(this))
@@ -458,11 +458,11 @@ thisModule.addSlots(transporter.module, function(add) {
 
 
 thisModule.addSlots(transporter.module.prompter, function(add) {
-  
+
   add.method('prompt', function (caption, context, evt, callback) {
     transporter.chooseOrCreateAModule(evt, context.likelyModules(), context, caption, function(m, evt) { callback(m); });
   }, {category: ['prompting']});
-  
+
 });
 
 
@@ -559,7 +559,7 @@ thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
     if (this.copyDownParents) { objectAnnoToStringify.copyDownParents = this.copyDownParents; }
     return reflect(objectAnnoToStringify).expressionEvaluatingToMe();
   }, {category: ['transporting']});
-  
+
 });
 
 
@@ -572,7 +572,7 @@ thisModule.addSlots(avocado.annotator.slotAnnotationPrototype, function(add) {
     if (this.initializeTo                             ) { slotAnnoToStringify.initializeTo = this.initializeTo; }
     return reflect(slotAnnoToStringify).expressionEvaluatingToMe();
   }, {category: ['transporting']});
-  
+
 });
 
 

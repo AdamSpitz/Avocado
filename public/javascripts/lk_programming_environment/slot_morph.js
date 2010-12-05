@@ -43,7 +43,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph, function(add) {
   add.data('type', 'avocado.slots.abstract.Morph');
 
   add.creator('pointer', {});
-  
+
 });
 
 
@@ -78,7 +78,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('slot', function () { return this._model; }, {category: ['accessing']});
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.creator('copyDownStyle', Object.create(avocado.slots['abstract'].Morph.prototype.defaultStyle), {category: ['styles']});
@@ -92,12 +92,12 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['accessing']});
 
   add.data('grabsShouldFallThrough', true, {category: ['grabbing']});
-  
+
   add.method('updateAppearance', function ($super) {
     this.refreshContentOfMeAndSubmorphs();
     $super();
   }, {category: ['updating']});
-  
+
   add.method('showContentsArrow', function (callWhenDone) {
     this._contentsPointer.arrow.showMe(callWhenDone);
   }, {category: ['contents']});
@@ -155,11 +155,11 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     this._sourceToggler.beOn(evt);
     this._nameMorph.wasJustShown(evt);
   }, {category: ['events']});
-  
+
   add.method('sourceCode', function () {
     return this.slot().sourceCode();
   }, {category: ['accessing']});
-  
+
   add.method('setSourceCode', function (s) {
     this.setContents(this.slot().newContentsForSourceCode(s));
   }, {category: ['accessing']});
@@ -215,7 +215,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     if (mirMorph) { mirMorph.removeObsoleteSlotMorph(this); }
     WorldMorph.current().forgetAboutExistingMorphFor(this.slot(), this);
   }, {category: ['renaming']});
-  
+
   add.method('partsOfUIState', function () {
     return {
       isSourceOpen:     this._sourceToggler,
@@ -290,80 +290,80 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
 
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.defaultStyle, function(add) {
-  
+
   add.data('borderColor', new Color(0.6, 0.6, 0.6));
-  
+
   add.data('borderWidth', 1);
-  
+
   add.data('fill', null);
-  
+
   add.data('padding', 0);
-  
+
   add.data('suppressGrabbing', true);
-  
+
   add.data('openForDragAndDrop', false);
-  
+
   add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
 
 });
 
 
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.copyDownStyle, function(add) {
-  
+
   add.data('fill', new Color(0.95, 0.75, 0.75));
 
 });
 
 
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.annotationStyle, function(add) {
-  
+
   add.data('padding', {left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}'});
 
 });
 
 
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.signatureRowStyle, function(add) {
-  
+
   add.data('padding', {left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}'});
 
 });
 
 
 thisModule.addSlots(avocado.slots['abstract'].Morph.pointer, function(add) {
-  
-  add.method('create', function(slotMorph) {
+
+  add.method('create', function (slotMorph) {
     return Object.newChildOf(this, slotMorph);
   }, {category: ['creating']});
-  
-  add.method('initialize', function(slotMorph) {
+
+  add.method('initialize', function (slotMorph) {
     this._associationMorph = slotMorph;
   }, {category: ['creating']});
-  
-  add.method('association', function() { return this._associationMorph.slot(); }, {category: ['accessing']});
 
-  add.method('setTarget', function(targetMorph) { this._associationMorph.setContents(targetMorph.mirror()); }, {category: ['setting']});
+  add.method('association', function () { return this._associationMorph.slot(); }, {category: ['accessing']});
 
-  add.method('labelMorph', function() { return this._associationMorph.createIconForButton("images/icon-data-slot.gif"); }, {category: ['creating a morph']});
+  add.method('setTarget', function (targetMorph) { this._associationMorph.setContents(targetMorph.mirror()); }, {category: ['setting']});
 
-  add.method('inspect', function() { return this.association().name() + " contents"; }, {category: ['printing']});
+  add.method('labelMorph', function () { return this._associationMorph.createIconForButton("images/icon-data-slot.gif"); }, {category: ['creating a morph']});
 
-  add.method('helpTextForShowing', function() { return "Show my contents"; }, {category: ['help text']});
+  add.method('inspect', function () { return this.association().name() + " contents"; }, {category: ['printing']});
 
-  add.method('helpTextForHiding', function() { return "Hide arrow"; }, {category: ['help text']});
+  add.method('helpTextForShowing', function () { return "Show my contents"; }, {category: ['help text']});
 
-  add.method('prepareToBeShown', function(callWhenDone) { this._associationMorph.showContents(callWhenDone); }, {category: ['showing']});
+  add.method('helpTextForHiding', function () { return "Hide arrow"; }, {category: ['help text']});
 
-  add.method('notifiersToUpdateOn', function() { var mirMorph = this._associationMorph.mirrorMorph(); return mirMorph ? [mirMorph.changeNotifier()] : []; }, {category: ['updating']});
+  add.method('prepareToBeShown', function (callWhenDone) { this._associationMorph.showContents(callWhenDone); }, {category: ['showing']});
 
-  add.method('addExtraCommandsTo', function(cmdList) {
+  add.method('notifiersToUpdateOn', function () { var mirMorph = this._associationMorph.mirrorMorph(); return mirMorph ? [mirMorph.changeNotifier()] : []; }, {category: ['updating']});
+
+  add.method('addExtraCommandsTo', function (cmdList) {
     var assoc = this.association();
     var c = assoc.contents().reflectee();
     if (typeof(c) === 'boolean') {
       cmdList.addItem({label: "set to " + (!c), go: function(evt) { assoc.setContents(reflect(!c)); } });
     }
   }, {category: ['commands']});
-  
-  add.method('newMorph', function() {
+
+  add.method('newMorph', function () {
     var m = avocado.ArrowMorph.createButtonForToggling(this);
     m.arrow.endpoint2.wasJustDroppedOnMirror = function(mirMorph) { pointer.setTarget(mirMorph); };
     return m;

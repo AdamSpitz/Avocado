@@ -14,7 +14,7 @@ thisModule.addSlots(category, function(add) {
 
 
 thisModule.addSlots(category.ofAParticularMirror, function(add) {
-  
+
   add.method('newMorph', function () {
     return new category.Morph(this, this.isRoot());
   }, {category: ['user interface']});
@@ -22,7 +22,7 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
   add.method('morph', function () {
     return WorldMorph.current().morphFor(this);
   }, {category: ['user interface']});
-  
+
 });
 
 
@@ -60,7 +60,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   add.method('mirrorMorph', function () { return this.mirror().morph(); }, {category: ['accessing']});
 
   add.method('category', function () { return this.categoryOfMirror().category(); }, {category: ['accessing']});
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('createTitleLabel', function () {
@@ -83,7 +83,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     
     return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding);
   }, {category: ['creating']});
-  
+
   add.method('headerRow', function () {
     var hr = this._headerRow;
     if (hr) { return hr; }
@@ -92,11 +92,11 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     this._headerRow = hr;
     return hr;
   }, {category: ['creating']});
-  
+
   add.method('nonNodeContentMorphsInOrder', function () {
     return this.treeNode().nonNodeContents().map(function(s) { return this.nonNodeMorphFor(s); }.bind(this));
   }, {category: ['contents panel']});
-  
+
   add.method('subnodeMorphsInOrder', function () {
     var subnodeMorphs = this.immediateSubnodeMorphs();
     // aaa - Blecch, I hate this whole thing where the categories don't really exist until they've got a slot in them.
@@ -117,15 +117,15 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     }.bind(this)));
     return subnodeMorphs.sortBy(function(scm) { return scm.treeNode().sortOrder(); });
   }, {category: ['contents panel']});
-  
+
   add.method('nodeMorphFor', function (cat) {
     return this.mirrorMorph().categoryMorphFor(cat);
   }, {category: ['contents panel']});
-  
+
   add.method('nonNodeMorphFor', function (slot) {
     return this.mirrorMorph().slotMorphFor(slot);
   }, {category: ['contents panel']});
-  
+
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
     var isModifiable = this.mirrorMorph().shouldAllowModification();
@@ -158,7 +158,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     }
     return cmdList;
   }, {category: ['menu']});
-  
+
   add.method('dragAndDropCommands', function () {
     var cmdList = this.categoryOfMirror().dragAndDropCommands().wrapForMorph(this);
     var mirMorph = this.mirrorMorph();
@@ -174,7 +174,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   add.method('updateHighlighting', function () {
     this.setHighlighting(this._highlighter.isChecked());
   }, {category: ['highlighting']});
-  
+
   add.method('wasJustShown', function (evt) {
     this.isNewCategory = true;
     if (this.titleLabel) { this.titleLabel.wasJustShown(evt); }
@@ -191,7 +191,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     var s = this.categoryOfMirror().automaticallyChooseDefaultNameAndAddNewSlot(reflect(initialContents));
     var sm = this.mirrorMorph().slotMorphFor(s);
     sm.wasJustShown(evt);
-    this.updateAppearance(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet)
+    this.updateAppearance(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet);
   }, {category: ['adding']});
 
   add.method('addCategory', function (evt) {
@@ -201,7 +201,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     cm.wasJustShown(evt);
     // aaa blecch, I feel like this line should be here, but bad things happen: avocado.ui.justChanged(this.categoryOfMirror());
   }, {category: ['adding']});
-    
+
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
     var newCategoryOfMir = this.categoryOfMirror().copyInto(category.root().ofMirror(newMirror));
@@ -230,21 +230,21 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
 
 
 thisModule.addSlots(category.Morph.prototype.defaultStyle, function(add) {
-  
+
   add.data('padding', {top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}, {initializeTo: '{top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}'});
 
   add.data('horizontalLayoutMode', LayoutModes.SpaceFill);
-  
+
   add.data('openForDragAndDrop', false);
-  
+
   add.data('suppressGrabbing', false);
 
   add.data('grabsShouldFallThrough', true);
-  
+
   add.data('fill', null);
-  
+
   add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
-  
+
   add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
 
 });

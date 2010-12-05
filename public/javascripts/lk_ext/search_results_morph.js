@@ -50,9 +50,9 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
   });
 
   add.method('searcher', function () { return this._searcher; });
-  
+
   add.creator('headerRowStyle', {}, {category: ['styles']});
-  
+
   add.creator('resultsPanelStyle', {}, {category: ['styles']});
 
   add.method('updateAppearance', function () {
@@ -90,16 +90,16 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
 
 
 thisModule.addSlots(avocado.SearchResultsMorph.prototype.headerRowStyle, function(add) {
-  
-  add.data('padding', {top: 0, bottom: 0, left: 3, right: 3, between: {x: 3, y: 3}}, {top: 0, bottom: 0, left: 3, right: 3, between: {x: 3, y: 3}});
-  
+
+  add.data('padding', {top: 0, bottom: 0, left: 3, right: 3, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 3, right: 3, between: {x: 3, y: 3}}'});
+
 });
 
 
 thisModule.addSlots(avocado.SearchResultsMorph.prototype.resultsPanelStyle, function(add) {
-  
+
   add.data('padding', {top: 3, bottom: 3, left: 3, right: 3, between: {x: 3, y: 3}}, {initializeTo: '{top: 3, bottom: 3, left: 3, right: 3, between: {x: 3, y: 3}}'});
-  
+
 });
 
 

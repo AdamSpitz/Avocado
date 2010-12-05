@@ -34,11 +34,16 @@ thisModule.addSlots(Number.prototype, function(add) {
 
 thisModule.addSlots(Point.prototype, function(add) {
 
-  add.method('equals', function(other) {
+  add.method('r', function () {
+    // Optimization: don't create a new Point object in the process of calculating this.
+    return Math.sqrt(this.rSquared());
+  });
+
+  add.method('equals', function (other) {
     return other && other.constructor && other.constructor === Point && this.eqPt(other);
   });
 
-  add.method('hashCode', function() {
+  add.method('hashCode', function () {
     return this.x.hashCode() + this.y.hashCode();
   });
 
@@ -49,11 +54,6 @@ thisModule.addSlots(Point.prototype, function(add) {
   add.method('storeStringNeeds', function () {
     return Point.prototype;
   }, {category: ['transporting']});
-
-  add.method('r', function () {
-    // Optimization: don't create a new Point object in the process of calculating this.
-    return Math.sqrt(this.rSquared());
-  });
 
   add.method('plus', function (p) { return this.addPt(p); });
 

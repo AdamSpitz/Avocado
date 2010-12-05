@@ -1,7 +1,7 @@
 transporter.module.create('lk_ext/poses', function(requires) {
-  
+
 requires('core/poses');
-  
+
 }, function(thisModule) {
 
 
@@ -22,7 +22,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     // aaa LK-dependent
     return WorldMorph.current();
   }, {category: ['accessing']});
-  
+
 });
 
 
@@ -38,10 +38,11 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   add.method('posers', function () {
     return this.allPotentialPosers().reject(function(m) { return m.shouldIgnorePoses(); });
   }, {category: ['poses']});
-  
-  add.method('allPotentialPosers', function() {
+
+  add.method('allPotentialPosers', function () {
     return $A(this.submorphs);
   });
+
 });
 
 

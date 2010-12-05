@@ -5,14 +5,14 @@ requires('core/animation_math');
 }, function(thisModule) {
 
 
-  thisModule.addSlots(Morph.prototype, function(add) {
+thisModule.addSlots(Morph.prototype, function(add) {
 
-    add.method('isOnScreen', function () {
+  add.method('isOnScreen', function () {
       var w = this.world();
       return w && (w === this || w.bounds().containsPoint(this.owner.worldPoint(this.getPosition()).matrixTransform(w.getTransform())));
     }, {category: ['testing']});
 
-    add.method('startZoomingOuttaHere', function () {
+  add.method('startZoomingOuttaHere', function () {
       var w = this.world();
       if (w) {
         return this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {this.remove();}.bind(this));
@@ -21,15 +21,15 @@ requires('core/animation_math');
       }
     }, {category: ['zooming around']});
 
-    add.method('startZoomingTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
+  add.method('startZoomingTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
       return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.arcPath, loc, 3, shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
     }, {category: ['zooming around']});
 
-    add.method('startZoomingInAStraightLineTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
+  add.method('startZoomingInAStraightLineTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
       return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.straightPath, loc, 2, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
     }, {category: ['zooming around']});
 
-    add.method('zoomAwayAfter', function (ms) {
+  add.method('zoomAwayAfter', function (ms) {
       var originalOwner    = this.owner;
       var originalPosition = this.getPosition();
       this.zoomOuttaHereTimer = window.setTimeout(function() {
@@ -39,30 +39,30 @@ requires('core/animation_math');
       }.bind(this), ms || 5000);
     });
 
-    add.method('positionToCenterIn', function (m) {
+  add.method('positionToCenterIn', function (m) {
       return m.getExtent().scaleBy(0.5).subPt(this.getExtent().scaleBy(0.5));
     });
 
-    add.method('showTemporarilyInCenterOfWorld', function (w) {
+  add.method('showTemporarilyInCenterOfWorld', function (w) {
       this.showInWorldAt(w, this.positionToCenterIn(w), function() {this.zoomAwayAfter(5000);}.bind(this));
     });
 
-    add.method('showInWorldAt', function (w, p, callWhenDone) {
+  add.method('showInWorldAt', function (w, p, callWhenDone) {
       this.ensureIsInWorld(w, p, true, false, true, callWhenDone);
     });
 
-    add.method('startAnimating', function (animator, functionToCallWhenDone) {
+  add.method('startAnimating', function (animator, functionToCallWhenDone) {
       animator.stopAnimating();
       animator.whenDoneCall(functionToCallWhenDone);
       animator.startAnimating(this);
       return animator;
     }, {category: ['zooming around']});
 
-    add.method('wiggle', function (duration) {
+  add.method('wiggle', function (duration) {
       return this.startAnimating(avocado.animation.newWiggler(this, null, duration));
     }, {category: ['wiggling']});
 
-    add.method('setPositionAndDoMotionBlurIfNecessary', function (newPos, blurTime) {
+  add.method('setPositionAndDoMotionBlurIfNecessary', function (newPos, blurTime) {
       var world = this.world();
       if (world) {
         var extent = this.getExtent();
@@ -88,7 +88,7 @@ requires('core/animation_math');
       if (this.justDidAnimatedPositionChange) { this.justDidAnimatedPositionChange(); }
     }, {category: ['motion blur']});
 
-    add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
+  add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
       var owner = this.owner;
       if (owner !== w) {
         var initialLoc = (!owner || this.world() !== w) ? this.getExtent().negated() : owner.worldPoint(this.getPosition());
@@ -103,11 +103,11 @@ requires('core/animation_math');
       }
     }, {category: ['adding and removing']});
 
-    add.method('ensureIsNotInWorld', function () {
+  add.method('ensureIsNotInWorld', function () {
       if (this.world()) {this.startZoomingOuttaHere();}
     }, {category: ['adding and removing']});
 
-    add.method('animatedAddMorphAt', function (m, p, callWhenDone) {
+  add.method('animatedAddMorphAt', function (m, p, callWhenDone) {
       var w = this.world();
       if (w) {
         w.addMorphFront(m); // make sure it's in front
@@ -121,7 +121,7 @@ requires('core/animation_math');
       }
     }, {category: ['adding and removing']});
 
-    add.method('createDismissButton', function () {
+  add.method('createDismissButton', function () {
       var size = 22 * (Config.fatFingers ? 2 : 1);
       var b = new WindowControlMorph(new Rectangle(0, 0, size, size), 3, Color.primary.orange);
       b.relayToModel(this, {Trigger: "=ensureIsNotInWorld"});
@@ -129,23 +129,23 @@ requires('core/animation_math');
       return b;
     }, {category: ['adding and removing']});
 
-    add.method('smoothlyFadeTo', function (desiredAlpha, functionToCallWhenDone) {
+  add.method('smoothlyFadeTo', function (desiredAlpha, functionToCallWhenDone) {
       this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);
     }, {category: ['resizing']});
 
-    add.method('smoothlyResizeTo', function (desiredSize, functionToCallWhenDone) {
+  add.method('smoothlyResizeTo', function (desiredSize, functionToCallWhenDone) {
       this.startAnimating(avocado.animation.newResizer(this, desiredSize), functionToCallWhenDone);
     }, {category: ['resizing']});
 
-    add.method('smoothlyScaleTo', function (desiredScale, functionToCallWhenDone) {
+  add.method('smoothlyScaleTo', function (desiredScale, functionToCallWhenDone) {
       this.startAnimating(avocado.animation.newScaler(this, desiredScale), functionToCallWhenDone);
     }, {category: ['scaling']});
 
-    add.method('smoothlyScaleVerticallyTo', function (desiredScale, functionToCallWhenDone) {
+  add.method('smoothlyScaleVerticallyTo', function (desiredScale, functionToCallWhenDone) {
       this.startAnimating(avocado.animation.newVerticalScaler(this, desiredScale), functionToCallWhenDone);
     }, {category: ['scaling']});
 
-    add.method('stayCenteredAndSmoothlyScaleTo', function (desiredScale, centerPos, functionToCallWhenDone) {
+  add.method('stayCenteredAndSmoothlyScaleTo', function (desiredScale, centerPos, functionToCallWhenDone) {
       var center = this.innerBounds().center();
       this.moveOriginBy(center);
       this.translateBy(center.negated());
@@ -156,12 +156,12 @@ requires('core/animation_math');
       }.bind(this));
     }, {category: ['scaling']});
 
-  });
+});
 
 
-  thisModule.addSlots(WindowMorph.prototype, function(add) {
+thisModule.addSlots(WindowMorph.prototype, function(add) {
 
-    add.method('initiateShutdown', function () {
+  add.method('initiateShutdown', function () {
       if (this.isShutdown()) { return; }
       this.targetMorph.shutdown(); // shutdown may be prevented ...
       this.ensureIsNotInWorld(); // used to say this.remove(), changed by Adam so that it does the cool zooming-off-the-screen thing
@@ -169,12 +169,12 @@ requires('core/animation_math');
       return true;
     }, {category: ['closing']});
 
-  });
+});
 
 
-  thisModule.addSlots(SelectionMorph.prototype, function(add) {
+thisModule.addSlots(SelectionMorph.prototype, function(add) {
 
-    add.method('startZoomingOuttaHere', function ($super) {
+  add.method('startZoomingOuttaHere', function ($super) {
       // Alternate way that I don't think looks quite as good: this.selectedMorphs.invoke('startZoomingOuttaHere');
 
       this.selectedMorphs.each(function(m) {
@@ -183,7 +183,7 @@ requires('core/animation_math');
       $super();
     }, {category: ['zooming around']});
 
-  });
+});
 
 
 });

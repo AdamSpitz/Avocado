@@ -33,7 +33,7 @@ thisModule.addSlots(avocado.command, function(add) {
   }, {category: ['creating']});
 
   add.data('isCommand', true, {category: ['testing']});
-  
+
   add.method('helpText', function () {
     return this._helpText;
   }, {category: ['accessing']});
@@ -88,11 +88,11 @@ thisModule.addSlots(avocado.command, function(add) {
     this._subcommands = subcmds;
     return this;
   }, {category: ['accessing']});
-  
+
   add.method('toString', function () {
     return this.label;
   }, {category: ['printing']});
-  
+
   add.method('wrapFunction', function (newFn) {
     var oldFunctionToRun = this._functionToRun;
     return this.setFunction(function() {
@@ -103,6 +103,10 @@ thisModule.addSlots(avocado.command, function(add) {
   add.method('onlyApplicableIf', function (f) {
     this._applicabilityFunction = f;
     return this;
+  }, {category: ['accessing']});
+
+  add.method('isApplicable', function () {
+    return !this._applicabilityFunction || this._applicabilityFunction.call(this.contextOrDefault());
   }, {category: ['accessing']});
 
   add.method('argumentSpecs', function () {
@@ -166,7 +170,7 @@ thisModule.addSlots(avocado.command, function(add) {
 
 
 thisModule.addSlots(avocado.command.argumentSpec, function(add) {
-  
+
   add.method('create', function () {
     var c = Object.create(this);
     c.initialize.apply(c, arguments);
@@ -176,28 +180,28 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
   add.method('initialize', function (name) {
     this._name = name;
   }, {category: ['creating']});
-  
+
   add.method('onlyAccepts', function (f) {
     this._acceptanceFunction = f;
     return this;
   }, {category: ['accessing']});
-  
+
   add.method('onlyAcceptsType', function (t) {
     this._type = t;
     this.onlyAccepts(function(o) { return t.doesTypeMatch(obj); });
     return this;
   }, {category: ['accessing']});
-  
+
   add.method('setPrompter', function (p) {
     this._prompter = p;
     return this;
   }, {category: ['accessing']});
-  
+
   add.method('canAccept', function (arg) {
     if (! this._acceptanceFunction) { return true; }
     return this._acceptanceFunction(arg);
   }, {category: ['testing']});
-  
+
   add.method('prompter', function () {
     var p = this._prompter;
     if (p) { return p; }
@@ -208,7 +212,7 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
     }
     return null;
   }, {category: ['accessing']});
-  
+
   add.method('prompt', function (context, evt, callback) {
     var p = this.prompter();
     if (!p) { throw new Error('Cannot prompt for the "' + this._name + '" argument without a prompter'); }
@@ -241,10 +245,10 @@ thisModule.addSlots(avocado.command.list, function(add) {
   add.method('eachCommand', function (f) {
     this._commands.each(function(c) { if (c) { f(c); } });
   }, {category: ['iterating']});
-  
+
   add.method('hasDefaultContext', function () {
     return typeof(this._defaultContext) !== 'undefined';
-  })
+  });
 
   add.method('addItem', function (c) {
     // for compatibility with MenuMorph
@@ -328,7 +332,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
       var cmdList = m.commands();
       if (cmdList) {
         cmdList.eachCommand(function(c) {
-          if (c.pluralLabel) {
+          if (c.pluralLabel && c.isApplicable()) {
             byCommandType.getOrIfAbsentPut(c.pluralLabel, function() {return [];}).push({morph: m, command: c});
           }
         });
@@ -354,7 +358,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
   add.method('wrapWithPromptersForArguments', function () {
     return avocado.command.list.create(this._defaultContext, this._commands.map(function(c) { return c ? c.wrapWithPromptersForArguments() : null; }));
   }, {category: ['prompting for arguments']});
-    
+
 });
 
 

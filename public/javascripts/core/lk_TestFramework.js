@@ -27,6 +27,12 @@ thisModule.addSlots(TestCase.prototype, function(add) {
     return reflect(this).name();
   });
 
+  add.method('assertEqual', function (firstValue, secondValue, msg) {
+    if (! this.areEqual(firstValue, secondValue)) {
+      throw {isAssertion: true, message: (msg ? msg	 : "") + " (" + firstValue + " != " + secondValue + ") "};
+    }
+  });
+
   add.method('allTestSelectors', function () {
     var functionNames = [];
     for (var name in this) {
@@ -53,33 +59,27 @@ thisModule.addSlots(TestCase.prototype, function(add) {
     return this.name();
   });
 
-  add.method('areEqual', function(firstValue, secondValue) {
+  add.method('areEqual', function (firstValue, secondValue) {
     if (firstValue === secondValue) { return true; }
     if (firstValue && firstValue.equals && firstValue.equals(secondValue)) { return true; } // changed this to check a general 'equals' method. -- Adam
     if (firstValue == secondValue) { return true; }
     return false;
   });
 
-  add.method('assertEqual', function(firstValue, secondValue, msg) {
-    if (! this.areEqual(firstValue, secondValue)) {
-      throw {isAssertion: true, message: (msg ? msg	 : "") + " (" + firstValue + " != " + secondValue + ") "};
-    }
-  });
-
-  add.method('assertNotEqual', function(firstValue, secondValue, msg) {
+  add.method('assertNotEqual', function (firstValue, secondValue, msg) {
     if (this.areEqual(firstValue, secondValue)) {
       throw {isAssertion: true, message: (msg ? msg	 : "") + " (" + firstValue + " == " + secondValue + ") "};
     }
   });
 
-  add.method('assertThrowsException', function(func, msg) {
+  add.method('assertThrowsException', function (func, msg) {
     var thrown = false;
     try {
       func();
     } catch (ex) {
       thrown = true;
     }
-    this.assert(thrown, msg); // can't put this inside the try because it works by throwing an exception
+    this.assert(thrown, msg); // can't put this inside the try because it works by throwing an exception;
   });
 
   add.method('createAndRunAndShowResult', function () {

@@ -1,7 +1,7 @@
 transporter.module.create('lk_ext/commands', function(requires) {
-  
+
 requires('core/commands');
-  
+
 }, function(thisModule) {
 
 
@@ -50,7 +50,7 @@ thisModule.addSlots(avocado.command, function(add) {
 
 
 thisModule.addSlots(avocado.command.argumentSpec, function(add) {
-  
+
   add.method('wrapForMorph', function (morph) {
     var argSpecForModelCommand = this;
     var argSpecForMorphCommand = avocado.command.argumentSpec.create(this._name);
@@ -108,12 +108,12 @@ thisModule.addSlots(avocado.command.list, function(add) {
 
 
 thisModule.addSlots(Morph.prototype, function(add) {
-  
+
   add.method('eachAssociatedObject', function (f) {
     // Children can override.
     if (typeof(this._model) !== 'undefined') { f(this._model); }
   }, {category: ['associated objects']});
-  
+
   add.method('associatedObjectSatisfying', function (criterion) {
     return exitValueOf(function(exit) {
       this.eachAssociatedObject(function(o) {
@@ -122,7 +122,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return null;
     }.bind(this));
   }, {category: ['associated objects']});
-  
+
 });
 
 

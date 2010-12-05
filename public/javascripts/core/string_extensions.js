@@ -3,6 +3,10 @@ transporter.module.create('core/string_extensions', function(requires) {}, funct
 
 thisModule.addSlots(String.prototype, function(add) {
 
+  add.method('capitalize', function () {
+     return this.replace( /(^|\s)([a-z])/g , function(m, p1, p2) { return p1+p2.toUpperCase(); } );
+  });
+
   add.method('startsWithVowel', function () {
     return (/^[AEIOUaeiou]/).exec(this);
   });
@@ -10,11 +14,7 @@ thisModule.addSlots(String.prototype, function(add) {
   add.method('prependAOrAn', function () {
     return this.startsWithVowel() ? "an " + this : "a " + this;
   });
-  
-  add.method('capitalize', function() {
-     return this.replace( /(^|\s)([a-z])/g , function(m, p1, p2) { return p1+p2.toUpperCase(); } );
-  });
-  
+
   add.method('withoutSuffix', function (suffix) {
     return this.endsWith(suffix) ? this.substr(0, this.length - suffix.length) : this;
   });

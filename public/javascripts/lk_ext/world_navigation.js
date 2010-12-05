@@ -2,17 +2,17 @@ transporter.module.create('lk_ext/world_navigation', function(requires) {}, func
 
 
 thisModule.addSlots(WorldMorph.prototype, function(add) {
-	
-	add.method('onMouseWheel', function(evt) {
+
+  add.method('onMouseWheel', function (evt) {
 	  if (evt.isCtrlDown() || evt.isMetaDown() || evt.isAltDown()) {
       var factor = Math.pow(1.1, (evt.rawEvent.wheelDeltaY / -600));
       this.zoomBy(factor, evt.hand.getPosition());
       return true;
     }
   }, {category: ['navigation']});
-  
+
   add.creator('navigationAccessor', {}, {category: ['navigation']}, {comment: 'Needed because we can\'t yet translate the world, we have to translate all the morphs in it.'});
-  
+
   add.method('slideIfClickedAtEdge', function (evt) {
     var b = this.fullBounds;
     var p = evt.point();
@@ -86,39 +86,39 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
 
 thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
-  
-  add.method('initialize', function(w) {
+
+  add.method('initialize', function (w) {
     this._world = w;
     this._position = pt(0,0);
   });
-  
-  add.method('getPosition', function() {
+
+  add.method('getPosition', function () {
     return this._position;
   });
-  
-  add.method('setPositionAndDoMotionBlurIfNecessary', function(newPos, blurTime) {
+
+  add.method('setPositionAndDoMotionBlurIfNecessary', function (newPos, blurTime) {
     var delta = newPos.subPt(this.getPosition());
     this._world.slideBy(delta);
     this._position = newPos;
   });
-  
-  add.method('getScale', function() {
+
+  add.method('getScale', function () {
     return this._world.getScale();
   });
-  
-  add.method('setScale', function(s) {
+
+  add.method('setScale', function (s) {
     return this._world.setScale(s);
   });
-  
-  add.method('setExtent', function(r) {
+
+  add.method('setExtent', function (r) {
     return this._world.setExtent(r);
   });
-  
-  add.method('isOnScreen', function() {
+
+  add.method('isOnScreen', function () {
     return true;
   });
-  
-  add.method('hands', function() {
+
+  add.method('hands', function () {
     return this._world.hands;
   });
 

@@ -18,8 +18,8 @@ thisModule.addSlots(TestCase.prototype, function(add) {
     
     return m;
   }, {category: ['user interface']});
-  
-  add.creator('defaultMorphStyle', Object.create(Morph.boxStyle), {category: ['user interface']});
+
+  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
 
 });
 
@@ -37,37 +37,37 @@ thisModule.addSlots(TestResult.prototype, function(add) {
     m.setRows(rows);
     return m;
   }, {category: ['user interface']});
-  
+
   add.creator('defaultMorphStyle', {}, {category: ['user interface']});
-  
+
   add.creator('failedMorphStyle', Object.create(TestResult.prototype.defaultMorphStyle), {category: ['user interface']});
 
 });
 
 
 thisModule.addSlots(TestCase.prototype.defaultMorphStyle, function(add) {
-  
-  add.data('fill', lively.paint.defaultFillWithColor(Color.purple.darker()));
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.4980392156862745, 0, 0.4980392156862745)), new lively.paint.Stop(1, new Color(0.7490196078431373, 0.4980392156862745, 0.7490196078431373))], lively.paint.LinearGradient.SouthNorth));
 
 });
 
 
 thisModule.addSlots(TestResult.prototype.defaultMorphStyle, function(add) {
-  
-  add.data('fill', lively.paint.defaultFillWithColor(Color.green));
-  
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0, 0.8, 0)), new lively.paint.Stop(1, new Color(0.4980392156862745, 0.9019607843137255, 0.4980392156862745))], lively.paint.LinearGradient.SouthNorth));
+
   add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}'});
-  
+
   add.data('borderRadius', 10);
-  
+
   add.data('openForDragAndDrop', false);
 
 });
 
 
 thisModule.addSlots(TestResult.prototype.failedMorphStyle, function(add) {
-  
-  add.data('fill', lively.paint.defaultFillWithColor(Color.red));
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.8, 0, 0)), new lively.paint.Stop(1, new Color(0.9019607843137255, 0.4980392156862745, 0.4980392156862745))], lively.paint.LinearGradient.SouthNorth));
 
 });
 

@@ -36,15 +36,15 @@ thisModule.addSlots(transporter.module, function(add) {
     m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});
-  
-  add.creator('defaultMorphStyle', Object.create(Morph.boxStyle), {category: ['user interface']});
+
+  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
 
 });
 
 
 thisModule.addSlots(transporter.module.defaultMorphStyle, function(add) {
-  
-  add.data('fill', lively.paint.defaultFillWithColor(Color.red.lighter()));
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.4980392156862745, 0.4980392156862745)), new lively.paint.Stop(1, new Color(0.9529411764705882, 0.7490196078431373, 0.7490196078431373))], lively.paint.LinearGradient.SouthNorth));
 
 });
 

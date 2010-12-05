@@ -265,15 +265,15 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     var posersToMove = objects.map(function(m) { return this.world().morphFor(m); }.bind(this));
     return Object.newChildOf(avocado.poses.list, name, this.world(), posersToMove);
   }, {category: ['cleaning up']});
-  
-  add.method('poseChooser', function() {
+
+  add.method('poseChooser', function () {
     var c = avocado.command.list.create(this);
     this.explicitlyRememberedPoses().eachValue(function(pose) {
       c.addItem([pose.name(), function(evt) { this.assumePose(pose); }]);
     }.bind(this));
     return c;
   }, {category: ['menus']});
-  
+
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
     
@@ -303,7 +303,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
       }.bind(this)]);
     }
   }, {category: ['menus']});
-  
+
 });
 
 
