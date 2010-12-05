@@ -805,31 +805,20 @@ thisModule.addSlots(transporter.repositories.httpWithWebDAV, function(add) {
 
   add.method('fileOutModule', function (m, codeToFileOut, successBlock, failBlock) {
     var url = this.urlForModuleName(m.name());
-    var shouldUseXMLHttpRequest = false; // don't wanna count on the LK Resource object existing
-    if (shouldUseXMLHttpRequest) {
-      var req = new XMLHttpRequest();
-      req.open("PUT", url, true);
-      req.onreadystatechange = function() {
-        if (req.readyState === 4) {
-          if (req.status >= 200 && req.status < 300) {
-            console.log("Success! " + req.status + " at " + url);
-            successBlock();
-          } else {
-            failBlock("failed to file out " + m + ", status is " + req.status + ", statusText is " + req.statusText);
-          }
+    var isAsync = true;
+    var req = new XMLHttpRequest();
+    req.open("PUT", url, isAsync);
+    req.onreadystatechange = function() {
+      if (req.readyState === 4) {
+        if (req.status >= 200 && req.status < 300) {
+          console.log("Saved " + url);
+          successBlock();
+        } else {
+          failBlock("Failed to file out " + m + ", status is " + req.status + ", statusText is " + req.statusText);
         }
-      };
-      req.send(codeToFileOut);
-    } else {
-      // aaa LK-specific!!!!!!!
-      var urlObj = new URL(url);
-      var status = new Resource(Record.newPlainInstance({URL: urlObj})).store(codeToFileOut, true).getStatus();
-      if (status.isSuccess()) {
-        successBlock();
-      } else {
-        failBlock("failed to file out " + m + ", status is " + status.code());
       }
-    }
+    };
+    req.send(codeToFileOut);
   }, {category: ['saving']});
 
 });
