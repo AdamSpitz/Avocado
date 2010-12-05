@@ -2,7 +2,7 @@ transporter.module.create('reflection/mirror', function(requires) {
 
 requires('core/enumerator');
 requires('core/identity_hash');
-requires('core/lk_TestFramework');
+requires('core/testFramework');
 
 }, function(thisModule) {
 
@@ -769,7 +769,7 @@ thisModule.addSlots(mirror, function(add) {
     });
   }, {category: ['organizing']});
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
 });
 
@@ -920,12 +920,10 @@ thisModule.addSlots(mirror.tests, function(add) {
   add.method('testIsReflecteeProbablyAClass', function () {
     this.assert(reflect(Object).isReflecteeProbablyAClass());
     this.assert(reflect(Boolean).isReflecteeProbablyAClass());
-    this.assert(reflect(Morph).isReflecteeProbablyAClass());
-    this.assert(reflect(TestCase).isReflecteeProbablyAClass());
     this.assert(! reflect(null).isReflecteeProbablyAClass());
     this.assert(! reflect(3).isReflecteeProbablyAClass());
     this.assert(! reflect({}).isReflecteeProbablyAClass());
-    this.assert(! reflect(TestCase.prototype).isReflecteeProbablyAClass());
+    this.assert(! reflect(avocado.testCase).isReflecteeProbablyAClass());
     this.assert(! reflect(avocado.stringBuffer).isReflecteeProbablyAClass());
   });
 
@@ -1017,16 +1015,15 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assert(! reflect(true         ).isReflecteeArray());
 
     this.assert(  reflect(function() {}).isReflecteeFunction());
-    this.assert(  reflect(TestCase     ).isReflecteeFunction());
+    this.assert(  reflect(exitValueOf  ).isReflecteeFunction());
     this.assert(! reflect({}           ).isReflecteeFunction());
     this.assert(! reflect('hmm'        ).isReflecteeFunction());
     this.assert(! reflect(null         ).isReflecteeFunction());
 
     this.assert(  reflect(function() {     }        ).isReflecteeSimpleMethod());
     this.assert(  reflect(function() {ok();}        ).isReflecteeSimpleMethod());
-    this.assert(  reflect(this.verbose              ).isReflecteeSimpleMethod(), "methods with $super still count");
-    this.assert(  reflect(TestCase.prototype.verbose).isReflecteeSimpleMethod(), "LK methods still count");
-    this.assert(! reflect(TestCase                  ).isReflecteeSimpleMethod());
+    this.assert(  reflect(this.setUp                ).isReflecteeSimpleMethod(), "methods with $super still count");
+    this.assert(! reflect(exitValueOf               ).isReflecteeSimpleMethod());
     this.assert(! reflect({}                        ).isReflecteeSimpleMethod());
     this.assert(! reflect('hmm'                     ).isReflecteeSimpleMethod());
     this.assert(! reflect(null                      ).isReflecteeSimpleMethod());
@@ -1036,7 +1033,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assert(! reflect(functionWithASlot).isReflecteeSimpleMethod());
   });
 
-  add.method('verbose', function ($super) {
+  add.method('setUp', function ($super) {
     // This method is just here so that I can make sure that methods that
     // call $super still respond with true to isReflecteeSimpleMethod().
     return $super();
@@ -1064,8 +1061,6 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual("a Function", reflect(function() {}).name());
     this.assertEqual("an Object", reflect({}).name());
     this.assertEqual("an Array", reflect([1, 'two', 3]).name());
-    this.assertEqual("a TestCase", reflect(new TestCase()).name());
-    this.assertEqual("TestCase.prototype", reflect(TestCase.prototype).name());
     this.assertEqual("transporter", reflect(transporter).name());
     this.assertEqual("transporter.module", reflect(transporter.module).name());
     this.assertEqual("", reflect(window).name()); // aaa - maybe just fix this to say 'window'?;

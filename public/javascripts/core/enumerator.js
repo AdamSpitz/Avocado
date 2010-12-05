@@ -32,7 +32,7 @@ thisModule.addSlots(avocado.enumerator, function(add) {
     }
   }, {category: ['iterating']});
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
 });
 

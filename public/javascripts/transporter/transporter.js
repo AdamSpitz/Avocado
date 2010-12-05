@@ -1,6 +1,6 @@
 transporter.module.create('transporter/transporter', function(requires) {
 
-requires('core/lk_TestFramework');
+requires('core/testFramework');
 requires('core/notifier');
 requires('reflection/reflection');
 
@@ -14,7 +14,7 @@ thisModule.addSlots(transporter, function(add) {
     // avocado.creatorSlotMarker.annotateExternalObjects(true);
   }, {category: ['filing out']});
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
   add.creator('reasonsForNeedingCreatorPath', {}, {category: ['filing out']});
 

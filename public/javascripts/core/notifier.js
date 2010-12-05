@@ -36,7 +36,7 @@ thisModule.addSlots(avocado.notifier, function(add) {
     this.observers.each(function(o) {o(s, arg);});
   });
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
 });
 

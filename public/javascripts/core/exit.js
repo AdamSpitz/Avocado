@@ -1,6 +1,6 @@
 transporter.module.create('core/exit', function(requires) {
 
-requires('core/lk_TestFramework');
+requires('core/testFramework');
 
 }, function(thisModule) {
 
@@ -30,7 +30,7 @@ thisModule.addSlots(window, function(add) {
 
 thisModule.addSlots(exitValueOf, function(add) {
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
 });
 

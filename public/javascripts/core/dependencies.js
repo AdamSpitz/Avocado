@@ -68,7 +68,7 @@ thisModule.addSlots(avocado.dependencies, function(add) {
     dependers.each(function(depender) { this.dependeesByDepender().get(depender).remove(dependee); }.bind(this));
   }, {category: ['removing']});
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
 });
 

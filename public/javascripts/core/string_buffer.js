@@ -39,7 +39,7 @@ thisModule.addSlots(avocado.stringBuffer, function(add) {
     return newOne;
   }, {category: ['concatenating']});
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
 });
 

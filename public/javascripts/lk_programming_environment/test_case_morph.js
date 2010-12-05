@@ -2,11 +2,12 @@ transporter.module.create('lk_programming_environment/test_case_morph', function
 
 requires('lk_ext/shortcuts');
 requires('lk_ext/rows_and_columns');
+requires('core/testFramework');
 
 }, function(thisModule) {
 
 
-thisModule.addSlots(TestCase.prototype, function(add) {
+thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('newMorph', function () {
     var m = new avocado.RowMorph().setModel(this).applyStyle(this.defaultMorphStyle);
@@ -24,7 +25,7 @@ thisModule.addSlots(TestCase.prototype, function(add) {
 });
 
 
-thisModule.addSlots(TestResult.prototype, function(add) {
+thisModule.addSlots(avocado.testCase.resultProto, function(add) {
 
   add.method('newMorph', function () {
     var m = new avocado.ColumnMorph().setModel(this);
@@ -40,19 +41,19 @@ thisModule.addSlots(TestResult.prototype, function(add) {
 
   add.creator('defaultMorphStyle', {}, {category: ['user interface']});
 
-  add.creator('failedMorphStyle', Object.create(TestResult.prototype.defaultMorphStyle), {category: ['user interface']});
+  add.creator('failedMorphStyle', Object.create(avocado.testCase.resultProto.defaultMorphStyle), {category: ['user interface']});
 
 });
 
 
-thisModule.addSlots(TestCase.prototype.defaultMorphStyle, function(add) {
+thisModule.addSlots(avocado.testCase.defaultMorphStyle, function(add) {
 
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.4980392156862745, 0, 0.4980392156862745)), new lively.paint.Stop(1, new Color(0.7490196078431373, 0.4980392156862745, 0.7490196078431373))], lively.paint.LinearGradient.SouthNorth));
 
 });
 
 
-thisModule.addSlots(TestResult.prototype.defaultMorphStyle, function(add) {
+thisModule.addSlots(avocado.testCase.resultProto.defaultMorphStyle, function(add) {
 
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0, 0.8, 0)), new lively.paint.Stop(1, new Color(0.4980392156862745, 0.9019607843137255, 0.4980392156862745))], lively.paint.LinearGradient.SouthNorth));
 
@@ -65,7 +66,7 @@ thisModule.addSlots(TestResult.prototype.defaultMorphStyle, function(add) {
 });
 
 
-thisModule.addSlots(TestResult.prototype.failedMorphStyle, function(add) {
+thisModule.addSlots(avocado.testCase.resultProto.failedMorphStyle, function(add) {
 
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.8, 0, 0)), new lively.paint.Stop(1, new Color(0.9019607843137255, 0.4980392156862745, 0.4980392156862745))], lively.paint.LinearGradient.SouthNorth));
 

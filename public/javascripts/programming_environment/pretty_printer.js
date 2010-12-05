@@ -1,7 +1,7 @@
 transporter.module.create('programming_environment/pretty_printer', function(requires) {
 
 requires('narcissus/jsparse');
-requires('core/lk_TestFramework');
+requires('core/testFramework');
 requires('reflection/mirror');
 
 }, function(thisModule) {
@@ -28,7 +28,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
     this.prettyPrint(node);
   }, {category: ['creating']});
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
   add.method('result', function () {
     return this._buffer.toString();

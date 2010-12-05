@@ -1,6 +1,6 @@
 transporter.module.create('transporter/object_graph_walker', function(requires) {
 
-requires('core/lk_TestFramework');
+requires('core/testFramework');
 
 }, function(thisModule) {
 
@@ -126,7 +126,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
 
   add.method('objectCount', function () { return this._objectCount; });
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
   add.method('inspect', function () {
     return reflect(this).name();

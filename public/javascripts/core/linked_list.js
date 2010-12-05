@@ -41,7 +41,7 @@ thisModule.addSlots(avocado.list['__proto__'], function(add) {
   this._rep.removeAll();
 }, {category: ['removing']});
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
   add.method('size', function () { return this._size; }, {category: ['accessing']});
 

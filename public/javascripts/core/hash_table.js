@@ -1,7 +1,7 @@
 transporter.module.create('core/hash_table', function(requires) {
 
 requires('core/identity_hash');
-requires('core/lk_TestFramework');
+requires('core/testFramework');
 
 }, function(thisModule) {
 
@@ -214,7 +214,7 @@ thisModule.addSlots(avocado.dictionary, function(add) {
     return this.entryForKey(k) !== null;
   }, {category: ['testing']});
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
   add.method('keys', function () {
     var ks = [];
@@ -343,7 +343,7 @@ thisModule.addSlots(avocado.set, function(add) {
     return this.contains(k);
   }, {category: ['testing']});
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
   add.method('toArray', function () {
     var vs = [];
@@ -412,7 +412,7 @@ thisModule.addSlots(Array.prototype, function(add) {
     return s;
   });
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
 });
 

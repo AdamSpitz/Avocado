@@ -518,7 +518,7 @@ transporter.module.addSlots = function(holder, block) {
   block(slotAdder);
 };
 
-annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__oid__', 'bootstrapTheModuleSystem', 'loadTheLKTestFramework', 'modules', 'transporter', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
+annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__oid__', 'bootstrapTheModuleSystem', 'modules', 'transporter', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
 
 transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
 transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_lk', function() {}); // aaa lk-specific

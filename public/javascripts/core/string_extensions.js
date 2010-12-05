@@ -19,7 +19,7 @@ thisModule.addSlots(String.prototype, function(add) {
     return this.endsWith(suffix) ? this.substr(0, this.length - suffix.length) : this;
   });
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
 });
 

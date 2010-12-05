@@ -75,7 +75,7 @@ thisModule.addSlots(organization, function(add) {
     return result;
   }, {category: ['loading']});
 
-  add.creator('tests', Object.create(TestCase.prototype), {category: ['tests']});
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
 });
 

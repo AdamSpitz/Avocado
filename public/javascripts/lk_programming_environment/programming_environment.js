@@ -141,7 +141,7 @@ thisModule.addSlots(avocado.menuItemContributors, function(add) {
 
   add.data('3', avocado.poses);
 
-  add.data('4', TestCase);
+  add.data('4', avocado.testCase);
 
 });
 
