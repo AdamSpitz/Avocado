@@ -108,6 +108,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     } else {
       this.padding = p;
     }
+    return this;
   }, {category: ['layout']});
 
   add.method('applyStyle', function ($super, specs) {

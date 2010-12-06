@@ -9,6 +9,7 @@ requires('programming_environment/categorize_libraries');
 requires('programming_environment/pretty_printer');
 requires('lk_programming_environment/module_morph');
 requires('lk_programming_environment/mirror_morph');
+requires('lk_programming_environment/process_morph');
 requires('lk_programming_environment/evaluator_morph');
 requires('lk_programming_environment/searching');
 requires('lk_programming_environment/test_case_morph');

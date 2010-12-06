@@ -61,17 +61,13 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     this._commentToggler    = avocado.toggler.create(this, slot.comment    ? this.createRow(function() {return this.   commentMorph();}.bind(this)) : null);
     this._annotationToggler = avocado.toggler.create(this, slot.annotation ? this.createRow(function() {return this.annotationMorph();}.bind(this)) : null);
 
-    var nameMorph = this._nameMorph = new TwoModeTextMorph(avocado.accessors.forMethods(this, 'slotName'));
-    nameMorph.setNameOfEditCommand("rename");
-    nameMorph.ignoreEvents(); // so that the menu request passes through, though this breaks double-clicking-to-edit
-
     var commentButton = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
 
     var buttonChooserMorph = Morph.createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.slot().isSimpleMethod(); }.bind(this));
 
     var optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
 
-    var signatureRowContent = [nameMorph, optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph];
+    var signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph];
     this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
 
     this.updateAppearance();
@@ -115,6 +111,16 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     r.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
     return r;
   }, {category: ['creating']});
+
+  add.method('nameMorph', function () {
+    // ignoreEvents so that the menu request passes through, though this breaks double-clicking-to-edit
+    return this._nameMorph || (this._nameMorph = new TwoModeTextMorph(avocado.accessors.forMethods(this, 'slotName')).setNameOfEditCommand("rename").ignoreEvents());
+  }, {category: ['signature']});
+
+  add.method('descriptionMorph', function () {
+    // override for children that have more to describe (like process contexts)
+    return this.nameMorph();
+  }, {category: ['signature']});
 
   add.method('sourcePane', function () {
     return this._sourcePane || (this._sourcePane = ScrollPane.ifNecessaryToContain(this.sourceMorph(), pt(400,300)).setLayoutModes({horizontalLayoutMode: LayoutModes.SpaceFill}));

@@ -215,7 +215,8 @@ thisModule.addSlots(avocado.testCase, function(add) {
       avocado.dependencies.tests,
       avocado.list.tests,
       avocado.prettyPrinter.tests,
-      organization.tests
+      organization.tests,
+      avocado.process.tests
     ];
   });
 
@@ -246,25 +247,28 @@ thisModule.addSlots(avocado.testCase.resultProto, function(add) {
 
   add.method('addFailure', function (className, selector, error) {
 	  // Better error message than the standard LK one.
-		this.failed.push({
+	  var failure = {
 				classname: className,
 				selector: selector,
-				err: error,
-				toString: function() {
-          var s = avocado.stringBuffer.create(this.selector).append(" failed ");
-          if (this.err.sourceURL !== undefined) {
-            s.append("(").append(this.err.sourceURL);
-            if (this.err.line !== undefined) {
-              s.append(":").append(this.err.line);
-            }
-            s.append("): ");
-          }
-          s.append(typeof(this.err.message) !== 'undefined' ? this.err.message : this.err);
-          return s.toString();
-        }
-    });
+				err: error
+		};
+		failure.toString = this.failureDescription.bind(this, failure);
+		this.failed.push(failure);
   });
 
+  add.method('failureDescription', function (failure) {
+    var s = avocado.stringBuffer.create(failure.selector).append(" failed ");
+    if (failure.err.sourceURL !== undefined) {
+      s.append("(").append(this.getFileNameFromError(failure.err));
+      if (failure.err.line !== undefined) {
+        s.append(":").append(failure.err.line);
+      }
+      s.append("): ");
+    }
+    s.append(typeof(failure.err.message) !== 'undefined' ? failure.err.message : failure.err);
+    return s.toString();
+  });
+  
   add.method('runs', function () {
 		if (!this.failed) 
 			return 0; 
@@ -276,7 +280,9 @@ thisModule.addSlots(avocado.testCase.resultProto, function(add) {
 	});
 
   add.method('getFileNameFromError', function (err) {
-	  return err.sourceURL || "";
+    if (!err.sourceURL) { return ""; }
+    var path = err.sourceURL.split("/");
+    return path[path.length - 1].split("?")[0];
 	});
 
   add.method('failureList', function () {
