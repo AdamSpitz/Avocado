@@ -424,16 +424,16 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('copyDownParentThatIAmFrom', function () {
     var name = this.name();
-    return this.holder().copyDownParents().find(function(cdp) {
+    var cdps = this.holder().copyDownParents();
+    for (var i = 0, n = cdps.length; i < n; ++i) {
+      var cdp = cdps[i];
       var parentMir = reflect(cdp.parent);
       if (parentMir.reflecteeHasOwnProperty(name)) {
         var slotsToOmit = cdp.slotsToOmit || [];
         if (typeof slotsToOmit === 'string') { slotsToOmit = slotsToOmit.split(' '); }
-        return ! slotsToOmit.include(name);
-      } else {
-        return false;
+        if (! slotsToOmit.include(name)) { return cdp; }
       }
-    }.bind(this));
+    }
   }, {category: ['copy-down parents']});
 
   add.method('slotThatIAmCopiedDownFrom', function () {
