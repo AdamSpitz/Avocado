@@ -145,8 +145,17 @@ Object.defineProperties(Function.prototype, {
 				return results;
 			}
 			// this is the prototype.js definition
-			if (arguments.length < 2 && arguments[0] === undefined) return this;
-			var __method = this, args = cdr(arguments), object = arguments[0];
+
+      var __method = this, object = arguments[0];
+			// Hacked to speed up the very common case where we're only binding the receiver. -- Adam
+			if (arguments.length < 2) {
+  			if (object === undefined) { return this; }
+  			return function thisBound() {
+  				return __method.apply(object, arguments);
+  			}
+			}
+
+			var args = cdr(arguments);
 			return function bound() {
 				return __method.apply(object, args.concat($A(arguments)));
 			}
@@ -1974,7 +1983,13 @@ Rectangle.addMethods({
 	intersects: function(r) { return this.intersection(r).isNonEmpty(); },	// not the fastest
 
 	union: function(r) {
-		return rect(this.topLeft().minPt(r.topLeft()),this.bottomRight().maxPt(r.bottomRight())); 
+	  // Optimized to avoid creating Point objects. -- Adam
+	  var locationX = Math.min(this.x, r.x);
+	  var locationY = Math.min(this.y, r.y);
+	  var cornerX = Math.max(this.maxX(), r.maxX());
+	  var cornerY = Math.max(this.maxY(), r.maxY());
+  	return new Rectangle(locationX, locationY, cornerX - locationX, cornerY - locationY);
+		// return rect(this.topLeft().minPt(r.topLeft()),this.bottomRight().maxPt(r.bottomRight())); 
 	},
 
 	isNonEmpty: function(rect) { return this.width > 0 && this.height > 0; },
@@ -1994,8 +2009,12 @@ Rectangle.addMethods({
 		return Point.random(pt(this.width, this.height)).addPt(this.topLeft());
 	},
 
+  // Hacked to allow callers to avoid creating the Point object. -- Adam
 	translatedBy: function(d) {
-		return new Rectangle(this.x+d.x, this.y+d.y, this.width, this.height); 
+		return this.translatedByXY(d.x, d.y);
+	},
+	translatedByXY: function(dx, dy) {
+		return new Rectangle(this.x+dx, this.y+dy, this.width, this.height); 
 	},
 
 	scaleByRect: function(r) { // r is a relative rect, as a pane spec in a window

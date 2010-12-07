@@ -2474,6 +2474,21 @@ Object.subclass('lively.scene.Similitude', {
 		return pt(sx, sy);
 	},
 
+  // Hacked by Adam as a way to avoid creating the point object
+	getScaleX: function() {
+		var a = this.a;
+		var c = this.c;
+		return Math.sqrt(a * a + c * c);
+	},
+	getScaleY: function() {
+		var a = this.a;
+		var b = this.b;
+		var c = this.c;
+		var d = this.d;
+		var r =	 Math.atan2(-c, a);	 // radians
+		return (Math.abs(b) > Math.abs(d)) ? b / Math.sin(r) : d / Math.cos(r);  // avoid div by 0
+	},
+
 
 	isTranslation: function() {
 		return this.matrix_.type === SVGTransform.SVG_TRANSFORM_TRANSLATE;
@@ -2484,14 +2499,20 @@ Object.subclass('lively.scene.Similitude', {
 	},
 
 	toAttributeValue: function() { 
-		var delta = this.getTranslation();
-		var attr = "translate(" + delta.x + "," + delta.y +")";
+	  // Optimization: don't create the point objects. -- Adam
+	  
+		// var delta = this.getTranslation();
+		// var attr = "translate(" + delta.x + "," + delta.y +")";
+		var attr = "translate(" + this.e + "," + this.f +")";
 
 		var theta = this.getRotation();
-		if (theta != 0.0) attr += " rotate(" + this.getRotation()  +")"; // in degrees
+		if (theta != 0.0) attr += " rotate(" + theta  +")"; // in degrees
 
-		var sp = this.getScalePoint();
-		if (sp.x != 1.0 || sp.y != 1.0)	 attr += " scale(" + sp.x + "," + sp.y + ")";
+		//var sp = this.getScalePoint();
+		//if (sp.x != 1.0 || sp.y != 1.0)	 attr += " scale(" + sp.x + "," + sp.y + ")";
+		var sx = this.getScaleX();
+		var sy = this.getScaleY();
+		if (sx != 1.0 || sy != 1.0)	 attr += " scale(" + sx + "," + sy + ")";
 
 		return attr;
 	},

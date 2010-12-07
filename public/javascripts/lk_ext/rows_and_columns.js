@@ -273,7 +273,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
 
   add.method('setMorphPositionsAndSizes', function (actualCoordsAndSizes) {
     var direction = this._tableContent._direction2;
-    this._tableContent.eachPrimaryLine(function(line, i) {
+    this._tableContent.primaryLines().each(function(line, i) {
       line.each(function(m, j) {
         var actualsForThisMorph = direction.point(direction.sideways.coord(actualCoordsAndSizes)[j], direction.coord(actualCoordsAndSizes)[i]);
         var availableSpaceToPassOnToThisChild = pt(actualsForThisMorph.x.space, actualsForThisMorph.y.space);
@@ -281,10 +281,18 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
         var mExtent = m.rejiggerTheLayout(availableSpaceToPassOnToThisChild);
         if (this._debugMyLayout) { console.log("m.extent is " + mExtent); }
         var unusedSidewaysSpace = direction.sideways.coord(availableSpaceToPassOnToThisChild) - direction.sideways.coord(mExtent);
-      
-        var p = pt(actualsForThisMorph.x.coordinate, actualsForThisMorph.y.coordinate).addPt(direction.point(0, unusedSidewaysSpace / 2));
-        m.setPosition(p);
-        if (this._debugMyLayout) { console.log("Added " + m.inspect() + " at " + p); }
+        
+        // Uglified slightly to avoid creating the Point object; it's actually getting significant. -- Adam
+        var f = direction         .coord(actualsForThisMorph).coordinate;
+        var s = direction.sideways.coord(actualsForThisMorph).coordinate + (unusedSidewaysSpace / 2);
+        var x, y;
+        if (direction === avocado.HorizontalDirection) {
+          x = f; y = s;
+        } else {
+          x = s; y = f;
+        }
+        m.setPositionXY(x, y);
+        if (this._debugMyLayout) { console.log("Added " + m.inspect() + " at " + x + ", " + y); }
       }.bind(this));
     }.bind(this));
   }, {category: ['layout']});
@@ -312,9 +320,10 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('eachThingy', function (f) {
-    $A(this.submorphs).each(function(m) {
+    for (var i = 0, n = this.submorphs.length; i < n; ++i) {
+      var m = this.submorphs[i];
       if (! m.shouldNotBePartOfRowOrColumn) {f(m);}
-    });
+    }
   }, {category: ['iterating']});
 
   add.method('replaceContentWith', function (newContent) {
@@ -323,8 +332,9 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     if (this._debugMyLayout) { console.log("About to replaceContentWith " + newContent.primaryLines().size() + " lines in direction " + newContent._direction2); }
     this._tableContent = newContent;
     
-    var old = $A(this.submorphs);
-    for (var i = 0, n = old.length; i <  n; ++i) { var m = old[i]; if (! m.shouldNotBePartOfRowOrColumn) {this.removeMorph(m, true);}}
+    var nonThingies = [];
+    for (var i = 0, n = this.submorphs.length; i < n; ++i) { var m = this.submorphs[i]; if (! m.shouldNotBePartOfRowOrColumn) { nonThingies.push(m); }}
+    for (var i = 0, n =    nonThingies.length; i < n; ++i) { this.removeMorph(nonThingies[i], true); }
     newContent.eachElement(function(m) { this.addMorph(m, true); }.bind(this));
     
     this.forceLayoutRejiggering();
@@ -553,14 +563,14 @@ thisModule.addSlots(avocado.tableContents, function(add) {
   }, {category: ['accessing']});
 
   add.method('eachElementInSecondaryLine', function (i, f) {
-    this.eachPrimaryLine(function(line) {
+    this.primaryLines().each(function(line) {
       f(line.length > i ? line[i] : null);
     });
   }, {category: ['iterating']});
 
   add.method('lengthOfLongestPrimaryLine', function () {
     var n = 0;
-    this.eachPrimaryLine(function(line) {
+    this.primaryLines().each(function(line) {
       n = Math.max(n, line.length);
     });
     return n;

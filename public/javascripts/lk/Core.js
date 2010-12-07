@@ -2122,6 +2122,12 @@ Object.subclass('LayoutManager', {
 		return delta;
 	},
 
+	// Hack by Adam to allow avoiding creating new Points. -- Adam
+	setPositionXY: function(target, newX, newY) {
+		var oldPosition = target.getPosition();
+		target.translateByXY(newX - oldPosition.x, newY - oldPosition.y);
+	},
+
     layoutChanged: function(target) {
 	
     },
@@ -2621,13 +2627,17 @@ Morph.addMethods({
 		return globalTransform;
 	},
 
+  // Hacked to allow callers to avoid creating the Point object. -- Adam
 	translateBy: function(delta) {
+	  return this.translateByXY(delta.x, delta.y);
+  },
+	translateByXY: function(x, y) {
 		this.changed();
-		this.origin = this.origin.addPt(delta);
+		this.origin = this.origin.addXY(x, y);
 		// this.layoutChanged();
 		// Only position has changed; not extent.  Thus no internal layout is needed
 		this.transformChanged();
-		if (this.fullBounds != null) this.fullBounds = this.fullBounds.translatedBy(delta);
+		if (this.fullBounds != null) this.fullBounds = this.fullBounds.translatedByXY(x, y);
 		// DI: I don't think this can affect owner.  It may increase fullbounds
 		//     due to stickouts, but not the bounds for layout...
 		if (this.owner /* && this.owner !== this.world() */ && !this.isEpimorph) this.owner.layoutChanged(); 
@@ -3800,7 +3810,12 @@ Morph.addMethods({
 
 	setPosition: function(newPosition) {
 		this.layoutManager.setPosition(this, newPosition);
-	}
+	},
+	
+	// Hack by Adam to allow avoiding creating new Points. -- Adam
+	setPositionXY: function(newX, newY) {
+		this.layoutManager.setPositionXY(this, newX, newY);
+  }
 
 });
 

@@ -1,6 +1,7 @@
 Monday, December 6, 2010
 
   - Created a simple stack-viewer. It's not a real debugger - it can't view a live stack, only a dead one, so there's no single-stepping or proceeding or anything like that. And it can't even show local variables, just arguments. But still, it's kinda neat.
+  - Did some performance optimizations. Opening up categories with lots of slots should be about two or three times faster now, I think.
 
 Saturday, December 4, 2010
 

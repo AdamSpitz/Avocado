@@ -154,7 +154,9 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
       }
       this.changeVerticesIfNecessary();
     } else {
-      this.disappear();
+      if (this.owner) {
+        this.disappear();
+      }
     }
   }, {category: ['vertices']});
 
