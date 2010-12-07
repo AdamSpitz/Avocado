@@ -69,8 +69,6 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
     var signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph];
     this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
-
-    this.updateAppearance();
   }, {category: ['creating']});
 
   add.method('slot', function () { return this._model; }, {category: ['accessing']});
@@ -80,6 +78,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.creator('copyDownStyle', Object.create(avocado.slots['abstract'].Morph.prototype.defaultStyle), {category: ['styles']});
 
   add.creator('annotationStyle', {}, {category: ['styles']});
+
+  add.creator('commentStyle', {}, {category: ['styles']});
 
   add.creator('sourceMorphStyle', {}, {category: ['styles']});
 
@@ -106,10 +106,18 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('createRow', function (getOrCreateContent) {
-    var spacer = Morph.createSpacer();
-    var r = avocado.RowMorph.createSpaceFilling(function() {return [getOrCreateContent(), spacer];}, this.defaultStyle.internalPadding);
-    r.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
-    return r;
+    // Blecch, functions everywhere. But creating the row is expensive. Find a cleaner way to cache them.
+    // Or even get rid of them, use the contents directly; the problem with that is that we can't make
+    // TextMorphs SpaceFill yet.
+    var p = this.defaultStyle.internalPadding;
+    var row = null;
+    return function() {
+      if (row) { return row; }
+      var spacer = Morph.createSpacer();
+      row = avocado.RowMorph.createSpaceFilling(function() {return [getOrCreateContent(), spacer];}, p);
+      row.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
+      return row;
+    }.bind(this);
   }, {category: ['creating']});
 
   add.method('nameMorph', function () {
@@ -142,7 +150,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['annotation']});
 
   add.method('commentMorph', function () {
-    return this._commentMorph || (this._commentMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'comment')));
+    return this._commentMorph || (this._commentMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'comment')).applyStyle(this.commentStyle));
   }, {category: ['comment']});
 
   add.method('wasJustShown', function (evt) {
@@ -311,7 +319,14 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.copyDownStyle, fun
 
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.annotationStyle, function(add) {
 
+  add.data('horizontalLayoutMode', LayoutModes.SpaceFill);
+  
   add.data('padding', {left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}'});
+
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.commentStyle, function(add) {
 
 });
 
