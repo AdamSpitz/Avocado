@@ -189,6 +189,9 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
       } else {
         m.walkers = m.walkers.without(this);
       }
+      
+      // Probably better to remove the walkers collection, so it doesn't stick around as a memory leak.
+      if (m.walkers.size() === 0) { delete m.walkers; }
     }.bind(this));
     this._marked = [];
   });
@@ -260,6 +263,7 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
         marker.markObject(type.prototype, pathToTypePrototype, true);
         marker.walk(type.prototype);
     });
+    marker.undoAllMarkings();
   });
 
   add.method('markObject', function ($super, contents, howDidWeGetHere, shouldExplicitlySetIt) {
