@@ -97,13 +97,11 @@ thisModule.addSlots(organizationUsingAnnotations, function(add) {
 
   add.method('categoryOrNullForSlot', function (s) {
     if (! s.hasAnnotation()) { return null; }
-    var a = s.annotation();
-    if (!a.category) { return null; }
-    return a.category;
+    return s.annotation().categoryParts();
   }, {category: ['categories']});
 
   add.method('setCategoryForSlot', function (s, catParts) {
-    s.annotation().category = catParts;
+    s.annotation().setCategoryParts(catParts);
   }, {category: ['categories']});
 
   add.method('commentOrNullForReflecteeOf', function (mir) {

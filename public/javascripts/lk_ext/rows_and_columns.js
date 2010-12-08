@@ -12,12 +12,21 @@ thisModule.addSlots(avocado, function(add) {
   add.method('RowMorph', function RowMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui', 'rows and columns']});
 
   add.method('ColumnMorph', function ColumnMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui', 'rows and columns']});
-
-  add.creator('VerticalDirection', {}, {category: ['ui', 'rows and columns']});
-
-  add.creator('HorizontalDirection', {}, {category: ['ui', 'rows and columns']});
+  
+  add.creator('directions', {}, {category: ['ui', 'rows and columns']});
 
   add.creator('tableContents', {}, {category: ['ui', 'rows and columns']});
+
+});
+
+
+thisModule.addSlots(avocado.directions, function(add) {
+
+  add.creator('abstractDirection', {});
+  
+  add.creator('vertical', Object.create(avocado.directions.abstractDirection));
+
+  add.creator('horizontal', Object.create(avocado.directions.abstractDirection));
 
 });
 
@@ -56,7 +65,7 @@ thisModule.addSlots(avocado.RowMorph, function(add) {
 
   add.method('createSpaceFilling', function (content, padding) {
     var m = new this().beInvisible();
-    var direction = avocado.HorizontalDirection;
+    var direction = avocado.directions.horizontal;
     if (padding !== undefined) { m.setPadding(padding); }
     direction.setLayoutModeOf(m, LayoutModes.SpaceFill);
     
@@ -121,8 +130,8 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['styles']});
 
   add.method('eachDirection', function (f) {
-    f(avocado.HorizontalDirection);
-    f(avocado.VerticalDirection);
+    f(avocado.directions.horizontal);
+    f(avocado.directions.vertical);
   }, {category: ['layout']});
 
   add.method('minimumExtent', function () {
@@ -286,7 +295,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
         var f = direction         .coord(actualsForThisMorph).coordinate;
         var s = direction.sideways.coord(actualsForThisMorph).coordinate + (unusedSidewaysSpace / 2);
         var x, y;
-        if (direction === avocado.HorizontalDirection) {
+        if (direction === avocado.directions.horizontal) {
           x = f; y = s;
         } else {
           x = s; y = f;
@@ -394,9 +403,9 @@ thisModule.addSlots(avocado.TableMorph.prototype.invisibleStyle, function(add) {
 });
 
 
-thisModule.addSlots(avocado.VerticalDirection, function(add) {
+thisModule.addSlots(avocado.directions.vertical, function(add) {
 
-  add.data('sideways', avocado.HorizontalDirection);
+  add.data('sideways', avocado.directions.horizontal);
 
   add.method('toString', function () { return 'vertical'; });
 
@@ -423,9 +432,9 @@ thisModule.addSlots(avocado.VerticalDirection, function(add) {
 });
 
 
-thisModule.addSlots(avocado.HorizontalDirection, function(add) {
+thisModule.addSlots(avocado.directions.horizontal, function(add) {
 
-  add.data('sideways', avocado.VerticalDirection);
+  add.data('sideways', avocado.directions.vertical);
 
   add.method('toString', function () { return 'horizontal'; });
 
@@ -455,20 +464,20 @@ thisModule.addSlots(avocado.HorizontalDirection, function(add) {
 thisModule.addSlots(avocado.tableContents, function(add) {
 
   add.method('createWithRows', function (a) {
-    return this.create(a, avocado.VerticalDirection);
+    return this.create(a, avocado.directions.vertical);
   }, {category: ['creating']});
 
   add.method('createWithColumns', function (a) {
-    return this.create(a, avocado.HorizontalDirection);
+    return this.create(a, avocado.directions.horizontal);
   }, {category: ['creating']});
 
   add.method('create', function (a, dir1) {
     return Object.newChildOf(this, a, dir1);
   }, {category: ['creating']});
 
-  add.data('_direction1', avocado.VerticalDirection);
+  add.data('_direction1', avocado.directions.vertical);
 
-  add.data('_direction2', avocado.HorizontalDirection);
+  add.data('_direction2', avocado.directions.horizontal);
 
   add.data('_data', [], {initializeTo: '[]'});
 
@@ -519,11 +528,11 @@ thisModule.addSlots(avocado.tableContents, function(add) {
   }, {category: ['iterating']});
 
   add.method('eachRow', function (f) {
-    this.eachLineInDirection(avocado.HorizontalDirection, f);
+    this.eachLineInDirection(avocado.directions.horizontal, f);
   }, {category: ['iterating']});
 
   add.method('eachColumn', function (f) {
-    this.eachLineInDirection(avocado.VerticalDirection, f);
+    this.eachLineInDirection(avocado.directions.vertical, f);
   }, {category: ['iterating']});
 
   add.method('eachLineInDirection', function (dir, f) {
@@ -601,7 +610,7 @@ thisModule.addSlots(avocado.ColumnMorph.prototype, function(add) {
 
   add.data('constructor', avocado.ColumnMorph);
 
-  add.data('direction', avocado.VerticalDirection);
+  add.data('direction', avocado.directions.vertical);
 
   add.method('addRow', function (m) {
     if (this._tableContent && this._tableContent.primaryLines().length > 0) {
@@ -630,7 +639,7 @@ thisModule.addSlots(avocado.RowMorph.prototype, function(add) {
 
   add.data('constructor', avocado.RowMorph);
 
-  add.data('direction', avocado.HorizontalDirection);
+  add.data('direction', avocado.directions.horizontal);
 
   add.method('addColumn', function (m) {
     if (this._tableContent && this._tableContent.primaryLines().length > 0) {

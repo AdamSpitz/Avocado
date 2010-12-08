@@ -79,6 +79,7 @@ thisModule.addSlots(category, function(add) {
 
   add.method('setLastPart', function (newName) {
     if (this.isRoot()) { throw "Cannot rename the root category"; }
+    this._parts = this._parts.clone();
     this._parts[this._parts.length - 1] = newName;
   }, {category: ['accessing']});
 

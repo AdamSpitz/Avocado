@@ -4,33 +4,37 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     this.dontNotifyUntilTheActualModelChanges = true;
     this.connectModel({model: this, getText: "getSavedText", setText: "setSavedText"});
     this.acceptInput = true;
-    this.applyStyle(this.basicStyle);
     this.setFill(this.backgroundColorWhenWritable || null),
     this.changed();
     this.setSavedText(this.textString); // aaa - what is this for?
     this.justAcceptedOrCancelled();
-    if (accessors) {
-      if (accessors.getter) { this.getSavedText = accessors.getter; }
-      if (accessors.setter) { this.setSavedText = accessors.setter; }
-    }
+    if (accessors) { this._accessors = accessors; }
     this.refreshText();
   },
 
   defaultBounds: pt(5, 10).extent(pt(140, 20)),
   
-  basicStyle: {
-    openForDragAndDrop: false,
-    wrapStyle: lively.Text.WrapStyle.Shrink,
-    suppressGrabbing: true
-  },
+  openForDragAndDrop: false,
+  
+  suppressGrabbing: true,
+  
+  wrap: lively.Text.WrapStyle.Shrink,
 
   getSavedText: function( )  {
-    return this.savedTextString;
+    if (this._accessors) {
+      return this._accessors.get();
+    } else {
+      return this.savedTextString;
+    }
   },
 
   setSavedText: function(t)  {
-    this.savedTextString = t;
-    if (this.notifier) {this.notifier.notifyAllObservers();}
+    if (this._accessors) {
+      this._accessors.set(t);
+    } else {
+      this.savedTextString = t;
+      if (this.notifier) {this.notifier.notifyAllObservers();}
+    }
   },
 
   setTextString: function($super, replacement, delayComposition, justMoreTyping) {
@@ -179,7 +183,6 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
   beUnwritable: function() {
     this.acceptInput = false;
     this.setFill(this.backgroundColorWhenUnwritable || null);
-    this.applyStyle(this.basicStyle);
     this.setNullSelectionAt(0);
     var w = this.world();
     if (w) {this.relinquishKeyboardFocus(w.firstHand());}
@@ -193,7 +196,6 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
   beWritable: function() {
     this.acceptInput = true;
     this.setFill(this.backgroundColorWhenWritable || null);
-    this.applyStyle(this.basicStyle);
     this.changed();
     this.oldMouseHandler = this.mouseHandler;
     this.enableEvents();
@@ -239,7 +241,7 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
   editingCommands: function($super) {
     var cmdList = $super();
     if (!this.isInWritableMode && this.canBecomeWritable()) {
-      cmdList.addItem([this.nameOfEditCommand, function(evt) {this.beWritableAndSelectAll(evt);}.bind(this)]);
+      cmdList.addItem(avocado.command.create(this.nameOfEditCommand, function(evt) {this.beWritableAndSelectAll(evt);}, this));
     }
     return cmdList;
   }

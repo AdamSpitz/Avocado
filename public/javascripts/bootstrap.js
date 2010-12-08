@@ -2,13 +2,33 @@ window.bootstrapTheModuleSystem = function () {
 
 // The bootstrap module is kind of a mess. Try to minimize it.
 
-if (typeof Object.create !== 'function') {
-  Object.create = function(parent) {
-    function F() {}
-    F.prototype = parent;
-    return new F();
-  };
-}
+if (! window.hasOwnProperty('avocado')) { window.avocado = {}; }
+
+avocado.constructorTemplate = "(function() { return function CONSTRUCTOR_THINGY() {}; })()";
+
+avocado.newConstructor = function(parent, explicitlySpecifiedName) {
+  var name;
+  if (explicitlySpecifiedName) {
+    name = explicitlySpecifiedName;
+  } else {
+    var anno = annotator.existingAnnotationOf(parent);
+    if (anno) {
+      var cs = anno.explicitlySpecifiedCreatorSlot();
+      if (cs) { name = cs.name; }
+    }
+    name = name || 'something';
+  }
+  var constr = eval(avocado.constructorTemplate.replace(/CONSTRUCTOR_THINGY/g, name));
+  constr.prototype = parent;
+  return constr;
+};
+
+/*
+Object.create = function(parent) {
+  var constr = parent.hasOwnProperty('__constructor__') ? parent.__constructor__ : (parent.__constructor__ = avocado.newConstructor(parent));
+  return new constr();
+};
+*/
 
 if (typeof Object.newChildOf !== 'function') {
   Object.newChildOf = function(parent) {
@@ -52,6 +72,16 @@ Object.extend = function extend(destination, source) {
 };
 
 
+Object.extendWithJustDirectPropertiesOf = function extendWithJustDirectPropertiesOf(destination, source) {
+  for (var property in source) {
+    if (source.hasOwnProperty(property) && property !== '__oid__') {
+      destination[property] = source[property];
+    }
+  }
+  return destination;
+};
+
+
 var annotator = {
   objectAnnotationPrototype: {
     _slotAnnoPrefix: 'anno_',
@@ -78,7 +108,7 @@ var annotator = {
 
     setSlotAnnotation: function(name, slotAnno) {
       if (slotAnno) {
-        var realSlotAnno = annotator.asSlotAnnotation(slotAnno);
+        var realSlotAnno = this.asSlotAnnotation(slotAnno);
         // sometimes annotation definitions come in as strings. Hack to force the UI to work anyways
 	      if (! realSlotAnno['category'] instanceof Array) {
 		      realSlotAnno['category'] = [realSlotAnno['category']]; 
@@ -89,6 +119,22 @@ var annotator = {
         this.removeSlotAnnotation(name);
         return undefined;
       }
+    },
+
+    asSlotAnnotation: function(slotAnno) {
+      // aaa - In browsers that don't allow you to set __proto__, create a new
+      // object and copy over the slots.
+      // slotAnno['__proto__'] = this.slotAnnotationPrototype;
+      // return slotAnno;
+      if (slotAnno['__proto__'] !== annotator.slotAnnotationPrototype) {
+        slotAnno = Object.extendWithJustDirectPropertiesOf(Object.create(annotator.slotAnnotationPrototype), slotAnno);
+      }
+      
+      if (slotAnno.category) {
+        slotAnno.setCategoryParts(slotAnno.category);
+      }
+      
+      return slotAnno;
     },
 
     slotAnnotation: function(name) {
@@ -163,12 +209,22 @@ var annotator = {
       // Just a shortcut to let us categorize a bunch of slots at a time.
       for (var i = 0, n = slotNames.length; i < n; ++i) {
 	      var slotName = slotNames[i];
-	      this.slotAnnotation(slotName).category = catParts;
+	      this.slotAnnotation(slotName).setCategoryParts(catParts);
       }
     }
   },
 
+  slotAnnotationHolderPrototype: {
+  },
+
   slotAnnotationPrototype: {
+    categoryParts: function() {
+      return this.category || null;
+    },
+    
+    setCategoryParts: function(parts) {
+      this.category = parts ? annotator.canonicalizeCategoryParts(parts) : parts;
+    }
   },
 
   _nextOID: 2,
@@ -210,14 +266,18 @@ var annotator = {
   },
 
   newObjectAnnotation: function() {
-    return this.asObjectAnnotation({slotAnnotations: {}});
+    return this.asObjectAnnotation({ slotAnnotations: Object.create(this.slotAnnotationHolderPrototype) });
   },
 
   asObjectAnnotation: function(anno) {
     // aaa - In browsers that don't allow you to set __proto__, create a new
     // object and copy over the slots.
-    anno['__proto__'] = this.objectAnnotationPrototype;
-    return anno;
+    // aaa - OK, try it that way, not just for browsers that can't set __proto__,
+    // but because using Object.create makes Chrome memory profiles show up nicer.
+    // anno['__proto__'] = this.objectAnnotationPrototype;
+    // return anno;
+    if (anno['__proto__'] === this.objectAnnotationPrototype) { return anno; }
+    return Object.extendWithJustDirectPropertiesOf(Object.create(this.objectAnnotationPrototype), anno);
   },
   
   loadObjectAnnotation: function(o, rawAnno, creatorSlotName, creatorSlotHolder) {
@@ -240,17 +300,33 @@ var annotator = {
     return a;
   },
 
-  asSlotAnnotation: function(slotAnno) {
-    // aaa - In browsers that don't allow you to set __proto__, create a new
-    // object and copy over the slots.
-    slotAnno['__proto__'] = this.slotAnnotationPrototype;
-    return slotAnno;
-  },
-
   existingSlotAnnotation: function(holder, name) {
     var anno = this.existingAnnotationOf(holder);
     if (!anno) { return null; }
     return anno.existingSlotAnnotation(name);
+  },
+  
+  canonicalCategoryParts: [],
+  
+  canonicalizeCategoryParts: function(nonCanonical) {
+    var len = nonCanonical.length;
+    for (var i = 0, n = this.canonicalCategoryParts.length; i < n; ++i) {
+      var canonical = this.canonicalCategoryParts[i];
+      if (this.areCategoryPartsEqual(canonical, nonCanonical)) { return canonical; }
+    }
+    this.canonicalCategoryParts.push(nonCanonical);
+    return nonCanonical;
+  },
+  
+  areCategoryPartsEqual: function(catParts1, catParts2) {
+    var len = catParts1.length;
+    if (catParts2.length !== len) { return false; }
+    for (i = 0; i < len; ++i) {
+      var p1 = catParts1[i];
+      var p2 = catParts2[i];
+      if (p1 !== p2) { return false; }
+    }
+    return true;
   },
   
   adjustSlotsToOmit: function(rawSlotsToOmit) {
@@ -265,13 +341,20 @@ var annotator = {
   }
 };
 
-if (! window.hasOwnProperty('avocado')) { window.avocado = {}; }
+// Gotta create constructors here for the two kinds of annotation, *before* actually creating
+// any annotations, so that the constructor has the right name.
+avocado.newConstructor(annotator.objectAnnotationPrototype, 'objectAnnotationPrototype');
+avocado.newConstructor(annotator.slotAnnotationPrototype, 'slotAnnotationPrototype');
+avocado.newConstructor(annotator.slotAnnotationHolderPrototype, 'slotAnnotationHolderPrototype');
+
 annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
 annotator.annotationOf(window).setSlotAnnotation('avocado', {category: ['avocado']});
 
 avocado.annotator = annotator;
 annotator.annotationOf(avocado.annotator).setCreatorSlot('annotator', avocado);
 annotator.annotationOf(avocado).setSlotAnnotation('annotator', {category: ['annotations']});
+annotator.annotationOf(annotator.objectAnnotationPrototype).setCreatorSlot('objectAnnotationPrototype', annotator);
+annotator.annotationOf(annotator.slotAnnotationPrototype).setCreatorSlot('slotAnnotationPrototype', annotator);
 
 avocado.javascript = {};
 annotator.annotationOf(avocado.javascript).setCreatorSlot('javascript', avocado);
@@ -468,7 +551,7 @@ transporter.module.objectsThatMightContainSlotsInMe = function() {
 
 transporter.module.slotAdder = {
   data: function(name, contents, slotAnnotation, contentsAnnotation) {
-    if (! slotAnnotation) { slotAnnotation = {}; }
+    if (! slotAnnotation) { slotAnnotation = Object.create(annotator.slotAnnotationPrototype); }
     this.holder[name] = contents;
     slotAnnotation.module = this.module;
     annotator.annotationOf(this.holder).setSlotAnnotation(name, slotAnnotation);

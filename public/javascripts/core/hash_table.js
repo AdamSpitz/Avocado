@@ -28,8 +28,10 @@ thisModule.addSlots(avocado.hashTable, function(add) {
     return Object.newChildOf(this); // aaa - blecch, why again can't I put a "create" method directly on Object.prototype?;
   }, {category: ['creating']});
 
+  add.creator('bucketHolder', {}, {category: ['prototypes']});
+  
   add.method('initialize', function (comparator) {
-    this._buckets = {};
+    this._buckets = Object.create(this.bucketHolder);
     this._size = 0;
     if (comparator) { this._comparator = comparator; }
   }, {category: ['initializing']});

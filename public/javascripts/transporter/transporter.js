@@ -567,9 +567,10 @@ thisModule.addSlots(avocado.annotator.slotAnnotationPrototype, function(add) {
 
   add.method('asExpressionForTransporter', function () {
     var slotAnnoToStringify = {};
-    if (this.comment                                  ) { slotAnnoToStringify.comment      = this.comment;      }
-    if (this.category      && this.category.length > 0) { slotAnnoToStringify.category     = this.category;     }
-    if (this.initializeTo                             ) { slotAnnoToStringify.initializeTo = this.initializeTo; }
+    var catParts = this.categoryParts();
+    if (catParts          && catParts.length > 0) { slotAnnoToStringify.category     = catParts;          }
+    if (this.comment                            ) { slotAnnoToStringify.comment      = this.comment;      }
+    if (this.initializeTo                       ) { slotAnnoToStringify.initializeTo = this.initializeTo; }
     return reflect(slotAnnoToStringify).expressionEvaluatingToMe();
   }, {category: ['transporting']});
 

@@ -5065,7 +5065,13 @@ loop:   for (;;) {
     var itself = function (s, o) {
         var a, i;
         JSLINT.errors = [];
-        predefined = Object.create(standard);
+        
+        // aaa - stupid hack because I don't want to use Object.create because the 'standard'
+        // object overrides hasOwnProperty which screws up our Object.create. -- Adam
+        // predefined = Object.create(standard);
+        predefined = {};
+        predefined['__proto__'] = standard;
+        
         if (o) {
             a = o.predef;
             if (a instanceof Array) {
@@ -5121,7 +5127,12 @@ loop:   for (;;) {
             tab += ' ';
         }
         indent = 1;
-        global = Object.create(predefined);
+        
+        // aaa - same hack again, see above
+        // global = Object.create(predefined);
+        global = {};
+        global['__proto__'] = predefined;
+        
         scope = global;
         funct = {
             '(global)': true,

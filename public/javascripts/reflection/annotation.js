@@ -25,7 +25,7 @@ thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
     // Just a shortcut to let us categorize a bunch of slots at a time.
     for (var i = 0, n = slotNames.length; i < n; ++i) {
       var slotName = slotNames[i];
-	    this.slotAnnotation(slotName).category = catParts;
+	    this.slotAnnotation(slotName).setCategoryParts(catParts);
     }
   }, {category: ['categories']});
 
