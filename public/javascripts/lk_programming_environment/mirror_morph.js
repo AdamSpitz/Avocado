@@ -297,7 +297,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
   add.method('showCreatorPath', function (evt, callWhenDone) {
     var myMirror = this.mirror();
-    if (myMirror.reflectee() === window) {
+    if (myMirror.equals(reflect(window))) {
       this.ensureIsInWorld(evt.hand.world(), pt(50,50), true, false, true, callWhenDone);
     } else {
       var creatorSlot = myMirror.probableCreatorSlot();

@@ -319,7 +319,7 @@ thisModule.addSlots(transporter.module, function(add) {
     if (mir.isReflecteeArray()) {
       var cs = mir.theCreatorSlot();
       if (cs && cs.module() === this) {
-        for (var i = 0, n = mir.reflectee().length; i < n; ++i) {
+        for (var i = 0, n = mir.reflecteeLength(); i < n; ++i) {
           f(mir.slotAt(i.toString()));
         }
       }
@@ -498,7 +498,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
           isCreator = true;
           if (contents.isReflecteeFunction()) {
             creationMethod = "method";
-            contentsExpr = contents.reflectee().toString();
+            contentsExpr = contents.reflecteeToString();
             //contentsExpr = contents.prettyPrint({indentationLevel: 2});
           } else {
             creationMethod = "creator";

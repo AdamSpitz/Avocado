@@ -32,7 +32,8 @@ thisModule.addSlots(avocado.childFinder, function(add) {
   });
 
   add.method('reachedObject', function (o) {
-    if (reflect(o).parent().reflectee() === this.objectToSearchFor && reflect(o).isWellKnown('probableCreatorSlot')) {
+    var mir = reflect(o);
+    if (mir.parent().reflectee() === this.objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
       this._results.push(o);
     }
   });

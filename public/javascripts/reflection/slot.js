@@ -255,12 +255,12 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   add.method('name', function () { return this._name; }, {category: ['accessing']});
 
   add.method('contents', function () {
-    return reflect(this._mirror.primitiveContentsAt(this.name()));
+    return this._mirror.contentsAt(this.name());
   }, {category: ['accessing']});
 
   add.method('setContents', function (m) {
     this.markModuleAsChanged();
-    return this._mirror.primitiveSetContentsAt(this.name(), m.reflectee());
+    return this._mirror.setContentsAt(this.name(), m);
   }, {category: ['accessing']});
 
   add.method('equals', function (s) {
@@ -305,9 +305,8 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     if (oldName === newName) {return;}
     var contentsMir = this.contents();
     var holder = this.holder();
-    var o = holder.reflectee();
-    if (  o.hasOwnProperty(newName)) { throw o + " already has a slot named " + newName; }
-    if (! o.hasOwnProperty(oldName)) { throw o + " has no slot named "        + oldName; }
+    if (  holder.reflecteeHasOwnProperty(newName)) { throw holder.reflecteeToString() + " already has a slot named " + newName; }
+    if (! holder.reflecteeHasOwnProperty(oldName)) { throw holder.reflecteeToString() + " has no slot named "        + oldName; }
 
     var isCreator = this.equals(this.contents().explicitlySpecifiedCreatorSlot());
     var holderAnno = holder.annotationForWriting();

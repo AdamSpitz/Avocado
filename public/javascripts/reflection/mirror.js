@@ -54,12 +54,13 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('reflecteeToString', function () {
     try {
-      if (! this.canHaveSlots()) { return "" + this.reflectee(); }
+      var o = this.reflectee();
+      if (! this.canHaveSlots()) { return "" + o; }
 
       // Ignore the default toString because it just says [object Object] all the time and it's annoying.
-      if (this.reflectee().toString === Object.prototype.toString) { return ""; } 
+      if (o.toString === Object.prototype.toString) { return ""; } 
       
-      return this.reflectee().toString();
+      return o.toString();
     } catch (ex) {
       return "";
     }
@@ -82,9 +83,10 @@ thisModule.addSlots(mirror, function(add) {
     var maxToStringLength = 40;
     var toString;
     if (this.isReflecteeArray()) {
-      toString = this.reflectee().length.toString() + " elements";
-      if (this.reflectee().length <= 5) {
-        var firstElems = "[" + this.reflectee().map(function(elem) { return reflect(elem).inspect(); }).join(", ") + "]";
+      var len = this.reflecteeLength();
+      toString = len.toString() + " elements";
+      if (len <= 5) {
+        var firstElems = "[" + avocado.range.create(0, len).map(function(i) { return this.contentsAt(i).inspect(); }.bind(this)).join(", ") + "]";
         if (firstElems.length < maxToStringLength) { toString = firstElems; }
       }
     } else {
@@ -302,6 +304,14 @@ thisModule.addSlots(mirror, function(add) {
     return Object.create(avocado.slots.plain).initialize(this, n.toString());
   }, {category: ['accessing slot contents']});
 
+  add.method('contentsAt', function (n) {
+    return reflect(this.primitiveContentsAt(n));
+  }, {category: ['accessing slot contents']});
+
+  add.method('setContentsAt', function (n, mir) {
+    return this.primitiveSetContentsAt(n, mir.reflectee());
+  }, {category: ['accessing slot contents']});
+
   add.method('primitiveContentsAt', function (n) {
     return this.reflectee()[n];
   }, {category: ['accessing slot contents']});
@@ -323,7 +333,7 @@ thisModule.addSlots(mirror, function(add) {
     do {
       i += 1;
       name = pre + i;
-    } while (this.reflectee().hasOwnProperty(name));
+    } while (this.reflecteeHasOwnProperty(name));
     return name;
   }, {category: ['accessing slot contents']});
 
@@ -335,7 +345,7 @@ thisModule.addSlots(mirror, function(add) {
   add.method('parent', function () {
     if (! this.canAccessParent()) { throw "Sorry, you can't access an object's parent in this browser. Try Firefox or Safari."; }
     if (! this.hasParent()) { throw this.name() + " does not have a parent."; }
-    return reflect(this.reflectee()['__proto__']); // using [] to fool JSLint;
+    return this.contentsAt('__proto__');
   }, {category: ['accessing parent']});
 
   add.method('canAccessParent', function () {
@@ -348,7 +358,7 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('setParent', function (pMir) {
     if (! this.canAccessParent()) { throw "Sorry, you can't change an object's parent in this browser. Try Firefox or Safari."; }
-    this.reflectee()['__proto__'] = pMir.reflectee(); // using [] to fool JSLint;
+    this.setContentsAt('__proto__', pMir);
   }, {category: ['accessing parent']});
 
   add.method('createChild', function () {
@@ -386,14 +396,14 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('source', function () {
     if (! this.isReflecteeFunction()) { throw "not a function"; }
-    return this.reflectee().toString();
+    return this.reflecteeToString();
   }, {category: ['functions']});
 
   add.method('expressionEvaluatingToMe', function (shouldNotUseCreatorSlotChainExpression) {
     if (! this.canHaveCreatorSlot()) { return Object.inspect(this.reflectee()); }
     if (!shouldNotUseCreatorSlotChainExpression && this.isWellKnown('probableCreatorSlot')) { return this.creatorSlotChainExpression(); }
     if (this.isReflecteeFunction()) { return this.source(); }
-    if (this.isReflecteeArray()) { return "[" + this.reflectee().map(function(elem) {return reflect(elem).expressionEvaluatingToMe();}).join(", ") + "]"; }
+    if (this.isReflecteeArray()) { return "[" + avocado.range.create(0, this.reflecteeLength()).map(function(i) {return this.contentsAt(i).expressionEvaluatingToMe();}.bind(this)).join(", ") + "]"; }
 
     // aaa not thread-safe
     if (this.reflectee().__already_calculating_expressionEvaluatingToMe__) { throw "encountered circular structure"; }
@@ -435,10 +445,13 @@ thisModule.addSlots(mirror, function(add) {
     return size;
   }, {category: ['accessing slot contents']});
 
+  add.method('reflecteeType', function () {
+    return typeof(this.reflectee());
+  }, {category: ['accessing']});
+  
   add.method('canHaveSlots', function () {
-    var o = this.reflectee();
-    var t = typeof o;
-    return t === 'function' || (t === 'object' && o !== null);
+    var t = this.reflecteeType();
+    return t === 'function' || (t === 'object' && ! this.isReflecteeNull());
   }, {category: ['accessing slot contents']});
 
   add.method('canHaveChildren', function () {
@@ -452,16 +465,16 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('isReflecteeUndefined', function () { return this.reflectee() === undefined; }, {category: ['testing']});
 
-  add.method('isReflecteeString', function () { return typeof this.reflectee() === 'string';  }, {category: ['testing']});
+  add.method('isReflecteeString', function () { return this.reflecteeType() === 'string';  }, {category: ['testing']});
 
-  add.method('isReflecteeNumber', function () { return typeof this.reflectee() === 'number';  }, {category: ['testing']});
+  add.method('isReflecteeNumber', function () { return this.reflecteeType() === 'number';  }, {category: ['testing']});
 
-  add.method('isReflecteeBoolean', function () { return typeof this.reflectee() === 'boolean'; }, {category: ['testing']});
+  add.method('isReflecteeBoolean', function () { return this.reflecteeType() === 'boolean'; }, {category: ['testing']});
 
-  add.method('isReflecteeArray', function () { return typeof this.reflectee() === 'object' && this.reflectee() instanceof Array; }, {category: ['testing']});
+  add.method('isReflecteeArray', function () { return this.reflecteeType() === 'object' && this.reflectee() instanceof Array; }, {category: ['testing']});
 
   add.method('isReflecteeFunction', function () {
-    return typeof(this.reflectee()) === 'function';
+    return this.reflecteeType() === 'function';
   }, {category: ['testing']});
 
   add.method('isReflecteeSimpleMethod', function () {
@@ -486,11 +499,19 @@ thisModule.addSlots(mirror, function(add) {
     });
     return ! nonTrivialSlot;
   }, {category: ['testing']});
+  
+  add.method('reflecteeLength', function () {
+    return this.primitiveContentsAt('length');
+  }, {category: ['arrays']});
+  
+  add.method('oppositeBoolean', function () {
+    if (! this.isReflecteeBoolean()) { throw new Error("not a boolean"); }
+    return ! this.reflectee();
+  }, {category: ['arrays']});
 
   add.method('canHaveCreatorSlot', function () {
-    var o = this.reflectee();
-    var t = typeof o;
-    return t === 'function' || (t === 'object' && o !== null);
+    var t = this.reflecteeType();
+    return t === 'function' || (t === 'object' && ! this.isReflecteeNull());
   }, {category: ['annotations', 'creator slot']});
 
   add.method('convertAnnotationCreatorSlotToRealSlot', function (s) {

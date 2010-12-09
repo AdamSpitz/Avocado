@@ -377,9 +377,9 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.pointer, function(add) {
 
   add.method('addExtraCommandsTo', function (cmdList) {
     var assoc = this.association();
-    var c = assoc.contents().reflectee();
-    if (typeof(c) === 'boolean') {
-      cmdList.addItem({label: "set to " + (!c), go: function(evt) { assoc.setContents(reflect(!c)); } });
+    var c = assoc.contents();
+    if (c.isReflecteeBoolean()) {
+      cmdList.addItem({label: "set to " + (c.oppositeBoolean().reflecteeToString()), go: function(evt) { assoc.setContents(c.oppositeBoolean()); } });
     }
   }, {category: ['commands']});
 
