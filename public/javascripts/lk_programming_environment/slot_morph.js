@@ -385,7 +385,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.pointer, function(add) {
 
   add.method('newMorph', function () {
     var m = avocado.ArrowMorph.createButtonForToggling(this);
-    m.arrow.endpoint2.wasJustDroppedOnMirror = function(mirMorph) { pointer.setTarget(mirMorph); };
+    m.arrow.endpoint2.wasJustDroppedOnMirror = function(mirMorph) { this.setTarget(mirMorph); }.bind(this);
     return m;
   }, {category: ['creating a morph']});
 
