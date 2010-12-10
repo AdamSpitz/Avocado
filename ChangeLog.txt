@@ -1,3 +1,7 @@
+Thursday, December 9, 2010
+
+  - First crack at remote reflection. Not working yet with the real remote server, but can make a mirror that uses a local mock server instead of a reflectee() method.
+
 Monday, December 6, 2010
 
   - Created a simple stack-viewer. It's not a real debugger - it can't view a live stack, only a dead one, so there's no single-stepping or proceeding or anything like that. And it can't even show local variables, just arguments. But still, it's kinda neat.

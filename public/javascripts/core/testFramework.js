@@ -216,7 +216,8 @@ thisModule.addSlots(avocado.testCase, function(add) {
       avocado.list.tests,
       avocado.prettyPrinter.tests,
       organization.tests,
-      avocado.process.tests
+      avocado.process.tests,
+      avocado.remoteMirror.tests
     ];
   });
 
@@ -268,7 +269,7 @@ thisModule.addSlots(avocado.testCase.resultProto, function(add) {
     s.append(typeof(failure.err.message) !== 'undefined' ? failure.err.message : failure.err);
     return s.toString();
   });
-  
+
   add.method('runs', function () {
 		if (!this.failed) 
 			return 0; 

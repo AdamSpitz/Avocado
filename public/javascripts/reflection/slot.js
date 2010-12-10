@@ -292,7 +292,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('remove', function () {
     this.markModuleAsChanged();
-    this.mirror().primitiveRemoveSlotAt(this.name());
+    this.mirror().removeSlotAt(this.name());
     this.removeAnnotation();
   }, {category: ['removing']});
 

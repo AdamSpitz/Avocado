@@ -40,7 +40,7 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('equals', function (m) {
     if (!m) { return false; }
-    if (typeof(m.reflectee) !== 'function') { return false; }
+    if (this.reflectee !== m.reflectee) { return false; }
     return this.reflectee() === m.reflectee();
   }, {category: ['comparing']});
 
@@ -70,16 +70,20 @@ thisModule.addSlots(mirror, function(add) {
     return "on " + this.inspect();
   }, {category: ['naming']});
 
-  add.method('nameOfLobby', function () {
-    return "window";
+  add.method('isRootOfGlobalNamespace', function () {
+    return this.reflectee() === window;
   }, {category: ['naming']});
 
+  add.method('primitiveReflectee', function () {
+    return this.reflectee();
+  }, {category: ['naming']});
+    
   add.method('inspect', function () {
-    if (this.reflectee() === window) {return this.nameOfLobby();}
-    if (! this.canHaveSlots()) {return Object.inspect(this.reflectee());}
+    if (this.isRootOfGlobalNamespace()) {return "window";}
+    if (! this.canHaveSlots()) {return Object.inspect(this.primitiveReflectee());}
     var n = this.name();
     if (this.isReflecteeFunction()) { return n; } // the code will be visible through the *code* fake-slot
-    var s = avocado.stringBuffer.create(n);
+    var s = [n];
     var maxToStringLength = 40;
     var toString;
     if (this.isReflecteeArray()) {
@@ -92,8 +96,10 @@ thisModule.addSlots(mirror, function(add) {
     } else {
       toString = this.reflecteeToString();
     }
-    if (typeof toString === 'string' && toString && toString.length < maxToStringLength) { s.append("(").append(toString).append(")"); }
-    return s.toString();
+    if (typeof toString === 'string' && toString && toString.length < maxToStringLength) {
+      s.push("(", toString, ")");
+    }
+    return s.join("");
   }, {category: ['naming']});
 
   add.method('convertCreatorSlotChainToString', function (chain) {
@@ -116,7 +122,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['naming']});
 
   add.method('name', function () {
-    if (! this.canHaveCreatorSlot()) {return Object.inspect(this.reflectee());}
+    if (! this.canHaveCreatorSlot()) {return Object.inspect(this.primitiveReflectee());}
 
     var chain = this.creatorSlotChainOfMeOrAnAncestor('probableCreatorSlot');
 
@@ -258,8 +264,10 @@ thisModule.addSlots(mirror, function(add) {
 
     // Workaround for Chrome bug. -- Adam
     if (! avocado.javascript.prototypeAttributeIsEnumerable) {
-      if (o.hasOwnProperty("prototype")) {
-        f("prototype");
+      if (typeof(o.hasOwnProperty) === 'function') { // another bizarre bug
+        if (o.hasOwnProperty("prototype")) {
+          f("prototype");
+        }
       }
     }
   }, {category: ['iterating']});
@@ -321,7 +329,7 @@ thisModule.addSlots(mirror, function(add) {
     return o;
   }, {category: ['accessing slot contents']});
 
-  add.method('primitiveRemoveSlotAt', function (n) {
+  add.method('removeSlotAt', function (n) {
     delete this.reflectee()[n];
   }, {category: ['accessing slot contents']});
 
@@ -339,6 +347,10 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('reflecteeHasOwnProperty', function (n) {
     if (! this.canHaveSlots()) { return false; }
+    return this.reflecteeObjectHasOwnProperty(n);
+  }, {category: ['accessing reflectee']});
+
+  add.method('reflecteeObjectHasOwnProperty', function (n) {
     return this.reflectee().hasOwnProperty(n);
   }, {category: ['accessing reflectee']});
 
@@ -463,7 +475,7 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('isReflecteeNull', function () { return this.reflectee() === null;      }, {category: ['testing']});
 
-  add.method('isReflecteeUndefined', function () { return this.reflectee() === undefined; }, {category: ['testing']});
+  add.method('isReflecteeUndefined', function () { return this.reflecteeType() === 'undefined'; }, {category: ['testing']});
 
   add.method('isReflecteeString', function () { return this.reflecteeType() === 'string';  }, {category: ['testing']});
 
@@ -752,9 +764,13 @@ thisModule.addSlots(mirror, function(add) {
   add.method('annotation', function () {
     if (this._cachedAnnotation) { return this._cachedAnnotation; }
     if (! this.canHaveAnnotation()) { return null; }
-    var a = avocado.annotator.existingAnnotationOf(this.reflectee());
+    var a = this.getExistingAnnotation();
     if (a) { this._cachedAnnotation = a; }
     return a;
+  }, {category: ['annotations']});
+
+  add.method('getExistingAnnotation', function () {
+    return avocado.annotator.existingAnnotationOf(this.reflectee());
   }, {category: ['annotations']});
 
   add.method('annotationForWriting', function () {

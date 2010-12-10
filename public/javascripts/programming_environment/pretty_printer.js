@@ -9,7 +9,7 @@ requires('reflection/mirror');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('prettyPrinter', {}, {comment: 'Not usable yet. Just an experiment I was trying. -- Adam', category: ['manipulating code']});
+  add.creator('prettyPrinter', {}, {category: ['manipulating code'], comment: 'Not usable yet. Just an experiment I was trying. -- Adam'});
 
 });
 
@@ -390,7 +390,7 @@ thisModule.addSlots(mirror, function(add) {
     var rootNode = jsParse.parse(stmt);
     var contentsNode = rootNode[0][0].initializer[0]; // bypass the nodes for the __contents__ statement
     return avocado.prettyPrinter.create(contentsNode, options).result();
-  });
+  }, {category: ['pretty printing']});
 
 });
 

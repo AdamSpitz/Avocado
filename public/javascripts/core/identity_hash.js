@@ -6,8 +6,8 @@ thisModule.addSlots(avocado, function(add) {
   add.method('identityHashFor', function (o) {
     // Why, oh why doesn't JavaScript have a proper built-in identity-hash mechanism?;
     try {
-      if (o === undefined) { return "a mirror on undefined"; }
-      if (o === null     ) { return "a mirror on null";      }
+      if (o === undefined) { return "undefined"; }
+      if (o === null     ) { return "null";      }
       var t = typeof(o);
       if (t === 'string') { return o; }
       if (t === 'number') { return o.toString(); }
