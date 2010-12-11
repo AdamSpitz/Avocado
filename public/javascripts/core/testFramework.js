@@ -49,7 +49,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('allTestSelectors', function () {
     var functionNames = [];
     for (var name in this) {
-      if (name.startsWith('test') && typeof this[name] === 'function') {
+      if ((name.startsWith('test') || name.startsWith('asynchronouslyTest')) && typeof this[name] === 'function') {
         functionNames.push(name);
       }
     }
@@ -105,27 +105,45 @@ thisModule.addSlots(avocado.testCase, function(add) {
     return result;
   });
 
-  add.method('runTest', function (aSelector) {
+  add.method('runTest', function (callback) {
     if (!this.shouldRun) return;
-		this.currentSelector = aSelector || this.currentSelector;
 
 		this.running();
 		try {
 			this.setUp();
-			this[this.currentSelector]();
-			this.result.addSuccess(this.name(), this.currentSelector); // fixed by Adam to say this.name() instead of this.constructor.type
-			this.success();
+			this.runTestFunction(function() {
+  			this.result.addSuccess(this.name(), this.currentSelector); // fixed by Adam to say this.name() instead of this.constructor.type
+  			this.success();
+  			callback();
+			}.bind(this));
 		} catch (e) {
 			this.result.addFailure(this.name(), this.currentSelector, e); // fixed by Adam to say this.name() instead of this.constructor.type
 			this.failure(e);
+		  callback();
 		} finally {
-			try {
-				this.tearDown();
-			} catch(e) {
-				this.log('Couldn\'t run tearDown for ' + this.id() + ' ' + printError(e));
-			}
+		  this.doTearDown();
 		}
 	});
+
+  add.method('runTestFunction', function (callback) {
+		var testFn = this[this.currentSelector];
+		if (this.currentSelector.startsWith('asynchronouslyTest')) {
+		  testFn.call(this, callback);
+	  } else {
+	    testFn.call(this);
+	    callback();
+	  }
+  });
+
+  add.method('doTearDown', function () {
+		try {
+			this.tearDown();
+		} catch(e) {
+      var errStr = "" + e.constructor.name + ": ";
+      for (var i in e) { s += i + ": " + String(e[i]) + ", " }; // get everything out....
+			this.log('Couldn\'t run tearDown for ' + this.id() + ' ' + printError(errStr));
+		}
+  });
 
   add.method('inspect', function () {
     return this.name();
@@ -155,14 +173,16 @@ thisModule.addSlots(avocado.testCase, function(add) {
   });
 
   add.method('runAll', function (statusUpdateFunc) {
-		var tests = this.createTests()
-		var t1 = new Date().getTime();
+		var tests = this.createTests();
+		var totalTime = 0;
 		tests.forEach(function(test) {
+  		var t1 = new Date().getTime();
 			test.statusUpdateFunc = statusUpdateFunc;
-			test.runTest();
-		});
-		var t2 = new Date().getTime();
-		this.result.setTimeToRun(this.name(), t2 - t1);
+			test.runTest(function() {
+    		var t2 = new Date().getTime();
+    		this.result.incrementTimeToRun(this.name(), t2 - t1);
+			}.bind(this));
+		}.bind(this));
 	});
 
   add.creator('resultProto', {}, {category: ['results']});
@@ -232,8 +252,12 @@ thisModule.addSlots(avocado.testCase.resultProto, function(add) {
 		this.timeToRun = {};
 	});
 
+  add.method('incrementTimeToRun', function (testCaseName, time) {
+	    return this.timeToRun[testCaseName] = (this.timeToRun[testCaseName] || 0) + time;
+	});
+
   add.method('setTimeToRun', function (testCaseName, time) {
-	    return this.timeToRun[testCaseName]= time;
+	    return this.timeToRun[testCaseName] = time;
 	});
 
   add.method('getTimeToRun', function (testCaseName) {
