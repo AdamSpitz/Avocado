@@ -18,6 +18,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     return WorldMorph.current().morphFor(this);
   }, {category: ['user interface']});
 
+  add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
+
   add.method('showInSitu', function (inSituButton) {
     var w = inSituButton.world();
     var m = w.morphFor(this.holder());

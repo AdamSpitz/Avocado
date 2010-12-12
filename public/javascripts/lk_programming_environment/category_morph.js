@@ -27,6 +27,8 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
     return WorldMorph.current().existingMorphFor(this);
   }, {category: ['user interface']});
 
+  add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
+
 });
 
 

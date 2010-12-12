@@ -38,14 +38,13 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 thisModule.addSlots(WorldMorph.prototype.morphIdentityComparator, function(add) {
 
   add.method('keysAreEqual', function (k1, k2) {
-    if (k1.isImmutableForMorphIdentity) { return avocado.hashTable.equalityComparator.keysAreEqual(k1, k2); }
-    return k1 === k2;
+    var c = k1.isImmutableForMorphIdentity ? avocado.hashTable.equalityComparator : avocado.hashTable.identityComparator;
+    return c.keysAreEqual(k1, k2);
   }, {category: ['hashing']});
 
   add.method('hashCodeForKey', function (k) {
-    if (k1.isImmutableForMorphIdentity) { return avocado.hashTable.equalityComparator.hashCodeForKey(k); }
-    // aaa - Blecch, why does JS not support identity hashes?
-    return 42;
+    var c = k.isImmutableForMorphIdentity ? avocado.hashTable.equalityComparator : avocado.hashTable.identityComparator;
+    return c.hashCodeForKey(k);
   }, {category: ['hashing']});
 
 });

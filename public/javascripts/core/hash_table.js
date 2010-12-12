@@ -23,9 +23,9 @@ thisModule.addSlots(avocado.hashTable, function(add) {
     return this._size;
   }, {category: ['accessing']});
 
-  add.method('copyRemoveAll', function () {
+  add.method('copyRemoveAll', function (comparator) {
     // Should this be called copyRemoveAll or cloneRemoveAll or create or what?
-    return Object.newChildOf(this); // aaa - blecch, why again can't I put a "create" method directly on Object.prototype?;
+    return Object.newChildOf(this, comparator); // aaa - blecch, why again can't I put a "create" method directly on Object.prototype?;
   }, {category: ['creating']});
 
   add.creator('bucketHolder', {}, {category: ['prototypes']});
