@@ -193,8 +193,10 @@ thisModule.addSlots(avocado.dictionary, function(add) {
     entry.value = v;
   }, {category: ['entries']});
 
+  add.creator('entry', {}, {category: ['entries']});
+  
   add.method('newEntry', function (k, v) {
-    return {key: k, value: v};
+    return Object.newChildOf(this.entry, k, v);
   }, {category: ['entries']});
 
   add.method('printEntry', function (entry) {
@@ -264,6 +266,16 @@ thisModule.addSlots(avocado.dictionary, function(add) {
     return this.each(function(pair) {return f(pair.key);});
   }, {category: ['iterating']});
 
+});
+
+
+thisModule.addSlots(avocado.dictionary.entry, function(add) {
+  
+  add.method('initialize', function (k, v) {
+    this.key = k;
+    this.value = v;
+  });
+  
 });
 
 

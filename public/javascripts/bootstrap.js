@@ -78,12 +78,12 @@ var annotator = {
     },
 
     existingSlotAnnotation: function(name) {
-      if (! this.slotAnnotations) { return null; }
-      return this.slotAnnotations[this.annotationNameForSlotNamed(name)];
+      if (! this._slotAnnotations) { return null; }
+      return this._slotAnnotations[this.annotationNameForSlotNamed(name)];
     },
     
     eachSlotAnnotation: function(f) {
-      var slotAnnos = this.slotAnnotations;
+      var slotAnnos = this._slotAnnotations;
       var prefixLength = this._slotAnnoPrefix.length;
       for (var n in slotAnnos) {
         if (slotAnnos.hasOwnProperty(n)) {
@@ -99,7 +99,7 @@ var annotator = {
 	      if (! realSlotAnno['category'] instanceof Array) {
 		      realSlotAnno['category'] = [realSlotAnno['category']]; 
         }
-        this.slotAnnotations[this.annotationNameForSlotNamed(name)] = realSlotAnno;
+        this._slotAnnotations[this.annotationNameForSlotNamed(name)] = realSlotAnno;
         return realSlotAnno;
       } else {
         this.removeSlotAnnotation(name);
@@ -128,7 +128,7 @@ var annotator = {
     },
 
     removeSlotAnnotation: function(name) {
-      delete this.slotAnnotations[this.annotationNameForSlotNamed(name)];
+      delete this._slotAnnotations[this.annotationNameForSlotNamed(name)];
     },
 
     constructorTemplate: "(function() { return function CONSTRUCTOR_THINGY() {}; })()",
@@ -151,14 +151,14 @@ var annotator = {
       this.constructorForMakingChildrenOfMyObject = constr;
       return constr;
     },
-
+    
     explicitlySpecifiedCreatorSlot: function () {
       return this.hasOwnProperty('creatorSlot') ? this.creatorSlot : null;
     },
-
+    
     setCreatorSlot: function(name, holder) {
       if (name !== undefined && holder !== undefined) {
-        this.creatorSlot = {name: name, holder: holder};
+        this.creatorSlot = Object.newChildOf(avocado.annotator.slotSpecifierPrototype, name, holder);
       } else {
         delete this.creatorSlot;
       }
@@ -179,7 +179,7 @@ var annotator = {
         if (name === s.name && holder === s.holder) { return; }
       }
 
-      this.possibleCreatorSlots.push({name: name, holder: holder});
+      this.possibleCreatorSlots.push(Object.newChildOf(avocado.annotator.slotSpecifierPrototype, name, holder));
     },
 
     copyDownSlotsFromAllCopyDownParents: function(obj) {
@@ -224,6 +224,13 @@ var annotator = {
     }
   },
 
+  slotSpecifierPrototype: {
+    initialize: function(name, holder) {
+      this.name = name;
+      this.holder = holder;
+    }
+  },
+
   slotAnnotationHolderPrototype: {
   },
 
@@ -257,7 +264,9 @@ var annotator = {
   },
 
   existingAnnotationOf: function(o) {
-    if (o.hasOwnProperty('__annotation__')) { if (!o.__annotation__.slotAnnotations) { debugger; } return o.__annotation__; }
+    if (o.hasOwnProperty('__annotation__')) {
+      return o.__annotation__;
+    }
     
     // HACK: Damned JavaScript. Adding attributes to Object.prototype and stuff like that
     // is a bad idea, because people use for..in loops to enumerate their attributes.
@@ -282,7 +291,9 @@ var annotator = {
   },
 
   newObjectAnnotation: function() {
-    return this.asObjectAnnotation({ slotAnnotations: Object.create(this.slotAnnotationHolderPrototype) });
+    var a = Object.create(this.objectAnnotationPrototype);
+    a._slotAnnotations = Object.create(this.slotAnnotationHolderPrototype);
+    return a;
   },
 
   asObjectAnnotation: function(anno) {
@@ -357,19 +368,21 @@ var annotator = {
   }
 };
 
+avocado.annotator = annotator;
+
 // Need to use basicCreate to create the annotations for the annotation prototypes; otherwise we get an infinite recursion.
-annotator.objectAnnotationPrototype.__annotation__ = Object.extend(Object.basicCreate(annotator.objectAnnotationPrototype), { slotAnnotations: Object.basicCreate(this.slotAnnotationHolderPrototype) });
-annotator.slotAnnotationHolderPrototype.__annotation__ = Object.extend(Object.basicCreate(annotator.objectAnnotationPrototype), { slotAnnotations: Object.basicCreate(this.slotAnnotationHolderPrototype) });
+annotator.objectAnnotationPrototype.__annotation__ = Object.extend(Object.basicCreate(annotator.objectAnnotationPrototype), { _slotAnnotations: Object.basicCreate(this.slotAnnotationHolderPrototype) });
+annotator.slotAnnotationHolderPrototype.__annotation__ = Object.extend(Object.basicCreate(annotator.objectAnnotationPrototype), { _slotAnnotations: Object.basicCreate(this.slotAnnotationHolderPrototype) });
 
 annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
 annotator.annotationOf(window).setSlotAnnotation('avocado', {category: ['avocado']});
 
-avocado.annotator = annotator;
 annotator.annotationOf(avocado.annotator).setCreatorSlot('annotator', avocado);
 annotator.annotationOf(avocado).setSlotAnnotation('annotator', {category: ['annotations']});
 annotator.annotationOf(annotator.objectAnnotationPrototype).setCreatorSlot('objectAnnotationPrototype', annotator);
 annotator.annotationOf(annotator.slotAnnotationPrototype).setCreatorSlot('slotAnnotationPrototype', annotator);
 annotator.annotationOf(annotator.slotAnnotationHolderPrototype).setCreatorSlot('slotAnnotationHolderPrototype', annotator);
+annotator.annotationOf(annotator.slotSpecifierPrototype).setCreatorSlot('slotSpecifierPrototype', annotator);
 
 avocado.javascript = {};
 annotator.annotationOf(avocado.javascript).setCreatorSlot('javascript', avocado);
