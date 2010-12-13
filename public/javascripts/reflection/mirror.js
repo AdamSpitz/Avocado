@@ -256,7 +256,7 @@ thisModule.addSlots(mirror, function(add) {
     var o = this.reflectee();
     for (var name in o) {
       if (o.hasOwnProperty(name)) {
-        if (name !== '__oid__') { // shh! pretend it's not there.
+        if (name !== '__annotation__') { // shh! pretend it's not there.
           f(name);
         }
       }

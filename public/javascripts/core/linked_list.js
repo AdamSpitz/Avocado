@@ -5,7 +5,7 @@ thisModule.addSlots(avocado, function(add) {
 
   add.creator('list', Object.create({}), {category: ['collections']});
 
-  avocado.annotator.loadObjectAnnotation(avocado.list['__proto__'], {copyDownParents: [{parent: Enumerable, slotsToOmit: ['size', '__oid__']}]}, '__proto__', avocado.list);
+  avocado.annotator.loadObjectAnnotation(avocado.list['__proto__'], {copyDownParents: [{parent: Enumerable, slotsToOmit: ['size', '__annotation__']}]}, '__proto__', avocado.list);
 
 
 });

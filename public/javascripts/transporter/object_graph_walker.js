@@ -103,7 +103,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     this._objectCount = 0; // just for fun;
   });
 
-  add.data('namesToIgnore', ["__oid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__oid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
+  add.data('namesToIgnore', ["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
 
   add.method('go', function (root) {
     this.reset();
@@ -323,7 +323,7 @@ thisModule.addSlots(avocado.senders, function(add) {
     var sendersByID = this.byID;
     for (var i = 0, n = ids.length; i < n; ++i) {
       var id = ids[i];
-      if (!avocado.javascript.reservedWords[id]) {
+      if (id !== '__annotation__' && !avocado.javascript.reservedWords[id]) {
         var senders = sendersByID[id];
         if (!senders) {
           senders = [];

@@ -92,7 +92,7 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
   add.method('eachNormalSlotName', function (f) {
     reflect(this._contentsByName).eachNormalSlotName(function (key) {
       var n = this.realSlotNameFor(key);
-      if (n !== '__oid__' && n !== '__proto__') {
+      if (n !== '__annotation__' && n !== '__proto__') {
         f(n);
       }
     }.bind(this));

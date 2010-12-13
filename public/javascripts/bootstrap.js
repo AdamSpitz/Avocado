@@ -4,31 +4,17 @@ window.bootstrapTheModuleSystem = function () {
 
 if (! window.hasOwnProperty('avocado')) { window.avocado = {}; }
 
-avocado.constructorTemplate = "(function() { return function CONSTRUCTOR_THINGY() {}; })()";
-
-avocado.newConstructor = function(parent, explicitlySpecifiedName) {
-  var name;
-  if (explicitlySpecifiedName) {
-    name = explicitlySpecifiedName;
-  } else {
-    var anno = annotator.existingAnnotationOf(parent);
-    if (anno) {
-      var cs = anno.explicitlySpecifiedCreatorSlot();
-      if (cs) { name = cs.name; }
-    }
-    name = name || 'something';
-  }
-  var constr = eval(avocado.constructorTemplate.replace(/CONSTRUCTOR_THINGY/g, name));
+Object.basicCreate = function(parent) {
+  var constr = function BasicConstructor() {};
   constr.prototype = parent;
-  return constr;
-};
-
-/*
-Object.create = function(parent) {
-  var constr = parent.hasOwnProperty('__constructor__') ? parent.__constructor__ : (parent.__constructor__ = avocado.newConstructor(parent));
   return new constr();
 };
-*/
+
+Object.create = function(parent) {
+  var anno = annotator.annotationOf(parent);
+  var constr = anno.constructorForMakingChildrenOf(parent);
+  return new constr();
+};
 
 if (typeof Object.newChildOf !== 'function') {
   Object.newChildOf = function(parent) {
@@ -52,7 +38,7 @@ if (typeof Object.shallowCopy !== 'function') {
   Object.shallowCopy = function(o) {
     var c = Object.create(o['__proto__']);
     for (var property in o) {
-      if (o.hasOwnProperty(property) && property !== '__oid__') {
+      if (o.hasOwnProperty(property) && property !== '__annotation__') {
         c[property] = o[property];
       }
     }
@@ -64,7 +50,7 @@ if (typeof Object.shallowCopy !== 'function') {
 // Gotta overwrite Prototype's Object.extend, or bad things happen with annotations.
 Object.extend = function extend(destination, source) {
   for (var property in source) {
-    if (property !== '__oid__') {
+    if (property !== '__annotation__') {
       destination[property] = source[property];
     }
   }
@@ -74,7 +60,7 @@ Object.extend = function extend(destination, source) {
 
 Object.extendWithJustDirectPropertiesOf = function extendWithJustDirectPropertiesOf(destination, source) {
   for (var property in source) {
-    if (source.hasOwnProperty(property) && property !== '__oid__') {
+    if (source.hasOwnProperty(property) && property !== '__annotation__') {
       destination[property] = source[property];
     }
   }
@@ -145,6 +131,27 @@ var annotator = {
       delete this.slotAnnotations[this.annotationNameForSlotNamed(name)];
     },
 
+    constructorTemplate: "(function() { return function CONSTRUCTOR_THINGY() {}; })()",
+
+    constructorForMakingChildrenOf: function(parent, explicitlySpecifiedName) {
+      return this.constructorForMakingChildrenOfMyObject || this.createConstructorForMakingChildrenOf(parent, explicitlySpecifiedName);
+    },
+
+    createConstructorForMakingChildrenOf: function(parent, explicitlySpecifiedName) {
+      var name;
+      if (explicitlySpecifiedName) {
+        name = explicitlySpecifiedName;
+      } else {
+        var cs = this.explicitlySpecifiedCreatorSlot();
+        if (cs) { name = cs.name; }
+        name = name || 'something';
+      }
+      var constr = eval(this.constructorTemplate.replace(/CONSTRUCTOR_THINGY/g, name));
+      constr.prototype = parent;
+      this.constructorForMakingChildrenOfMyObject = constr;
+      return constr;
+    },
+
     explicitlySpecifiedCreatorSlot: function () {
       return this.hasOwnProperty('creatorSlot') ? this.creatorSlot : null;
     },
@@ -155,6 +162,9 @@ var annotator = {
       } else {
         delete this.creatorSlot;
       }
+      
+      delete this.constructorForMakingChildrenOfMyObject; // name has changed, so make a new constructor
+      
       // delete this.possibleCreatorSlots; // don't need these anymore // aaa - no, I disagree now, leave them there so people can easily change it back -- Adam, Oct. 2010
     },
 
@@ -227,41 +237,47 @@ var annotator = {
     }
   },
 
-  _nextOID: 2,
+  _nextOID: 0,
 
   oidOf: function(o) {
-    var oid = this.existingOidOf(o);
-    if (oid !== null) { return oid; }
-    oid = this._nextOID++;
-    o.__oid__ = oid;
-    return oid;
+    // aaa - Um, we're not gonna be able to transport identityDictionaries (because we're not
+    // actually saving the OID, we're recreating it each time we load the object into the image).
+    // Not a problem for now, but keep it in mind.
+    var a = this.annotationOf(o);
+    if (a.hasOwnProperty('oid')) { return a.oid; }
+    return a.oid = this._nextOID++;
   },
-
-  existingOidOf: function(o) {
-    // HACK: Damned JavaScript. Adding attributes to Object.prototype and stuff like that
-    // is a bad idea, because people use for..in loops to enumerate their attributes.
-    // So we'll hard-code their OIDs here.
-    if (o === Object.prototype) { return 0; }
-    if (o ===  Array.prototype) { return 1; }
-    if (o.hasOwnProperty('__oid__')) { return o.__oid__; }
-    return null;
-  },
-
-  _annotations: [],
 
   annotationOf: function(o) {
-    var oid = this.oidOf(o);
-    var a = this._annotations[oid];
-    if (a) { return a; }
+    var a = this.existingAnnotationOf(o);
+    if (a !== null) { return a; }
     a = this.newObjectAnnotation();
-    a.object = o;
-    this._annotations[oid] = a;
+    o.__annotation__ = a;
     return a;
   },
 
   existingAnnotationOf: function(o) {
-    var oid = this.oidOf(o);
-    var a = this._annotations[oid];
+    if (o.hasOwnProperty('__annotation__')) { if (!o.__annotation__.slotAnnotations) { debugger; } return o.__annotation__; }
+    
+    // HACK: Damned JavaScript. Adding attributes to Object.prototype and stuff like that
+    // is a bad idea, because people use for..in loops to enumerate their attributes.
+    // So we'll keep a special array to hold their annotations.
+    if (o === Object.prototype || o === Array.prototype) { return this.specialAnnotationOf(o); }
+    
+    return null;
+  },
+
+  _annotationsForObjectsThatShouldNotHaveAttributesAddedToThem: [],
+
+  specialAnnotationOf: function(o) {
+    var specialAnnoRecords = this._annotationsForObjectsThatShouldNotHaveAttributesAddedToThem;
+    for (var i = 0, n = specialAnnoRecords.length; i < n; ++i) {
+      var r = specialAnnoRecords[i];
+      if (r.object === o) { return r.annotation; }
+    }
+    
+    var a = this.newObjectAnnotation();
+    specialAnnoRecords.push({object: o, annotation: a});
     return a;
   },
 
@@ -289,7 +305,7 @@ var annotator = {
     
     if (rawAnno) {
       for (var property in rawAnno) {
-        if (rawAnno.hasOwnProperty(property) && property !== '__oid__') {
+        if (rawAnno.hasOwnProperty(property) && property !== '__annotation__') {
           a[property] = rawAnno[property];
         }
       }
@@ -334,18 +350,16 @@ var annotator = {
     if (typeof slotsToOmit === 'string') {
       slotsToOmit = slotsToOmit.split(" ");
     }
-    if (! slotsToOmit.include('__oid__')) {
-      slotsToOmit.push('__oid__');
+    if (! slotsToOmit.include('__annotation__')) {
+      slotsToOmit.push('__annotation__');
     }
     return slotsToOmit;
   }
 };
 
-// Gotta create constructors here for the two kinds of annotation, *before* actually creating
-// any annotations, so that the constructor has the right name.
-avocado.newConstructor(annotator.objectAnnotationPrototype, 'objectAnnotationPrototype');
-avocado.newConstructor(annotator.slotAnnotationPrototype, 'slotAnnotationPrototype');
-avocado.newConstructor(annotator.slotAnnotationHolderPrototype, 'slotAnnotationHolderPrototype');
+// Need to use basicCreate to create the annotations for the annotation prototypes; otherwise we get an infinite recursion.
+annotator.objectAnnotationPrototype.__annotation__ = Object.extend(Object.basicCreate(annotator.objectAnnotationPrototype), { slotAnnotations: Object.basicCreate(this.slotAnnotationHolderPrototype) });
+annotator.slotAnnotationHolderPrototype.__annotation__ = Object.extend(Object.basicCreate(annotator.objectAnnotationPrototype), { slotAnnotations: Object.basicCreate(this.slotAnnotationHolderPrototype) });
 
 annotator.annotationOf(avocado).setCreatorSlot('avocado', window);
 annotator.annotationOf(window).setSlotAnnotation('avocado', {category: ['avocado']});
@@ -355,6 +369,7 @@ annotator.annotationOf(avocado.annotator).setCreatorSlot('annotator', avocado);
 annotator.annotationOf(avocado).setSlotAnnotation('annotator', {category: ['annotations']});
 annotator.annotationOf(annotator.objectAnnotationPrototype).setCreatorSlot('objectAnnotationPrototype', annotator);
 annotator.annotationOf(annotator.slotAnnotationPrototype).setCreatorSlot('slotAnnotationPrototype', annotator);
+annotator.annotationOf(annotator.slotAnnotationHolderPrototype).setCreatorSlot('slotAnnotationHolderPrototype', annotator);
 
 avocado.javascript = {};
 annotator.annotationOf(avocado.javascript).setCreatorSlot('javascript', avocado);
@@ -601,7 +616,7 @@ transporter.module.addSlots = function(holder, block) {
   block(slotAdder);
 };
 
-annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__oid__', 'bootstrapTheModuleSystem', 'modules', 'transporter', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
+annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__annotation__', 'bootstrapTheModuleSystem', 'modules', 'transporter', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
 
 transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
 transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_lk', function() {}); // aaa lk-specific

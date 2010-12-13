@@ -409,7 +409,7 @@ Object.extend(Function.prototype, {
 		var className = this.type || "Anonymous";
 
 		for (var property in source) {
-		  if (property !== '__oid__') { // aaa - Hacked by Adam, not sure what else to do.
+		  if (property !== '__annotation__') { // aaa - Hacked by Adam, not sure what else to do.
 			var getter = source.__lookupGetter__(property);
 			if (getter) this.prototype.__defineGetter__(property, getter);
 			var setter = source.__lookupSetter__(property);
@@ -2392,7 +2392,7 @@ namespace('lively.data');
 // FIXME the following does not really belong to Base should be somewhere else
 Record.subclass('lively.data.DOMRecord', {
 	description: "base class for records backed by a DOM Node",
-	noShallowCopyProperties: ['id', 'rawNode', '__oid__'], // __oid__ added by Adam
+	noShallowCopyProperties: ['id', 'rawNode', '__annotation__'], // __annotation__ added by Adam
 
 	initialize: function($super, store, argSpec) {
 		$super(store, argSpec);
