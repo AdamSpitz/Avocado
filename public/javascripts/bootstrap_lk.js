@@ -98,9 +98,11 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
        "lk/TestFramework",
        "lk/TouchSupport",
        "lk/cop/Layers",
+       /*
        "moousture/mootools-1.2.4-core-nc",
        "moousture/Moousture",
        "moousture/iPhoneProbe",
+       */
        "jslint"
       ], function() {
         if (callWhenDone) { callWhenDone(); }
@@ -122,7 +124,7 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
     modules.init.markAsUnchanged(); // because displayOnCanvas sets the creator slot of the world
     if (navigator.appName == 'Opera') { window.onresize(); }
     if (transporter.shouldLog) { console.log("The world should be visible now."); }
-    this.initializeGestures(world);
+    // this.initializeGestures(world); // aaa I don't like loading in all of MooTools, especially since we're not even using Moousture right now -- Adam
     return world;
   }, {category: ['bootstrapping']});
 
