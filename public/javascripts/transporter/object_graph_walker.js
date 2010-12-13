@@ -23,7 +23,6 @@ thisModule.addSlots(avocado, function(add) {
 
 });
 
-
 thisModule.addSlots(avocado.childFinder, function(add) {
 
   add.method('initialize', function ($super, o) {
@@ -289,7 +288,7 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
     }
     
     // Remember identifiers so we can search for "senders".
-    avocado.senders.rememberIdentifiersUsedBy(contents, howDidWeGetHere);
+    avocado.senders.rememberIdentifiersUsedBy(contents);
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
@@ -314,7 +313,7 @@ thisModule.addSlots(avocado.senders, function(add) {
 
   add.creator('finder', {});
 
-  add.method('rememberIdentifiersUsedBy', function (f, howDidWeGetHere) {
+  add.method('rememberIdentifiersUsedBy', function (f) {
     if (typeof(f) !== 'function') { return; }
     var str = f.toString();
     var idRegex = /[A-Z_$a-z][A-Z_$0-9a-z]*/g;
@@ -329,7 +328,7 @@ thisModule.addSlots(avocado.senders, function(add) {
           senders = [];
           sendersByID[id] = senders;
         }
-        senders.push(howDidWeGetHere);
+        senders.push(f);
       }
     }
   });
@@ -351,7 +350,7 @@ thisModule.addSlots(avocado.senders.finder, function(add) {
 
   add.method('go', function () {
     return avocado.senders.of(this._id).map(function(x) {
-      return reflect(x.slotHolder).slotAt(x.slotName);
+      return reflect(x).probableCreatorSlot();
     });
   });
 

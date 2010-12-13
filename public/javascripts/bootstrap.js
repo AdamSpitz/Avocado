@@ -597,7 +597,7 @@ transporter.module.slotAdder = {
     // senders code still has its senders indexed?
     if (avocado.senders && avocado.senders.rememberIdentifiersUsedBy) {
       if (typeof(contents) === 'function') {
-        avocado.senders.rememberIdentifiersUsedBy(contents, {slotHolder: this.holder, slotName: name});
+        avocado.senders.rememberIdentifiersUsedBy(contents);
       }
     }
   },
