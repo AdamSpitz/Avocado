@@ -525,8 +525,9 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   add.method('fileOutWith', function (filerOuter) {
     var info = this.fileOutInfo();
     var contents = this.contents();
-    var slotAnnoExpr = this.annotation().asExpressionForTransporter();
-    var objectAnnoExpr = info.isCreator && contents.annotation() ? contents.annotation().asExpressionForTransporter() : null;
+    var slotAnno = this.annotationForReading();
+    var slotAnnoExpr = slotAnno ? slotAnno.asExpressionForTransporter() : '{}';
+    var objectAnnoExpr = info.isCreator && contents.annotationForReading() ? contents.annotationForReading().asExpressionForTransporter() : null;
     
     // The fileout looks a bit prettier if we don't bother showing ", {}, {}" all over the place.
     var optionalArgs = "";
@@ -568,9 +569,9 @@ thisModule.addSlots(avocado.annotator.slotAnnotationPrototype, function(add) {
   add.method('asExpressionForTransporter', function () {
     var slotAnnoToStringify = {};
     var catParts = this.categoryParts();
-    if (catParts          && catParts.length > 0) { slotAnnoToStringify.category     = catParts;          }
-    if (this.comment                            ) { slotAnnoToStringify.comment      = this.comment;      }
-    if (this.initializeTo                       ) { slotAnnoToStringify.initializeTo = this.initializeTo; }
+    if (catParts          && catParts.length > 0) { slotAnnoToStringify.category     = catParts;                        }
+    if (this.comment                            ) { slotAnnoToStringify.comment      = this.getComment();               }
+    if (this.initializeTo                       ) { slotAnnoToStringify.initializeTo = this.initializationExpression(); }
     return reflect(slotAnnoToStringify).expressionEvaluatingToMe();
   }, {category: ['transporting']});
 
@@ -660,7 +661,7 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
 
   add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
     var parent = parentSlot.contents();
-    var objectAnnoExpr = parent.annotation() ? parent.annotation().asExpressionForTransporter() : 'null';
+    var objectAnnoExpr = parent.annotationForReading() ? parent.annotationForReading().asExpressionForTransporter() : 'null';
     
     this._buffer.append("  avocado.annotator.loadObjectAnnotation(");
     this._buffer.append(parent.creatorSlotChainExpression());
@@ -670,7 +671,7 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
     this._buffer.append(");\n\n");
     
     /* aaa - Hmm, maybe it's OK for parent slots to have annotations, now that I have this hack?
-    var slotAnnoExpr = parentSlot.annotation().asExpressionForTransporter();
+    var slotAnnoExpr = parentSlot.annotationForReading() ? parentSlot.annotationForReading().asExpressionForTransporter() : null;
     if (slotAnnoExpr) {
       this._buffer.append("  Object.extend(avocado.annotator.annotationOf(");
       this._buffer.append(parentSlot.holder().creatorSlotChainExpression());

@@ -94,11 +94,7 @@ var annotator = {
 
     setSlotAnnotation: function(name, slotAnno) {
       if (slotAnno) {
-        var realSlotAnno = this.asSlotAnnotation(slotAnno);
-        // sometimes annotation definitions come in as strings. Hack to force the UI to work anyways
-	      if (! realSlotAnno['category'] instanceof Array) {
-		      realSlotAnno['category'] = [realSlotAnno['category']]; 
-        }
+        var realSlotAnno = avocado.annotator.asSlotAnnotation(slotAnno);
         this[this.annotationNameForSlotNamed(name)] = realSlotAnno;
         return realSlotAnno;
       } else {
@@ -107,28 +103,20 @@ var annotator = {
       }
     },
 
-    asSlotAnnotation: function(slotAnno) {
-      // aaa - In browsers that don't allow you to set __proto__, create a new
-      // object and copy over the slots.
-      // slotAnno['__proto__'] = this.slotAnnotationPrototype;
-      // return slotAnno;
-      if (slotAnno['__proto__'] !== annotator.slotAnnotationPrototype) {
-        slotAnno = Object.extendWithJustDirectPropertiesOf(Object.create(annotator.slotAnnotationPrototype), slotAnno);
-      }
-      
-      if (slotAnno.category) {
-        slotAnno.setCategoryParts(slotAnno.category);
-      }
-      
-      return slotAnno;
-    },
-
     slotAnnotation: function(name) {
       return this.existingSlotAnnotation(name) || this.setSlotAnnotation(name, {});
     },
 
     removeSlotAnnotation: function(name) {
       delete this[this.annotationNameForSlotNamed(name)];
+    },
+    
+    getComment: function() {
+      return this.comment;
+    },
+    
+    setComment: function(c) {
+      this.comment = c;
     },
 
     constructorTemplate: "(function() { return function CONSTRUCTOR_THINGY() {}; })()",
@@ -150,6 +138,25 @@ var annotator = {
       constr.prototype = parent;
       this.constructorForMakingChildrenOfMyObject = constr;
       return constr;
+    },
+    
+    isRedundant: function (objectThatIAnnotate) {
+      for (var p in this) {
+        if (this.hasOwnProperty(p)){
+          if (p !== 'creatorSlot') { return false; }
+          var cs = this.creatorSlot;
+          var implicitCS = avocado.annotator.creatorSlotDeterminableFromTheObjectItself(objectThatIAnnotate);
+          if (! implicitCS) { return false; }
+          if (cs.name !== implicitCS.name || cs.holder !== implicitCS.holder) { return false; }
+        }
+      }
+      return true;
+    },
+    
+    deleteIfRedundant: function (objectThatIAnnotate) {
+      if (objectThatIAnnotate.__annotation__ === this && this.isRedundant(objectThatIAnnotate)) {
+        delete objectThatIAnnotate.__annotation__;
+      }
     },
     
     explicitlySpecifiedCreatorSlot: function () {
@@ -237,7 +244,51 @@ var annotator = {
     },
     
     setCategoryParts: function(parts) {
-      this.category = parts ? annotator.canonicalizeCategoryParts(parts) : parts;
+      if (parts) {
+        // Sometimes we screw up when hacking on the text files and accidentally write a category as
+        // a string instead of an array of strings.
+        this.category = annotator.canonicalizeCategoryParts((parts instanceof Array) ? parts : [parts]);
+      } else {
+        delete this.category;
+      }
+    },
+    
+    getModule: function() {
+      return this.module;
+    },
+    
+    setModule: function(m) {
+      this.module = m;
+    },
+    
+    getComment: function() {
+      return this.comment;
+    },
+    
+    setComment: function(c) {
+      this.comment = c;
+    },
+    
+    initializationExpression: function() {
+      return this.initializeTo;
+    },
+    
+    setInitializationExpression: function(e) {
+      this.initializeTo = e;
+    },
+    
+    equals: function(other) {
+      for (var n in this) {
+        if (this.hasOwnProperty(n)) {
+          if (this[n] !== other[n]) { return false; }
+        }
+      }
+      return true;
+    },
+    
+    hashCode: function () {
+      var catParts = this.categoryParts();
+      return catParts ? catParts.join(',') : 'no category';
     }
   },
 
@@ -255,15 +306,29 @@ var annotator = {
   annotationOf: function(o) {
     var a = this.existingAnnotationOf(o);
     if (a !== null) { return a; }
-    a = this.newObjectAnnotation();
+    a = this.newObjectAnnotation(o);
     o.__annotation__ = a;
     return a;
   },
 
   existingAnnotationOf: function(o) {
-    if (o.hasOwnProperty('__annotation__')) {
-      return o.__annotation__;
+    var a = this.actualExistingAnnotationOf(o);
+    if (a) { return a; }
+    
+    // If there's an implicit creator slot, gotta treat the annotation as if it already exists.
+    // aaa - Though we should optimize that in the mirror code that asks for a creator slot - can
+    // just return the creator slot straight, without creating this annotation object. Though
+    // with decent GC this might not matter. Don't worry about it yet.
+    var cs = this.creatorSlotDeterminableFromTheObjectItself(o);
+    if (cs) {
+      return o.__annotation__ = this.newObjectAnnotation(o);
     }
+    
+    return null;
+  },
+
+  actualExistingAnnotationOf: function(o) {
+    if (o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
     
     // HACK: Damned JavaScript. Adding attributes to Object.prototype and stuff like that
     // is a bad idea, because people use for..in loops to enumerate their attributes.
@@ -282,13 +347,19 @@ var annotator = {
       if (r.object === o) { return r.annotation; }
     }
     
-    var a = this.newObjectAnnotation();
+    var a = this.newObjectAnnotation(o);
     specialAnnoRecords.push({object: o, annotation: a});
     return a;
   },
 
-  newObjectAnnotation: function() {
-    return Object.create(this.objectAnnotationPrototype);
+  newObjectAnnotation: function(o) {
+    var a = Object.create(this.objectAnnotationPrototype);
+    
+    // Small hack to enable an optimization.
+    var cs = this.creatorSlotDeterminableFromTheObjectItself(o);
+    if (cs) { a.creatorSlot = cs; }
+    
+    return a;
   },
 
   asObjectAnnotation: function(anno) {
@@ -303,29 +374,101 @@ var annotator = {
   },
   
   loadObjectAnnotation: function(o, rawAnno, creatorSlotName, creatorSlotHolder) {
-    var a = annotator.annotationOf(o);
+    var a;
     
     if (creatorSlotName && creatorSlotHolder) {
-      a.setCreatorSlot(creatorSlotName, creatorSlotHolder);
+      var implicitCS = this.creatorSlotDeterminableFromTheObjectItself(o);
+      if (!a && implicitCS && implicitCS.name === creatorSlotName && implicitCS.holder === creatorSlotHolder) {
+        // no need to create the annotation just for this
+      } else {
+        a = a || annotator.annotationOf(o);
+        a.setCreatorSlot(creatorSlotName, creatorSlotHolder);
+      }
     }
     
     if (rawAnno) {
       for (var property in rawAnno) {
         if (rawAnno.hasOwnProperty(property) && property !== '__annotation__') {
+          a = a || annotator.annotationOf(o);
           a[property] = rawAnno[property];
         }
       }
 
-      a.copyDownSlotsFromAllCopyDownParents(o);
+      a = a || annotator.actualExistingAnnotationOf(o);
+      if (a) {
+        a.copyDownSlotsFromAllCopyDownParents(o);
+      }
     }
     
     return a;
+  },
+
+  asSlotAnnotation: function(slotAnno) {
+    if (slotAnno['__proto__'] !== this.slotAnnotationPrototype) {
+      slotAnno = Object.extendWithJustDirectPropertiesOf(Object.create(this.slotAnnotationPrototype), slotAnno);
+    }
+    
+    if (slotAnno.category) {
+      slotAnno.setCategoryParts(slotAnno.category);
+    }
+    
+    return slotAnno;
   },
 
   existingSlotAnnotation: function(holder, name) {
     var anno = this.existingAnnotationOf(holder);
     if (!anno) { return null; }
     return anno.existingSlotAnnotation(name);
+  },
+  
+  isEmptyObject: function(o) {
+    if (typeof(o) !== 'object') { return false; }
+    if (o['__proto__'] !== Object.prototype) { return false; }
+    for (var n in o) {
+      if (o.hasOwnProperty(n)) {
+        return false;
+      }
+    }
+    return true;
+  },
+  
+  isSimpleMethod: function(o) {
+    if (typeof(o) !== 'function') { return false; }
+
+    var aaa_LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName', 'displayName', '_creatorSlotHolder'];
+    var aaa_LK_slotNamesUsedForSuperHack = ['valueOf', 'toString', 'originalFunction'];
+
+    var hasSuper = o.argumentNames && o.argumentNames().first() === '$super';
+
+    for (var n in o) {
+      if (o.hasOwnProperty(n) && n !== '__annotation__') {
+        if (            aaa_LK_slotNamesAttachedToMethods.include(n)) { continue; }
+        if (hasSuper && aaa_LK_slotNamesUsedForSuperHack .include(n)) { continue; }
+        if (n === 'prototype' && this.isEmptyObject(o[n])) { continue; }
+        return false;
+      }
+    }
+    return true;
+  },
+  
+  creatorSlotDeterminableFromTheObjectItself: function(o) {
+    // Some very common kinds of objects have enough information in them to let us know the creator
+    // slot without being explicitly told.
+    
+    // Functions already have a displayName (or should), and we can set _creatorSlotHolder ourselves.
+    if (typeof(o) === 'function' && typeof(o.displayName) === 'string' && o._creatorSlotHolder) {
+      return Object.newChildOf(avocado.annotator.slotSpecifierPrototype, o.displayName, o._creatorSlotHolder);
+    }
+    
+    // Function (constructor) prototypes.
+    if (this.isEmptyObject(o)) {
+      var c = o.constructor;
+      if (c && o === c.prototype) {
+        return Object.newChildOf(avocado.annotator.slotSpecifierPrototype, 'prototype', c);
+      }
+    }
+    
+    return null;
   },
   
   canonicalCategoryParts: [],
@@ -573,8 +716,9 @@ transporter.module.objectsThatMightContainSlotsInMe = function() {
 transporter.module.slotAdder = {
   data: function(name, contents, slotAnnotation, contentsAnnotation) {
     if (! slotAnnotation) { slotAnnotation = Object.create(annotator.slotAnnotationPrototype); }
+    slotAnnotation = avocado.annotator.asSlotAnnotation(slotAnnotation);
     this.holder[name] = contents;
-    slotAnnotation.module = this.module;
+    slotAnnotation.setModule(this.module);
     annotator.annotationOf(this.holder).setSlotAnnotation(name, slotAnnotation);
     if (contentsAnnotation) { // used for creator slots
       annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);
@@ -610,6 +754,7 @@ transporter.module.slotAdder = {
 
   method: function(name, contents, slotAnnotation) {
     contents.displayName = name; // this'll show up in the Safari debugger
+    contents._creatorSlotHolder = this.holder; // to allow implicit creator slots
     this.creator(name, avocado.hackToMakeSuperWork(this.holder, name, contents), slotAnnotation);
   }
 };

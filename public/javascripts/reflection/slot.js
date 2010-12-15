@@ -323,10 +323,10 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['accessing']});
 
   add.method('hasAnnotation', function () {
-    return this.holder().hasAnnotation() && this.holder().annotation().existingSlotAnnotation(this.name());
+    return this.holder().hasAnnotation() && this.holder().annotationForReading().existingSlotAnnotation(this.name());
   }, {category: ['accessing annotation']});
 
-  add.method('annotation', function () {
+  add.method('annotationForWriting', function () {
     return this.holder().annotationForWriting().slotAnnotation(this.name());
   }, {category: ['accessing annotation']});
 
@@ -339,6 +339,10 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['accessing annotation']});
 
   add.method('annotationIfAny', function () {
+    return this.annotationForReading();
+  }, {category: ['accessing annotation']});
+
+  add.method('annotationForReading', function () {
     if (! this.holder().hasAnnotation()) { return null; }
     return this.holder().annotationForWriting().existingSlotAnnotation(this.name());
   }, {category: ['accessing annotation']});
@@ -350,14 +354,14 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('module', function () {
     if (! this.hasAnnotation()) { return null; }
-    return this.annotation().module;
+    return this.annotationForWriting().getModule();
   }, {category: ['accessing annotation', 'module']});
 
   add.method('setModule', function (m) {
-    var a = this.annotation();
-    var oldModule = a.module;
+    var a = this.annotationForWriting();
+    var oldModule = a.getModule();
     var holder = this.holder();
-    a.module = m;
+    a.setModule(m);
     m.objectsThatMightContainSlotsInMe().push(holder.reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
     if (oldModule) { oldModule.markAsChanged(); }
     if (m)         { m.markAsChanged(); }
@@ -395,11 +399,11 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('initializationExpression', function () {
     if (! this.hasAnnotation()) { return ""; }
-    return this.annotation().initializeTo || "";
+    return this.annotationForReading().initializationExpression() || "";
   }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('setInitializationExpression', function (e) {
-    this.annotation().initializeTo = e;
+    this.annotationForWriting().setInitializationExpression(e);
   }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('comment', function () {

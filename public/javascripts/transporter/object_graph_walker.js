@@ -17,11 +17,14 @@ thisModule.addSlots(avocado, function(add) {
 
   add.creator('childFinder', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
+  add.creator('annotationWalker', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
+
   add.creator('testingObjectGraphWalker', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
   add.creator('senders', {}, {category: ['object graph']});
 
 });
+
 
 thisModule.addSlots(avocado.childFinder, function(add) {
 
@@ -34,6 +37,40 @@ thisModule.addSlots(avocado.childFinder, function(add) {
     var mir = reflect(o);
     if (mir.parent().reflectee() === this.objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
       this._results.push(o);
+    }
+  });
+
+});
+
+thisModule.addSlots(avocado.annotationWalker, function(add) {
+
+  add.method('initialize', function ($super, o) {
+    $super();
+    this._simpleFunctionCount = 0;
+    this._simpleFunctionPrototypeCount = 0;
+    this._emptyObjectCount = 0;
+    this._otherObjectCount = 0;
+    this._otherObjects = [];
+    this._emptyObjects = [];
+  });
+
+  add.method('reachedObject', function (o) {
+    if (o && o.hasOwnProperty && avocado.annotator.actualExistingAnnotationOf(o)) {
+      var mir = reflect(o);
+      if (mir.isReflecteeSimpleMethod()) {
+        this._simpleFunctionCount += 1;
+      } else {
+        var cs = mir.theCreatorSlot();
+        if (cs && cs.name() === 'prototype' && cs.holder().isReflecteeSimpleMethod()) {
+          this._simpleFunctionPrototypeCount += 1;
+        } else if (mir.size() === 0 && mir.reflectee().__proto__ === Object.prototype) {
+          this._emptyObjectCount += 1;
+          this._emptyObjects.push(mir.reflectee());
+        } else {
+          this._otherObjectCount += 1;
+          this._otherObjects.push(mir.reflectee());
+        }
+      }
     }
   });
 
@@ -175,7 +212,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     var walkers = objectAnno.walkers = objectAnno.walkers || (window.avocado && avocado.set && Object.newChildOf(avocado.set, avocado.hashTable.identityComparator)) || [];
     if (walkers.include(this)) { return false; }
     walkers.push(this);
-    this._marked.push(objectAnno);
+    this._marked.push(object);
     return true;
   });
 
@@ -183,15 +220,20 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     // Could walk the graph again so that we don't need to create this big
     // list of marked stuff. But for now this'll do.
     if (! this._marked) { return; }
-    this._marked.each(function(m) {
-      if (m.walkers.remove) {
-        m.walkers.remove(this);
-      } else {
-        m.walkers = m.walkers.without(this);
+    this._marked.each(function(obj) {
+      var anno = avocado.annotator.actualExistingAnnotationOf(obj);
+      if (anno.walkers) {
+        if (anno.walkers.remove) {
+          anno.walkers.remove(this);
+        } else {
+          anno.walkers = anno.walkers.without(this);
+        }
+      
+        // Probably better to remove the walkers collection, so it doesn't stick around as a memory leak.
+        if (anno.walkers.size() === 0) { delete anno.walkers; }
       }
       
-      // Probably better to remove the walkers collection, so it doesn't stick around as a memory leak.
-      if (m.walkers.size() === 0) { delete m.walkers; }
+      anno.deleteIfRedundant(obj);
     }.bind(this));
     this._marked = [];
   });
@@ -266,6 +308,12 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
     marker.undoAllMarkings();
   });
 
+  add.method('shouldIgnoreObject', function ($super, o) {
+    if ($super(o)) { return true; }
+    if (avocado.annotator.isSimpleMethod(o)) { return true; }
+    return false;
+  });
+
   add.method('markObject', function ($super, contents, howDidWeGetHere, shouldExplicitlySetIt) {
     this.reachedObject(contents, howDidWeGetHere, shouldExplicitlySetIt); // in case this is a shorter path
     return $super(contents, howDidWeGetHere);
@@ -278,12 +326,21 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
     var contentsAnno;
     var slotHolder = howDidWeGetHere.slotHolder;
     var slotName   = howDidWeGetHere.slotName;
-    try { contentsAnno = avocado.annotator.annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
-    if (shouldExplicitlySetIt) {
-      contentsAnno.setCreatorSlot(slotName, slotHolder);
+    
+    // Optimization: don't bother creating an annotation just to set its creator slot if that creator
+    // slot is already determinable from the object itself.
+    var implicitCS = avocado.annotator.creatorSlotDeterminableFromTheObjectItself(contents);
+    if (implicitCS && implicitCS.holder === slotHolder && implicitCS.name === slotName) {
+      // no need to do anything
     } else {
-      if (! contentsAnno.explicitlySpecifiedCreatorSlot()) {
-        contentsAnno.addPossibleCreatorSlot(slotName, slotHolder);
+      try { contentsAnno = avocado.annotator.annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
+      
+      if (shouldExplicitlySetIt) {
+        contentsAnno.setCreatorSlot(slotName, slotHolder);
+      } else {
+        if (! contentsAnno.explicitlySpecifiedCreatorSlot()) {
+          contentsAnno.addPossibleCreatorSlot(slotName, slotHolder);
+        }
       }
     }
     
@@ -293,11 +350,9 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
 
   add.method('reachedSlot', function (holder, slotName, contents) {
     if (! this.moduleForExpatriateSlots) { return; }
-    var existingSlotAnno = avocado.annotator.existingSlotAnnotation(holder, slotName);
-    var slotAnno = existingSlotAnno || {};
-    if (slotAnno.module) { return; }
-    slotAnno.module = this.moduleForExpatriateSlots;
-    avocado.annotator.annotationOf(holder).setSlotAnnotation(slotName, slotAnno);
+    var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
+    if (slotAnno.getModule()) { return; }
+    slotAnno.setModule(this.moduleForExpatriateSlots);
   });
 
 });

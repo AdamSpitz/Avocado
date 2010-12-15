@@ -492,7 +492,7 @@ thisModule.addSlots(mirror, function(add) {
   add.method('isReflecteeSimpleMethod', function () {
     if (! this.isReflecteeFunction()) {return false;}
 
-    var aaa_LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName', 'displayName'];
+    var aaa_LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName', 'displayName', '_creatorSlotHolder'];
     var aaa_LK_slotNamesUsedForSuperHack = ['valueOf', 'toString', 'originalFunction'];
 
     var hasSuper = this.reflectee().argumentNames && this.reflectee().argumentNames().first() === '$super';
@@ -532,14 +532,14 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('probableCreatorSlot', function () {
     if (! this.canHaveCreatorSlot()) { return null; }
-    var a = this.annotation();
+    var a = this.annotationForReading();
     if (!a) { return null; }
     return this.convertAnnotationCreatorSlotToRealSlot(a.probableCreatorSlot());
   }, {category: ['annotations', 'creator slot']});
 
   add.method('possibleCreatorSlots', function () {
     if (! this.canHaveCreatorSlot()) { return []; }
-    var a = this.annotation();
+    var a = this.annotationForReading();
     if (!a) { return []; }
     var ss = a.possibleCreatorSlots;
     if (!ss) { return []; }
@@ -552,7 +552,7 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('hasMultiplePossibleCreatorSlots', function () {
     if (! this.canHaveCreatorSlot()) { return false; }
-    var a = this.annotation();
+    var a = this.annotationForReading();
     if (!a) { return false; }
     var ss = a.possibleCreatorSlots;
     if (!ss) { return false; }
@@ -572,14 +572,14 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('theCreatorSlot', function () {
     if (! this.canHaveCreatorSlot()) { return null; }
-    var a = this.annotation();
+    var a = this.annotationForReading();
     if (!a) { return null; }
     return this.convertAnnotationCreatorSlotToRealSlot(a.theCreatorSlot());
   }, {category: ['annotations', 'creator slot']});
 
   add.method('explicitlySpecifiedCreatorSlot', function () {
     if (! this.canHaveCreatorSlot()) { return null; }
-    var a = this.annotation();
+    var a = this.annotationForReading();
     if (! a) { return null; }
     return this.convertAnnotationCreatorSlotToRealSlot(a.explicitlySpecifiedCreatorSlot());
   }, {category: ['annotations', 'creator slot']});
@@ -614,7 +614,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['annotations', 'comment']});
 
   add.method('copyDownParents', function () {
-    var a = this.annotation();
+    var a = this.annotationForReading();
     if (! a) { return []; }
     return a.copyDownParents || [];
   }, {category: ['annotations', 'copy-down parents']});
@@ -758,10 +758,10 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['annotations']});
 
   add.method('hasAnnotation', function () {
-    return !!this.annotation();
+    return !!this.annotationForReading();
   }, {category: ['annotations']});
 
-  add.method('annotation', function () {
+  add.method('annotationForReading', function () {
     if (this._cachedAnnotation) { return this._cachedAnnotation; }
     if (! this.canHaveAnnotation()) { return null; }
     var a = this.getExistingAnnotation();
@@ -1135,7 +1135,10 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual("transporter", reflect(transporter).creatorSlotChainExpression());
     this.assertEqual("transporter.module", reflect(transporter.module).creatorSlotChainExpression());
     this.assertEqual("window", reflect(window).creatorSlotChainExpression());
-    this.assertEqual("Selector.operators['!=']", reflect(Selector.operators['!=']).creatorSlotChainExpression());
+    
+    avocado['!=!'] = {};
+    reflect(avocado).slotAt(['!=!']).beCreator();
+    this.assertEqual("avocado['!=!']", reflect(avocado['!=!']).creatorSlotChainExpression());
     
     this.createNestedClasses(function() {
       this.assertEqual("Argle.prototype.Bargle.prototype", reflect(Argle.prototype.Bargle.prototype).creatorSlotChainExpression());
@@ -1149,7 +1152,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     s.setContents(mMir);
     s.beCreator();
     var m2Mir = reflect(mMir.reflectee().duplicate());
-    this.assert(mMir.annotation() !== m2Mir.annotation(), "the annotation should not be shared");
+    this.assert(mMir.annotationForReading() !== m2Mir.annotationForReading(), "the annotation should not be shared");
     s.remove();
   });
 

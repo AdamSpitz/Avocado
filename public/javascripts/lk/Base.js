@@ -459,7 +459,7 @@ Object.extend(Function.prototype, {
 				Class.addPins(this, value);
 			} else if (Object.isFunction(value)) {
 				// remember name for profiling in WebKit
-				value.displayName = className + "$" + property;
+				value.displayName = property; // aaa changed this from className + "$" + property to make implicit creator slots work -- Adam
 				
 				for ( ; value; value = value.originalFunction) {
 					if (value.methodName) {
@@ -467,6 +467,7 @@ Object.extend(Function.prototype, {
 						// + " borrowed " + value.qualifiedMethodName());
 					}
 					value.declaredClass = this.prototype.constructor.type;
+					value._creatorSlotHolder = this.prototype; // added by Adam to allow implicit creator slots
 					value.methodName = property;
 				}
 			}

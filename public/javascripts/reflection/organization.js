@@ -97,18 +97,19 @@ thisModule.addSlots(organizationUsingAnnotations, function(add) {
 
   add.method('categoryOrNullForSlot', function (s) {
     if (! s.hasAnnotation()) { return null; }
-    return s.annotation().categoryParts();
+    return s.annotationForWriting().categoryParts();
   }, {category: ['categories']});
 
   add.method('setCategoryForSlot', function (s, catParts) {
-    s.annotation().setCategoryParts(catParts);
+    s.annotationForWriting().setCategoryParts(catParts);
   }, {category: ['categories']});
 
   add.method('commentOrNullForReflecteeOf', function (mir) {
-    var a = mir.annotation();
+    var a = mir.annotationForReading();
     if (! a) { return null; }
-    if (a.comment === undefined) { return null; }
-    return a.comment;
+    var c = a.getComment();
+    if (c === undefined) { return null; }
+    return c;
   }, {category: ['comments']});
 
   add.method('setCommentForReflecteeOf', function (mir, c) {
@@ -117,13 +118,14 @@ thisModule.addSlots(organizationUsingAnnotations, function(add) {
 
   add.method('commentOrNullForSlot', function (s) {
     if (! s.hasAnnotation()) { return null; }
-    var a = s.annotation();
-    if (a.comment === undefined) { return null; }
-    return a.comment;
+    var a = s.annotationForWriting();
+    var c = a.getComment();
+    if (c === undefined) { return null; }
+    return c;
   }, {category: ['comments']});
 
   add.method('setCommentForSlot', function (s, c) {
-    s.annotation().comment = c;
+    s.annotationForWriting().setComment(c);
   }, {category: ['comments']});
 
   add.method('poses', function () {
