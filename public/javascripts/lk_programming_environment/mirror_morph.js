@@ -336,6 +336,8 @@ thisModule.addSlots(mirror.Morph.prototype.defaultStyle, function(add) {
 
   add.data('borderRadius', 10);
 
+  add.data('openForDragAndDrop', false);
+
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
 
   add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}'});

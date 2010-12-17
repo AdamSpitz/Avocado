@@ -79,6 +79,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.creator('copyDownStyle', Object.create(avocado.slots['abstract'].Morph.prototype.defaultStyle), {category: ['styles']});
 
+  add.creator('grabbedStyle', Object.create(avocado.slots['abstract'].Morph.prototype.defaultStyle), {category: ['styles']});
+
   add.creator('annotationStyle', {}, {category: ['styles']});
 
   add.creator('commentStyle', {}, {category: ['styles']});
@@ -232,7 +234,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('appropriateStyle', function () {
-    return this.slot().isFromACopyDownParent() ? this.copyDownStyle : this.defaultStyle;
+    return this._explicitStyle || (this.slot().isFromACopyDownParent() ? this.copyDownStyle : this.defaultStyle);
   }, {category: ['updating']});
 
   add.method('potentialContent', function () {
@@ -254,8 +256,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var newMirror = reflect({});
     var newSlot = this.slot().copyTo(category.root().ofMirror(newMirror));
     var newSlotMorph = newSlot.newMorph();
-    newSlotMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
-    newSlotMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
+    newSlotMorph._explicitStyle = this.grabbedStyle;
+    newSlotMorph.refreshContent();
     newSlotMorph.forceLayoutRejiggering();
     newSlotMorph._shouldDisappearAfterCommandIsFinished = true;
     if (this.mirrorMorph() && ! this.mirrorMorph().shouldAllowModification()) { newSlotMorph._shouldOnlyBeDroppedOnThisParticularMorph = this.mirrorMorph(); }
@@ -315,6 +317,15 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.defaultStyle, func
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.copyDownStyle, function(add) {
 
   add.data('fill', new Color(0.95, 0.75, 0.75));
+
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.grabbedStyle, function(add) {
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
+
+  add.data('horizontalLayoutMode', LayoutModes.ShrinkWrap);
 
 });
 

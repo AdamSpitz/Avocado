@@ -69,6 +69,8 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
 
   add.creator('defaultStyle', {}, {category: ['styles']});
 
+  add.creator('grabbedStyle', Object.create(category.Morph.prototype.defaultStyle), {category: ['styles']});
+
   add.method('createTitleLabel', function () {
     var lbl = new TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
                                                             function(n) { this.rename(n); }.bind(this)));
@@ -218,8 +220,8 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     var newMirror = reflect({});
     var newCategoryOfMir = this.categoryOfMirror().copyInto(category.root().ofMirror(newMirror));
     var newCategoryMorph = newCategoryOfMir.morph();
-    newCategoryMorph.setFill(lively.paint.defaultFillWithColor(Color.gray));
-    newCategoryMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
+    newCategoryMorph.applyStyle(this.grabbedStyle);
+    newCategoryMorph.refreshContent();
     newCategoryMorph.forceLayoutRejiggering();
     newCategoryMorph._shouldDisappearAfterCommandIsFinished = true;
     if (! this.mirrorMorph().shouldAllowModification()) { newCategoryMorph._shouldOnlyBeDroppedOnThisParticularMorph = this.mirrorMorph(); }
@@ -258,6 +260,15 @@ thisModule.addSlots(category.Morph.prototype.defaultStyle, function(add) {
   add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
 
   add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
+
+});
+
+
+thisModule.addSlots(category.Morph.prototype.grabbedStyle, function(add) {
+
+  add.data('fill', lively.paint.defaultFillWithColor(Color.gray));
+
+  add.data('horizontalLayoutMode', LayoutModes.ShrinkWrap);
 
 });
 
