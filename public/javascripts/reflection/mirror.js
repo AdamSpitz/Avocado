@@ -541,9 +541,7 @@ thisModule.addSlots(mirror, function(add) {
     if (! this.canHaveCreatorSlot()) { return []; }
     var a = this.annotationForReading();
     if (!a) { return []; }
-    var ss = a.possibleCreatorSlots;
-    if (!ss) { return []; }
-    return ss.map(function(s) { return this.convertAnnotationCreatorSlotToRealSlot(s); }.bind(this));
+    return a.arrayOfPossibleCreatorSlots().map(function(s) { return this.convertAnnotationCreatorSlotToRealSlot(s); }.bind(this));
   }, {category: ['annotations', 'creator slot']});
 
   add.method('creatorSlotChainLength', function () {
@@ -554,9 +552,7 @@ thisModule.addSlots(mirror, function(add) {
     if (! this.canHaveCreatorSlot()) { return false; }
     var a = this.annotationForReading();
     if (!a) { return false; }
-    var ss = a.possibleCreatorSlots;
-    if (!ss) { return false; }
-    return ss.length > 1;
+    return a.numberOfPossibleCreatorSlots() > 1;
   }, {category: ['annotations', 'creator slot']});
 
   add.method('possibleCreatorSlotsSortedByLikelihood', function () {

@@ -30,19 +30,16 @@ thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
   }, {category: ['categories']});
 
   add.method('theCreatorSlot', function () {
-    var cs = this.explicitlySpecifiedCreatorSlot();
-    if (cs) { return cs; }
-    var slots = this.possibleCreatorSlots;
-    return slots && slots.length === 1 ? slots[0] : null;
+    return this.explicitlySpecifiedCreatorSlot() || this.onlyPossibleCreatorSlot();
   }, {category: ['creator slots']});
 
   add.method('probableCreatorSlot', function () {
     var cs = this.explicitlySpecifiedCreatorSlot();
     if (cs) { return cs; }
-    var slots = this.possibleCreatorSlots;
-    if (! slots)            { return null;     }
-    if (slots.length === 0) { return null;     }
-    if (slots.length === 1) { return slots[0]; }
+    var count = this.numberOfPossibleCreatorSlots();
+    if (count === 0) { return null;     }
+    if (count === 1) { return this.onlyPossibleCreatorSlot(); }
+    var slots = this.arrayOfPossibleCreatorSlots();
     var shortest = null;
     var shortestLength;
     for (var i = 0, n = slots.length; i < n; ++i) {

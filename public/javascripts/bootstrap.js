@@ -177,18 +177,47 @@ var annotator = {
 
     addPossibleCreatorSlot: function(name, holder) {
       // if (this.explicitlySpecifiedCreatorSlot()) { return; } // no point // aaa - no, I disagree now, leave them there so people can easily change it back -- Adam, Oct. 2010
-      var slots = this.possibleCreatorSlots = this.possibleCreatorSlots || [];
+      
+      var cs = Object.newChildOf(avocado.annotator.slotSpecifierPrototype, name, holder);
+      
+      // optimization: don't bother creating an array until we have more than one
+      if (! this.possibleCreatorSlots) {
+        this.possibleCreatorSlots = cs;
+      } else {
+        var slots = this.possibleCreatorSlots = this.arrayOfPossibleCreatorSlots();
 
-      // Don't add duplicates.
-      // aaa - Quadratic, blecch. Use a hash table? but hash_table.js isn't loaded yet. Oh, well - might not matter if I keep the list small.
-      for (var i = 0, n = slots.length; i < n; ++i) {
-        var s = slots[i];
-        if (name === s.name && holder === s.holder) { return; }
+        // Don't add duplicates.
+        // aaa - Quadratic, blecch. Use a hash table? but hash_table.js isn't loaded yet. Oh, well - might not matter if I keep the list small.
+        for (var i = 0, n = slots.length; i < n; ++i) {
+          var s = slots[i];
+          if (name === s.name && holder === s.holder) { return; }
+        }
+
+        slots.push(cs);
       }
-
-      this.possibleCreatorSlots.push(Object.newChildOf(avocado.annotator.slotSpecifierPrototype, name, holder));
     },
 
+    numberOfPossibleCreatorSlots: function () {
+      var ss = this.possibleCreatorSlots;
+      if (!ss) { return 0; }
+      if (! (ss instanceof Array)) { return 1; }
+      return ss.length;
+    },
+  
+    onlyPossibleCreatorSlot: function () {
+      var ss = this.possibleCreatorSlots;
+      if (!ss) { return null; }
+      if (! (ss instanceof Array)) { return ss; }
+      return ss && ss.length === 1 ? ss[0] : null;
+    },
+    
+    arrayOfPossibleCreatorSlots: function () {
+      var ss = this.possibleCreatorSlots;
+      if (!ss) { return []; }
+      if (! (ss instanceof Array)) { return [ss]; }
+      return ss;
+    },
+    
     copyDownSlotsFromAllCopyDownParents: function(obj) {
       if (this.copyDownParents) {
         for (var i = 0, n = this.copyDownParents.length; i < n; i += 1) {
@@ -431,19 +460,19 @@ var annotator = {
     }
     return true;
   },
+
+  aaa_LK_slotNamesAttachedToMethods: ['declaredClass', 'methodName', 'displayName', '_creatorSlotHolder'],
+  aaa_LK_slotNamesUsedForSuperHack: ['valueOf', 'toString', 'originalFunction'],
   
   isSimpleMethod: function(o) {
     if (typeof(o) !== 'function') { return false; }
-
-    var aaa_LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName', 'displayName', '_creatorSlotHolder'];
-    var aaa_LK_slotNamesUsedForSuperHack = ['valueOf', 'toString', 'originalFunction'];
 
     var hasSuper = o.argumentNames && o.argumentNames().first() === '$super';
 
     for (var n in o) {
       if (o.hasOwnProperty(n) && n !== '__annotation__') {
-        if (            aaa_LK_slotNamesAttachedToMethods.include(n)) { continue; }
-        if (hasSuper && aaa_LK_slotNamesUsedForSuperHack .include(n)) { continue; }
+        if (            this.aaa_LK_slotNamesAttachedToMethods.include(n)) { continue; }
+        if (hasSuper && this.aaa_LK_slotNamesUsedForSuperHack .include(n)) { continue; }
         if (n === 'prototype' && this.isEmptyObject(o[n])) { continue; }
         return false;
       }
