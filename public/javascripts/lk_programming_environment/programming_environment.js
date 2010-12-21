@@ -44,7 +44,7 @@ thisModule.addSlots(avocado, function(add) {
 
   add.data('isReflectionEnabled', true, {category: ['enabling reflection']});
 
-  add.data('debugMode', true, {category: ['debug mode']});
+  add.data('debugMode', false, {category: ['debug mode']});
 
   add.creator('menuItemContributors', [], {category: ['menu']});
 
