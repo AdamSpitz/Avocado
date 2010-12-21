@@ -515,7 +515,7 @@ var annotator = {
   areCategoryPartsEqual: function(catParts1, catParts2) {
     var len = catParts1.length;
     if (catParts2.length !== len) { return false; }
-    for (i = 0; i < len; ++i) {
+    for (var i = 0; i < len; ++i) {
       var p1 = catParts1[i];
       var p2 = catParts2[i];
       if (p1 !== p2) { return false; }
