@@ -880,6 +880,15 @@ thisModule.addSlots(transporter, function(add) {
     // place where we really know where the emailing script is? -- Adam
     transporter.emailingScriptURL = "http://" + document.domain + "/cgi-bin/emailSource.cgi";
   }, {category: ['bootstrapping']});
+  
+  add.method('initializeCallbackWaiters', function () {
+    avocado.callbackWaiter.on(function(callback) {
+      transporter.callWhenWorldIsCreated = callback();
+      transporter.callWhenAllAvocadoCodeIsLoaded = callback();
+    }, function () {
+      transporter.doneLoadingAllOfAvocado();
+    });
+  }, {category: ['bootstrapping']});
 
   add.method('putUnownedSlotsInInitModule', function () {
     var initModule = transporter.module.named('init');
@@ -919,12 +928,19 @@ thisModule.addSlots(transporter, function(add) {
     if (transporter.isDoneLoadingAvocadoLib && transporter.isDoneLoadingWindow) {
       avocado.world = transporter.createAvocadoWorld();
       if (avocado.theApplication && avocado.world.addApplication) { avocado.world.addApplication(avocado.theApplication); }
+      transporter.callWhenWorldIsCreated();
+      delete transporter.callWhenWorldIsCreated;
     }
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAvocadoLib', function () {
     transporter.isDoneLoadingAvocadoLib = true;
     transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
+  }, {category: ['bootstrapping']});
+
+  add.method('doneLoadingAllAvocadoCode', function () {
+    transporter.callWhenAllAvocadoCodeIsLoaded();
+    delete transporter.callWhenAllAvocadoCodeIsLoaded;
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAllOfAvocado', function () {
@@ -942,7 +958,8 @@ thisModule.addSlots(transporter, function(add) {
 
   add.method('startAvocado', function (callWhenDone) {
     if (typeof(callWhenDone) !== 'undefined') { this.callWhenDoneLoadingAvocado = callWhenDone; }
-
+    
+    this.doBootstrappingStep('initializeCallbackWaiters');
     this.doBootstrappingStep('initializeRepositories');
 
     transporter.userInterfaceInitializer.loadUserInterface(function() {
@@ -953,7 +970,7 @@ thisModule.addSlots(transporter, function(add) {
         transporter.fileInIfWanted("avocado_lib", function() {
           transporter.doBootstrappingStep('doneLoadingAvocadoLib');
           transporter.userInterfaceInitializer.loadProgrammingEnvironmentIfWanted(function() {
-            transporter.doBootstrappingStep('doneLoadingAllOfAvocado');
+            transporter.doBootstrappingStep('doneLoadingAllAvocadoCode');
           });
         });
       });
