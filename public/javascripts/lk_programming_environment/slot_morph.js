@@ -135,7 +135,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['signature']});
 
   add.method('sourcePane', function () {
-    return this._sourcePane || (this._sourcePane = ScrollPane.ifNecessaryToContain(this.sourceMorph(), pt(400,300)).setLayoutModes({horizontalLayoutMode: LayoutModes.SpaceFill}));
+    return this._sourcePane || (this._sourcePane = ScrollPane.ifNecessaryToContain(this.sourceMorph(), pt(400,300)).setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill}));
   }, {category: ['source']});
 
   add.method('sourceMorph', function () {
@@ -244,7 +244,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('wasJustDroppedOnWorld', function (world) {
     if (! this._shouldOnlyBeDroppedOnThisParticularMorph || this._shouldOnlyBeDroppedOnThisParticularMorph === world) {
       var mir = reflect({});
-      var newSlot = this.slot().copyTo(category.root().ofMirror(mir));
+      var newSlot = this.slot().copyTo(avocado.category.root().ofMirror(mir));
       var mirMorph = world.morphFor(mir);
       world.addMorphAt(mirMorph, this.position());
       mirMorph.expandCategory(newSlot.category());
@@ -254,7 +254,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
-    var newSlot = this.slot().copyTo(category.root().ofMirror(newMirror));
+    var newSlot = this.slot().copyTo(avocado.category.root().ofMirror(newMirror));
     var newSlotMorph = newSlot.newMorph();
     newSlotMorph._explicitStyle = this.grabbedStyle;
     newSlotMorph.refreshContent();
@@ -325,14 +325,14 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.grabbedStyle, func
 
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
 
-  add.data('horizontalLayoutMode', LayoutModes.ShrinkWrap);
+  add.data('horizontalLayoutMode', avocado.LayoutModes.ShrinkWrap);
 
 });
 
 
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.annotationStyle, function(add) {
 
-  add.data('horizontalLayoutMode', LayoutModes.SpaceFill);
+  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
   
   add.data('padding', {left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}'});
 
@@ -348,7 +348,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.sourceMorphStyle, 
 
   add.data('fontFamily', 'monospace');
   
-  add.data('horizontalLayoutMode', LayoutModes.SpaceFill);
+  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
   
   add.data('suppressHandles', true);
 

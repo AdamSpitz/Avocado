@@ -67,14 +67,14 @@ thisModule.addSlots(avocado.RowMorph, function(add) {
     var m = new this().beInvisible();
     var direction = avocado.directions.horizontal;
     if (padding !== undefined) { m.setPadding(padding); }
-    direction.setLayoutModeOf(m, LayoutModes.SpaceFill);
+    direction.setLayoutModeOf(m, avocado.LayoutModes.SpaceFill);
     
     if (typeof(content) === 'function') {
       m.potentialContent = function() { return avocado.tableContents.create([content()], direction.sideways); };
       m.refreshContent();
     } else {
       // default to left-justifying the contents
-      if (content.all(function(c) {return direction.layoutModeOf(c) !== LayoutModes.SpaceFill;})) {
+      if (content.all(function(c) {return direction.layoutModeOf(c) !== avocado.LayoutModes.SpaceFill;})) {
         content = content.concat([Morph.createSpacer()]);
       }
       m.replaceContentWith(avocado.tableContents.create([content], direction.sideways));
@@ -104,8 +104,8 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   add.data('_tableContent', avocado.tableContents);
 
   add.method('initialize', function ($super) {
-    this.horizontalLayoutMode = LayoutModes.ShrinkWrap;
-    this.verticalLayoutMode = LayoutModes.ShrinkWrap;
+    this.horizontalLayoutMode = avocado.LayoutModes.ShrinkWrap;
+    this.verticalLayoutMode = avocado.LayoutModes.ShrinkWrap;
     $super(new lively.scene.Rectangle(pt(0, 0).extent(pt(10, 10))));
   }, {category: ['creating']});
 
@@ -143,8 +143,8 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
 
   add.method('adjustForRigidity', function (e) {
     var currentExtent = this.getExtent();
-    return pt(this.horizontalLayoutMode === LayoutModes.Rigid ? Math.max(e.x, currentExtent.x) : e.x,
-              this.  verticalLayoutMode === LayoutModes.Rigid ? Math.max(e.y, currentExtent.y) : e.y);
+    return pt(this.horizontalLayoutMode === avocado.LayoutModes.Rigid ? Math.max(e.x, currentExtent.x) : e.x,
+              this.  verticalLayoutMode === avocado.LayoutModes.Rigid ? Math.max(e.y, currentExtent.y) : e.y);
   }, {category: ['layout']});
 
   add.method('calculateMinimumExtentsForRowsAndColumns', function () {
@@ -170,7 +170,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
       
       // How should we do this? Should the row be space-filling if *any* morph in it
       // is space-filling, or if *all* of them are, or what? Try any for now. -- Adam
-      if (direction.sideways.layoutModeOf(m) === LayoutModes.SpaceFill) { r.canFillSpace = true; }
+      if (direction.sideways.layoutModeOf(m) === avocado.LayoutModes.SpaceFill) { r.canFillSpace = true; }
     });
     
     return r;
@@ -219,10 +219,10 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
 
   add.method('calculateSpaceToUseOutOf', function (availableSpace, thisExtent) {
     var availableSpaceToUse = availableSpace.copy();
-    if (this.horizontalLayoutMode === LayoutModes.ShrinkWrap) { availableSpaceToUse.x =          this._cachedMinimumExtent.x;                }
-    if (this.horizontalLayoutMode === LayoutModes.Rigid     ) { availableSpaceToUse.x = Math.max(this._cachedMinimumExtent.x, thisExtent.x); }
-    if (this.  verticalLayoutMode === LayoutModes.ShrinkWrap) { availableSpaceToUse.y =          this._cachedMinimumExtent.y;                }
-    if (this.  verticalLayoutMode === LayoutModes.Rigid     ) { availableSpaceToUse.y = Math.max(this._cachedMinimumExtent.y, thisExtent.y); }
+    if (this.horizontalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.x =          this._cachedMinimumExtent.x;                }
+    if (this.horizontalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.x = Math.max(this._cachedMinimumExtent.x, thisExtent.x); }
+    if (this.  verticalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.y =          this._cachedMinimumExtent.y;                }
+    if (this.  verticalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.y = Math.max(this._cachedMinimumExtent.y, thisExtent.y); }
     if (this._debugMyLayout) { console.log("availableSpace: " + availableSpace + ", availableSpaceToUse: " + availableSpaceToUse); }
     return availableSpaceToUse;
   }, {category: ['layout']});
@@ -370,7 +370,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     // aaa - This should probably just be in Morph.
     // aaa - Still doesn't work right if you reshape an internal guy.
     var r = $super(partName, newPoint, lastCall);
-    this.horizontalLayoutMode = this.verticalLayoutMode = LayoutModes.Rigid;
+    this.horizontalLayoutMode = this.verticalLayoutMode = avocado.LayoutModes.Rigid;
     this.minimumExtentMayHaveChanged();
     return r;
   }, {category: ['layout']});

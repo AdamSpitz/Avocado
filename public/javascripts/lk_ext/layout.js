@@ -1,14 +1,14 @@
 transporter.module.create('lk_ext/layout', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(window, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
   add.creator('LayoutModes', {}, {category: ['avocado', 'lively kernel extensions']}, {comment: 'Does LK already have a mechanism for this? Look at that LayoutManager thing.'});
 
 });
 
 
-thisModule.addSlots(LayoutModes, function(add) {
+thisModule.addSlots(avocado.LayoutModes, function(add) {
 
   add.creator('Rigid', {});
 
@@ -19,21 +19,21 @@ thisModule.addSlots(LayoutModes, function(add) {
 });
 
 
-thisModule.addSlots(LayoutModes.Rigid, function(add) {
+thisModule.addSlots(avocado.LayoutModes.Rigid, function(add) {
 
   add.data('name', 'rigid');
 
 });
 
 
-thisModule.addSlots(LayoutModes.SpaceFill, function(add) {
+thisModule.addSlots(avocado.LayoutModes.SpaceFill, function(add) {
 
   add.data('name', 'space-fill');
 
 });
 
 
-thisModule.addSlots(LayoutModes.ShrinkWrap, function(add) {
+thisModule.addSlots(avocado.LayoutModes.ShrinkWrap, function(add) {
 
   add.data('name', 'shrink-wrap');
 
@@ -64,8 +64,8 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
     //console.log("rejiggering the layout of a " + this.constructor.type);
     
-    if (this.horizontalLayoutMode === LayoutModes.SpaceFill) { newExtent = newExtent.withX(availableSpace.x); }
-    if (this.  verticalLayoutMode === LayoutModes.SpaceFill) { newExtent = newExtent.withY(availableSpace.y); }
+    if (this.horizontalLayoutMode === avocado.LayoutModes.SpaceFill) { newExtent = newExtent.withX(availableSpace.x); }
+    if (this.  verticalLayoutMode === avocado.LayoutModes.SpaceFill) { newExtent = newExtent.withY(availableSpace.y); }
     if (! oldExtent.eqPt(newExtent)) { this.setExtent(newExtent); }
 
     delete this._isChangingRightNow;
@@ -107,8 +107,8 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['layout']});
 
   add.method('beSpaceFilling', function () {
-    this.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.  verticalLayoutMode = LayoutModes.SpaceFill;
+    this.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;
+    this.  verticalLayoutMode = avocado.LayoutModes.SpaceFill;
     return this;
   }, {category: ['layout']});
 

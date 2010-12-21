@@ -6,20 +6,20 @@ requires('core/hash_table');
 }, function(thisModule) {
 
 
-thisModule.addSlots(window, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
-  add.creator('abstractOrganization', {}, {category: ['avocado', 'reflection']});
+  add.creator('abstractOrganization', {}, {category: ['reflection']});
 
-  add.creator('organization', Object.create(abstractOrganization), {category: ['avocado', 'reflection']});
+  add.creator('organization', Object.create(avocado.abstractOrganization), {category: ['reflection']});
 
-  add.creator('organizationUsingAnnotations', Object.create(abstractOrganization), {category: ['avocado', 'reflection']});
+  add.creator('organizationUsingAnnotations', Object.create(avocado.abstractOrganization), {category: ['reflection']});
 
-  add.creator('organizationChain', Object.create(abstractOrganization), {category: ['avocado', 'reflection']});
+  add.creator('organizationChain', Object.create(avocado.abstractOrganization), {category: ['reflection']});
 
 });
 
 
-thisModule.addSlots(abstractOrganization, function(add) {
+thisModule.addSlots(avocado.abstractOrganization, function(add) {
 
   add.method('categoryForSlot', function (s) {
     return this.categoryOrNullForSlot(s) || [];
@@ -34,7 +34,7 @@ thisModule.addSlots(abstractOrganization, function(add) {
   }, {category: ['comments']});
 
   add.method('mirrorMorphForObjectNamed', function (chainNames) {
-    var mir = mirror.forObjectNamed(chainNames);
+    var mir = avocado.mirror.forObjectNamed(chainNames);
     if (!mir) { return null; }
     return mir.morph();
   }, {category: ['poses']});
@@ -55,22 +55,22 @@ thisModule.addSlots(abstractOrganization, function(add) {
 });
 
 
-thisModule.addSlots(organization, function(add) {
+thisModule.addSlots(avocado.organization, function(add) {
 
-  add.data('current', organizationUsingAnnotations, {initializeTo: 'organizationUsingAnnotations'});
+  add.data('current', avocado.organizationUsingAnnotations, {initializeTo: 'avocado.organizationUsingAnnotations'});
 
   add.method('setCurrent', function (org) {
-    organization.current = org;
+    avocado.organization.current = org;
     org.update();
   }, {category: ['loading']});
 
   add.method('temporarilySetCurrent', function (org, f) {
-    var previousOrg = organization.current;
+    var previousOrg = avocado.organization.current;
     try {
       this.setCurrent(org);
       var result = f();
     } finally {
-      organization.current = previousOrg;
+      avocado.organization.current = previousOrg;
     }
     return result;
   }, {category: ['loading']});
@@ -80,7 +80,7 @@ thisModule.addSlots(organization, function(add) {
 });
 
 
-thisModule.addSlots(organizationUsingAnnotations, function(add) {
+thisModule.addSlots(avocado.organizationUsingAnnotations, function(add) {
 
   add.method('update', function (callWhenDone) {
     // nothing to do here
@@ -143,7 +143,7 @@ thisModule.addSlots(organizationUsingAnnotations, function(add) {
 });
 
 
-thisModule.addSlots(organizationChain, function(add) {
+thisModule.addSlots(avocado.organizationChain, function(add) {
 
   add.method('create', function (o1, o2) {
     return Object.newChildOf(this, o1, o2);
@@ -162,13 +162,13 @@ thisModule.addSlots(organizationChain, function(add) {
   }, {category: ['loading']});
 
   add.method('copyEmpty', function () {
-    return organizationChain.create(this._org1.copyEmpty(), this._org2.copyEmpty());
+    return avocado.organizationChain.create(this._org1.copyEmpty(), this._org2.copyEmpty());
   }, {category: ['copying']});
 
   add.method('unlink', function () {
     this._org1.unlink();
     this._org2.unlink();
-    if (this === organization.current) { organization.current = this.copyEmpty(); }
+    if (this === avocado.organization.current) { avocado.organization.current = this.copyEmpty(); }
   }, {category: ['tests']});
 
   add.method('categoryOrNullForSlot', function (s) {

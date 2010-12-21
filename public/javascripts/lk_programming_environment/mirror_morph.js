@@ -7,7 +7,7 @@ requires('lk_programming_environment/slot_morph');
 }, function(thisModule) {
 
 
-thisModule.addSlots(mirror, function(add) {
+thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
 
@@ -24,20 +24,20 @@ thisModule.addSlots(mirror, function(add) {
 });
 
 
-thisModule.addSlots(mirror.Morph, function(add) {
+thisModule.addSlots(avocado.mirror.Morph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
   add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
-  add.data('type', 'mirror.Morph');
+  add.data('type', 'avocado.mirror.Morph');
 
 });
 
 
-thisModule.addSlots(mirror.Morph.prototype, function(add) {
+thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
-  add.data('constructor', mirror.Morph);
+  add.data('constructor', avocado.mirror.Morph);
 
   add.method('initialize', function ($super, m) {
     $super();
@@ -46,10 +46,10 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 
     this.applyStyle(this.defaultStyle);
 
-    this._rootCategoryMorph = this.categoryMorphFor(category.root().ofMirror(this._mirror));
+    this._rootCategoryMorph = this.categoryMorphFor(avocado.category.root().ofMirror(this._mirror));
     this._expander = this._rootCategoryMorph.expander();
     
-    this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: LayoutModes.SpaceFill});
+    this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
 
     this.titleLabel = TextMorph.createLabel(function() {return m.inspect();});
 
@@ -97,7 +97,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
     var m = this._annotationMorph;
     if (m) { return m; }
     m = this._annotationMorph = new avocado.ColumnMorph(this).beInvisible();
-    m.horizontalLayoutMode = LayoutModes.SpaceFill;
+    m.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
     this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString'));
@@ -328,7 +328,7 @@ thisModule.addSlots(mirror.Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(mirror.Morph.prototype.defaultStyle, function(add) {
+thisModule.addSlots(avocado.mirror.Morph.prototype.defaultStyle, function(add) {
 
   add.data('borderColor', new Color(0.6, 0.6, 0.6));
 

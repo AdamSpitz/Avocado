@@ -407,22 +407,22 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('comment', function () {
-    return organization.current.commentForSlot(this);
+    return avocado.organization.current.commentForSlot(this);
   }, {category: ['accessing annotation', 'comment']});
 
   add.method('setComment', function (c) {
-    organization.current.setCommentForSlot(this, c);
+    avocado.organization.current.setCommentForSlot(this, c);
   }, {category: ['accessing annotation', 'comment']});
 
   add.method('category', function () {
     var cds = this.slotThatIAmCopiedDownFrom();
     if (cds) { return cds.category(); }
     
-    return category.create(organization.current.categoryForSlot(this));
+    return avocado.category.create(avocado.organization.current.categoryForSlot(this));
   }, {category: ['accessing annotation', 'category']});
 
   add.method('setCategory', function (c) {
-    organization.current.setCategoryForSlot(this, c.parts());
+    avocado.organization.current.setCategoryForSlot(this, c.parts());
   }, {category: ['accessing annotation', 'category']});
 
   add.method('copyDownParentThatIAmFrom', function () {

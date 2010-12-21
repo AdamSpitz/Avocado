@@ -57,7 +57,7 @@ thisModule.addSlots(avocado.process.context, function(add) {
     var contextSlot = Object.create(slot);
     contextSlot._processContext = this;
     var slotMorph = new avocado.process.context.Morph(contextSlot);
-    slotMorph.horizontalLayoutMode = LayoutModes.SpaceFill;
+    slotMorph.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;
     var m = avocado.RowMorph.createSpaceFilling([slotMorph]);
     m._model = this;
     return m;

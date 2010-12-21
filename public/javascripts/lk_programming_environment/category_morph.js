@@ -6,17 +6,17 @@ requires('lk_ext/tree_morph');
 }, function(thisModule) {
 
 
-thisModule.addSlots(category, function(add) {
+thisModule.addSlots(avocado.category, function(add) {
 
   add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
 
 });
 
 
-thisModule.addSlots(category.ofAParticularMirror, function(add) {
+thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
   add.method('newMorph', function () {
-    return new category.Morph(this, this.isRoot());
+    return new avocado.category.Morph(this, this.isRoot());
   }, {category: ['user interface']});
 
   add.method('morph', function () {
@@ -32,20 +32,20 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
 });
 
 
-thisModule.addSlots(category.Morph, function(add) {
+thisModule.addSlots(avocado.category.Morph, function(add) {
 
   add.data('superclass', avocado.TreeNodeMorph);
 
   add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
 
-  add.data('type', 'category.Morph');
+  add.data('type', 'avocado.category.Morph');
 
 });
 
 
-thisModule.addSlots(category.Morph.prototype, function(add) {
+thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 
-  add.data('constructor', category.Morph);
+  add.data('constructor', avocado.category.Morph);
 
   add.method('initialize', function ($super, catOfMir, shouldOmitHeaderRow) {
     $super(catOfMir);
@@ -69,7 +69,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
 
   add.creator('defaultStyle', {}, {category: ['styles']});
 
-  add.creator('grabbedStyle', Object.create(category.Morph.prototype.defaultStyle), {category: ['styles']});
+  add.creator('grabbedStyle', Object.create(avocado.category.Morph.prototype.defaultStyle), {category: ['styles']});
 
   add.method('createTitleLabel', function () {
     var lbl = new TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
@@ -86,7 +86,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
     // summaryLabel.setFontSize(summaryLabel.getFontSize() - 1); // aaa - why does this create a little space at the beginning of the label?
     
     // aaa - I get weird 100000-wide behaviour when I try to use just the label instead of wrapping it with a row. I'd like to know why.
-    // summaryLabel.setLayoutModes({horizontalLayoutMode: LayoutModes.SpaceFill});
+    // summaryLabel.setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     // return summaryLabel;
     
     return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding);
@@ -218,7 +218,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
 
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
-    var newCategoryOfMir = this.categoryOfMirror().copyInto(category.root().ofMirror(newMirror));
+    var newCategoryOfMir = this.categoryOfMirror().copyInto(avocado.category.root().ofMirror(newMirror));
     var newCategoryMorph = newCategoryOfMir.morph();
     newCategoryMorph.applyStyle(this.grabbedStyle);
     newCategoryMorph.refreshContent();
@@ -232,7 +232,7 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
   add.method('wasJustDroppedOnWorld', function (world) {
     if (! this._shouldOnlyBeDroppedOnThisParticularMorph || this._shouldOnlyBeDroppedOnThisParticularMorph === world) {
       var mir = reflect({});
-      var newCategoryOfMir = this.categoryOfMirror().copyInto(category.root().ofMirror(mir));
+      var newCategoryOfMir = this.categoryOfMirror().copyInto(avocado.category.root().ofMirror(mir));
       var mirMorph = world.morphFor(mir);
       world.addMorphAt(mirMorph, this.position());
       mirMorph.expandCategory(newCategoryOfMir);
@@ -243,11 +243,11 @@ thisModule.addSlots(category.Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(category.Morph.prototype.defaultStyle, function(add) {
+thisModule.addSlots(avocado.category.Morph.prototype.defaultStyle, function(add) {
 
   add.data('padding', {top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}, {initializeTo: '{top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}'});
 
-  add.data('horizontalLayoutMode', LayoutModes.SpaceFill);
+  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 
   add.data('openForDragAndDrop', false);
 
@@ -264,11 +264,11 @@ thisModule.addSlots(category.Morph.prototype.defaultStyle, function(add) {
 });
 
 
-thisModule.addSlots(category.Morph.prototype.grabbedStyle, function(add) {
+thisModule.addSlots(avocado.category.Morph.prototype.grabbedStyle, function(add) {
 
   add.data('fill', lively.paint.defaultFillWithColor(Color.gray));
 
-  add.data('horizontalLayoutMode', LayoutModes.ShrinkWrap);
+  add.data('horizontalLayoutMode', avocado.LayoutModes.ShrinkWrap);
 
 });
 

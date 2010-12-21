@@ -222,7 +222,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
     return [
       avocado.dictionary.tests,
       avocado.set.tests,
-      mirror.tests,
+      avocado.mirror.tests,
       transporter.tests,
       avocado.objectGraphWalker.tests,
       exitValueOf.tests,
@@ -235,7 +235,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
       avocado.dependencies.tests,
       avocado.list.tests,
       avocado.prettyPrinter.tests,
-      organization.tests,
+      avocado.organization.tests,
       avocado.process.tests,
       avocado.remoteMirror.tests
     ];

@@ -7,7 +7,7 @@ requires('reflection/mirror');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('remoteMirror', Object.create(mirror), {category: ['reflection', 'remote']});
+  add.creator('remoteMirror', Object.create(avocado.mirror), {category: ['reflection', 'remote']});
 
   add.creator('remoteObjectServer', {}, {category: ['reflection', 'remote']});
 

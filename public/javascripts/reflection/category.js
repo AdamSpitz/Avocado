@@ -1,14 +1,14 @@
 transporter.module.create('reflection/category', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(window, function(add) {
+thisModule.addSlots(avocado, function(add) {
 
-  add.creator('category', {}, {category: ['avocado', 'reflection']});
+  add.creator('category', {}, {category: ['reflection']});
 
 });
 
 
-thisModule.addSlots(category, function(add) {
+thisModule.addSlots(avocado.category, function(add) {
 
   add.creator('ofAParticularMirror', {}, {category: ['prototypes']});
 
@@ -22,22 +22,22 @@ thisModule.addSlots(category, function(add) {
     for (var i = 0, n = parts.length; i < n; ++i) { if (parts[i] === undefined) { parts[i] = "undefined"; } }
   }, {category: ['creating']});
 
-  add.method('root', function () { return category.create([]); }, {category: ['creating']});
+  add.method('root', function () { return avocado.category.create([]); }, {category: ['creating']});
 
   add.method('parts', function () {
     return this._parts;
   }, {category: ['accessing']});
 
   add.method('copy', function () {
-    return category.create(this.parts().map(function(p) { return p; }));
+    return avocado.category.create(this.parts().map(function(p) { return p; }));
   }, {category: ['copying']});
 
   add.method('supercategory', function () {
-    return category.create(this._parts.slice(0, this._parts.length - 1));
+    return avocado.category.create(this._parts.slice(0, this._parts.length - 1));
   }, {category: ['related categories']});
 
   add.method('subcategory', function (subcatName) {
-    return category.create(this._parts.concat([subcatName]));
+    return avocado.category.create(this._parts.concat([subcatName]));
   }, {category: ['related categories']});
 
   add.method('supernode', function () {
@@ -49,15 +49,15 @@ thisModule.addSlots(category, function(add) {
   }, {category: ['related categories']});
 
   add.method('ofMirror', function (mir) {
-    return category.ofAParticularMirror.create(mir, this);
+    return avocado.category.ofAParticularMirror.create(mir, this);
   }, {category: ['related categories']});
 
   add.method('concat', function (otherCat) {
-    return category.create(this._parts.concat(otherCat.parts()));
+    return avocado.category.create(this._parts.concat(otherCat.parts()));
   }, {category: ['related categories']});
 
   add.method('withoutFirstParts', function (n) {
-    return category.create(this._parts.slice(n));
+    return avocado.category.create(this._parts.slice(n));
   }, {category: ['related categories']});
 
   add.method('sortOrder', function () { return this.isRoot() ? '' : this.lastPart().toUpperCase(); }, {category: ['sorting']});
@@ -125,7 +125,7 @@ thisModule.addSlots(category, function(add) {
 });
 
 
-thisModule.addSlots(category.ofAParticularMirror, function(add) {
+thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
   add.method('create', function (mir, cat) {
     return Object.newChildOf(this, mir, cat);
@@ -214,7 +214,7 @@ thisModule.addSlots(category.ofAParticularMirror, function(add) {
       }
 
       newCatParts[oldCatPrefixParts.length - 1] = newName;
-      var newCat = category.create(newCatParts);
+      var newCat = avocado.category.create(newCatParts);
       //console.log("Changing the category of " + s.name() + " from " + oldCat + " to " + newCat);
       s.setCategory(newCat);
     });

@@ -37,7 +37,7 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
     var tm = this._textMorph = TextMorph.createInputBox("", pt(150, 60));
     tm.setFill(Color.white);
     tm.setFontFamily('monospace');
-    tm.setLayoutModes({horizontalLayoutMode: LayoutModes.SpaceFill});
+    tm.setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     
     var thisEvaluator = this;
     tm.onKeyDown = function(evt) {

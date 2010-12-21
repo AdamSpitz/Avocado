@@ -92,13 +92,13 @@ thisModule.addSlots(avocado, function(add) {
         avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.senders.finder.create("exitValueOf"), evt)).redo();
       }.bind(this)});
 
-      if (organization.current === organizationUsingAnnotations) {
+      if (avocado.organization.current === avocado.organizationUsingAnnotations) {
         cmdList.addItem(["use JSQuiche organization", function(evt) {
-          organization.setCurrent(organizationChain.create(organization.named(organization.name()), organizationUsingAnnotations));
+          avocado.organization.setCurrent(avocado.organizationChain.create(avocado.organization.named(avocado.organization.name()), avocado.organizationUsingAnnotations));
         }.bind(this)]);
       } else {
         cmdList.addItem(["stop using JSQuiche organization", function(evt) {
-          organization.setCurrent(organizationUsingAnnotations);
+          avocado.organization.setCurrent(avocado.organizationUsingAnnotations);
         }.bind(this)]);
       }
 

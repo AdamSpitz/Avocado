@@ -7,12 +7,17 @@ requires('core/testFramework');
 }, function(thisModule) {
 
 
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('mirror', {}, {category: ['reflection']});
+
+});
+
+
 thisModule.addSlots(window, function(add) {
 
-  add.creator('mirror', {}, {category: ['avocado', 'reflection']});
-
   add.method('reflect', function (o) {
-    var m = Object.create(mirror);
+    var m = Object.create(avocado.mirror);
     m.initialize(o);
     return m;
   }, {category: ['avocado', 'reflection']});
@@ -20,7 +25,7 @@ thisModule.addSlots(window, function(add) {
 });
 
 
-thisModule.addSlots(mirror, function(add) {
+thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('initialize', function (o) {
     this._reflectee = o;
@@ -602,11 +607,11 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['annotations', 'creator slot']});
 
   add.method('comment', function () {
-    return organization.current.commentForReflecteeOf(this);
+    return avocado.organization.current.commentForReflecteeOf(this);
   }, {category: ['annotations', 'comment']});
 
   add.method('setComment', function (c) {
-    organization.current.setCommentForReflecteeOf(this, c);
+    avocado.organization.current.setCommentForReflecteeOf(this, c);
   }, {category: ['annotations', 'comment']});
 
   add.method('copyDownParents', function () {
@@ -730,7 +735,7 @@ thisModule.addSlots(mirror, function(add) {
         cmdList.addItem(avocado.command.create("set module", function(evt, slotsToReassign, targetModule) {
           slotsToReassign.each(function(slot) { slot.setModule(targetModule); });
         }).setArgumentSpecs([
-          avocado.command.argumentSpec.create("Of which slots?").onlyAcceptsType(avocado.types.collection.of(avocado.slots['abstract'])).setPrompter(mirror.sourceModulePrompter),
+          avocado.command.argumentSpec.create("Of which slots?").onlyAcceptsType(avocado.types.collection.of(avocado.slots['abstract'])).setPrompter(avocado.mirror.sourceModulePrompter),
           avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(transporter.module)
         ]));
       }
@@ -793,11 +798,11 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['searching']});
 
   add.method('categorizeUncategorizedSlotsAlphabetically', function () {
-    var uncategorized = category.root().subcategory("uncategorized");
+    var uncategorized = avocado.category.root().subcategory("uncategorized");
     this.eachNormalSlot(function(s) {
-      var c = category.create(organizationUsingAnnotations.categoryForSlot(s));
+      var c = avocado.category.create(avocado.organizationUsingAnnotations.categoryForSlot(s));
       if (c.isRoot()) {
-        organizationUsingAnnotations.setCategoryForSlot(s, uncategorized.subcategory((s.name()[0] || '_unnamed_').toUpperCase()).parts());
+        avocado.organizationUsingAnnotations.setCategoryForSlot(s, uncategorized.subcategory((s.name()[0] || '_unnamed_').toUpperCase()).parts());
       }
     });
   }, {category: ['organizing']});
@@ -807,7 +812,7 @@ thisModule.addSlots(mirror, function(add) {
 });
 
 
-thisModule.addSlots(mirror.sourceModulePrompter, function(add) {
+thisModule.addSlots(avocado.mirror.sourceModulePrompter, function(add) {
 
   add.method('prompt', function (caption, context, evt, callback) {
     context.chooseSourceModule(caption, function(sourceModuleName) {
@@ -891,7 +896,7 @@ thisModule.addSlots(Array.prototype, function(add) {
 });
 
 
-thisModule.addSlots(mirror.tests, function(add) {
+thisModule.addSlots(avocado.mirror.tests, function(add) {
 
   add.method('testEquality', function () {
     this.assertEqual(reflect(3), reflect(3), "number mirror");
@@ -937,8 +942,8 @@ thisModule.addSlots(mirror.tests, function(add) {
   });
 
   add.method('testIsWellKnown', function () {
-    this.assert(reflect(mirror).isWellKnown());
-    this.assert(reflect(mirror.tests).isWellKnown());
+    this.assert(reflect(avocado.mirror).isWellKnown());
+    this.assert(reflect(avocado.mirror.tests).isWellKnown());
     this.assert(! reflect({}).isWellKnown());
 
     // Try an object that has a creator slot, but isn't actually connected to
@@ -961,7 +966,7 @@ thisModule.addSlots(mirror.tests, function(add) {
   });
 
   add.method('testSize', function () {
-    organization.temporarilySetCurrent(organizationUsingAnnotations, function() {
+    avocado.organization.temporarilySetCurrent(avocado.organizationUsingAnnotations, function() {
       var mir = reflect({});
       this.assertEqual(0, mir.size());
       mir.setComment("Set a comment so that there's an annotation.");
@@ -976,7 +981,7 @@ thisModule.addSlots(mirror.tests, function(add) {
   });
 
   add.method('testRemovingSlots', function () {
-    organization.temporarilySetCurrent(organizationUsingAnnotations, function() {
+    avocado.organization.temporarilySetCurrent(avocado.organizationUsingAnnotations, function() {
       var obj = {};
       var mir = reflect(obj);
       mir.slotAt('argle').setContents(reflect('whatever'));
@@ -990,7 +995,7 @@ thisModule.addSlots(mirror.tests, function(add) {
   });
 
   add.method('testRenamingSlots', function () {
-    organization.temporarilySetCurrent(organizationUsingAnnotations, function() {
+    avocado.organization.temporarilySetCurrent(avocado.organizationUsingAnnotations, function() {
       var obj = {};
       var mir = reflect(obj);
       
@@ -1155,7 +1160,7 @@ thisModule.addSlots(mirror.tests, function(add) {
   add.method('createSlot', function (mir, name, contents, cat) {
     var slot = mir.slotAt(name);
     slot.setContents(reflect(contents));
-    if (cat) { slot.setCategory(category.create(cat)); }
+    if (cat) { slot.setCategory(avocado.category.create(cat)); }
     return slot;
   });
 
@@ -1165,14 +1170,14 @@ thisModule.addSlots(mirror.tests, function(add) {
   });
 
   add.method('testComments', function () {
-    organization.temporarilySetCurrent(organizationUsingAnnotations, function() {
+    avocado.organization.temporarilySetCurrent(avocado.organizationUsingAnnotations, function() {
       this.checkComment(reflect({})            , "an object comment");
       this.checkComment(reflect({}).slotAt('a'), "a slot comment");
     }.bind(this));
   });
 
   add.method('testCategories', function () {
-    organization.temporarilySetCurrent(organizationUsingAnnotations, function() {
+    avocado.organization.temporarilySetCurrent(avocado.organizationUsingAnnotations, function() {
       var o = {};
       var mir = reflect(o);
       this.createSlot(mir, 'a', 42, ['letters', 'vowels']);
@@ -1182,7 +1187,7 @@ thisModule.addSlots(mirror.tests, function(add) {
       this.createSlot(mir, 'e', 46, ['letters', 'vowels']);
       this.createSlot(mir, 'y', 47, ['letters']);
       
-      var root = category.root();
+      var root = avocado.category.root();
       this.assertEqual('letters', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root).toArray().join(', '));
       this.assertEqual('letters consonants, letters vowels', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters')).toArray().sort().join(', '));
       this.assertEqual('', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
@@ -1196,17 +1201,17 @@ thisModule.addSlots(mirror.tests, function(add) {
       
       var o2 = {};
       var mir2 = reflect(o2);
-      category.create(['letters']).ofMirror(mir).copyInto(category.create(['glyphs']).ofMirror(mir2));
+      avocado.category.create(['letters']).ofMirror(mir).copyInto(avocado.category.create(['glyphs']).ofMirror(mir2));
       this.assertEqual(42, o2.a);
-      this.assertEqual(category.create(['glyphs', 'letters', 'vowels']), mir2.slotAt('a').category());
+      this.assertEqual(avocado.category.create(['glyphs', 'letters', 'vowels']), mir2.slotAt('a').category());
       
-      category.create(['letters', 'vowels']).ofMirror(mir).copyInto(category.root().ofMirror(mir2));
+      avocado.category.create(['letters', 'vowels']).ofMirror(mir).copyInto(avocado.category.root().ofMirror(mir2));
       this.assertEqual(42, o2.a);
-      this.assertEqual(category.create(['vowels']), mir2.slotAt('a').category());
+      this.assertEqual(avocado.category.create(['vowels']), mir2.slotAt('a').category());
       
-      category.create([]).ofMirror(mir).copyContentsInto(category.create(['stuff']).ofMirror(mir2));
+      avocado.category.create([]).ofMirror(mir).copyContentsInto(avocado.category.create(['stuff']).ofMirror(mir2));
       this.assertEqual(42, o2.a);
-      this.assertEqual(category.create(['stuff', 'letters', 'vowels']), mir2.slotAt('a').category());
+      this.assertEqual(avocado.category.create(['stuff', 'letters', 'vowels']), mir2.slotAt('a').category());
     }.bind(this));
   });
 
@@ -1240,7 +1245,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual(2, mirA.size());
     var mirB = reflect({b: 2, bb: 22, bbb: 222});
     var mirC = reflect({c: 3, bleh: 'bleh!'});
-    mirB.slotAt('b').setCategory(category.create(['categories should be copied down']));
+    mirB.slotAt('b').setCategory(avocado.category.create(['categories should be copied down']));
     mirA.setCopyDownParents([{parent: mirB.reflectee()}, {parent: mirC.reflectee(), slotsToOmit: ['bleh']}]);
     this.assertEqual(3, mirB.size());
     this.assertEqual(2, mirC.size());
@@ -1259,7 +1264,7 @@ thisModule.addSlots(mirror.tests, function(add) {
     this.assertEqual(mirA.copyDownParents()[0], mirA.slotAt('bbb').copyDownParentThatIAmFrom());
     this.assertEqual(mirA.copyDownParents()[1], mirA.slotAt('c'  ).copyDownParentThatIAmFrom());
     
-    this.assertEqual(category.create(['categories should be copied down']), mirA.slotAt('b').category());
+    this.assertEqual(avocado.category.create(['categories should be copied down']), mirA.slotAt('b').category());
   });
 
   add.method('testIndexableCreatorSlots', function () {
@@ -1353,9 +1358,10 @@ thisModule.addSlots(mirror.tests, function(add) {
   });
 
   add.method('testCreatingMirrorsByObjectName', function () {
-    this.assertIdentity(null,         mirror.forObjectNamed(['blahblahnothing'])            );
-    this.assertIdentity(mirror,       mirror.forObjectNamed(['mirror'         ]).reflectee());
-    this.assertIdentity(mirror.tests, mirror.forObjectNamed(['mirror', 'tests']).reflectee());
+    this.assertIdentity(null,                 avocado.mirror.forObjectNamed(['blahblahnothing'           ])            );
+    this.assertIdentity(avocado,              avocado.mirror.forObjectNamed(['avocado'                   ]).reflectee());
+    this.assertIdentity(avocado.mirror,       avocado.mirror.forObjectNamed(['avocado', 'mirror'         ]).reflectee());
+    this.assertIdentity(avocado.mirror.tests, avocado.mirror.forObjectNamed(['avocado', 'mirror', 'tests']).reflectee());
   });
 
   add.method('testHashing', function () {

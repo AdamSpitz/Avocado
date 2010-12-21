@@ -27,7 +27,7 @@ thisModule.addSlots(avocado.ComboBoxMorph, function(add) {
     var     okButton = ButtonMorph.createButton(    okButtonText, function(evt) { comboBox.relinquishKeyboardFocus(Event.createFake()); promptBox.remove(); if (onAccept) { onAccept(comboBox.value()); } });
     var cancelButton = ButtonMorph.createButton(cancelButtonText, function(evt) { comboBox.relinquishKeyboardFocus(Event.createFake()); promptBox.remove(); if (onCancel) { onCancel();                 } });
     var comboBox = new this(values, defaultValue, function() {okButton.simulatePress(Event.createFake());}, function() {cancelButton.simulatePress(Event.createFake());});
-    comboBox.horizontalLayoutMode = LayoutModes.SpaceFill;
+    comboBox.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;
     var buttonRow = avocado.RowMorph.createSpaceFilling([okButton, Morph.createSpacer(), cancelButton]);
     promptBox.setRows([messageLabel, comboBox, buttonRow]);
     var world = WorldMorph.current();
@@ -57,7 +57,7 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
     this._textMorph = new TextMorph(pt(0,0).extent(pt(120,20)), this._defaultValue);
     this._textMorph.suppressHandles = true;
     this._textMorph.setBorderWidth(0);
-    this._textMorph.horizontalLayoutMode = LayoutModes.SpaceFill;
+    this._textMorph.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;
     this._textMorph.onKeyDown = function(evt) {
       var c = evt.getKeyCode();
       if (c === Event.KEY_RETURN) {
@@ -74,7 +74,7 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
     var triangle = Morph.makePolygon([pt(-5,0), pt(5,0), pt(0,5)], 1, Color.black, Color.black);
     triangle.suppressHandles = true;
     this._button = ButtonMorph.createButton(triangle, function(evt) {this.toggleMenu();}.bind(this), 5);
-    this._button.verticalLayoutMode = LayoutModes.SpaceFill;
+    this._button.verticalLayoutMode = avocado.LayoutModes.SpaceFill;
     this._button.linkToStyles('comboBoxButton');
 
     this._menu = new MenuMorph([]);

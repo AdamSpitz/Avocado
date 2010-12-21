@@ -184,7 +184,7 @@ thisModule.addSlots(avocado.poses.snapshot, function(add) {
     for (var i = 0, n = this._elements.length; i < n; ++i) {
       var elem = this._elements[i];
       // aaa - handle other kinds of posers, not just mirrors
-      params["poser"   + i] = elem.poser instanceof mirror.Morph ? "mirror(" + org.nameOfReflecteeOf(elem.poser.mirror()) + ")" : "unknown";
+      params["poser"   + i] = elem.poser instanceof avocado.mirror.Morph ? "mirror(" + org.nameOfReflecteeOf(elem.poser.mirror()) + ")" : "unknown";
       params["pos"     + i] = elem.position.toString();
       params["uiState" + i] = Object.toJSON(elem.uiState);
     }
@@ -196,7 +196,7 @@ thisModule.addSlots(avocado.poses.snapshot, function(add) {
 thisModule.addSlots(avocado.poses.manager, function(add) {
 
   add.method('explicitlyRememberedPoses', function () {
-    return organization.current.poses();
+    return avocado.organization.current.poses();
   }, {category: ['explicitly remembering']});
 
   add.method('undoPoseStack', function () {
@@ -227,7 +227,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     if (! this.canGoBackToPreviousPose()) { throw "there is nothing to go back to"; }
 
     if (this.undoPoseStackIndex() === this.undoPoseStack().size()) {
-      this.addToUndoPoseStack(this.createSnapshotOfCurrentPose(organization.current.findUnusedPoseName())); // so that we can go forward to it
+      this.addToUndoPoseStack(this.createSnapshotOfCurrentPose(avocado.organization.current.findUnusedPoseName())); // so that we can go forward to it
       this._undoPoseStackIndex -= 1; // reset the index
     }
 
@@ -242,7 +242,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
   });
 
   add.method('assumePose', function (pose) {
-    this.addToUndoPoseStack(this.createSnapshotOfCurrentPose(organization.current.findUnusedPoseName()));
+    this.addToUndoPoseStack(this.createSnapshotOfCurrentPose(avocado.organization.current.findUnusedPoseName()));
     pose.recreateInWorld(this.world());
   }, {category: ['poses']});
 
@@ -251,8 +251,8 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
   }, {category: ['taking snapshots']});
 
   add.method('rememberThisPose', function () {
-    organization.current.promptForPoseName(function(n) {
-      organization.current.rememberPose(this.createSnapshotOfCurrentPose(n));
+    avocado.organization.current.promptForPoseName(function(n) {
+      avocado.organization.current.rememberPose(this.createSnapshotOfCurrentPose(n));
     }.bind(this));
   }, {category: ['taking snapshots']});
 

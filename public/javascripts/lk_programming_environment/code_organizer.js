@@ -60,13 +60,13 @@ thisModule.addSlots(jsQuiche, function(add) {
     if (this.debugMode) {
       cmdList.addLine();
 
-      if (organization.current === organizationUsingAnnotations) {
+      if (avocado.organization.current === avocado.organizationUsingAnnotations) {
         cmdList.addItem(["use JSQuiche organization", function(evt) {
-          organization.setCurrent(organizationChain.create(organization.named(organization.name()), organizationUsingAnnotations));
+          avocado.organization.setCurrent(avocado.organizationChain.create(avocado.organization.named(avocado.organization.name()), avocado.organizationUsingAnnotations));
         }.bind(this)]);
       } else {
         cmdList.addItem(["stop using JSQuiche organization", function(evt) {
-          organization.setCurrent(organizationUsingAnnotations);
+          avocado.organization.setCurrent(avocado.organizationUsingAnnotations);
         }.bind(this)]);
       }
     }

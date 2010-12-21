@@ -381,7 +381,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
 });
 
 
-thisModule.addSlots(mirror, function(add) {
+thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('prettyPrint', function (options) {
     var expr = this.expressionEvaluatingToMe(true);
