@@ -213,7 +213,7 @@ thisModule.Font.addMethods({
 	        sub.appendChild(doc.createTextNode('x x'));
 
 	        var spaceWidth = sub.offsetWidth - xWidth*2;
-	        console.log("font " + this + ': space width ' + spaceWidth + ' from ' + sub.offsetWidth + ' xWidth ' + xWidth);    
+	        // console.log("font " + this + ': space width ' + spaceWidth + ' from ' + sub.offsetWidth + ' xWidth ' + xWidth);  // commented out because it's annoying -- Adam
 
 	        // tjm: sanity check as Firefox seems to do this wrong with certain values
 	        if (spaceWidth > 100) {    
