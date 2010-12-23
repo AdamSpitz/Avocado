@@ -31,6 +31,7 @@ requires('lk_ext/morph_factories');
 requires('lk_ext/core_sampler');
 requires('lk_ext/edit_mode');
 requires('lk_ext/world_navigation');
+requires('lk_ext/placeholder_morph');
 
 }, function(thisModule) {
 

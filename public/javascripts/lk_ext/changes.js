@@ -255,6 +255,49 @@ WorldMorph.addMethods({
 });
 
 
+Morph.addMethods({
+  replaceMorph: function(m, newSubmorph) {
+    // This method is kind of a combination of addMorphFrontOrBack and removeMorph. -- Adam
+    
+		var index = this.submorphs.indexOf(m);
+		if (index < 0) {
+			m.owner !== this && console.log("%s has owner %s that is not %s?", m, m.owner, this);
+			return null;
+		}
+
+		if (newSubmorph.owner) {
+			var tfm = newSubmorph.transformForNewOwner(this);
+			newSubmorph.owner.removeMorph(newSubmorph); // KP: note not m.remove(), we don't want to stop stepping behavior
+			newSubmorph.setTransform(tfm); 
+			// FIXME transform is out of date
+			// morph.setTransform(tfm); 
+			// m.layoutChanged(); 
+		} 
+		
+		var position = m.getPosition();
+		m.replaceRawNode(newSubmorph.rawNode);
+		var spliced = this.submorphs.spliceAndAdjustCreatorSlots(index, 1, newSubmorph); // aaa fileout hack -- Adam
+		if (spliced instanceof Array) spliced = spliced[0];
+		if (m !== spliced) {
+			console.log("invariant violated removing %s, spliced %s", m, spliced);
+		}
+		
+		// cleanup, move to ?
+		m.owner = null;
+		m.setHasKeyboardFocus(false);
+		this.layoutManager.removeMorph(this, m);
+
+		newSubmorph.owner = this;
+		newSubmorph.changed();
+		newSubmorph.layoutChanged();
+		
+		this.layoutChanged();
+		
+		newSubmorph.setPosition(position);
+  },
+});
+
+
 ButtonMorph.addMethods({
   pushMe: function() {
     this.getModel().setValue(false);

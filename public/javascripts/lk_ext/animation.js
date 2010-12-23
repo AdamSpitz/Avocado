@@ -108,18 +108,28 @@ thisModule.addSlots(Morph.prototype, function(add) {
     }, {category: ['adding and removing']});
 
   add.method('animatedAddMorphAt', function (m, p, callWhenDone) {
-      var w = this.world();
-      if (w) {
-        w.addMorphFront(m); // make sure it's in front
-        m.ensureIsInWorld(w, this.worldPoint(p), true, true, false, function() {
-          this.addMorphAt(m, p);
-          if (callWhenDone) { callWhenDone(); }
-        }.bind(this));
-      } else {
-        this.addMorphAt(m, p);
+    this.animateMorphToPosition(m, p, function() {
+      this.addMorphAt(m, p);
+    }.bind(this));
+  }, {category: ['adding and removing']});
+
+  add.method('animatedReplaceMorph', function (currentSubmorph, newSubmorph, callWhenDone) {
+    this.animateMorphToPosition(newSubmorph, currentSubmorph.getPosition(), function() {
+      this.replaceMorph(currentSubmorph, newSubmorph);
+    }.bind(this));
+  }, {category: ['adding and removing']});
+
+  add.method('animateMorphToPosition', function (m, p, callWhenDone) {
+    var w = this.world();
+    if (w) {
+      w.addMorphFront(m); // make sure it's in front
+      m.ensureIsInWorld(w, this.worldPoint(p), true, true, false, function() {
         if (callWhenDone) { callWhenDone(); }
-      }
-    }, {category: ['adding and removing']});
+      }.bind(this));
+    } else {
+      if (callWhenDone) { callWhenDone(); }
+    }
+  }, {category: ['adding and removing']});
 
   add.method('createDismissButton', function () {
       var size = 22 * (Config.fatFingers ? 2 : 1);

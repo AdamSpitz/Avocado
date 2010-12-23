@@ -94,6 +94,11 @@ Object.subclass('lively.data.Wrapper', {
 		return parent && parent.removeChild(this.rawNode);
 	},
 
+	replaceRawNode: function(newRawNode) { // added by Adam
+		var parent = this.rawNode && this.rawNode.parentNode;
+		return parent && parent.replaceChild(newRawNode, this.rawNode);
+	},
+
 	replaceRawNodeChildren: function(replacement) {
 		while (this.rawNode.firstChild) this.rawNode.removeChild(this.rawNode.firstChild);
 		if (replacement) this.rawNode.appendChild(replacement);

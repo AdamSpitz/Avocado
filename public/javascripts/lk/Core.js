@@ -2001,6 +2001,14 @@ Morph.addMethods({
 		if (this.shape.getBorderRadius) spec.borderRadius = this.shape.getBorderRadius() || 0.0;
 		spec.fillOpacity = typeof this.shape.getFillOpacity() !== undefined ? this.shape.getFillOpacity() : 1.0;
 		spec.strokeOpacity = typeof this.shape.getStrokeOpacity() !== undefined ?  this.shape.getStrokeOpacity() : 1.0;		
+
+		// All this stuff added by Adam
+		spec.openForDragAndDrop = this.openForDragAndDrop;
+		spec.grabsShouldFallThrough = this.grabsShouldFallThrough;
+		spec.horizontalLayoutMode = this.horizontalLayoutMode;
+		spec.verticalLayoutMode = this.verticalLayoutMode;
+		spec.shouldIgnoreEvents = !this.mouseHandler;
+		
 		return spec;
 	},
 
