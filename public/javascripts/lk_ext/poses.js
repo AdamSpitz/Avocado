@@ -58,7 +58,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     if (this.partsOfUIState) {
       var parts = typeof(this.partsOfUIState) === 'function' ? this.partsOfUIState() : this.partsOfUIState;
       var uiState = {};
-      reflect(parts).eachNormalSlot(function(slot) {
+      reflect(parts).normalSlots().each(function(slot) {
         var partName = slot.name();
         var part = slot.contents().reflectee();
         if (!(part instanceof Morph) && part.collection && part.keyOf && part.getPartWithKey) {
@@ -82,7 +82,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
       if (!uiState) { return; }
       evt = evt || Event.createFake();
       var parts = typeof(this.partsOfUIState) === 'function' ? this.partsOfUIState() : this.partsOfUIState;
-      reflect(parts).eachNormalSlot(function(slot) {
+      reflect(parts).normalSlots().each(function(slot) {
         var partName = slot.name();
         var part = slot.contents().reflectee();
         if (!(part instanceof Morph) && part.collection && part.keyOf && part.getPartWithKey) {

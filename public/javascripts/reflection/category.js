@@ -117,9 +117,9 @@ thisModule.addSlots(avocado.category, function(add) {
   }, {category: ['comparing']});
 
   add.method('removeSlots', function (mir) {
-    mir.eachSlotNestedSomewhereUnderCategory(this, function(slot) {
+    mir.slotsNestedSomewhereUnderCategory(this).each(function(slot) {
       slot.remove();
-    }.bind(this));
+    });
   }, {category: ['removing']});
 
 });
@@ -190,19 +190,23 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
     if (this.category().isRoot()) {
       this.mirror().eachFakeSlot(f);
     }
-    this.mirror().eachSlotInCategory(this.category(), f);
+    this.mirror().slotsInCategory(this.category()).each(f);
   }, {category: ['iterating']});
 
-  add.method('eachNormalSlotInMeAndSubcategories', function (f) {
-    this.mirror().eachSlotNestedSomewhereUnderCategory(this.category(), f);
-  }, {category: ['iterating']});
+  add.method('slots', function () {
+    return avocado.enumerator.create(this, 'eachSlot');
+  }, {category: ['accessing']});
+
+  add.method('normalSlotsInMeAndSubcategories', function () {
+    return this.mirror().slotsNestedSomewhereUnderCategory(this.category());
+  }, {category: ['accessing']});
 
   add.method('rename', function (newName) {
     var c = this.category();
     var oldCat = c.copy();
     var oldCatPrefixParts = oldCat.parts().map(function(p) {return p;});
     var slotCount = 0;
-    this.eachNormalSlotInMeAndSubcategories(function(s) {
+    this.normalSlotsInMeAndSubcategories().each(function(s) {
       slotCount += 1;
       var newCatParts = s.category().parts().map(function(p) {return p;});
       
@@ -224,7 +228,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
   add.method('modules', function () {
     var modules = [];
-    this.eachNormalSlotInMeAndSubcategories(function(s) {
+    this.normalSlotsInMeAndSubcategories().each(function(s) {
       if (! s.isFromACopyDownParent()) {
         var m = s.module();
         if (! modules.include(m)) { modules.push(m); }
@@ -253,7 +257,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['user interface']});
 
   add.method('nonNodeContents', function () {
-    return avocado.enumerator.create(this, 'eachSlot').sortBy(function(s) { return s.sortOrder(); });
+    return this.slots().sortBy(function(s) { return s.sortOrder(); });
   }, {category: ['user interface']});
 
   add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
@@ -270,7 +274,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.method('copyContentsInto', function (target) {
     var numPartsToLopOffTheBeginning = this.category().parts().length;
 
-    this.eachNormalSlotInMeAndSubcategories(function(slot) {
+    this.normalSlotsInMeAndSubcategories().each(function(slot) {
       slot.copyTo(target.concat(slot.category().withoutFirstParts(numPartsToLopOffTheBeginning)));
     });
     return target;

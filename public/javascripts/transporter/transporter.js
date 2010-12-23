@@ -258,7 +258,7 @@ thisModule.addSlots(transporter.module, function(add) {
   add.creator('prompter', {}, {category: ['user interface']});
 
   add.method('uninstall', function () {
-    this.eachSlot(function(s) { s.remove(); });
+    this.slots().each(function(s) { s.remove(); });
     reflect(modules).slotAt(this._name).remove();
     reflect(transporter.module.cache).slotAt(this._name).remove();
   }, {category: ['removing']});
@@ -306,11 +306,11 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['accessing']});
 
   add.method('slots', function () {
-    return avocado.enumerator.create(this, 'eachSlot').toArray();
+    return avocado.enumerator.create(this, 'eachSlot');
   }, {category: ['accessing']});
 
   add.method('eachSlotInMirror', function (mir, f) {
-    mir.eachNormalSlot(function(s) {
+    mir.normalSlots().each(function(s) {
       if (s.module() === this) {
         f(s);
       }
@@ -326,13 +326,17 @@ thisModule.addSlots(transporter.module, function(add) {
     }
   }, {category: ['iterating']});
 
+  add.method('slotsInMirror', function (mir) {
+    return avocado.enumerator.create(this, 'eachSlotInMirror', mir);
+  }, {category: ['accessing']});
+
   add.method('eachSlot', function (f) {
     var alreadySeen = avocado.set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
     this.objectsThatMightContainSlotsInMe().each(function(obj) {
       var mir = reflect(obj);
       if (! alreadySeen.includes(mir)) {
         alreadySeen.add(mir);
-        this.eachSlotInMirror(mir, f);
+        this.slotsInMirror(mir).each(f);
       }
     }.bind(this));
   }, {category: ['iterating']});
@@ -447,7 +451,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['user interface', 'commands']});
 
   add.method('eachModule', function (f) {
-    reflect(modules).eachNormalSlot(function(s) { f(s.contents().reflectee()); });
+    reflect(modules).normalSlots().each(function(s) { f(s.contents().reflectee()); });
   }, {category: ['iterating']});
 
   add.method('changedOnes', function () {
@@ -759,7 +763,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     this._module.objectsThatMightContainSlotsInMe().each(function(obj) {
       var mir = reflect(obj);
       var slots = avocado.set.copyRemoveAll();
-      this._module.eachSlotInMirror(mir, function(s) {
+      this._module.slotsInMirror(mir).each(function(s) {
         slots.add(s);
         if (s.equals(s.contents().theCreatorSlot())) { slots.add(s.contents().parentSlot()); }
       }.bind(this));
@@ -793,7 +797,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
           // aaa - For now, make every slot in the copy-down parent exist before the child,
           // because we don't yet have a mechanism to update the copy-down children on
           // the fly as the copy-down parent changes.
-          this._module.eachSlotInMirror(copyDownParent, function(slotInCopyDownParent) {
+          this._module.slotsInMirror(copyDownParent).each(function(slotInCopyDownParent) {
             if (! slotsToOmit.include(slotInCopyDownParent.name())) {
               this._slotDeps.contentDeps.addDependency(s, slotInCopyDownParent);
             }
@@ -801,7 +805,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
 
         }.bind(this));
               
-        this._module.eachSlotInMirror(contents, function(slotInContents) {
+        this._module.slotsInMirror(contents).each(function(slotInContents) {
           this._slotDeps.holderDeps.addDependency(slotInContents, s);
         }.bind(this));
       } else if (! s.initializationExpression()) {
@@ -816,7 +820,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     this._slotDeps = {  holderDeps: avocado.dependencies.copyRemoveAll(),
                        contentDeps: avocado.dependencies.copyRemoveAll() };
     
-    this._module.eachSlot(function(s) { this.addSlotDependenciesFor(s); }.bind(this));
+    this._module.slots().each(function(s) { this.addSlotDependenciesFor(s); }.bind(this));
   }, {comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.', category: ['dependencies']});
 
   add.method('recalculateObjectDependencies', function () {
@@ -1047,11 +1051,11 @@ thisModule.addSlots(transporter.tests, function(add) {
 
     var s1 = this.addSlot(m, this.someObject, 'qwerty', 3);
     this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(reflect).sort());
-    this.assertEqual([s1], avocado.enumerator.create(m, 'eachSlot').toArray().sort());
+    this.assertEqual([s1], m.slots().sort());
 
     var s2 = this.addSlot(m, this.someObject, 'uiop', 4);
     this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(reflect).toSet().toArray().sort());
-    this.assertEqual([s1, s2], avocado.enumerator.create(m, 'eachSlot').toArray().sort());
+    this.assertEqual([s1, s2], m.slots().sort());
 
     m.uninstall();
   });
@@ -1149,8 +1153,8 @@ thisModule.addSlots(transporter.tests, function(add) {
     this.assert(m.objectsThatMightContainSlotsInMe().include(a.reflectee()), "the indexable slots should be in the module");
     var indexables = [a.slotAt('0'), a.slotAt('1'), a.slotAt('2')];
     this.assertEqual([s1].concat(indexables), m.slotsInOrderForFilingOut());
-    this.assertEqual([s1], avocado.enumerator.create(m, 'eachSlotInMirror', reflect(this.someObject)).toArray());
-    this.assertEqual(indexables, avocado.enumerator.create(m, 'eachSlotInMirror', a).toArray());
+    this.assertEqual([s1], m.slotsInMirror(reflect(this.someObject)).toArray());
+    this.assertEqual(indexables, m.slotsInMirror(a).toArray());
 
     this.assertEqual(
 "start module test_array_fileout\n" +

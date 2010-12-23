@@ -81,7 +81,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('primitiveReflectee', function () {
     return this.reflectee();
-  }, {category: ['naming']});
+  }, {category: ['accessing']});
     
   add.method('inspect', function () {
     if (this.isRootOfGlobalNamespace()) {return "window";}
@@ -239,6 +239,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
     this.eachNormalSlot(f);
   }, {category: ['iterating']});
 
+  add.method('slots', function () {
+    return avocado.enumerator.create(this, 'eachSlot');
+  }, {category: ['accessing']});
+
   add.method('eachFakeSlot', function (f) {
     if (this.isReflecteeFunction()) { f(this.functionBodySlot()); }
     if (this.hasAccessibleParent()) { f(this.      parentSlot()); }
@@ -253,7 +257,11 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['accessing parent']});
 
   add.method('eachNormalSlot', function (f) {
-    this.eachNormalSlotName(function(n) { f(this.slotAt(n)); }.bind(this));
+    this.normalSlotNames().each(function(n) { f(this.slotAt(n)); }.bind(this));
+  }, {category: ['iterating']});
+
+  add.method('normalSlots', function () {
+    return this.normalSlotNames().map(function(n) { return this.slotAt(n); }.bind(this));
   }, {category: ['iterating']});
 
   add.method('eachNormalSlotName', function (f) {
@@ -277,25 +285,21 @@ thisModule.addSlots(avocado.mirror, function(add) {
     }
   }, {category: ['iterating']});
 
-  add.method('normalSlotNames', function (f) {
+  add.method('normalSlotNames', function () {
     return avocado.enumerator.create(this, 'eachNormalSlotName');
   }, {category: ['iterating']});
 
-  add.method('eachSlotInCategory', function (c, f) {
-    this.eachNormalSlot(function(s) {
-      if (c.equals(s.category())) { f(s); }
-    });
+  add.method('slotsInCategory', function (c) {
+    return this.normalSlots().select(function(s) { return c.equals(s.category()); });
   }, {category: ['iterating']});
 
-  add.method('eachSlotNestedSomewhereUnderCategory', function (c, f) {
-    this.eachNormalSlot(function(s) {
-      if (s.category().isEqualToOrSubcategoryOf(c)) { f(s); }
-    });
+  add.method('slotsNestedSomewhereUnderCategory', function (c) {
+    return this.normalSlots().select(function(s) { return s.category().isEqualToOrSubcategoryOf(c); });
   }, {category: ['iterating']});
 
   add.method('eachImmediateSubcategoryOf', function (c, f) {
     var subcats = {};
-    this.eachNormalSlot(function(s) {
+    this.normalSlots().each(function(s) {
       var sc = s.category();
       if (sc.isSubcategoryOf(c)) {
         var subcatName = sc.part(c.parts().length);
@@ -429,7 +433,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
       var str = avocado.stringBuffer.create("{");
       var sep = "";
-      this.eachNormalSlot(function(slot) {
+      this.normalSlots().each(function(slot) {
         if (slot.name() !== '__already_calculating_expressionEvaluatingToMe__') {
           str.append(sep).append(slot.name()).append(": ").append(slot.contents().expressionEvaluatingToMe());
           sep = ", ";
@@ -457,9 +461,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['transporting']});
 
   add.method('size', function () {
-    var size = 0;
-    this.eachNormalSlot(function(s) { size += 1; });
-    return size;
+    return this.normalSlots().size();
   }, {category: ['accessing slot contents']});
 
   add.method('reflecteeType', function () {
@@ -502,7 +504,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
     var hasSuper = this.reflectee().argumentNames && this.reflectee().argumentNames().first() === '$super';
 
-    var nonTrivialSlot = Object.newChildOf(avocado.enumerator, this, 'eachNormalSlot').find(function(s) {
+    var nonTrivialSlot = this.normalSlots().find(function(s) {
       if (            aaa_LK_slotNamesAttachedToMethods.include(s.name())) {return false;}
       if (hasSuper && aaa_LK_slotNamesUsedForSuperHack .include(s.name())) {return false;}
         
@@ -524,7 +526,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('oppositeBoolean', function () {
     if (! this.isReflecteeBoolean()) { throw new Error("not a boolean"); }
     return ! this.reflectee();
-  }, {category: ['arrays']});
+  }, {category: ['booleans']});
 
   add.method('canHaveCreatorSlot', function () {
     var t = this.reflecteeType();
@@ -636,7 +638,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['annotations', 'module']});
 
   add.method('setModuleRecursively', function (m) {
-    this.eachNormalSlot(function(slot) { slot.setModuleRecursively(m); });
+    this.normalSlots().each(function(slot) { slot.setModuleRecursively(m); });
     
     var ps = this.parentSlot();
     var p = ps.contents();
@@ -650,7 +652,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
     // Pass in something like {} if you want all non-copied-down slots.
     var wantUnowned = moduleName === '-' || !moduleName;
     var wantAll = !wantUnowned && typeof(moduleName) !== 'string';
-    return avocado.enumerator.create(this, 'eachNormalSlot').select(function(slot) {
+    return this.normalSlots().select(function(slot) {
       if (! slot.isFromACopyDownParent()) {
         var m = slot.module();
         if (wantAll || (!m && wantUnowned) || (m && m.name() === moduleName)) {
@@ -663,7 +665,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('modules', function () {
     var modules = [];
-    this.eachNormalSlot(function(s) {
+    this.normalSlots().each(function(s) {
       if (! s.isFromACopyDownParent()) {
         var m = s.module();
         if (! modules.include(m)) { modules.push(m); }
@@ -798,13 +800,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['searching']});
 
   add.method('categorizeUncategorizedSlotsAlphabetically', function () {
-    var uncategorized = avocado.category.root().subcategory("uncategorized");
-    this.eachNormalSlot(function(s) {
-      var c = avocado.category.create(avocado.organizationUsingAnnotations.categoryForSlot(s));
-      if (c.isRoot()) {
-        avocado.organizationUsingAnnotations.setCategoryForSlot(s, uncategorized.subcategory((s.name()[0] || '_unnamed_').toUpperCase()).parts());
-      }
-    });
+    avocado.organizationUsingAnnotations.alphabeticallyCategorizeUncategorizedSlotsOf(this);
   }, {category: ['organizing']});
 
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
@@ -816,7 +812,6 @@ thisModule.addSlots(avocado.mirror.sourceModulePrompter, function(add) {
 
   add.method('prompt', function (caption, context, evt, callback) {
     context.chooseSourceModule(caption, function(sourceModuleName) {
-      console.log("About to call slotsInModuleNamed");
       callback(context.slotsInModuleNamed(sourceModuleName));
     }, evt);
   }, {category: ['prompting']});
@@ -1192,12 +1187,12 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
       this.assertEqual('letters consonants, letters vowels', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters')).toArray().sort().join(', '));
       this.assertEqual('', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
       
-      this.assertEqual('', avocado.enumerator.create(mir, 'eachSlotInCategory', root).toArray().sort().join(', '));
-      this.assertEqual('y', avocado.enumerator.create(mir, 'eachSlotInCategory', root.subcategory('letters')).toArray().sort().join(', '));
-      this.assertEqual('a, e', avocado.enumerator.create(mir, 'eachSlotInCategory', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
+      this.assertEqual('', mir.slotsInCategory(root).sort().join(', '));
+      this.assertEqual('y', mir.slotsInCategory(root.subcategory('letters')).sort().join(', '));
+      this.assertEqual('a, e', mir.slotsInCategory(root.subcategory('letters').subcategory('vowels')).sort().join(', '));
       
-      this.assertEqual('b, c, d', avocado.enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root.subcategory('letters').subcategory('consonants')).toArray().sort().join(', '));
-      this.assertEqual('a, b, c, d, e, y', avocado.enumerator.create(mir, 'eachSlotNestedSomewhereUnderCategory', root).toArray().sort().join(', '));
+      this.assertEqual('b, c, d', mir.slotsNestedSomewhereUnderCategory(root.subcategory('letters').subcategory('consonants')).sort().join(', '));
+      this.assertEqual('a, b, c, d, e, y', mir.slotsNestedSomewhereUnderCategory(root).sort().join(', '));
       
       var o2 = {};
       var mir2 = reflect(o2);

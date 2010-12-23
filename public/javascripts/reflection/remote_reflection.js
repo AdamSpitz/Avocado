@@ -211,7 +211,7 @@ thisModule.addSlots(avocado.mockRemoteObjectServer, function(add) {
     var localMir = reflect(localObj);
     var contentsByName = {};
     var typesByName = {};
-    localMir.eachSlot(function(s) {
+    localMir.slots().each(function(s) {
       var n = 'slot_' + s.name();
       var c = s.contents().reflectee();
       contentsByName[n] = this.oidOrPrimitiveForObject(c);

@@ -25,6 +25,16 @@ thisModule.addSlots(avocado.abstractOrganization, function(add) {
     return this.categoryOrNullForSlot(s) || [];
   }, {category: ['categories']});
 
+  add.method('alphabeticallyCategorizeUncategorizedSlotsOf', function (mir) {
+    var uncategorized = avocado.category.root().subcategory("uncategorized");
+    mir.normalSlots().each(function(s) {
+      var c = avocado.category.create(this.categoryForSlot(s));
+      if (c.isRoot()) {
+        this.setCategoryForSlot(s, uncategorized.subcategory((s.name()[0] || '_unnamed_').toUpperCase()).parts());
+      }
+    }.bind(this));
+  }, {category: ['organizing']});
+
   add.method('commentForReflecteeOf', function (mir) {
     return this.commentOrNullForReflecteeOf(mir) || "";
   }, {category: ['comments']});
