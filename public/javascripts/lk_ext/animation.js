@@ -89,40 +89,49 @@ thisModule.addSlots(Morph.prototype, function(add) {
     }, {category: ['motion blur']});
 
   add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-      var owner = this.owner;
+    var originalOwner = this.owner;
+    this.becomeDirectSubmorphOfWorld(w);
+    if (originalOwner !== w || shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
+      this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
+    } else {
+      if (functionToCallWhenDone) { functionToCallWhenDone(); }
+    }
+  }, {category: ['adding and removing']});
+
+  add.method('becomeDirectSubmorphOfWorld', function (w, shouldReplaceWithPlaceholder) {
+    var owner = this.owner;
+    if (w) {
       if (owner !== w) {
         var initialLoc = (!owner || this.world() !== w) ? this.getExtent().negated() : owner.worldPoint(this.getPosition());
+        if (owner && shouldReplaceWithPlaceholder) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
         w.addMorphAt(this, initialLoc);
-        this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
-      } else {
-        if (shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
-          this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
-        } else {
-          if (functionToCallWhenDone) { functionToCallWhenDone(); }
-        }
       }
-    }, {category: ['adding and removing']});
+    } else {
+      if (owner && shouldReplaceWithPlaceholder) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
+    }
+  }, {category: ['adding and removing']});
 
   add.method('ensureIsNotInWorld', function () {
-      if (this.world()) {this.startZoomingOuttaHere();}
-    }, {category: ['adding and removing']});
+    if (this.world()) {this.startZoomingOuttaHere();}
+  }, {category: ['adding and removing']});
 
   add.method('animatedAddMorphAt', function (m, p, callWhenDone) {
-    this.animateMorphToPosition(m, p, function() {
+    this.summonMorphToPosition(m, p, function() {
       this.addMorphAt(m, p);
     }.bind(this));
   }, {category: ['adding and removing']});
 
   add.method('animatedReplaceMorph', function (currentSubmorph, newSubmorph, callWhenDone) {
-    this.animateMorphToPosition(newSubmorph, currentSubmorph.getPosition(), function() {
+    this.summonMorphToPosition(newSubmorph, currentSubmorph.getPosition(), function() {
       this.replaceMorph(currentSubmorph, newSubmorph);
+      if (callWhenDone) { callWhenDone(); }
     }.bind(this));
   }, {category: ['adding and removing']});
 
-  add.method('animateMorphToPosition', function (m, p, callWhenDone) {
+  add.method('summonMorphToPosition', function (m, p, callWhenDone) {
     var w = this.world();
+    m.becomeDirectSubmorphOfWorld(w, m.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe());
     if (w) {
-      w.addMorphFront(m); // make sure it's in front
       m.ensureIsInWorld(w, this.worldPoint(p), true, true, false, function() {
         if (callWhenDone) { callWhenDone(); }
       }.bind(this));
@@ -132,12 +141,16 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('createDismissButton', function () {
-      var size = 22 * (Config.fatFingers ? 2 : 1);
-      var b = new WindowControlMorph(new Rectangle(0, 0, size, size), 3, Color.primary.orange);
-      b.relayToModel(this, {Trigger: "=ensureIsNotInWorld"});
-      b.setHelpText('Dismiss me');
-      return b;
-    }, {category: ['adding and removing']});
+    var size = 22 * (Config.fatFingers ? 2 : 1);
+    var b = new WindowControlMorph(new Rectangle(0, 0, size, size), 3, Color.primary.orange);
+    b.relayToModel(this, {Trigger: "=ensureIsNotInWorld"});
+    b.setHelpText('Dismiss me');
+    return b;
+  }, {category: ['adding and removing']});
+
+  add.method('createDismissButtonThatOnlyAppearsIfTopLevel', function () {
+    return Morph.createOptionalMorph(this.createDismissButton(), function() { return this.owner === this.world(); }.bind(this));
+  }, {category: ['adding and removing']});
 
   add.method('smoothlyFadeTo', function (desiredAlpha, functionToCallWhenDone) {
       this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);

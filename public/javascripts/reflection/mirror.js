@@ -369,6 +369,25 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return this.contentsAt('__proto__');
   }, {category: ['accessing parent']});
 
+  add.method('parentOrNull', function () {
+    if (! this.canAccessParent()) { return null; }
+    if (! this.hasParent()) { return null; }
+    return this.contentsAt('__proto__');
+  }, {category: ['accessing parent']});
+
+  add.method('eachAncestorIncludingMeButNotIncludingNull', function (f) {
+    var m = this;
+    while (m) {
+      f(m);
+      m = m.parentOrNull();
+      if (m && m.isReflecteeNull()) { m = null; }
+    }
+  }, {category: ['accessing parent']});
+
+  add.method('meAndAncestors', function () {
+    return avocado.enumerator.create(this, 'eachAncestorIncludingMeButNotIncludingNull');
+  }, {category: ['accessing parent']});
+
   add.method('canAccessParent', function () {
     return String.prototype['__proto__'] !== undefined; // using [] to fool JSLint;
   }, {category: ['accessing parent']});
@@ -784,11 +803,43 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return a;
   }, {category: ['annotations']});
 
+  add.method('functionFromCodeString', function (__codeToRun__) {
+    // Damned JS doesn't return the result of the last statement in a function,
+    // so gotta try this a couple of ways. First see if the code is an expression,
+    // then see if it's a sequence of statements. (Could do this more elegantly if
+    // we had a JS parser handy, but for now we don't.)
+    
+    // first, get rid of any trailing semicolons (in case it's a single expression with a semicolon at the end)
+    while (true) {
+      __codeToRun__ = __codeToRun__.strip();
+      if (! __codeToRun__.endsWith(';')) { break; }
+      __codeToRun__ = __codeToRun__.substr(0, __codeToRun__.length - 1);
+    }
+    
+    var __functionToRun__;
+    try {
+      // Try it as an expression first.
+      __functionToRun__ = eval("//@ sourceURL=evaluator\n(function __evaluator__() { return (" + __codeToRun__ + "); })");
+    } catch (e) {
+      // Try it as a list of statements.
+      // Also, put a 'return' after the last semicolon, to return the result of the last statement.
+      // Oh, and make sure to put parentheses around the last statement, because if there's a 'return'
+      // followed by a newline, JS's semicolon insertion "feature" will just assume that it doesn't
+      // need to look at the stuff after the newline.
+      var __lastSemicolon__ = __codeToRun__.lastIndexOf(';');
+      __codeToRun__ = __codeToRun__.substr(0, __lastSemicolon__ + 1) + ' return (' + __codeToRun__.substr(__lastSemicolon__ + 1) + ')';
+      __functionToRun__ = eval("//@ sourceURL=evaluator\n(function __evaluator__() { " + __codeToRun__ + " })");
+    }
+    
+    return __functionToRun__;
+  }, {category: ['evaluating']});
+
   add.method('evalCodeString', function (__codeToRun__) {
-    // run the code with "this" set to my reflectee
-    return (function() {
-      return eval("//@ sourceURL=evaluator\n(" + __codeToRun__ + ")");
-    }).call(this.reflectee());
+    return this.callFunction(this.functionFromCodeString(__codeToRun__));
+  }, {category: ['evaluating']});
+
+  add.method('callFunction', function (__functionToRun__) {
+    return __functionToRun__.call(this.reflectee());
   }, {category: ['evaluating']});
 
   add.method('wellKnownChildren', function () {

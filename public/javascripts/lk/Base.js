@@ -1143,6 +1143,8 @@ Object.extend(Function.prototype, {
 	},
 	
 	logErrors: function(prefix) {
+	  return this; // aaa this interferes with Chrome's debugging stuff -- Adam
+	  
 		if (Config.ignoreAdvice) return this;
 
 		var advice = function logErrorsAdvice(proceed/*,args*/) {

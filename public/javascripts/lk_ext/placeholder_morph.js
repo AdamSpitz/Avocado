@@ -35,6 +35,8 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
   
   add.creator('defaultStyle', {}, {category: ['styles']});
   
+  add.method('originalMorph', function () { return this._originalMorph; }, {category: ['accessing']});
+  
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
     cmdList.addItem({label: 'come back!', go: this.putOriginalMorphBack});
@@ -45,14 +47,19 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
     if (this._puttingOriginalMorphBack) { return; }
 	  this._puttingOriginalMorphBack = true;
     this.owner.animatedReplaceMorph(this, this._originalMorph, function() {
+      this._originalMorph.updateAppearance();
       delete this._puttingOriginalMorphBack;
       if (callWhenDone) { callWhenDone(this); }
     }.bind(this));
   }, {category: ['putting in place']});
   
-  add.method('putInPlaceOfOriginalMorph', function (callWhenDone) {
+  add.method('putOriginalMorphBackWithoutAnimation', function () {
+    this.owner.replaceMorph(this, this._originalMorph);
+    this._originalMorph.updateAppearance();
+  }, {category: ['putting in place']});
+  
+  add.method('putInPlaceOfOriginalMorph', function () {
     this._originalMorph.owner.replaceMorph(this._originalMorph, this);
-    if (callWhenDone) { callWhenDone(this._originalMorph); }
   }, {category: ['putting in place']});
 
 	add.method('onMouseDown', function($super, evt) {
@@ -80,6 +87,25 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype.defaultStyle, function(ad
   add.data('grabsShouldFallThrough', false, {comment: 'Otherwise clicking on it doesn\'t work.'});
   
   add.data('textColor', new Color(0.5, 0.5, 0.5));
+  
+});
+
+
+thisModule.addSlots(Morph.prototype, function(add) {
+  
+  add.method('doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe', function () {
+    return this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemoving(this);
+  }, {category: ['placeholders']});
+  
+  add.method('doIOrMyOwnersWantToLeaveAPlaceholderWhenRemoving', function (m) {
+    if (this.doIWantToLeaveAPlaceholderWhenRemoving(m)) { return true; }
+    return this.owner && this.owner.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemoving(m);
+  }, {category: ['placeholders']});
+  
+  add.method('doIWantToLeaveAPlaceholderWhenRemoving', function (m) {
+    // can override in children
+    return false;
+  }, {category: ['placeholders']});
   
 });
 

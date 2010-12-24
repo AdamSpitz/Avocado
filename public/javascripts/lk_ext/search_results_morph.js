@@ -39,11 +39,11 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     this._resultsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.resultsPanelStyle);
 
     this._expander = new ExpanderMorph(this);
-    this.titleLabel = TextMorph.createLabel(function() {return this.inspect();}.bind(this));
+    this._titleLabel = TextMorph.createLabel(function() {return this.inspect();}.bind(this));
     this.redoButton = ButtonMorph.createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
 
-    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton], this.headerRowStyle.padding);
+    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton], this.headerRowStyle.padding);
 
     this.setPotentialRows([this._headerRow, Morph.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
     this.refreshContent();
@@ -57,7 +57,7 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
 
   add.method('updateAppearance', function () {
     if (! this.world()) { return; }
-    this.titleLabel.refreshText();
+    this._titleLabel.refreshText();
     this.minimumExtentMayHaveChanged();
   });
 

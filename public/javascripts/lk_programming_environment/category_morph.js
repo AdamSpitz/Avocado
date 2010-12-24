@@ -95,8 +95,8 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.method('headerRow', function () {
     var hr = this._headerRow;
     if (hr) { return hr; }
-    this.titleLabel = this.createTitleLabel();
-    hr = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel], this.defaultStyle.headerRowPadding);
+    this._titleLabel = this.createTitleLabel();
+    hr = avocado.RowMorph.createSpaceFilling([this._expander, this._titleLabel], this.defaultStyle.headerRowPadding);
     this._headerRow = hr;
     return hr;
   }, {category: ['creating']});
@@ -155,8 +155,8 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
       if (!this.category().isRoot()) {
         cmdList.addLine();
 
-        if (this.titleLabel) {
-          cmdList.addAllCommands(this.titleLabel.editingCommands());
+        if (this._titleLabel) {
+          cmdList.addAllCommands(this._titleLabel.editingCommands());
         }
         
         cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }});
@@ -191,7 +191,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 
   add.method('wasJustShown', function (evt) {
     this.isNewCategory = true;
-    if (this.titleLabel) { this.titleLabel.wasJustShown(evt); }
+    if (this._titleLabel) { this._titleLabel.wasJustShown(evt); }
   }, {category: ['events']});
 
   add.method('rename', function (newName, evt) {

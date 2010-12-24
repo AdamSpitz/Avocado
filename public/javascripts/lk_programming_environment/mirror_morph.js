@@ -51,7 +51,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     
     this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
 
-    this.titleLabel = TextMorph.createLabel(function() {return m.inspect();});
+    this._titleLabel = TextMorph.createLabel(function() {return m.inspect();});
 
     this._commentToggler    = avocado.toggler.create(this, this.mirror().canHaveAnnotation() ? this.createRow(this.   commentMorph()) : null);
     this._annotationToggler = avocado.toggler.create(this, this.mirror().canHaveAnnotation() ? this.createRow(this.annotationMorph()): null);
@@ -60,15 +60,14 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     this.akaButton         = avocado.command.create("AKA",   function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
     this.parentButton      = avocado.command.create("^",     function(evt) { this.mirror().getParent(evt);     }.bind(this)).setHelpText('Get my parent').newMorph();
     if (window.avocado && avocado.EvaluatorMorph) {
-      this.evaluatorButton = avocado.command.create("E",     function(evt) { this.openEvaluator(evt);          }.bind(this)).setHelpText('Show an evaluator box').newMorph();
+      this._evaluatorButton = avocado.command.create("E",     function(evt) { this.openEvaluator(evt);          }.bind(this)).setHelpText('Show an evaluator box').newMorph();
     }
-    this.dismissButton   = this.createDismissButton();
-
+    var optionalDismissButtonMorph = this.createDismissButtonThatOnlyAppearsIfTopLevel();
     var optionalAKAButtonMorph     = Morph.createOptionalMorph(this.    akaButton, function() { return this.mirror().hasMultiplePossibleNames(); }.bind(this));
     var optionalParentButtonMorph  = Morph.createOptionalMorph(this. parentButton, function() { return this.mirror().hasAccessibleParent(); }.bind(this));
     var optionalCommentButtonMorph = Morph.createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
     
-    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton].compact(), this.defaultStyle.headerRowPadding);
+    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._titleLabel, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this._evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
     this.setPotentialRows([this._headerRow, this._annotationToggler, this._commentToggler, this._rootCategoryMorph, this._evaluatorsPanel]);
@@ -166,6 +165,22 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['comment']});
 
   add.method('openEvaluator', function (evt) {
+    
+    // Experimenting with using vocabulary morphs for evaluators, instead of putting the evaluators
+    // directly inside the mirror.
+    var enableNewVocabularyMorphExperiment = false;
+    if (enableNewVocabularyMorphExperiment) {
+      var m = avocado.vocabulary.create(this.mirror()).morph();
+      m.openEvaluator(evt);
+      if (! this.ownerSatisfying(function(o) { return o === m; })) {
+        m._expander.expand();
+        m.grabMeWithoutZoomingAroundFirst(evt);
+      }
+      m.getAllMirrors();
+      return ;
+    }
+    
+    
     var e = new avocado.EvaluatorMorph(this);
     this._evaluatorsPanel.addRow(e);
     e.wasJustShown(evt);
@@ -182,6 +197,14 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     } else {
       resultMirMorph.grabMe(evt);
     }
+  }, {category: ['evaluators']});
+
+  add.method('scriptMe', function (evt) {
+    var m = avocado.vocabulary.create(this.mirror()).morph();
+    m._expander.expand();
+    m.grabMeWithoutZoomingAroundFirst(evt);
+    m.getAllMirrors();
+    return m;
   }, {category: ['evaluators']});
 
   add.method('interposeNewParent', function (evt) {
@@ -214,6 +237,9 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     cmdList.addAllCommands(this._rootCategoryMorph.commands());
     cmdList.addLine();
     cmdList.addAllCommands(this.mirror().commands().wrapForMorph(this));
+    cmdList.addLine();
+
+    cmdList.addItem(avocado.command.create("script me", this.scriptMe));
     cmdList.addLine();
     
     if (this.mirror().canHaveChildren()) {

@@ -14,9 +14,10 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
     var columns = [m.createNameLabel()];
     this.buttonCommands().commands().each(function(c) { columns.push(c.newMorph()); });
-    columns.push(m.createDismissButton());
-    m.setColumns(columns);
-    
+    columns.push(m.createDismissButtonThatOnlyAppearsIfTopLevel());
+    m.setPotentialColumns(columns);
+    m.refreshContentOfMeAndSubmorphs();
+    m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});
 

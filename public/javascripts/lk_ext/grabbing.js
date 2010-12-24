@@ -87,7 +87,7 @@ Morph.addMethods({
 
     },
 
-  grabMe: function(evt, inChasingMode) {
+  grabMe: function(evt, callWhenDone) {
     evt = evt || Event.createFake(); // just for convenience; I call this method from evaluators pretty often
 
     var shouldDoCoolAnimations = true;
@@ -97,11 +97,13 @@ Morph.addMethods({
 
     if (shouldDoCoolAnimations) {
       var desiredPos = function() {return evt.hand.position().subPt(this.getExtent().scaleBy(0.5));}.bind(this);
-      this.ensureIsInWorld(evt.hand.world(), desiredPos, true, !inChasingMode, false, function() {
-        this.grabMeWithoutZoomingAroundFirst(eventForFinalGrab); 
+      this.ensureIsInWorld(evt.hand.world(), desiredPos, true, true, false, function() {
+        this.grabMeWithoutZoomingAroundFirst(eventForFinalGrab);
+        if (callWhenDone) { callWhenDone(this); }
       }.bind(this));
     } else {
       this.grabMeWithoutZoomingAroundFirst(eventForFinalGrab); 
+      if (callWhenDone) { callWhenDone(this); }
     }
   },
 

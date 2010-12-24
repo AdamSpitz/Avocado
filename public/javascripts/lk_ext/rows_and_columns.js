@@ -327,6 +327,14 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
       this.forceLayoutRejiggering();
     }
   }, {category: ['adding and removing']});
+  
+  add.method('replaceMorph', function (m, newSubmorph) {
+    if (!this._tableContent) { throw new Error("How do I do replaceMorph if there's no _tableContent?"); }
+    
+    this._tableContent.replaceElement(m, newSubmorph);
+    this.setSubmorphsFromTableContent();
+    this.forceLayoutRejiggering();
+  }, {category: ['adding and removing']});
 
   add.method('eachThingy', function (f) {
     for (var i = 0, n = this.submorphs.length; i < n; ++i) {
@@ -335,18 +343,23 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     }
   }, {category: ['iterating']});
 
+  add.method('thingies', function (f) {
+    return avocado.enumerator.create(this, 'eachThingy');
+  }, {category: ['iterating']});
+
   add.method('replaceContentWith', function (newContent) {
     if (this._tableContent && this._tableContent.equals(newContent)) { return; }
-
     if (this._debugMyLayout) { console.log("About to replaceContentWith " + newContent.primaryLines().size() + " lines in direction " + newContent._direction2); }
     this._tableContent = newContent;
-    
+    this.setSubmorphsFromTableContent();
+    this.forceLayoutRejiggering();
+  }, {category: ['adding and removing']});
+
+  add.method('setSubmorphsFromTableContent', function () {
     var nonThingies = [];
     for (var i = 0, n = this.submorphs.length; i < n; ++i) { var m = this.submorphs[i]; if (! m.shouldNotBePartOfRowOrColumn) { nonThingies.push(m); }}
     for (var i = 0, n =    nonThingies.length; i < n; ++i) { this.removeMorph(nonThingies[i], true); }
-    newContent.eachElement(function(m) { this.addMorph(m, true); }.bind(this));
-    
-    this.forceLayoutRejiggering();
+    this._tableContent.eachElement(function(m) { this.addMorph(m, true); }.bind(this));
   }, {category: ['adding and removing']});
 
   add.method('refreshContent', function ($super) {
@@ -601,6 +614,15 @@ thisModule.addSlots(avocado.tableContents, function(add) {
       c._data.push(newRowOrCol);
     });
     return c;
+  }, {category: ['transforming']});
+
+  add.method('replaceElement', function (currentElement, newElement) {
+    this._data.each(function(rowOrCol) {
+      for (var i = 0, n = rowOrCol.length; i < n; ++i) {
+        var e = rowOrCol[i];
+        if (e === currentElement) { rowOrCol[i] = newElement; }
+      }
+    });
   }, {category: ['transforming']});
 
 });

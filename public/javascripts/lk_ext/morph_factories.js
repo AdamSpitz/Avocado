@@ -11,12 +11,13 @@ thisModule.addSlots(avocado, function(add) {
 thisModule.addSlots(avocado.morphFactories, function(add) {
 
   add.method('createFactoryForSimpleMorphs', function (evt) {
-    var line    = Morph.makeLine([pt(0,0), pt(60, 30)], 2, Color.black).closeDnD();
-    var rect    = Morph.makeRectangle(pt(0,0), pt(60, 30)).closeDnD();
-    var ellipse = Morph.makeCircle(pt(0,0), 25).closeDnD();
-    var text    = new TextMorph(pt(0,0).extent(pt(120, 10)), "This is a TextMorph").closeDnD();
-    var star    = Morph.makeStar(pt(0,0)).closeDnD();
-    var heart   = Morph.makeHeart(pt(0,0)).closeDnD();
+    var line     = Morph.makeLine([pt(0,0), pt(60, 30)], 2, Color.black).closeDnD();
+    var rect     = Morph.makeRectangle(pt(0,0), pt(60, 30)).closeDnD();
+    var ellipse  = Morph.makeCircle(pt(0,0), 25).closeDnD();
+    var text     = new TextMorph(pt(0,0).extent(pt(120, 10)), "This is a TextMorph").closeDnD();
+    var star     = Morph.makeStar(pt(0,0)).closeDnD();
+    var heart    = Morph.makeHeart(pt(0,0)).closeDnD();
+    var triangle = Morph.makePolygon([pt(-30,0), pt(30,0), pt(0,-50)], 1, Color.black, Color.green.darker());
     
     var buttonLabel = new TwoModeTextMorph();
     buttonLabel.setText("Button");
@@ -31,13 +32,14 @@ thisModule.addSlots(avocado.morphFactories, function(add) {
     ellipse.setFill(new Color(0.8, 0.5, 0.5)); // make it a different color than the rectangle
     factory.setFill(new Color(0.1, 0.6, 0.7)); // make it a different color than the rectangle
 
-    factory.addMorphAt(line,    pt( 20,  20));
-    factory.addMorphAt(rect,    pt(120,  20));
-    factory.addMorphAt(ellipse, pt( 20, 120));
-    factory.addMorphAt(text,    pt(120, 120));
-    factory.addMorphAt(star,    pt( 20, 220));
-    factory.addMorphAt(heart,   pt(200, 300));
-    factory.addMorphAt(button,  pt( 20, 340));
+    factory.addMorphAt(line,     pt( 20,  20));
+    factory.addMorphAt(rect,     pt(120,  20));
+    factory.addMorphAt(ellipse,  pt( 20, 120));
+    factory.addMorphAt(text,     pt(120, 120));
+    factory.addMorphAt(star,     pt( 20, 220));
+    factory.addMorphAt(heart,    pt(200, 300));
+    factory.addMorphAt(button,   pt( 20, 340));
+    factory.addMorphAt(triangle, pt(150, 340));
     factory.closeDnD();
     return factory;
   });

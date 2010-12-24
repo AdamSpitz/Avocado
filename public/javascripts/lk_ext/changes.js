@@ -163,16 +163,26 @@ Class.newInitializer = function(name) {
 };
 
 Morph.addMethods({
+	  pickMeUpLeavingPlaceholderIfNecessary: function(evt) {
+	    this.becomeDirectSubmorphOfWorld(evt.hand.world(), this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe());
+  	  this.pickMeUp(evt);
+	  },
+	  
     morphMenu: function(evt) {
         var items = [
             ["remove", this.startZoomingOuttaHere], // so much cooler this way -- Adam
             ["drill", this.showOwnerChain.curry(evt)],
-            ["grab", this.pickMeUp.curry(evt)],
+            ["grab", this.pickMeUpLeavingPlaceholderIfNecessary.curry(evt)], // need the placeholders -- Adam
             ["drag", this.dragMe.curry(evt)],
             this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
                                 : ["turn on edit mode" , function() { this.switchEditModeOn (); }.bind(this)],
             ["edit style", function() { new StylePanel(this).open()}],
             ["inspect", function(evt) { this.world().morphFor(reflect(this)).grabMe(evt); }], // OK, I just couldn't resist. -- Adam
+            ["script me", function(evt) {
+              var mir = reflect(avocado.morphScripter.create(this));
+              var mirMorph = this.world().morphFor(mir);
+              mirMorph.openEvaluator(evt);
+            }], // simple scripting interface -- Adam
             ["show class in browser", function(evt) { var browser = new SimpleBrowser(this);
                                               browser.openIn(this.world(), evt.point());
                                               browser.getModel().setClassName(this.getType());

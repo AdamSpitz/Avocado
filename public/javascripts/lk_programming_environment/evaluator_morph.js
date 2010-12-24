@@ -31,13 +31,9 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
     $super();
     this._mirrorMorph = mirrorMorph;
     
-    this.beInvisible();
-    this.setPadding(10);
+    this.applyStyle(this.defaultStyle);
 
-    var tm = this._textMorph = TextMorph.createInputBox("", pt(150, 60));
-    tm.setFill(Color.white);
-    tm.setFontFamily('monospace');
-    tm.setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+    var tm = this._textMorph = TextMorph.createInputBox("", pt(150, 60)).applyStyle(this.textStyle);
     
     var thisEvaluator = this;
     tm.onKeyDown = function(evt) {
@@ -64,6 +60,16 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
             avocado.command.create("Close",  function(evt) {this.mirrorMorph().closeEvaluator(this);}.bind(this))];
   }, {category: ['creating']});
 
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    if (this.isTicking()) {
+      cmdList.addItem(avocado.command.create("Stop ticking", function(evt) {this.stopTicking(evt);}.bind(this)));
+    } else {
+      cmdList.addItem(avocado.command.create("Start ticking", function(evt) {this.startTicking(evt);}.bind(this)));
+    }
+    return cmdList;
+  }, {category: ['creating']});
+
   add.method('runTheCode', function () {
     return this.mirrorMorph().mirror().evalCodeString(this._textMorph.getText());
   }, {category: ['running the code']});
@@ -78,6 +84,65 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
       this.mirrorMorph().grabResult(resultMirMorph, evt);
     //}.bind(this), evt);
   }, {category: ['running the code']});
+
+  add.method('startTicking', function (evt) {
+    var mir = this.mirrorMorph().mirror();
+    var f = mir.functionFromCodeString(this._textMorph.getText());
+    this._ticker = new PeriodicalExecuter(function(pe) {
+      avocado.ui.showMessageIfErrorDuring(function() {
+        try {
+          mir.callFunction(f);
+        } catch (ex) {
+          this.stopTicking();
+          throw ex;
+        }
+      }.bind(this), evt);
+    }.bind(this), 0.1);
+  }, {category: ['running the code']});
+
+  add.method('stopTicking', function (evt) {
+    if (! this._ticker) { return; }
+    this._ticker.stop();
+    this._ticker = null;
+  }, {category: ['running the code']});
+
+  add.method('isTicking', function (evt) {
+    return !!this._ticker;
+  }, {category: ['running the code']});
+  
+  add.creator('defaultStyle', {}, {category: ['styles']});
+  
+  add.creator('textStyle', {}, {category: ['styles']});
+
+});
+
+
+thisModule.addSlots(avocado.EvaluatorMorph.prototype.defaultStyle, function(add) {
+
+  add.data('padding', 10);
+
+  add.data('borderWidth', 0);
+
+  add.data('fill', null);
+
+  add.data('suppressGrabbing', true);
+
+  add.data('suppressHandles', true);
+
+  add.data('grabsShouldFallThrough', true);
+
+  add.data('openForDragAndDrop', false);
+
+});
+
+
+thisModule.addSlots(avocado.EvaluatorMorph.prototype.textStyle, function(add) {
+
+  add.data('fill', Color.white);
+
+  add.data('fontFamily', 'monospace');
+
+  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 
 });
 
