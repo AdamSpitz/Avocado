@@ -59,17 +59,15 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
     this.applyStyle(this.appropriateStyle());
 
-    this._sourceToggler     = avocado.toggler.create(this,                   this.createRow(function() {return this.     sourcePane();}.bind(this))       );
-    this._commentToggler    = avocado.toggler.create(this, slot.comment    ? this.createRow(function() {return this.   commentMorph();}.bind(this)) : null);
-    this._annotationToggler = avocado.toggler.create(this, slot.annotation ? this.createRow(function() {return this.annotationMorph();}.bind(this)) : null);
+    this._sourceToggler = avocado.scaleBasedOptionalMorph.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)), this, 1);
+    
+    if (slot.annotationForReading) {
+      this._annotationToggler = avocado.scaleBasedOptionalMorph.create(this, this.createRow(function() { return this.annotationMorph(); }.bind(this)), this, 1);
+    }
+    
+    var buttonChooserMorph = Morph.createOptionalMorph(this.contentsPointer(), function() { return ! this.slot().isSimpleMethod(); }.bind(this));
 
-    var commentButton = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
-
-    var buttonChooserMorph = Morph.createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.slot().isSimpleMethod(); }.bind(this));
-
-    var optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
-
-    var signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph];
+    var signatureRowContent = [this.descriptionMorph(), Morph.createSpacer(), buttonChooserMorph];
     this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
   }, {category: ['creating']});
 
@@ -101,10 +99,6 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     return this._contentsPointer || (this._contentsPointer = this.constructor.pointer.create(this).newMorph());
   }, {category: ['contents']});
 
-  add.method('sourceButton', function () {
-    return this._sourceButton || (this._sourceButton = this._sourceToggler.commandForToggling("code").newMorph(this.createIconForButton("images/icon-method-slot.gif")));
-  }, {category: ['source']});
-
   add.method('createIconForButton', function (path) {
     return new ImageMorph(pt(10,10).extentAsRectangle(), (transporter.avocadoBaseURL || "") + path).beLabel();
   }, {category: ['creating']});
@@ -135,7 +129,11 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['signature']});
 
   add.method('sourcePane', function () {
-    return this._sourcePane || (this._sourcePane = ScrollPane.ifNecessaryToContain(this.sourceMorph(), pt(400,300)));
+    var sp = this._sourcePane;
+    if (sp) { return sp; }
+    sp = this._sourcePane = ScrollPane.ifNecessaryToContain(this.sourceMorph(), pt(400,300));
+    this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3);
+    return sp;
   }, {category: ['source']});
 
   add.method('sourceMorph', function () {
@@ -145,20 +143,24 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = new avocado.TableMorph().beInvisible().applyStyle(this.annotationStyle);
-    m.replaceContentWith(avocado.tableContents.createWithRows([
+    m = this._annotationMorph = new avocado.ColumnMorph().beInvisible().applyStyle(this.annotationStyle);
+    m.setScale(0.5);
+    
+    var commentMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'comment'));
+    var commentRow = avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Comment:"), commentMorph]);
+    
+    var otherAnnotationStuff = new avocado.TableMorph().beInvisible().applyStyle(this.annotationStyle).setScale(0.5);
+    otherAnnotationStuff.replaceContentWith(avocado.tableContents.createWithRows([
       [TextMorph.createLabel("Module:"       ), new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'moduleName')) ],
       [TextMorph.createLabel("Initialize to:"), new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'initializationExpression'))]
     ]));
+    
+    m.setRows([commentRow, otherAnnotationStuff]);
     return m;
   }, {category: ['annotation']});
 
-  add.method('commentMorph', function () {
-    return this._commentMorph || (this._commentMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'comment')).applyStyle(this.commentStyle));
-  }, {category: ['comment']});
-
   add.method('wasJustShown', function (evt) {
-    this._sourceToggler.beOn(evt);
+    this.sourcePane().setScale(0.9);
     this._nameMorph.wasJustShown(evt);
   }, {category: ['events']});
 
@@ -176,6 +178,20 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var mirMorph = w.morphFor(mir);
     mirMorph.ensureIsInWorld(w, this._contentsPointer.worldPoint(pt(150,0)), false, true, true, callWhenContentsAreVisible);
   }, {category: ['contents']});
+  
+  add.method('updateScaleOfSourcePane', function () {
+    // Not sure this is really what I want, but I think I don't like it when the
+    // source keeps taking up space after I edit it, at least if it's data rather
+    // than a method. (The method I'm likely to be editing again. But editing the
+    // source of a data slot is usually just done when initially creating the
+    // slot.)
+    this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3);
+    
+    // aaa - Um, I need a better understanding of what exactly needs to happen
+    // when I change the scale of a morph. -- Adam
+    this.sourcePane()._cachedMinimumExtent = false;
+    this.sourcePane().forceLayoutRejiggering(true);
+  }, {category: ['contents']});
 
   add.method('setContents', function (c, evt) {
     this.slot().setContents(c);
@@ -187,12 +203,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     // source editor doesn't stay red.
     if (this._sourceMorph) { this._sourceMorph.cancelChanges(); }
 
-    // Not sure this is really what I want, but I think I don't like it when
-    // the source stays open after I edit it, at least if it's data rather than
-    // a method. (The method I'm likely to be editing again. But editing the
-    // source of a data slot is usually just done when initially creating the
-    // slot.)
-    if (! this.slot().isSimpleMethod()) { this._sourceToggler.beOff(evt); }
+    this.updateScaleOfSourcePane();
 
     avocado.ui.justChanged(this.slot());
   }, {category: ['accessing']});
@@ -222,9 +233,6 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('partsOfUIState', function () {
     return {
-      isSourceOpen:     this._sourceToggler,
-      isCommentOpen:    this._commentToggler,
-      isAnnotationOpen: this._annotationToggler,
       isArrowVisible:   this.contentsPointer().arrow
     };
   }, {category: ['UI state']});
@@ -238,7 +246,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('potentialContent', function () {
-    return avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler]]);
+    return avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler].compact()]);
   }, {category: ['updating']});
 
   add.method('wasJustDroppedOnWorld', function (world) {
@@ -278,11 +286,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       var isModifiable = !window.isInCodeOrganizingMode;
       
       if (isModifiable && this.slot().rename) { cmdList.addAllCommands(this._nameMorph.editingCommands()); }
-      cmdList.addItem(this._sourceToggler.commandForToggling("contents"));
       cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }, isApplicable: function() { return this.slot().copyTo; }.bind(this)});
       cmdList.addItem({label: "move", go: function(evt) { this.grabCopyAndRemoveMe(evt); }, isApplicable: function() { return isModifiable && this.slot().remove; }.bind(this)});
-      cmdList.addItem(this._commentToggler.commandForToggling("comment").onlyApplicableIf(function() {return this.slot().comment; }.bind(this)));
-      cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this.slot().annotation; }.bind(this)));
     }
     
     cmdList.addAllCommands(this.slot().commands().wrapWithPromptersForArguments().wrapForMorph(this));

@@ -40,6 +40,11 @@ thisModule.addSlots(avocado.toggler, function(add) {
     this.update(evt);
   });
 
+  add.method('update', function ($super, evt) {
+    $super(evt);
+    if (this.shouldBeShown()) { this.actualMorphToShow().wasJustShown(evt); }
+  });
+
   add.method('constructUIStateMemento', function () {
     return this.isOn();
   }, {category: ['UI state']});

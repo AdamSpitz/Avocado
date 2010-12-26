@@ -24,7 +24,6 @@ thisModule.addSlots(avocado.optionalMorph, function(add) {
 
   add.method('update', function (evt) {
     if (this._morphToUpdate) { this._morphToUpdate.updateAppearance(); }
-    if (this.shouldBeShown()) { this.actualMorphToShow().wasJustShown(evt); }
   });
 
   add.method('actualMorphToShow', function () {
