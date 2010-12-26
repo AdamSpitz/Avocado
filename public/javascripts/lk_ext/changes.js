@@ -165,7 +165,7 @@ Class.newInitializer = function(name) {
 
 Morph.addMethods({
 	  pickMeUpLeavingPlaceholderIfNecessary: function(evt) {
-	    this.becomeDirectSubmorphOfWorld(evt.hand.world(), this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe());
+	    this.becomeDirectSubmorphOfWorld(evt.hand.world());
   	  this.pickMeUp(evt);
 	  },
 	  

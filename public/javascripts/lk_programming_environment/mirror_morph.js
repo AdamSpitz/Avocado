@@ -172,7 +172,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     
     // Experimenting with using vocabulary morphs for evaluators, instead of putting the evaluators
     // directly inside the mirror.
-    var enableNewVocabularyMorphExperiment = false;
+    var enableNewVocabularyMorphExperiment = true;
     if (enableNewVocabularyMorphExperiment) {
       var m = avocado.vocabulary.create(this.mirror()).morph();
       m.openEvaluator(evt);

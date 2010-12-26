@@ -39,7 +39,7 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
   
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
-    cmdList.addItem({label: 'come back!', go: this.putOriginalMorphBack});
+    cmdList.addItem(avocado.command.create('come back!', function(evt) { this.putOriginalMorphBack(); }));
     return cmdList;
   }, {category: ['commands']});
   

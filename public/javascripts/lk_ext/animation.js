@@ -23,6 +23,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('startZoomingOuttaHere', function () {
       var w = this.world();
       if (w) {
+        this.becomeDirectSubmorphOfWorld(w);
         return this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {this.remove();}.bind(this));
       } else {
         return null;
@@ -106,16 +107,16 @@ thisModule.addSlots(Morph.prototype, function(add) {
     }
   }, {category: ['adding and removing']});
 
-  add.method('becomeDirectSubmorphOfWorld', function (w, shouldReplaceWithPlaceholder) {
+  add.method('becomeDirectSubmorphOfWorld', function (w) {
     var owner = this.owner;
     if (w) {
       if (owner !== w) {
         var initialLoc = (!owner || this.world() !== w) ? this.getExtent().scaleBy(-1.1) : owner.worldPoint(this.getPosition());
-        if (owner && shouldReplaceWithPlaceholder) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
+        if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
         w.addMorphAt(this, initialLoc);
       }
     } else {
-      if (owner && shouldReplaceWithPlaceholder) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
+      if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
     }
   }, {category: ['adding and removing']});
 
@@ -138,7 +139,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('summonMorphToPosition', function (m, p, callWhenDone) {
     var w = this.world();
-    m.becomeDirectSubmorphOfWorld(w, m.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe());
+    m.becomeDirectSubmorphOfWorld(w);
     if (w) {
       m.ensureIsInWorld(w, this.worldPoint(p), true, true, false, function() {
         if (callWhenDone) { callWhenDone(); }
