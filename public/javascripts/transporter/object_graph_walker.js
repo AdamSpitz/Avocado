@@ -139,7 +139,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     this._objectCount = 0; // just for fun;
   });
 
-  add.data('namesToIgnore', ["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
+  add.data('namesToIgnore', ["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "_creatorSlotHolder", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "_creatorSlotHolder", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
 
   add.method('go', function (root) {
     this.reset();
