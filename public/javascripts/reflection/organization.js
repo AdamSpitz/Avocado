@@ -26,9 +26,9 @@ thisModule.addSlots(avocado.abstractOrganization, function(add) {
   }, {category: ['categories']});
 
   add.method('alphabeticallyCategorizeUncategorizedSlotsOf', function (mir) {
-    var uncategorized = avocado.category.root().subcategory("uncategorized");
+    var uncategorized = mir.rootCategory().subcategory("uncategorized");
     mir.normalSlots().each(function(s) {
-      var c = avocado.category.create(this.categoryForSlot(s));
+      var c = mir.category(this.categoryForSlot(s));
       if (c.isRoot()) {
         this.setCategoryForSlot(s, uncategorized.subcategory((s.name()[0] || '_unnamed_').toUpperCase()).parts());
       }

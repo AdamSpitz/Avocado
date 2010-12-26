@@ -889,7 +889,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     var slot = this.chooseSlotToTryToBreakCycle();
     dbgOn(!slot);
     if (!slot) { throw new Error("Could not find a slot to use as a cycle-breaker."); }
-    var cycleBreakerSlot = slot.copyTo(avocado.category.root().ofMirror(this._cycleBreakersMir)).rename(this._cycleBreakersMir.findUnusedSlotName('breaker'));
+    var cycleBreakerSlot = slot.copyTo(this._cycleBreakersMir.rootCategory()).rename(this._cycleBreakersMir.findUnusedSlotName('breaker'));
     var initExpr = slot.initializationExpression();
     if (initExpr) { cycleBreakerSlot.setInitializationExpression(initExpr); }
     this._slotDeps. holderDeps.removeDependency(slot, slot.holder().theCreatorSlot());

@@ -282,7 +282,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   add.method('copyTo', function (targetCatOfNewMir) {
     var newSlot = targetCatOfNewMir.mirror().slotAt(this.name());
     newSlot.setContents(this.contents());
-    newSlot.setCategory(targetCatOfNewMir.category());
+    newSlot.setCategory(targetCatOfNewMir);
     return newSlot;
   }, {category: ['copying']});
 
@@ -419,7 +419,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     var cds = this.slotThatIAmCopiedDownFrom();
     if (cds) { return cds.category(); }
     
-    return avocado.category.create(avocado.organization.current.categoryForSlot(this));
+    return this.holder().category(avocado.organization.current.categoryForSlot(this));
   }, {category: ['accessing annotation', 'category']});
 
   add.method('setCategory', function (c) {

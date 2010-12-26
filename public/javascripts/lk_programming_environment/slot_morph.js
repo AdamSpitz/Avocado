@@ -252,7 +252,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('wasJustDroppedOnWorld', function (world) {
     if (! this._shouldOnlyBeDroppedOnThisParticularMorph || this._shouldOnlyBeDroppedOnThisParticularMorph === world) {
       var mir = reflect({});
-      var newSlot = this.slot().copyTo(avocado.category.root().ofMirror(mir));
+      var newSlot = this.slot().copyTo(mir.rootCategory());
       var mirMorph = world.morphFor(mir);
       world.addMorphAt(mirMorph, this.position());
       mirMorph.expandCategory(newSlot.category());
@@ -262,7 +262,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
-    var newSlot = this.slot().copyTo(avocado.category.root().ofMirror(newMirror));
+    var newSlot = this.slot().copyTo(newMirror.rootCategory());
     var newSlotMorph = newSlot.newMorph();
     newSlotMorph._explicitStyle = this.grabbedStyle;
     newSlotMorph.refreshContent();

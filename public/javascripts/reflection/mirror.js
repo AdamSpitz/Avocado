@@ -288,6 +288,15 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('normalSlotNames', function () {
     return avocado.enumerator.create(this, 'eachNormalSlotName');
   }, {category: ['iterating']});
+  
+  add.method('category', function (parts) {
+    // aaa shouldn't need this test after I'm done refactoring to eliminate the stupid raw category objects
+    return avocado.category.ofAParticularMirror.create(this, parts.parts ? parts.parts() : parts);
+  }, {category: ['categories']});
+  
+  add.method('rootCategory', function () {
+    return this.category([]);
+  }, {category: ['categories']});
 
   add.method('slotsInCategory', function (c) {
     return this.normalSlots().select(function(s) { return c.equals(s.category()); });
@@ -1202,10 +1211,10 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     s.remove();
   });
 
-  add.method('createSlot', function (mir, name, contents, cat) {
+  add.method('createSlot', function (mir, name, contents, catParts) {
     var slot = mir.slotAt(name);
     slot.setContents(reflect(contents));
-    if (cat) { slot.setCategory(avocado.category.create(cat)); }
+    if (catParts) { slot.setCategory(mir.category(catParts)); }
     return slot;
   });
 
@@ -1232,7 +1241,7 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
       this.createSlot(mir, 'e', 46, ['letters', 'vowels']);
       this.createSlot(mir, 'y', 47, ['letters']);
       
-      var root = avocado.category.root();
+      var root = mir.rootCategory();
       this.assertEqual('letters', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root).toArray().join(', '));
       this.assertEqual('letters consonants, letters vowels', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters')).toArray().sort().join(', '));
       this.assertEqual('', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
@@ -1246,17 +1255,17 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
       
       var o2 = {};
       var mir2 = reflect(o2);
-      avocado.category.create(['letters']).ofMirror(mir).copyInto(avocado.category.create(['glyphs']).ofMirror(mir2));
+      mir.category(['letters']).copyInto(mir2.category(['glyphs']));
       this.assertEqual(42, o2.a);
-      this.assertEqual(avocado.category.create(['glyphs', 'letters', 'vowels']), mir2.slotAt('a').category());
+      this.assertEqual(mir2.category(['glyphs', 'letters', 'vowels']), mir2.slotAt('a').category());
       
-      avocado.category.create(['letters', 'vowels']).ofMirror(mir).copyInto(avocado.category.root().ofMirror(mir2));
+      mir.category(['letters', 'vowels']).copyInto(mir2.rootCategory());
       this.assertEqual(42, o2.a);
-      this.assertEqual(avocado.category.create(['vowels']), mir2.slotAt('a').category());
+      this.assertEqual(mir2.category(['vowels']), mir2.slotAt('a').category());
       
-      avocado.category.create([]).ofMirror(mir).copyContentsInto(avocado.category.create(['stuff']).ofMirror(mir2));
+      mir.rootCategory().copyContentsInto(mir2.category(['stuff']));
       this.assertEqual(42, o2.a);
-      this.assertEqual(avocado.category.create(['stuff', 'letters', 'vowels']), mir2.slotAt('a').category());
+      this.assertEqual(mir2.category(['stuff', 'letters', 'vowels']), mir2.slotAt('a').category());
     }.bind(this));
   });
 
@@ -1269,7 +1278,6 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     
     // Don't wanna test the text directly because different browsers print the function slightly differently.
     var functionText = reflect(function(a) { return a + 4; }).expressionEvaluatingToMe();
-    console.log("Here it is: " + functionText);
     var recreatedFunction = eval("(" + functionText + ")");
     this.assertEqual(19, recreatedFunction(15));
 
@@ -1290,7 +1298,7 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     this.assertEqual(2, mirA.size());
     var mirB = reflect({b: 2, bb: 22, bbb: 222});
     var mirC = reflect({c: 3, bleh: 'bleh!'});
-    mirB.slotAt('b').setCategory(avocado.category.create(['categories should be copied down']));
+    mirB.slotAt('b').setCategory(mirB.category(['categories should be copied down']));
     mirA.setCopyDownParents([{parent: mirB.reflectee()}, {parent: mirC.reflectee(), slotsToOmit: ['bleh']}]);
     this.assertEqual(3, mirB.size());
     this.assertEqual(2, mirC.size());
@@ -1309,7 +1317,7 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     this.assertEqual(mirA.copyDownParents()[0], mirA.slotAt('bbb').copyDownParentThatIAmFrom());
     this.assertEqual(mirA.copyDownParents()[1], mirA.slotAt('c'  ).copyDownParentThatIAmFrom());
     
-    this.assertEqual(avocado.category.create(['categories should be copied down']), mirA.slotAt('b').category());
+    this.assertEqual(mirA.category(['categories should be copied down']).parts(), mirA.slotAt('b').category().parts());
   });
 
   add.method('testIndexableCreatorSlots', function () {

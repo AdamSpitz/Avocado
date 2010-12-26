@@ -59,13 +59,11 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['creating']});
 
-  add.method('categoryOfMirror', function () { return this._model; }, {category: ['accessing']});
+  add.method('category', function () { return this._model; }, {category: ['accessing']});
 
-  add.method('mirror', function () { return this.categoryOfMirror().mirror(); }, {category: ['accessing']});
+  add.method('mirror', function () { return this.category().mirror(); }, {category: ['accessing']});
 
   add.method('mirrorMorph', function () { return this.mirror().morph(); }, {category: ['accessing']});
-
-  add.method('category', function () { return this.categoryOfMirror().category(); }, {category: ['accessing']});
 
   add.creator('defaultStyle', {}, {category: ['styles']});
 
@@ -164,7 +162,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
         if (isModifiable) {
           cmdList.addItem({label: "move", go: function(evt) {
             this.grabCopy(evt);
-            this.category().removeSlots(this.mirror());
+            this.category().removeSlots();
             avocado.ui.justChanged(this.mirror());
           }});
         }
@@ -174,7 +172,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   }, {category: ['menu']});
 
   add.method('dragAndDropCommands', function () {
-    var cmdList = this.categoryOfMirror().dragAndDropCommands().wrapForMorph(this);
+    var cmdList = this.category().dragAndDropCommands().wrapForMorph(this);
     var mirMorph = this.mirrorMorph();
     
     cmdList.itemWith("label", "add slot or category").wrapFunction(function(oldFunctionToRun, evt, slotOrCatMorph) {
@@ -196,13 +194,13 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 
   add.method('rename', function (newName, evt) {
     // aaa - eww
-    var result = this.categoryOfMirror().rename(newName);
+    var result = this.category().rename(newName);
     this.mirrorMorph().justRenamedCategoryMorphFor(result.oldCat, result.newCat, result.numberOfRenamedSlots === 0);
   }, {category: ['renaming']});
 
   add.method('addSlot', function (initialContents, evt) {
     this.mirrorMorph().expandCategoryMorph(this);
-    var s = this.categoryOfMirror().automaticallyChooseDefaultNameAndAddNewSlot(reflect(initialContents));
+    var s = this.category().automaticallyChooseDefaultNameAndAddNewSlot(reflect(initialContents));
     var sm = s.morph();
     sm.wasJustShown(evt);
     this.updateAppearance(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet);
@@ -210,15 +208,15 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 
   add.method('addCategory', function (evt) {
     this.mirrorMorph().expandCategoryMorph(this);
-    var cm = this.categoryOfMirror().subcategory("").newMorph();
+    var cm = this.category().subcategory("").newMorph();
     this.contentsPanel().addRow(cm);
     cm.wasJustShown(evt);
-    // aaa blecch, I feel like this line should be here, but bad things happen: avocado.ui.justChanged(this.categoryOfMirror());
+    // aaa blecch, I feel like this line should be here, but bad things happen: avocado.ui.justChanged(this.category());
   }, {category: ['adding']});
 
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
-    var newCategoryOfMir = this.categoryOfMirror().copyInto(avocado.category.root().ofMirror(newMirror));
+    var newCategoryOfMir = this.category().copyInto(newMirror.rootCategory());
     var newCategoryMorph = newCategoryOfMir.morph();
     newCategoryMorph.applyStyle(this.grabbedStyle);
     newCategoryMorph.refreshContent();
@@ -232,7 +230,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.method('wasJustDroppedOnWorld', function (world) {
     if (! this._shouldOnlyBeDroppedOnThisParticularMorph || this._shouldOnlyBeDroppedOnThisParticularMorph === world) {
       var mir = reflect({});
-      var newCategoryOfMir = this.categoryOfMirror().copyInto(avocado.category.root().ofMirror(mir));
+      var newCategoryOfMir = this.category().copyInto(mir.rootCategory());
       var mirMorph = world.morphFor(mir);
       world.addMorphAt(mirMorph, this.position());
       mirMorph.expandCategory(newCategoryOfMir);

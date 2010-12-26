@@ -46,7 +46,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
     this.applyStyle(this.defaultStyle);
 
-    this._rootCategoryMorph = this.categoryMorphFor(avocado.category.root().ofMirror(this._mirror));
+    this._rootCategoryMorph = this.categoryMorphFor(this._mirror.rootCategory());
     this._expander = this._rootCategoryMorph.expander();
     
     this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});

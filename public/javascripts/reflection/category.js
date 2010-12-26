@@ -12,66 +12,88 @@ thisModule.addSlots(avocado.category, function(add) {
 
   add.creator('ofAParticularMirror', {}, {category: ['prototypes']});
 
-  add.method('create', function (parts) {
-    return Object.newChildOf(this, parts);
+});
+
+
+thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
+
+  add.method('create', function (mir, parts) {
+    return Object.newChildOf(this, mir, parts);
   }, {category: ['creating']});
 
-  add.method('initialize', function (parts) {
+  add.method('initialize', function (mir, parts) {
+    this._mirror = mir;
     this._parts = parts;
     // aaa HACK why are we getting an undefined in the first place? And why only in JSQuiche, not the regular Avocado?
     for (var i = 0, n = parts.length; i < n; ++i) { if (parts[i] === undefined) { parts[i] = "undefined"; } }
   }, {category: ['creating']});
 
-  add.method('root', function () { return avocado.category.create([]); }, {category: ['creating']});
+  add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
 
-  add.method('parts', function () {
-    return this._parts;
+  add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
+
+  add.method('fullName', function () { return this._parts.join(" "); }, {category: ['accessing']});
+
+  add.method('sortOrder', function () { return this.isRoot() ? '' : this.lastPart().toUpperCase(); }, {category: ['sorting']});
+
+  add.method('part', function (i) {
+    if (this.isRoot()) { return ""; }
+    return this._parts[i];
   }, {category: ['accessing']});
 
+  add.method('parts', function () { return this._parts; }, {category: ['accessing']});
+
+  add.method('isRoot', function () { return this._parts.length === 0; }, {category: ['testing']});
+
   add.method('copy', function () {
-    return avocado.category.create(this.parts().map(function(p) { return p; }));
+    return avocado.category.ofAParticularMirror.create(this.mirror(), this.parts().map(function(p) { return p; }));
   }, {category: ['copying']});
 
+  add.method('equals', function (c) {
+    if (!c) { return false; }
+    if (typeof(c.mirror) !== 'function') { return false; }
+    if (typeof(c.parts) !== 'function') { return false; }
+    if (! this.mirror().equals(c.mirror())) { return false; }
+    if (this.parts().length !== c.parts().length) { return false; }
+    return this.isEqualToOrSubcategoryOf(c);
+  }, {category: ['comparing']});
+
+  add.method('hashCode', function () {
+    return this.mirror().hashCode() + this.parts().map(function(p) { return p.hashCode(); }).join();
+  }, {category: ['comparing']});
+
   add.method('supercategory', function () {
-    return avocado.category.create(this._parts.slice(0, this._parts.length - 1));
+    return this.otherCategoryOfSameMirror(this._parts.slice(0, this._parts.length - 1));
   }, {category: ['related categories']});
 
   add.method('subcategory', function (subcatName) {
-    return avocado.category.create(this._parts.concat([subcatName]));
+    return this.otherCategoryOfSameMirror(this._parts.concat([subcatName]));
   }, {category: ['related categories']});
 
   add.method('supernode', function () {
     return this.supercategory();
   }, {category: ['related categories']});
 
-  add.method('subnode', function (subnodeName) {
-    return this.subcategory(subnodeName);
+  add.method('subnode', function (name) {
+    return this.subcategory(name);
   }, {category: ['related categories']});
 
   add.method('ofMirror', function (mir) {
-    return avocado.category.ofAParticularMirror.create(mir, this);
+    if (mir.equals(this._mirror)) { return this; }
+    return avocado.category.ofAParticularMirror.create(mir, this.parts());
+  }, {category: ['related categories']});
+
+  add.method('otherCategoryOfSameMirror', function (otherCatParts) {
+    return avocado.category.ofAParticularMirror.create(this.mirror(), otherCatParts)
   }, {category: ['related categories']});
 
   add.method('concat', function (otherCat) {
-    return avocado.category.create(this._parts.concat(otherCat.parts()));
+    return this.otherCategoryOfSameMirror(this._parts.concat(otherCat.parts()));
   }, {category: ['related categories']});
 
   add.method('withoutFirstParts', function (n) {
-    return avocado.category.create(this._parts.slice(n));
+    return this.otherCategoryOfSameMirror(this._parts.slice(n));
   }, {category: ['related categories']});
-
-  add.method('sortOrder', function () { return this.isRoot() ? '' : this.lastPart().toUpperCase(); }, {category: ['sorting']});
-
-  add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
-
-  add.method('fullName', function () {
-    return this._parts.join(" ");
-  }, {category: ['accessing']});
-
-  add.method('part', function (i) {
-    if (this.isRoot()) { return ""; }
-    return this._parts[i];
-  }, {category: ['accessing']});
 
   add.method('lastPart', function () {
     return this.part(this._parts.length - 1);
@@ -82,21 +104,6 @@ thisModule.addSlots(avocado.category, function(add) {
     this._parts = this._parts.clone();
     this._parts[this._parts.length - 1] = newName;
   }, {category: ['accessing']});
-
-  add.method('isRoot', function () {
-    return this._parts.length === 0;
-  }, {category: ['testing']});
-
-  add.method('equals', function (c) {
-    if (!c) { return false; }
-    if (typeof(c.parts) !== 'function') { return false; }
-    if (this.parts().length !== c.parts().length) { return false; }
-    return this.isEqualToOrSubcategoryOf(c);
-  }, {category: ['comparing']});
-
-  add.method('hashCode', function () {
-    return this.parts().map(function(p) { return p.hashCode(); }).join();
-  }, {category: ['comparing']});
 
   add.method('isImmediateSubcategoryOf', function (c) {
     if (this.parts().length !== c.parts().length + 1) { return false; }
@@ -116,81 +123,11 @@ thisModule.addSlots(avocado.category, function(add) {
     return true;
   }, {category: ['comparing']});
 
-  add.method('removeSlots', function (mir) {
-    mir.slotsNestedSomewhereUnderCategory(this).each(function(slot) {
-      slot.remove();
-    });
-  }, {category: ['removing']});
-
-});
-
-
-thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
-
-  add.method('create', function (mir, cat) {
-    return Object.newChildOf(this, mir, cat);
-  }, {category: ['creating']});
-
-  add.method('initialize', function (mir, cat) {
-    this._mirror = mir;
-    this._category = cat;
-  }, {category: ['creating']});
-
-  add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
-
-  add.method('category', function () { return this._category; }, {category: ['accessing']});
-
-  add.method('fullName', function () { return this._category.fullName(); }, {category: ['accessing']});
-
-  add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
-
-  add.method('parts', function () { return this._category.parts(); }, {category: ['accessing']});
-
-  add.method('isRoot', function () { return this._category.isRoot(); }, {category: ['testing']});
-
-  add.method('sortOrder', function () { return this.category().sortOrder(); }, {category: ['sorting']});
-
-  add.method('equals', function (c) {
-    if (!c) { return false; }
-    if (typeof(c.mirror)   !== 'function') { return false; }
-    if (typeof(c.category) !== 'function') { return false; }
-    return this.mirror().equals(c.mirror()) && this.category().equals(c.category());
-  }, {category: ['comparing']});
-
-  add.method('hashCode', function () {
-    return this.mirror().hashCode() && this.category().hashCode();
-  }, {category: ['comparing']});
-
-  add.method('supercategory', function () {
-    return this._category.supercategory().ofMirror(this._mirror);
-  }, {category: ['related categories']});
-
-  add.method('subcategory', function (name) {
-    return this._category.subcategory(name).ofMirror(this._mirror);
-  }, {category: ['related categories']});
-
-  add.method('supernode', function () {
-    return this.supercategory();
-  }, {category: ['related categories']});
-
-  add.method('subnode', function (name) {
-    return this.subcategory(name);
-  }, {category: ['related categories']});
-
-  add.method('ofMirror', function (mir) {
-    if (mir.equals(this._mirror)) { return this; }
-    return this.category().ofMirror(mir);
-  }, {category: ['related categories']});
-
-  add.method('concat', function (otherCat) {
-    return this.category().concat(otherCat).ofMirror(this.mirror());
-  }, {category: ['related categories']});
-
   add.method('eachSlot', function (f) {
-    if (this.category().isRoot()) {
+    if (this.isRoot()) {
       this.mirror().eachFakeSlot(f);
     }
-    this.mirror().slotsInCategory(this.category()).each(f);
+    this.mirror().slotsInCategory(this).each(f);
   }, {category: ['iterating']});
 
   add.method('slots', function () {
@@ -198,12 +135,11 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['accessing']});
 
   add.method('normalSlotsInMeAndSubcategories', function () {
-    return this.mirror().slotsNestedSomewhereUnderCategory(this.category());
+    return this.mirror().slotsNestedSomewhereUnderCategory(this);
   }, {category: ['accessing']});
 
   add.method('rename', function (newName) {
-    var c = this.category();
-    var oldCat = c.copy();
+    var oldCat = this.copy();
     var oldCatPrefixParts = oldCat.parts().map(function(p) {return p;});
     var slotCount = 0;
     this.normalSlotsInMeAndSubcategories().each(function(s) {
@@ -218,12 +154,12 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
       }
 
       newCatParts[oldCatPrefixParts.length - 1] = newName;
-      var newCat = avocado.category.create(newCatParts);
+      var newCat = this.otherCategoryOfSameMirror(newCatParts);
       //console.log("Changing the category of " + s.name() + " from " + oldCat + " to " + newCat);
       s.setCategory(newCat);
-    });
-    c.setLastPart(newName);
-    return {oldCat: oldCat, newCat: c, numberOfRenamedSlots: slotCount};
+    }.bind(this));
+    this.setLastPart(newName);
+    return {oldCat: oldCat, newCat: this, numberOfRenamedSlots: slotCount};
   }, {category: ['renaming']});
 
   add.method('modules', function () {
@@ -263,16 +199,22 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
 
   add.method('eachImmediateSubnode', function (f) {
-    this.mirror().eachImmediateSubcategoryOf(this.category(), f);
+    this.mirror().eachImmediateSubcategoryOf(this, f);
   }, {category: ['iterating']});
+
+  add.method('removeSlots', function () {
+    this.mirror().slotsNestedSomewhereUnderCategory(this).each(function(slot) {
+      slot.remove();
+    });
+  }, {category: ['removing']});
 
   add.method('copyInto', function (target) {
     if (this.isRoot()) { throw new Error("Cannot use copyInto on the root category; maybe you meant to use copyContentsInto?"); }
-    return this.copyContentsInto(target.subcategory(this.category().lastPart()));
+    return this.copyContentsInto(target.subcategory(this.lastPart()));
   }, {category: ['copying']});
 
   add.method('copyContentsInto', function (target) {
-    var numPartsToLopOffTheBeginning = this.category().parts().length;
+    var numPartsToLopOffTheBeginning = this.parts().length;
 
     this.normalSlotsInMeAndSubcategories().each(function(slot) {
       slot.copyTo(target.concat(slot.category().withoutFirstParts(numPartsToLopOffTheBeginning)));
@@ -291,7 +233,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['user interface', 'drag and drop']});
 
   add.method('automaticallyChooseDefaultNameAndAddNewSlot', function (initialContentsMir) {
-    return this.mirror().automaticallyChooseDefaultNameAndAddNewSlot(initialContentsMir, this.category());
+    return this.mirror().automaticallyChooseDefaultNameAndAddNewSlot(initialContentsMir, this);
   }, {category: ['user interface', 'slots']});
 
 });
