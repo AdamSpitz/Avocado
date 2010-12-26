@@ -133,11 +133,11 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   }, {category: ['contents panel']});
 
   add.method('nodeMorphFor', function (cat) {
-    return this.mirrorMorph().categoryMorphFor(cat);
+    return cat.ofMirror(this.mirror()).morph();
   }, {category: ['contents panel']});
 
   add.method('nonNodeMorphFor', function (slot) {
-    return this.mirrorMorph().slotMorphFor(slot);
+    return slot.morph();
   }, {category: ['contents panel']});
 
   add.method('commands', function () {
@@ -203,7 +203,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.method('addSlot', function (initialContents, evt) {
     this.mirrorMorph().expandCategoryMorph(this);
     var s = this.categoryOfMirror().automaticallyChooseDefaultNameAndAddNewSlot(reflect(initialContents));
-    var sm = this.mirrorMorph().slotMorphFor(s);
+    var sm = s.morph();
     sm.wasJustShown(evt);
     this.updateAppearance(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet);
   }, {category: ['adding']});
