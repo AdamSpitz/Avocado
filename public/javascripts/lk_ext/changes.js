@@ -216,6 +216,11 @@ Morph.addMethods({
   			return "#<inspect error: " + err + ">";
   		}
   	},
+  	
+  	debugInspect: function() {
+  	  var tos = this.toString();
+  	  return "a " + this.constructor.type + (tos ? "(" + tos + ")" : "");
+  	},
 
     toString: function() {
       return ""; // the default behaviour is annoying - makes morph mirrors very wide
