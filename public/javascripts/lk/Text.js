@@ -1503,6 +1503,7 @@ BoxMorph.subclass('TextMorph', {
 			this.fitHeight();
 		else 
 			this.fitWidth();
+		return this; // added by Adam
 	},
 
 	lineHeight: function() {

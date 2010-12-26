@@ -9,7 +9,15 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('isOnScreen', function () {
       var w = this.world();
-      return w && (w === this || w.bounds().containsPoint(this.owner.worldPoint(this.getPosition()).matrixTransform(w.getTransform())));
+      if (!w) { return false; }
+      if (w === this) { return true; }
+      var thisBounds = this.shape.bounds();
+      var topLeft     = this.worldPoint(thisBounds.topLeft()    ).matrixTransform(w.getTransform());
+      var topRight    = this.worldPoint(thisBounds.topRight()   ).matrixTransform(w.getTransform());
+      var bottomRight = this.worldPoint(thisBounds.bottomRight()).matrixTransform(w.getTransform());
+      var bottomLeft  = this.worldPoint(thisBounds.bottomLeft() ).matrixTransform(w.getTransform());
+      var worldBounds = w.visibleBounds();
+      return worldBounds.containsPoint(topLeft) || worldBounds.containsPoint(topRight) || worldBounds.containsPoint(bottomRight) || worldBounds.containsPoint(bottomLeft);
     }, {category: ['testing']});
 
   add.method('startZoomingOuttaHere', function () {
@@ -102,7 +110,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var owner = this.owner;
     if (w) {
       if (owner !== w) {
-        var initialLoc = (!owner || this.world() !== w) ? this.getExtent().negated() : owner.worldPoint(this.getPosition());
+        var initialLoc = (!owner || this.world() !== w) ? this.getExtent().scaleBy(-1.1) : owner.worldPoint(this.getPosition());
         if (owner && shouldReplaceWithPlaceholder) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
         w.addMorphAt(this, initialLoc);
       }
@@ -149,7 +157,9 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('createDismissButtonThatOnlyAppearsIfTopLevel', function () {
-    return Morph.createOptionalMorph(this.createDismissButton(), function() { return this.owner === this.world(); }.bind(this));
+    return Morph.createOptionalMorph(this.createDismissButton(), function() {
+      return (! this.owner) || (this.owner instanceof WorldMorph) || (this.owner instanceof HandMorph);
+    }.bind(this));
   }, {category: ['adding and removing']});
 
   add.method('smoothlyFadeTo', function (desiredAlpha, functionToCallWhenDone) {

@@ -169,7 +169,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
       }});
     }
     
-    if (isModifiable && this.contents().prettyPrint) {
+    // pretty-printer isn't working yet
+    if (false && isModifiable && this.contents().prettyPrint) {
       cmdList.addSection([{label: "pretty-print", go: function(evt) {
         avocado.ui.grab(reflect(this.contents().prettyPrint()), evt);
       }}]);

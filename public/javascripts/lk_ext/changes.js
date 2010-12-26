@@ -12,6 +12,7 @@ WorldMorph.addMethods({
     evt.hand.setKeyboardFocus(null);
 
     if (this.shouldSlideIfClickedAtEdge) { this.slideIfClickedAtEdge(evt); }
+
     return $super(evt);
   }
 });
@@ -245,7 +246,14 @@ Morph.addMethods({
 Morph.addMethods({
   addMorphCentered: function(m, callWhenDone) {
     this.animatedAddMorphAt(m, this.getExtent().subPt(m.getExtent()).scaleBy(0.5), callWhenDone);
-  }
+  },
+  
+  // really should fix the names of these two functions; without animation should be the default -- Adam
+  withoutAnimationAddMorphCentered: function(m, callWhenDone) {
+    var p = this.getExtent().subPt(m.getExtent()).scaleBy(0.5);
+    console.log("this.getExtent(): " + this.getExtent() + ", m.getExtent(): " + m.getExtent() + ", p: " + p);
+    this.addMorphAt(m, p);
+  },
 });
 
 
@@ -253,6 +261,10 @@ Morph.addMethods({
   ownerLocalize: function(pt) {
 		if (! this.owner) { return pt; }
     return this.owner.localize(pt);
+  },
+  
+  handIsOverMe: function (hand) {
+    return this.shape.containsPoint(this.localize(hand.getPosition()));
   }
 });
 

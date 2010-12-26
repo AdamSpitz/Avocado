@@ -1,6 +1,7 @@
 transporter.module.create('lk_ext/commands', function(requires) {
 
 requires('core/commands');
+requires('lk_ext/wheel_menus');
 
 }, function(thisModule) {
 
@@ -80,7 +81,25 @@ thisModule.addSlots(avocado.command.list, function(add) {
     return avocado.command.list.create(this._defaultContext, this._commands.map(function(c) { return c ? c.wrapForMorph(morph) : null; }));
   }, {category: ['user interface']});
 
-  add.method('addItemsToMenu', function (menu, target) {
+  add.data('shouldUseWheelMenus', true);
+  
+  add.method('createMenu', function (target, menuClass) {
+    menuClass = menuClass || (this.shouldUseWheelMenus ? avocado.WheelMenuMorph : MenuMorph);
+    var commands = this.commandsForMenu(menu, target);
+    var menuItems = menuClass.itemsForCommands(commands);
+    if (menuClass === avocado.WheelMenuMorph && menuItems.length > 9) {
+      // Can't have a wheel menu with more than 9 commands.
+      return this.createMenu(target, MenuMorph);
+    }
+    var menu = new menuClass(menuItems, target);
+    return menu;
+  }, {category: ['converting']});
+  
+  add.method('itemsFor', function (menu, target) {
+  }, {category: ['converting']});
+
+  add.method('commandsForMenu', function (menu, target, f) {
+    var commands = [];
     var i = 0;
     var n = this._commands.length;
     this._commands.each(function(c) {
@@ -88,22 +107,46 @@ thisModule.addSlots(avocado.command.list, function(add) {
         c = c.wrapWithPromptersForArguments();
         
         if (typeof(c.isApplicable) !== 'function' || c.isApplicable()) {
-          var label = typeof(c.label) === 'function' ? c.label(target) : c.label;
-          if (c.subcommands()) {
-            menu.addItem([label, c.subcommands()]);
-          } else {
-            menu.addItem([label, function() { c.go.apply(c, arguments); }]);
-          }
+          commands.push(c);
         }
       } else {
         if (i !== n - 1) { // no point if it's the last one
-          menu.addLine();
+          commands.push(c);
         }
       }
       i += 1;
     }.bind(this));
+    return commands;
   }, {category: ['converting']});
 
+});
+
+
+thisModule.addSlots(MenuMorph, function(add) {
+  
+  add.method('itemsForCommands', function (commands) {
+    return commands.map(function(c) {
+      if (!c) {
+        return null;
+      } else if (c instanceof Array) {
+        return c;
+      } else if (c.subcommands()) {
+        return [c.labelString(), MenuMorph.itemsForCommands(c.subcommands())];
+      } else {
+        return [c.labelString(), function() { c.go.apply(c, arguments); }];
+      }
+    });
+  }, {category: ['converting']});
+  
+});
+
+
+thisModule.addSlots(avocado.WheelMenuMorph, function(add) {
+  
+  add.method('itemsForCommands', function (commands) {
+    return commands.compact();
+  }, {category: ['converting']});
+  
 });
 
 

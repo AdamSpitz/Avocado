@@ -122,14 +122,6 @@ thisModule.addSlots(avocado, function(add) {
       }]);
     }
 
-    // This world-navigation feature is usually very annoying, though occasionally very useful.
-    // Keep it off by default until we find a non-annoying UI for it. -- Adam
-    cmdList.addLine();
-    var navOn = WorldMorph.current().shouldSlideIfClickedAtEdge;
-    cmdList.addItem(["turn " + (navOn ? 'off' : 'on') + " world navigation", function(evt) {
-      evt.hand.world().shouldSlideIfClickedAtEdge = !navOn;
-    }]);
-
     this.menuItemContributors.each(function(c) {
       c.addGlobalCommandsTo(cmdList);
     });

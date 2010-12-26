@@ -745,10 +745,6 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
 
-    if (this.hasAccessibleParent()) {
-      cmdList.addItem(avocado.command.create("get my parent", this.getParent));
-    }
-    
     if (this.canHaveAnnotation()) {
       cmdList.addLine();
 
@@ -764,13 +760,16 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
     cmdList.addLine();
 
-    cmdList.addItem(avocado.command.create("well-known references", function(evt) {
-      avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.referenceFinder.create(this.reflectee()), evt)).redo();
-    }));
+    cmdList.addItem(["find", [
+      avocado.command.create("well-known references", function(evt) {
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.referenceFinder.create(this.reflectee()), evt)).redo();
+      }, this),
+      avocado.command.create("well-known children", function(evt) {
+        avocado.ui.showObjects(this.wellKnownChildren().map(reflect), "well-known children of " + this.name(), evt);
+      }, this)
+    ]]);
     
-    cmdList.addItem(avocado.command.create("well-known children", function(evt) {
-      avocado.ui.showObjects(this.wellKnownChildren().map(reflect), "well-known children of " + this.name(), evt);
-    }));
+    cmdList.addItem();
     
     return cmdList;
   }, {category: ['user interface', 'commands']});

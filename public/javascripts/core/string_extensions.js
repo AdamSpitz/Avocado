@@ -18,6 +18,20 @@ thisModule.addSlots(String.prototype, function(add) {
   add.method('withoutSuffix', function (suffix) {
     return this.endsWith(suffix) ? this.substr(0, this.length - suffix.length) : this;
   });
+  
+  add.method('replaceAt', function (i, n, s) {
+    return this.substr(0, i).concat(s, this.substr(i + n));
+  });
+
+  add.method('attemptToInsertALineBreak', function () {
+    // Hack. Really not sure this is gonna work, or be worth it. :) But try it and see.
+    var middle = this.length / 2;
+    var i1 = this.indexOf(' ', middle);
+    var i2 = this.lastIndexOf(' ', middle);
+    var i = (Math.abs(middle - i1) > Math.abs(middle - i2)) ? i2 : i1;
+    if (i < 0) { return this; }
+    return this.replaceAt(i, 1, '\n');
+  });
 
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
@@ -45,6 +59,18 @@ thisModule.addSlots(String.prototype.tests, function(add) {
     this.assertEqual('ArgleBargle', 'argleBargle'.capitalize());
     this.assertEqual('Argle Bargle', 'argle bargle'.capitalize());
     this.assertEqual('  \t\n ', '  \t\n '.capitalize());
+  });
+
+  add.method('testReplaceAt', function () {
+    this.assertEqual('arxle', 'argle'.replaceAt(2, 1, 'x'));
+    this.assertEqual('xngle', 'argle'.replaceAt(0, 2, 'xn'));
+  });
+
+  add.method('testInsertingLineBreaks', function () {
+    this.assertEqual('abcdef', 'abcdef'.attemptToInsertALineBreak());
+    this.assertEqual('abc\ndef', 'abc def'.attemptToInsertALineBreak());
+    this.assertEqual('ab\ncdef', 'ab cdef'.attemptToInsertALineBreak());
+    this.assertEqual('ab cd\nef', 'ab cd ef'.attemptToInsertALineBreak());
   });
 
 });

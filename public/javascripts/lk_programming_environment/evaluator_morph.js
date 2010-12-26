@@ -62,6 +62,8 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
+    cmdList.addItem(avocado.command.create("Get it", function(evt) {this.getIt(evt);}.bind(this)).setHelpText('Run the code in the box and get the result'));
+    cmdList.addItem(avocado.command.create("Do it",  function(evt) {this. doIt(evt);}.bind(this)).setHelpText('Run the code in the box'));
     if (this.isTicking()) {
       cmdList.addItem(avocado.command.create("Stop ticking", function(evt) {this.stopTicking(evt);}.bind(this)));
     } else {
@@ -79,10 +81,10 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
   }, {category: ['running the code']});
 
   add.method('getIt', function (evt) {
-    //avocado.ui.showMessageIfErrorDuring(function() {
+    avocado.ui.showMessageIfErrorDuring(function() {
       var resultMirMorph = evt.hand.world().morphFor(reflect(this.runTheCode()));
       this.mirrorMorph().grabResult(resultMirMorph, evt);
-    //}.bind(this), evt);
+    }.bind(this), evt);
   }, {category: ['running the code']});
 
   add.method('startTicking', function (evt) {

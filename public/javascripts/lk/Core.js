@@ -1940,7 +1940,7 @@ Morph.addMethods({
 		this.setBorderRadius(r);
 	},
 
-	getFillOpacity: function() { this.shape.getFillOpacity(); },
+	getFillOpacity: function() { return this.shape.getFillOpacity(); }, // bug fix: didn't say "return" -- Adam
 
     setFillOpacity: function(op) {
 	this.shape.setFillOpacity(op);
@@ -5168,6 +5168,14 @@ WorldMorph.addMethods({
 		var menu = $super(evt);
 		menu.keepOnlyItemsNamed(["inspect", "edit style"]);
 		menu.addItems([['reset scale', function(evt) { var w = evt.hand.world(); w.setScale(1); w.resizeCanvasToFitWorld() }]]);
+
+    // This world-navigation feature is usually very annoying, though occasionally very useful.
+    // Keep it off by default until we find a non-annoying UI for it. -- Adam
+    var navOn = this.shouldSlideIfClickedAtEdge;
+    menu.addItem(["turn " + (navOn ? 'off' : 'on') + " world navigation", function(evt) {
+      this.shouldSlideIfClickedAtEdge = !navOn;
+    }.bind(this)]);
+		
 		menu.addLine();
 		menu.addItems(this.subMenuItems(evt));
 		menu.addLine();
@@ -6012,11 +6020,25 @@ lookTouchy: function(morph) {
 		this.keysDown[evt.getKeyChar().toUpperCase()] = true;
 	},
 
-    handleKeyboardEvent: function(evt) { 
-		// console.log("event: " + evt )
+    handleKeyboardEvent: function(evt) {
+  		// console.log("event: " + evt )
+      
 		if(evt.type == "KeyUp") {
  			this.forgetKeyDown(evt);			
 		};
+      
+    // Experimenting with a menu idea that I learned from Richard Kulisz. -- Adam
+    // http://www.c2.com/cgi/wiki?WheelMenu
+    if (evt.isAltDown()) {
+      if (evt.getKeyCode() === 18) { // I think this means no other key is pressed, just Alt -- Adam
+        evt.mousePoint = this.getPosition();
+        var receiver = this.world().morphToReceiveEvent(evt);
+        receiver.showContextMenu(evt);
+        return;
+      }
+    }
+      
+      
         if (this.hasSubmorphs())  {
             if (evt.type == "KeyDown" && this.moveSubmorphs(evt)) return;
             else if (evt.type == "KeyPress" && this.transformSubmorphs(evt)) return;

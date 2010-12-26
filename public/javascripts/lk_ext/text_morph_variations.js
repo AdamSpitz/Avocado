@@ -160,9 +160,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
   returnKeyShouldAccept: function() { return false; },
 
   morphMenu: function(evt) {
-    var menu = new MenuMorph([], this);
-    this.editingCommands().addItemsToMenu(menu, this);
-    return menu;
+    return this.editingCommands().createMenu(this);
   },
 
   editingCommands: function() {

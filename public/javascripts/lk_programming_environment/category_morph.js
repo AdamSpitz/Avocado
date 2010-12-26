@@ -146,8 +146,8 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     
     if (this.mirror().canHaveSlots()) {
       if (this.mirrorMorph().shouldAllowModification()) {
-        cmdList.addSection([{ label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); } },
-                            { label: "add function",  go: function(evt) { this.addSlot    (function() {}, evt); } }]);
+        cmdList.addSection([{ label: "add function",  go: function(evt) { this.addSlot    (function() {}, evt); } },
+                            { label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); } }]);
       }
       
       cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(               evt); } }]);

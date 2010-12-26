@@ -2117,6 +2117,7 @@ Morph.subclass("MenuMorph", {
     },
 
     checkItem: function(item) {
+      if (!item) { return new MenuItem(this.makeLine()); } // added by Adam
 		if (Object.isString(item)) throw dbgOn(new Error(
 			'Menu item specification should be an array, not just a string'));
 		return Object.isArray(item[1]) ?
@@ -2137,13 +2138,18 @@ Morph.subclass("MenuMorph", {
     },
 
     addLine: function(item) { // Not yet supported
+        this.items.push(new MenuItem(this.makeLine())); // extracted the makeLine method -- Adam
+    },
+
+    // makeLine method extracted by Adam
+    makeLine: function() { // Not yet supported
         // The idea is for this to add a real line on top of the text
         
         // Hacked to make the lines look like real lines, not just -----. -- Adam
-        // this.items.push(this.addPseudoMorph(new MenuItem('-----')));
+        // return new MenuItem('-----');
         var line = Morph.makeLine([pt(0,5), pt(100,5)], 1, Color.gray);
         line.isMenuLine = true;
-        this.items.push(new MenuItem(line));
+        return line;
     },
 
     addSubmenuItem: function(item) {
@@ -2316,8 +2322,9 @@ Morph.subclass("MenuMorph", {
 
     onMouseDown: function(evt) {
         this.onMouseMove(evt); // Added by Adam to make highlighting work on touch devices even when no movement
-        if (this.selectedItemIndex(evt) === null && !this.stayUp)
-            this.removeOnEvent(evt);
+        if (this.selectedItemIndex(evt) === null && !this.stayUp) {
+          this.removeOnEvent(evt);
+        }
     },
 
     onMouseMove: function(evt) {
@@ -4161,7 +4168,7 @@ Morph.subclass("PieMenuMorph", {
 		this.targetMorph = targetMorph;
 		this.r1 = 15;  // inner radius
 		this.r2 = 50;  // outer radius
-		this.offset = offset;
+		this.offset = offset || 0; // default to 0 -- Adam
 		this.clickFn = clickFn;
 		$super(new lively.scene.Ellipse(pt(100 + this.r2, 100 + this.r2), this.r2));
 		this.setBorderColor(Color.black);  this.setBorderWidth(1);
@@ -4197,7 +4204,7 @@ Morph.subclass("PieMenuMorph", {
 		this.remove();
 		evt.hand.setMouseFocus(null);
 		var n = this.items.length;
-		var index = (delta.theta()/(Math.PI*2) + (this.offset/2)) * n;
+		var index = this.itemIndexForAngle(delta.theta()); // refactored to use itemIndexForAngle -- Adam
 		index = (index+n).toFixed(0)%n;  // 0..n-1
 		var item = this.items[index];
 		if (item[1] instanceof Function) item[1](this.originalEvent)
@@ -4226,6 +4233,11 @@ Morph.subclass("PieMenuMorph", {
 		normalMenu.openIn(world, evt.mousePoint, false, Object.inspect(this.targetMorph).truncate());
 		evt.hand.setMouseFocus(normalMenu);
 	},
+	
+	// refactored by Adam because there was a bug in it and it was easier to see this way
+	itemIndexForAngle: function(theta) { return ((theta/(Math.PI*2) + (1/4)) * this.items.length) + this.offset; },
+	angleForItemIndex: function(index) { return (( (index-this.offset) / this.items.length) - (1/4)) * Math.PI*2; },
+	
 	makeVisible: function(openEvent) {
 		if (this.hasCommitted) return;
 		var opacity = 0.5;
@@ -4235,14 +4247,18 @@ Morph.subclass("PieMenuMorph", {
 		var nItems = this.items.length;
 		if(nItems == 0) return;
 		for (var i=0; i<nItems; i++) {
-			var theta = (((i-this.offset)/nItems)-(1/4))*Math.PI*2;
+			var theta = this.angleForItemIndex(i); // refactored to use angleForItemIndex -- Adam
 			var line = Morph.makeLine([Point.polar(this.r1, theta), Point.polar(this.r2, theta)], 1, Color.black);
 			line.setStrokeOpacity(opacity);
 			this.addMorph(line);
 			var labelString = this.items[i][0];
 			var x = labelString.indexOf('(');
-			if (x < 0) continue
-			labelString = labelString.slice(x+1, labelString.length-1);  // drop parens
+			
+			// aaa - Huh??? Why was this thing requiring the parens? -- Adam
+			//if (x < 0) continue
+			//labelString = labelString.slice(x+1, labelString.length-1);  // drop parens
+			if (x >= 0) { labelString = labelString.slice(x+1, labelString.length-1); }  // just use the thing in the parens if it's there
+			
 			var labelPt = Point.polar(this.r2*0.7, theta+(0.5/nItems*Math.PI*2))
 			this.addMorph(TextMorph.makeLabel(labelString).centerAt(labelPt));
 		}

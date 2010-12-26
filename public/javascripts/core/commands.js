@@ -54,6 +54,10 @@ thisModule.addSlots(avocado.command, function(add) {
     this.label = label;
     return this;
   }, {category: ['accessing']});
+  
+  add.method('labelString', function () {
+    return typeof(this.label) === 'function' ? this.label(target) : this.label;
+  }, {category: ['accessing']});
 
   add.method('setID', function (id) {
     this.id = id;
@@ -133,7 +137,14 @@ thisModule.addSlots(avocado.command, function(add) {
   add.method('go', function () {
     var f = this.functionToRun();
     var rcvr = this.contextOrDefault();
-    return f.apply(rcvr, $A(arguments));
+    if (f) {
+      return f.apply(rcvr, $A(arguments));
+    } else {
+      var subcmds = this.subcommands();
+      if (!subcmds) { throw new Error("What kind of command is this, with no functionToRun and no subcommands?"); }
+      var subcmdList = avocado.command.list.create(rcvr, subcmds);
+      avocado.ui.showMenu(subcmdList);
+    }
   }, {category: ['running']});
 
   add.method('wrapWithPromptersForArguments', function () {
@@ -142,7 +153,7 @@ thisModule.addSlots(avocado.command, function(add) {
     
     var c = Object.create(this);
     
-    if (typeof(this.label) === 'string') { this.setLabel(this.label + "..."); }
+    if (typeof(this.label) === 'string' && ! this.label.endsWith("...")) { this.setLabel(this.label + "..."); }
     
     c.setArgumentSpecs([]);
     

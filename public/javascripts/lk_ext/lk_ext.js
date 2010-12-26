@@ -5,6 +5,7 @@ requires('lk_ext/fixes');
 requires('lk_ext/changes');
 requires('lk_ext/change_notification');
 requires('lk_ext/menus');
+requires('lk_ext/wheel_menus');
 requires('lk_ext/commands');
 requires('lk_ext/applications');
 requires('lk_ext/grabbing');
@@ -114,9 +115,9 @@ thisModule.addSlots(avocado.ui, function(add) {
   });
 
   add.method('showMenu', function (cmdList, target, caption, evt) {
-    var menu = MenuMorph.fromCommandList(cmdList, target);
+    var menu = cmdList.createMenu(target);
     var world = this.worldFor(evt);
-    menu.openIn(world, evt.point(), false, caption);
+    menu.openIn(world, (evt || Event.createFake()).point(), false, caption);
   });
 
   add.method('justChanged', function (obj, evt) {

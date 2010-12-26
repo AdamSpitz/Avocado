@@ -12,19 +12,26 @@ Morph.addMethods({
   showContextMenu: function(evt) {
     var menu = this.contextMenu(evt);
     if (!menu) { return; }
-    var baseColor = Color.black; // should be a clear difference between a morph menu and a context menu
-    menu.listStyle = Object.create(menu.listStyle);
-    menu.textStyle = Object.create(menu.textStyle);
-    menu.listStyle.borderColor = baseColor;
-    menu.listStyle.fill        = baseColor.lighter(5);
-    menu.textStyle.textColor   = baseColor;
+    
+    // should be a clear difference between a morph menu and a context menu
+    var baseColor = Color.black;
+    if (menu.listStyle) {
+      menu.listStyle = Object.create(menu.listStyle);
+      menu.listStyle.borderColor = baseColor;
+      menu.listStyle.fill        = baseColor.lighter(5);
+    }
+    if (menu.textStyle) {
+      menu.textStyle = Object.create(menu.textStyle);
+      menu.textStyle.textColor   = baseColor;
+    }
+    
     menu.openIn(this.world(), evt.point(), false, Object.inspect(this).truncate());
   },
 
   contextMenu: function (evt) {
     var cs = this.commands();
     if (!cs || cs.size() === 0) { return null; }
-    return MenuMorph.fromCommandList(cs, this);
+    return cs.createMenu(this);
   },
 
   commands: function () {
@@ -43,8 +50,8 @@ Morph.addMethods({
 });
 
 Event.addMethods({
-  isForContextMenu:    function() { return this.isCtrlDown()   || this.isRightMouseButtonDown();  },
-  isForMorphMenu:      function() { return this.isCommandKey() || this.isMiddleMouseButtonDown(); }
+  isForContextMenu:    function() { return (this.isLeftMouseButtonDown() && this.isCtrlDown())   || this.isRightMouseButtonDown() || this.isAltDown();  },
+  isForMorphMenu:      function() { return (this.isLeftMouseButtonDown() && this.isCommandKey()) || this.isMiddleMouseButtonDown(); }
 });
 
 MenuMorph.addMethods({
@@ -56,10 +63,23 @@ MenuMorph.addMethods({
   }
 });
 
-Object.extend(MenuMorph, {
-  fromCommandList: function(cmdList, morph) {
-    var menu = new MenuMorph([], morph);
-    cmdList.addItemsToMenu(menu, morph);
-    return menu;
+PieMenuMorph.addMethods({
+  addItem: function(item) {
+    if (item) {
+      this.items.push(item);
+    } else {
+      this.addLine();
+    }
+  },
+  
+  addLine: function() {
+    // nothing to do here
+  },
+  
+  openIn: function(parentMorph, loc, remainOnScreen, captionIfAny) { 
+    // aaa - What's the right way to create a common interface between MenuMorph and PieMenuMorph?
+    var evt = Event.createFake();
+    evt.mousePoint = loc;
+    this.open(evt);
   }
 });

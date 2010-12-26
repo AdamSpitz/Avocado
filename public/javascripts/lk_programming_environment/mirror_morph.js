@@ -120,6 +120,10 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     if (this._copyDownParentsLabel) { this._copyDownParentsLabel.cancelChanges(); }
   }, {category: ['annotation']});
 
+  add.method('expander', function () {
+    return this._expander;
+  }, {category: ['accessing']});
+
   add.method('updateExpandedness', function () {
     this.updateAppearance();
   }, {category: ['updating']});
@@ -242,32 +246,37 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     cmdList.addItem(avocado.command.create("script me", this.scriptMe));
     cmdList.addLine();
     
-    if (this.mirror().canHaveChildren()) {
-      if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "create child", go: function(evt) { this.createChild(evt); }});
+    if (this.shouldAllowModification()) {
+      var creationCommands = [];
+      if (this.mirror().canHaveChildren()) {
+        creationCommands.push(avocado.command.create("create child", function(evt) { this.createChild(evt); }, this));
       }
-    }
 
-    if (this.mirror().isReflecteeProbablyAClass()) {
-      if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "create subclass", go: function(evt) { this.createSubclass(evt); }});
+      if (this.mirror().isReflecteeProbablyAClass()) {
+        creationCommands.push(avocado.command.create("create subclass", function(evt) { this.createSubclass(evt); }, this));
       }
-    }
 
-    if (this.mirror().hasAccessibleParent()) {
-      if (this.shouldAllowModification()) {
-        cmdList.addItem({label: "interpose new parent", go: function(evt) { this.interposeNewParent(evt); }});
+      if (this.mirror().hasAccessibleParent()) {
+        creationCommands.push(avocado.command.create("interpose new parent", function(evt) { this.interposeNewParent(evt); }, this));
+      }
+
+      if (creationCommands.length > 0) {
+        cmdList.addItem(avocado.command.create("create", creationCommands));
       }
     }
     
     if (this.mirror().canHaveAnnotation()) {
       cmdList.addLine();
 
+      var annotationCommands = [];
+      
       if (this.mirror().comment) {
-        cmdList.addItem(this._commentToggler.commandForToggling("comment"));
+        annotationCommands.push(this._commentToggler.commandForToggling("comment"));
       }
 
-      cmdList.addItem(this._annotationToggler.commandForToggling("annotation"));
+      annotationCommands.push(this._annotationToggler.commandForToggling("annotation"));
+      
+      cmdList.addItem(avocado.command.create("annotation", annotationCommands));
     }
 
     cmdList.addLine();

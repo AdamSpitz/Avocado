@@ -3,22 +3,30 @@ transporter.module.create('lk_ext/highlighting', function(requires) {}, function
 
 thisModule.addSlots(Morph.prototype, function(add) {
 
+  add.method('styleWhenHighlighted', function () {
+    if (! this._styleBeforeHighlighting.fill) {
+      return {
+        fill: Color.white,
+        fillOpacity: 0.7
+      };
+    } else {
+      return {
+        fill: this._styleBeforeHighlighting.fill.mixedWith(Color.white, 0.7)
+      };
+    }
+  }, {category: ['highlighting']});
+  
   add.method('beHighlighted', function () {
-    if (!this._baseFill) {
-      this._baseFill = this.getFill();
-      if (!this._baseFill) {
-        this.setFill(Color.white);
-        this.setFillOpacity(0.7);
-      } else {
-        this.setFill(this._baseFill.mixedWith(Color.white, 0.7));
-      }
+    if (!this._styleBeforeHighlighting) {
+      this._styleBeforeHighlighting = this.makeStyleSpec();
+      this.applyStyle(this.styleWhenHighlighted());
     }
   }, {category: ['highlighting']});
 
   add.method('beUnhighlighted', function () {
-    if (this._baseFill !== undefined) {
-      this.setFill(this._baseFill);
-      this._baseFill = undefined;
+    if (this._styleBeforeHighlighting) {
+      this.applyStyle(this._styleBeforeHighlighting);
+      delete this._styleBeforeHighlighting;
     }
   }, {category: ['highlighting']});
 

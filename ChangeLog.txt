@@ -1,3 +1,19 @@
+Saturday, December 25, 2010
+
+  - First crack at wheel menus. http://www.c2.com/cgi/wiki?WheelMenu
+
+Friday, December 24, 2010
+
+  - Working on making "vocabulary morphs" (need a better name - the idea is that they show you all the messages that an object understands).
+
+Wednesday, December 22, 2010
+
+  - A few small refactorings: getting objects out of the global namespace, using enumerator objects more consistently, etc.
+
+Friday, December 17, 2010
+
+  - Some performance optimizations to reduce memory usage.
+
 Thursday, December 9, 2010
 
   - First crack at remote reflection. Not working yet with the real remote server, but can make a mirror that uses a local mock server instead of a reflectee() method.

@@ -21,13 +21,15 @@ thisModule.addSlots(transporter, function(add) {
   add.method('addGlobalCommandsTo', function (cmdList, evt) {
     cmdList.addLine();
 
-    cmdList.addItem(["all modules", function(evt) {
-      avocado.ui.showObjects(avocado.enumerator.create(transporter.module, 'eachModule'), "all modules", evt);
-    }]);
+    cmdList.addItem(["show modules...", [
+      ["changed modules", function(evt) {
+        avocado.ui.showObjects(transporter.module.changedOnes(), "changed modules", evt);
+      }],
 
-    cmdList.addItem(["changed modules", function(evt) {
-      avocado.ui.showObjects(transporter.module.changedOnes(), "changed modules", evt);
-    }]);
+      ["all modules", function(evt) {
+        avocado.ui.showObjects(avocado.enumerator.create(transporter.module, 'eachModule'), "all modules", evt);
+      }]
+    ]]);
 
     if (transporter.availableRepositories.any(function(repo) { return repo.canListDirectoryContents; })) {
       cmdList.addItem(["load JS file...", function(evt) {

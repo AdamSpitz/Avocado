@@ -281,27 +281,31 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
       this.cleanUp(evt);
     }.bind(this)]);
 
-    cmdList.addItem(["remember this pose", function(evt) {
+    var poseCommands = [];
+    
+    poseCommands.push(["remember this pose", function(evt) {
       this.rememberThisPose();
     }.bind(this)]);
 
     if (this.explicitlyRememberedPoses().size() > 0) {
-      cmdList.addItem(["assume a pose...", function(evt) {
+      poseCommands.push(["assume a pose...", function(evt) {
         avocado.ui.showMenu(this.poseChooser(), this.world(), null, evt);
       }.bind(this)]);
     }
 
     if (this.canGoBackToPreviousPose()) {
-      cmdList.addItem(["back to previous pose", function(evt) {
+      poseCommands.push(["back to previous pose", function(evt) {
         this.goBackToPreviousPose();
       }.bind(this)]);
     }
 
     if (this.canGoForwardToNextPose()) {
-      cmdList.addItem(["forward to next pose", function(evt) {
+      poseCommands.push(["forward to next pose", function(evt) {
         this.goForwardToNextPose();
       }.bind(this)]);
     }
+    
+    cmdList.addItem(["poses...", poseCommands]);
   }, {category: ['menus']});
 
 });
