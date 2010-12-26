@@ -63,12 +63,12 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('show', function (string) { this.log(string); });
 
   add.method('running', function () {
-		this.show('Running ' + this.id());
+		// this.show('Running ' + this.id()); // this is annoying -- Adam
 		this.statusUpdateFunc && this.statusUpdateFunc(this, 'running');
 	});
 
   add.method('success', function () {
-		this.show(this.id()+ ' done', 'color: green;');
+		// this.show(this.id()+ ' done', 'color: green;'); // -- also annoying -- Adam
 		this.statusUpdateFunc && this.statusUpdateFunc(this, 'success');
 	});
 
