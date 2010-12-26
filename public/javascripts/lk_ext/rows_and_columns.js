@@ -135,13 +135,10 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['layout']});
 
   add.method('minimumExtent', function () {
-    if (this._cachedMinimumExtent) {
-      return this.adjustForRigidity(this._cachedMinimumExtent).scaleBy(this.getScale());
-    } else {
-      var e = this.calculateOverallMinimumExtent(this.calculateMinimumExtentsForRowsAndColumns());
-      this._cachedMinimumExtent = e;
-      return this.adjustForRigidity(e).scaleBy(this.getScale());
+    if (! this._cachedMinimumExtent) {
+      this._cachedMinimumExtent = this.calculateOverallMinimumExtent(this.calculateMinimumExtentsForRowsAndColumns());
     }
+    return this.adjustForRigidity(this._cachedMinimumExtent).scaleBy(this.getScale());
   }, {category: ['layout']});
 
   add.method('adjustForRigidity', function (e) {
@@ -167,14 +164,17 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   add.method('calculateMinimumExtentFor', function (morphs, direction) {
     var r = { biggestSideways: 0, canFillSpace: false };
     
-    if (this._debugMyLayout) { console.log("calculateMinimumExtentFor " + morphs.length + " morphs in direction " + direction); }
+    if (this._debugMyLayout) { console.log("calculateMinimumExtentFor " + morphs.size() + " morphs in direction " + direction); }
     morphs.each(function(m) {
-      r.biggestSideways = Math.max(r.biggestSideways, direction.sideways.coord(m.minimumExtent()));
+      var mMinExt = m.minimumExtent();
+      var mMinSideways = direction.sideways.coord(mMinExt);
+      if (this._debugMyLayout) { console.log("minimumExtent() for " + m.inspect() + " in direction " + direction.sideways + " is " + mMinSideways); }
+      r.biggestSideways = Math.max(r.biggestSideways, mMinSideways);
       
       // How should we do this? Should the row be space-filling if *any* morph in it
       // is space-filling, or if *all* of them are, or what? Try any for now. -- Adam
       if (direction.sideways.layoutModeOf(m) === avocado.LayoutModes.SpaceFill) { r.canFillSpace = true; }
-    });
+    }.bind(this));
     
     return r;
   }, {category: ['layout']});
@@ -185,8 +185,6 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     this.eachDirection(function(dir) {
       var infoForThisDirection = dir.coord(layoutInfoForRowsAndColumns);
       
-      if (this._debugMyLayout) { console.log("In calculateOverallMinimumExtent, infoForThisDirection [" + dir + "] has " + infoForThisDirection.length + " elements"); }
-      
       var totalLineSizes = infoForThisDirection.inject(0, function(sum, r) {
         return sum + r.biggestSideways;
       });
@@ -195,6 +193,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
                          dir.sideways.padding2(this.padding) +
                          (dir.sideways.coord(this.padding.between) * (infoForThisDirection.length - 1));
 
+      if (this._debugMyLayout) { console.log("In calculateOverallMinimumExtent, direction " + dir + ", totalLineSizes is " + totalLineSizes + " and totalPadding is " + totalPadding + " for a total of " + (totalLineSizes + totalPadding)); }
       dir.sideways.setCoord(overallMinExt, totalLineSizes + totalPadding);
     }.bind(this));
     
@@ -229,17 +228,20 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     if (this.horizontalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.x = Math.max(this._cachedMinimumExtent.x, thisExtent.x); }
     if (this.  verticalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.y =          this._cachedMinimumExtent.y;                }
     if (this.  verticalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.y = Math.max(this._cachedMinimumExtent.y, thisExtent.y); }
-    if (this._debugMyLayout) { console.log("availableSpace: " + availableSpace + ", availableSpaceToUse: " + availableSpaceToUse); }
+    if (this._debugMyLayout) { console.log(this.inspect() + ": availableSpace: " + availableSpace + ", availableSpaceToUse: " + availableSpaceToUse + ", this.getScale(): " + this.getScale() + ", this._cachedMinimumExtent: " + this._cachedMinimumExtent + ", thisExtent: " + thisExtent); }
     return availableSpaceToUse;
   }, {category: ['layout']});
 
   add.method('isAlreadyLaidOutInSpace', function (s) {
     if (this._layoutIsStillValid && this._spaceUsedLastTime && this._spaceUsedLastTime.eqPt(s)) {
       if (this._debugMyLayout) {
-        console.log("No need to lay out " + this.inspect() + ", since it's already laid out in the appropriate amount of space.");
+        console.log("No need to lay out " + this.inspect() + ", since it's already laid out in the appropriate amount of space: " + s);
       }
       return true;
     } else {
+      if (this._debugMyLayout) {
+        console.log("Gonna have to lay out " + this.inspect() + ", since _spaceUsedLastTime is " + this._spaceUsedLastTime + " but s is " + s);
+      }
       return false;
     }
   }, {category: ['layout']});
@@ -293,9 +295,9 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
         var actualsForThisMorph = direction.point(direction.sideways.coord(actualCoordsAndSizes)[j], direction.coord(actualCoordsAndSizes)[i]);
         var availableSpaceToPassOnToThisChild = pt(actualsForThisMorph.x.space, actualsForThisMorph.y.space);
 
-        var mExtent = m.rejiggerTheLayout(availableSpaceToPassOnToThisChild);
-        if (this._debugMyLayout) { console.log("m.extent is " + mExtent); }
-        var unusedSidewaysSpace = direction.sideways.coord(availableSpaceToPassOnToThisChild) - direction.sideways.coord(mExtent);
+        var mScaledExtent = m.rejiggerTheLayout(availableSpaceToPassOnToThisChild);
+        if (this._debugMyLayout) { console.log("mScaledExtent is " + mScaledExtent); }
+        var unusedSidewaysSpace = direction.sideways.coord(availableSpaceToPassOnToThisChild) - direction.sideways.coord(mScaledExtent);
         
         // Uglified slightly to avoid creating the Point object; it's actually getting significant. -- Adam
         var f = direction         .coord(actualsForThisMorph).coordinate;
@@ -313,7 +315,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['layout']});
 
   add.method('setExtentIfChanged', function (newExtent) {
-    if (this._debugMyLayout) { console.log("Gonna set extent to: " + newExtent + ", current scale is " + this.getScale()); }
+    if (this._debugMyLayout) { console.log("Gonna set extent to: " + newExtent); }
     if (! newExtent.eqPt(this.getExtent())) {
       this.setExtent(newExtent);
       //this.smoothlyResizeTo(newExtent); // aaa - doesn't quite work right yet

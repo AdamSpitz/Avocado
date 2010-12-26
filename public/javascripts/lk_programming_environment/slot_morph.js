@@ -135,7 +135,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['signature']});
 
   add.method('sourcePane', function () {
-    return this._sourcePane || (this._sourcePane = ScrollPane.ifNecessaryToContain(this.sourceMorph(), pt(400,300)).setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill}));
+    return this._sourcePane || (this._sourcePane = ScrollPane.ifNecessaryToContain(this.sourceMorph(), pt(400,300)));
   }, {category: ['source']});
 
   add.method('sourceMorph', function () {
@@ -347,8 +347,6 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.commentStyle, func
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.sourceMorphStyle, function(add) {
 
   add.data('fontFamily', 'monospace');
-  
-  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
   
   add.data('suppressHandles', true);
 

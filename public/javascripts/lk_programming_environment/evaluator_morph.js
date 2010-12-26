@@ -144,8 +144,6 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype.textStyle, function(add) {
 
   add.data('fontFamily', 'monospace');
 
-  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
-
 });
 
 

@@ -44,12 +44,14 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('minimumExtent', function () {
     // aaa - meh, don't bother caching yet, I'm scared that I haven't done this right
-    var e = this.getExtent().scaleBy(this.getScale());
+    var e = this.getExtent();
     this._cachedMinimumExtent = e;
-    return e;
+    return e.scaleBy(this.getScale());
   }, {category: ['layout']});
 
   add.method('rejiggerTheLayout', function (availableSpace) {
+    var availableSpaceToUse = availableSpace.scaleBy(1 / this.getScale());
+    
     var oldExtent = this.getExtent();
     var newExtent = oldExtent;
 
@@ -59,24 +61,23 @@ thisModule.addSlots(Morph.prototype, function(add) {
     */
 
     // Avoid infinite recursion... blecch.
-    if (this._isChangingRightNow) {return newExtent;}
-    this._isChangingRightNow = true;
+    if (! this._isChangingRightNow) {
+      this._isChangingRightNow = true;
 
-    //console.log("rejiggering the layout of a " + this.constructor.type);
-    
-    if (this.horizontalLayoutMode === avocado.LayoutModes.SpaceFill) { newExtent = newExtent.withX(availableSpace.x); }
-    if (this.  verticalLayoutMode === avocado.LayoutModes.SpaceFill) { newExtent = newExtent.withY(availableSpace.y); }
-    if (! oldExtent.eqPt(newExtent)) { this.setExtent(newExtent); }
+      if (this.horizontalLayoutMode === avocado.LayoutModes.SpaceFill) { newExtent = newExtent.withX(availableSpaceToUse.x); }
+      if (this.  verticalLayoutMode === avocado.LayoutModes.SpaceFill) { newExtent = newExtent.withY(availableSpaceToUse.y); }
+      if (! oldExtent.eqPt(newExtent)) { this.setExtent(newExtent); }
 
-    delete this._isChangingRightNow;
-
-    return newExtent;
+      delete this._isChangingRightNow;
+    }
+    return newExtent.scaleBy(this.getScale());
   }, {category: ['layout']});
 
   add.method('hasMinimumExtentActuallyChanged', function () {
     var old_cachedMinimumExtent = this._cachedMinimumExtent;
     this._cachedMinimumExtent = null;
-    var newMinimumExtent = this.minimumExtent();
+    this.minimumExtent();
+    var newMinimumExtent = this._cachedMinimumExtent;
     return ! (old_cachedMinimumExtent && old_cachedMinimumExtent.eqPt(newMinimumExtent));
   }, {category: ['layout']});
 
@@ -100,7 +101,8 @@ thisModule.addSlots(Morph.prototype, function(add) {
       if (layoutRejiggeringHasBeenTriggeredHigherUp) { return; }
     }
     if (this._spaceUsedLastTime) {
-      this.rejiggerTheLayout(this._spaceUsedLastTime);
+      var scaledSpaceToUse = this._spaceUsedLastTime.scaleBy(this.getScale());
+      this.rejiggerTheLayout(scaledSpaceToUse);
     } else {
       o.forceLayoutRejiggering();
     }

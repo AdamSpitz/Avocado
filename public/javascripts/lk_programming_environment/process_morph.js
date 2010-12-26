@@ -57,7 +57,7 @@ thisModule.addSlots(avocado.process.context, function(add) {
     var contextSlot = Object.create(slot);
     contextSlot._processContext = this;
     var slotMorph = new avocado.process.context.Morph(contextSlot);
-    slotMorph.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;
+    slotMorph.applyStyle(this.defaultMorphStyle);
     var m = avocado.RowMorph.createSpaceFilling([slotMorph]);
     m._model = this;
     return m;
@@ -110,6 +110,13 @@ thisModule.addSlots(avocado.process.context.Morph.prototype, function(add) {
 thisModule.addSlots(avocado.process.defaultMorphStyle, function(add) {
 
   add.data('fill', lively.paint.defaultFillWithColor(Color.green.lighter()));
+
+});
+
+  
+thisModule.addSlots(avocado.process.context.defaultMorphStyle, function(add) {
+
+  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 
 });
 
