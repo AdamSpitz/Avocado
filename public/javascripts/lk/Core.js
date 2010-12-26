@@ -2662,6 +2662,7 @@ Morph.addMethods({
 		// While scalePoint carries both x- and y-scaling,
 		//    getScale() and setScale() allow the use of simple, er, scalars
 		this.setScalePoint(pt(scale, scale));
+		return this; // added by Adam
 	},
 
 	setScalePoint: function(sp) { 

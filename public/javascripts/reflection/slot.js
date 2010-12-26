@@ -84,15 +84,15 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   }, {category: ['user interface']});
 
   add.method('newContentsForSourceCode', function (s) {
-    avocado.ui.showMessageIfWarningDuring(function() {
+    //avocado.ui.showMessageIfWarningDuring(function() {
       // need the assignment and the semicolon so that JSLint doesn't gripe about seeing a naked expression
       var ok = JSLINT(avocado.stringBuffer.create('var ___contents___ = (').append(s).append(');').toString());
       if (!ok) {
         JSLINT.errors.each(function(error) {
-          throw "JSLint says: " + error.reason;
+          throw new Error("JSLint says: " + error.reason);
         });
       }
-    }.bind(this));
+    //}.bind(this));
 
     var newContents = avocado.ui.showMessageIfErrorDuring(function() {
       return reflect(eval("(" + s + ")"));

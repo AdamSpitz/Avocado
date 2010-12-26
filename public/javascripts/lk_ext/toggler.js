@@ -1,9 +1,13 @@
-transporter.module.create('lk_ext/toggler', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/toggler', function(requires) {
+
+requires('lk_ext/optional_morph');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('toggler', {}, {category: ['ui']});
+  add.creator('toggler', Object.create(avocado.optionalMorph), {category: ['ui']});
 
 });
 
@@ -14,16 +18,17 @@ thisModule.addSlots(avocado.toggler, function(add) {
     return Object.newChildOf(this, updateFunction, morphToShowOrHide);
   });
 
-  add.method('initialize', function (morphToUpdate, morphToShowOrHide) {
-    this._morphToUpdate = morphToUpdate;
-    this._morphToShowOrHide = morphToShowOrHide;
+  add.method('initialize', function ($super, morphToUpdate, morphToShowOrHide) {
+    $super(morphToUpdate, morphToShowOrHide);
     this._valueHolder = avocado.booleanHolder.containing(false);
     this._valueHolder.addObserver(this.valueChanged.bind(this));
   });
 
-  add.method('toggle', function (evt) { this._valueHolder.toggle(evt); });
+  add.method('shouldBeShown', function () { return this.isOn(); });
 
   add.method('isOn', function () { return this._valueHolder.getValue(); });
+
+  add.method('toggle', function (evt) { this._valueHolder.toggle(evt); });
 
   add.method('setValue', function (b, evt) { this._valueHolder.setValue(b, evt); });
 
@@ -32,15 +37,7 @@ thisModule.addSlots(avocado.toggler, function(add) {
   add.method('beOff', function (evt) { this.setValue(false, evt); });
 
   add.method('valueChanged', function (valueHolder, evt) {
-    if (this._morphToUpdate) { this._morphToUpdate.updateAppearance(); }
-    if (this.isOn()) { this.actualMorphToShow().wasJustShown(evt); }
-  });
-
-  add.method('shouldNotBeShown', function () { return ! this.isOn(); });
-
-  add.method('actualMorphToShow', function () {
-    var m = this._morphToShowOrHide;
-    return typeof(m) === 'function' ? m() : m;
+    this.update(evt);
   });
 
   add.method('constructUIStateMemento', function () {
@@ -56,20 +53,6 @@ thisModule.addSlots(avocado.toggler, function(add) {
     c.setHelpText(function() { return (this.isOn() ? 'Hide ' : 'Show ') + name; }.bind(this));
     return c;
   }, {category: ['commands']});
-
-});
-
-
-thisModule.addSlots(Morph.prototype, function(add) {
-
-  add.method('wasJustShown', function (evt) { });
-
-});
-
-
-thisModule.addSlots(TextMorph.prototype, function(add) {
-
-  add.method('wasJustShown', function (evt) { this.requestKeyboardFocus(evt.hand); });
 
 });
 

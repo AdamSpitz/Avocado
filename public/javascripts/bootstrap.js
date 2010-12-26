@@ -357,7 +357,7 @@ var annotator = {
   },
 
   actualExistingAnnotationOf: function(o) {
-    if (o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
+    if (typeof(o.hasOwnProperty) === 'function' && o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
     
     // HACK: Damned JavaScript. Adding attributes to Object.prototype and stuff like that
     // is a bad idea, because people use for..in loops to enumerate their attributes.

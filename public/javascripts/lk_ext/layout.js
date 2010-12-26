@@ -44,7 +44,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('minimumExtent', function () {
     // aaa - meh, don't bother caching yet, I'm scared that I haven't done this right
-    var e = this.getExtent();
+    var e = this.getExtent().scaleBy(this.getScale());
     this._cachedMinimumExtent = e;
     return e;
   }, {category: ['layout']});

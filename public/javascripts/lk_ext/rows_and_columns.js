@@ -135,10 +135,13 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['layout']});
 
   add.method('minimumExtent', function () {
-    if (this._cachedMinimumExtent) { return this._cachedMinimumExtent; }
-    var e = this.calculateOverallMinimumExtent(this.calculateMinimumExtentsForRowsAndColumns());
-    this._cachedMinimumExtent = e;
-    return this.adjustForRigidity(e);
+    if (this._cachedMinimumExtent) {
+      return this.adjustForRigidity(this._cachedMinimumExtent).scaleBy(this.getScale());
+    } else {
+      var e = this.calculateOverallMinimumExtent(this.calculateMinimumExtentsForRowsAndColumns());
+      this._cachedMinimumExtent = e;
+      return this.adjustForRigidity(e).scaleBy(this.getScale());
+    }
   }, {category: ['layout']});
 
   add.method('adjustForRigidity', function (e) {
@@ -205,20 +208,23 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   add.method('rejiggerTheLayout', function (availableSpace) {
     var thisExtent = this.getExtent();
     var availableSpaceToUse = this.calculateSpaceToUseOutOf(availableSpace, thisExtent);
-    if (this.isAlreadyLaidOutInSpace(availableSpaceToUse)) { return thisExtent; }
-    this._spaceUsedLastTime = availableSpaceToUse;
-    
-    var extraSpaceUsage = this.decideWhatToDoWithExtraSpace(availableSpaceToUse);
-    var actualCoordsAndSizes = this.calculateActualCoordinatesAndSizes(extraSpaceUsage);
-    this.setMorphPositionsAndSizes(actualCoordsAndSizes);
-    this.setExtentIfChanged(availableSpaceToUse);
-    
-    this._layoutIsStillValid = true;
-    return availableSpaceToUse;
+    if (this.isAlreadyLaidOutInSpace(availableSpaceToUse)) {
+      availableSpaceToUse = thisExtent;
+    } else {
+      this._spaceUsedLastTime = availableSpaceToUse;
+
+      var extraSpaceUsage = this.decideWhatToDoWithExtraSpace(availableSpaceToUse);
+      var actualCoordsAndSizes = this.calculateActualCoordinatesAndSizes(extraSpaceUsage);
+      this.setMorphPositionsAndSizes(actualCoordsAndSizes);
+      this.setExtentIfChanged(availableSpaceToUse);
+
+      this._layoutIsStillValid = true;
+    }
+    return availableSpaceToUse.scaleBy(this.getScale());
   }, {category: ['layout']});
 
   add.method('calculateSpaceToUseOutOf', function (availableSpace, thisExtent) {
-    var availableSpaceToUse = availableSpace.copy();
+    var availableSpaceToUse = availableSpace.scaleBy(1 / this.getScale());
     if (this.horizontalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.x =          this._cachedMinimumExtent.x;                }
     if (this.horizontalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.x = Math.max(this._cachedMinimumExtent.x, thisExtent.x); }
     if (this.  verticalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.y =          this._cachedMinimumExtent.y;                }

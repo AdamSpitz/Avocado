@@ -5,8 +5,8 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
   add.method('onMouseWheel', function (evt) {
 	  if (evt.isCtrlDown() || evt.isMetaDown() || evt.isAltDown()) {
-      var factor = Math.pow(1.1, (evt.rawEvent.wheelDeltaY / -600));
-      this.zoomBy(factor, evt.hand.getPosition());
+      var factor = Math.pow(1.2, (evt.rawEvent.wheelDeltaY / -600));
+      this.zoomBy(factor, evt.point());
       return true;
     }
   }, {category: ['navigation']});
@@ -38,19 +38,35 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       // m.startZoomingInAStraightLineTo(m.position().addPt(delta), false, false, true);
       m.moveBy(delta);
     });
+    
+    this.hands.each(function(m) {
+      // The animated version is a bit weird for now, I think. -- Adam
+      // m.startZoomingInAStraightLineTo(m.position().addPt(delta), false, false, true);
+      m.moveBy(delta);
+      console.log("Moving the hand by " + delta);
+    });
+    
   }, {category: ['navigation']});
 
-  add.method('zoomBy', function (factor, desiredCenterPos) {
-    this.staySameSizeAndSmoothlyScaleTo(this.getScale() * factor, desiredCenterPos, function() {
-      //this.hands.forEach(function(h) { h.scaleBy(1 / factor); });
+  add.method('zoomBy', function (factor, pointerPosition) {
+    var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
+    
+    worldNavigator.staySameSizeAndScaleTo(this.getScale() * factor, pointerPosition, function() {
     }.bind(this));
   }, {category: ['navigation']});
 
-  add.method('staySameSizeAndSmoothlyScaleTo', function (desiredScale, desiredCenterPos, functionToCallWhenDone) {
+  add.method('staySameSizeAndSmoothlyScaleTo', function (desiredScale, currentPointerPos, functionToCallWhenDone) {
     var originalViewableArea = this.getExtent();
     var originalScale = this.getScale();
     var scalingFactor = desiredScale / originalScale;
     var newViewableArea = originalViewableArea.scaleBy(1 / scalingFactor);
+    
+    var newPointerPos = currentPointerPos.scaleBy(scalingFactor);
+    var pointerDelta = currentPointerPos.subPt(newPointerPos);
+    
+    var newPos = pointerDelta;
+    
+    /*
     var currentCenterPos = this.getExtent().scaleBy(0.5);
     var desiredDelta = desiredCenterPos.subPt(currentCenterPos);
     var maxDelta = originalViewableArea.subPt(originalViewableArea.scaleBy(1 / scalingFactor)).abs();
@@ -59,17 +75,24 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     var newCenterPos = currentCenterPos.addPt(delta);
     var newTopLeft = newCenterPos.subPt(newViewableArea.scaleBy(0.5));
     var newPos = newTopLeft.negated();
+    */
     
     var desiredSize = this.getExtent().scaleBy(this.getScale());
     var accessor = {
       getValue: function(m) {return m.getScale();},
       setValue: function(m, v) {
+        var os = m.getScale();
+        var sf = v / os;
+        
         m.setScale(v);
         m.setExtent(desiredSize.scaleBy(1 / v));
         m.hands().forEach(function(h) {
           h.setScale(1 / v);
-          // Just trying to make the hand stay in the right place during the animation.
-          //h.makeANullMove(); // aaa I'm not quite sure this does what I thought it does
+          
+          var hnp = h.getPosition();
+          var hop = hnp.scaleBy(sf);
+          var d = hop.subPt(hnp);
+          h.moveBy(d);
         });
       }
     };
@@ -110,8 +133,23 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     return this._world.setScale(s);
   });
 
+  add.method('getExtent', function () {
+    return this._world.getExtent();
+  });
+
   add.method('setExtent', function (r) {
     return this._world.setExtent(r);
+  });
+  
+  add.method('staySameSizeAndScaleTo', function (s, currentPointerPos) {
+    var oldScale = this.getScale();
+    var desiredSize = this.getExtent().scaleBy(oldScale);
+    this.setScale(s);
+    this.setExtent(desiredSize.scaleBy(1 / s));
+    this.setPositionAndDoMotionBlurIfNecessary(this.getPosition().addPt(currentPointerPos.subPt(currentPointerPos.scaleBy(s / oldScale))));
+    this.hands().forEach(function(h) {
+      h.setScale(1 / s);
+    });
   });
 
   add.method('isOnScreen', function () {

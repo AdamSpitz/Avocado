@@ -1503,7 +1503,16 @@ BoxMorph.subclass('TextMorph', {
 			this.fitHeight();
 		else 
 			this.fitWidth();
+		
 		return this; // added by Adam
+	},
+	
+	adjustScale: function () {
+		// Experimenting to see if I can make a TextMorph that reduces its own scale
+		// as it gains text. -- Adam
+  	var e = this.getExtent();
+		var maxSpace = pt(200,200);
+	  this.setScale(Math.max(0.4, Math.min(1, maxSpace.x / e.x, maxSpace.y / e.y)));
 	},
 
 	lineHeight: function() {

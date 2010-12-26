@@ -89,7 +89,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     // summaryLabel.setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     // return summaryLabel;
     
-    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding);
+    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding).setScale(0.5);
   }, {category: ['creating']});
 
   add.method('headerRow', function () {
