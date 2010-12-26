@@ -77,7 +77,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     this._subnodeMorphs = this.subnodeMorphsInOrder();
     this._nonNodeContentMorphs.each(function(sm ) {allSubmorphs.push(sm );});
     this._subnodeMorphs.each(function(scm) {allSubmorphs.push(scm);});
-    allSubmorphs.each(function(m) { m.horizontalLayoutMode = avocado.LayoutModes.SpaceFill; });
+    allSubmorphs.each(function(m) { if (m !== this._contentsSummaryMorph) { m.horizontalLayoutMode = avocado.LayoutModes.SpaceFill; } }.bind(this));
     return avocado.tableContents.createWithColumns([allSubmorphs]);
   }, {category: ['contents panel']});
 
