@@ -43,7 +43,6 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       // The animated version is a bit weird for now, I think. -- Adam
       // m.startZoomingInAStraightLineTo(m.position().addPt(delta), false, false, true);
       m.moveBy(delta);
-      console.log("Moving the hand by " + delta);
     });
     
   }, {category: ['navigation']});
