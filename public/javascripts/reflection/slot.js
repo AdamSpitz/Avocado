@@ -77,7 +77,9 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   add.method('sourceCode', function () {
     try {
       var contentsMir = this.contents();
-      return contentsMir.expressionEvaluatingToMe(this.isSimpleMethod() || this.equals(contentsMir.probableCreatorSlot()));
+      
+      // used to also say  || this.equals(contentsMir.probableCreatorSlot())  but I don't think I like it. -- Adam
+      return contentsMir.expressionEvaluatingToMe(this.isSimpleMethod()); 
     } catch (ex) {
       return "cannot display contents";
     }

@@ -66,6 +66,10 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   
   add.method('mirror', function () { return this._model.mirror(); }, {category: ['accessing']});
 
+  add.method('expand', function () {
+    this._expander.expand();
+  }, {category: ['updating']});
+
   add.method('updateExpandedness', function () {
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['updating']});

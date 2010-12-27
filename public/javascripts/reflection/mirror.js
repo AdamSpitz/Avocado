@@ -325,6 +325,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
     }
   }, {category: ['iterating']});
 
+  add.method('immediateSubcategoriesOf', function (c) {
+    return avocado.enumerator.create(this, 'eachImmediateSubcategoryOf', c);
+  }, {category: ['iterating']});
+
   add.method('slotAt', function (n) {
     if (n === '__proto__') { return this.parentSlot(); }
     return Object.create(avocado.slots.plain).initialize(this, n.toString());
@@ -1242,9 +1246,9 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
       this.createSlot(mir, 'y', 47, ['letters']);
       
       var root = mir.rootCategory();
-      this.assertEqual('letters', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root).toArray().join(', '));
-      this.assertEqual('letters consonants, letters vowels', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters')).toArray().sort().join(', '));
-      this.assertEqual('', avocado.enumerator.create(mir, 'eachImmediateSubcategoryOf', root.subcategory('letters').subcategory('vowels')).toArray().sort().join(', '));
+      this.assertEqual('letters', mir.immediateSubcategoriesOf(root).toArray().join(', '));
+      this.assertEqual('letters consonants, letters vowels', mir.immediateSubcategoriesOf(root.subcategory('letters')).sort().join(', '));
+      this.assertEqual('', mir.immediateSubcategoriesOf(root.subcategory('letters').subcategory('vowels')).sort().join(', '));
       
       this.assertEqual('', mir.slotsInCategory(root).sort().join(', '));
       this.assertEqual('y', mir.slotsInCategory(root.subcategory('letters')).sort().join(', '));

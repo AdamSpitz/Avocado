@@ -166,14 +166,16 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     
     if (this._debugMyLayout) { console.log("calculateMinimumExtentFor " + morphs.size() + " morphs in direction " + direction); }
     morphs.each(function(m) {
-      var mMinExt = m.minimumExtent();
-      var mMinSideways = direction.sideways.coord(mMinExt);
-      if (this._debugMyLayout) { console.log("minimumExtent() for " + m.inspect() + " in direction " + direction.sideways + " is " + mMinSideways); }
-      r.biggestSideways = Math.max(r.biggestSideways, mMinSideways);
-      
-      // How should we do this? Should the row be space-filling if *any* morph in it
-      // is space-filling, or if *all* of them are, or what? Try any for now. -- Adam
-      if (direction.sideways.layoutModeOf(m) === avocado.LayoutModes.SpaceFill) { r.canFillSpace = true; }
+      if (m) {
+        var mMinExt = m.minimumExtent();
+        var mMinSideways = direction.sideways.coord(mMinExt);
+        if (this._debugMyLayout) { console.log("minimumExtent() for " + m.inspect() + " in direction " + direction.sideways + " is " + mMinSideways); }
+        r.biggestSideways = Math.max(r.biggestSideways, mMinSideways);
+
+        // How should we do this? Should the row be space-filling if *any* morph in it
+        // is space-filling, or if *all* of them are, or what? Try any for now. -- Adam
+        if (direction.sideways.layoutModeOf(m) === avocado.LayoutModes.SpaceFill) { r.canFillSpace = true; }
+      }
     }.bind(this));
     
     return r;
@@ -387,6 +389,67 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     this.potentialContent = function() { return c; };
   }, {category: ['adding and removing']});
 
+  add.method('setRows', function (ms) {
+    this.replaceContentWith(avocado.tableContents.createWithColumns([ms]));
+  });
+
+  add.method('setPotentialRows', function (ms) {
+    this.setPotentialContent(avocado.tableContents.createWithColumns([ms]));
+  });
+
+  add.method('setColumns', function (ms) {
+    this.replaceContentWith(avocado.tableContents.createWithRows([ms]));
+  });
+
+  add.method('setPotentialColumns', function (ms) {
+    this.setPotentialContent(avocado.tableContents.createWithRows([ms]));
+  });
+
+  add.method('addRow', function (m) {
+    if (this._tableContent && this._tableContent.primaryLines().length > 0) {
+      this.makeSurePrimaryDirectionIs(avocado.directions.horizontal);
+      var newContent = this._tableContent.copy();
+      newContent.primaryLines().last().push(m);
+      this.replaceContentWith(newContent);
+    } else {
+      this.setRows([m]);
+    }
+  });
+
+  add.method('removeRow', function (m) {
+    this.makeSurePrimaryDirectionIs(avocado.directions.horizontal);
+    this.setRows(this._tableContent.primaryLine(0).reject(function(mm) { return m === mm; }));
+  });
+
+  add.method('addColumn', function (m) {
+    if (this._tableContent && this._tableContent.primaryLines().length > 0) {
+      this.makeSurePrimaryDirectionIs(avocado.directions.vertical);
+      var newContent = this._tableContent.copy();
+      newContent.primaryLines().last().push(m);
+      this.replaceContentWith(newContent);
+    } else {
+      this.setColumns([m]);
+    }
+  });
+
+  add.method('removeColumn', function (m) {
+    this.makeSurePrimaryDirectionIs(avocado.directions.vertical);
+    this.setColumns(this._tableContent.primaryLines(0).reject(function(mm) { return m === mm; }));
+  });
+
+  add.method('addCell', function (m) {
+    if (! this._tableContent) { return this.addColumn(m); }
+    if (this._tableContent._direction1 === avocado.directions.vertical) { return this.addColumn(m); }
+    return this.addRow(m);
+  });
+
+  add.method('makeSurePrimaryDirectionIs', function (dir) {
+    if (this._tableContent && this._tableContent._direction1 !== dir) {
+      // We could actually implement this, it wouldn't be so hard.
+      throw new Error("Expected primary direction to be " + dir + ", but instead it was " + this._tableContent._direction1);
+    }
+  });
+
   add.method('reshape', function ($super, partName, newPoint, lastCall) {
     // aaa - This should probably just be in Morph.
     // aaa - Still doesn't work right if you reshape an internal guy.
@@ -516,6 +579,10 @@ thisModule.addSlots(avocado.tableContents, function(add) {
     return avocado.tableContents.create([], this._direction1);
   }, {category: ['creating']});
 
+  add.method('copy', function () {
+    return avocado.tableContents.create(this._data.map(function(line) { return line.map(function(elem) { return elem; }); }), this._direction1);
+  }, {category: ['copying']});
+
   add.method('equals', function (other) {
     if (this._direction1 !== other._direction1) { return false; }
     if (this._data.length !== other._data.length) { return false; }
@@ -642,26 +709,6 @@ thisModule.addSlots(avocado.ColumnMorph.prototype, function(add) {
 
   add.data('direction', avocado.directions.vertical);
 
-  add.method('addRow', function (m) {
-    if (this._tableContent && this._tableContent.primaryLines().length > 0) {
-      this.setRows(this._tableContent.primaryLine(0).concat([m]));
-    } else {
-      this.setRows([m]);
-    }
-  });
-
-  add.method('removeRow', function (m) {
-    this.setRows(this._tableContent.primaryLine(0).reject(function(mm) { return m === mm; }));
-  });
-
-  add.method('setRows', function (ms) {
-    this.replaceContentWith(avocado.tableContents.createWithColumns([ms]));
-  });
-
-  add.method('setPotentialRows', function (ms) {
-    this.setPotentialContent(avocado.tableContents.createWithColumns([ms]));
-  });
-
 });
 
 
@@ -670,26 +717,6 @@ thisModule.addSlots(avocado.RowMorph.prototype, function(add) {
   add.data('constructor', avocado.RowMorph);
 
   add.data('direction', avocado.directions.horizontal);
-
-  add.method('addColumn', function (m) {
-    if (this._tableContent && this._tableContent.primaryLines().length > 0) {
-      this.setColumns(this._tableContent.primaryLine(0).concat([m]));
-    } else {
-      this.setColumns([m]);
-    }
-  });
-
-  add.method('removeColumn', function (m) {
-    this.setColumns(this._tableContent.primaryLine(0).reject(function(mm) { return m === mm; }));
-  });
-
-  add.method('setColumns', function (ms) {
-    this.replaceContentWith(avocado.tableContents.createWithRows([ms]));
-  });
-
-  add.method('setPotentialColumns', function (ms) {
-    this.setPotentialContent(avocado.tableContents.createWithRows([ms]));
-  });
 
 });
 

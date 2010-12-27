@@ -78,6 +78,10 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
   add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
 
+  add.method('expand', function () {
+    if (this._expander) { this._expander.expand(); }
+  }, {category: ['accessing']});
+
   add.method('eachAssociatedObject', function (f) {
     f(this.mirror().reflectee());
     f(this.mirror());
@@ -178,7 +182,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       var m = avocado.vocabulary.create(this.mirror()).morph();
       m.openEvaluator(evt);
       if (! this.ownerSatisfying(function(o) { return o === m; })) {
-        m._expander.expand();
+        m.expand();
         m.grabMeWithoutZoomingAroundFirst(evt);
       }
       m.getAllMirrors();
@@ -206,7 +210,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
   add.method('scriptMe', function (evt) {
     var m = avocado.vocabulary.create(this.mirror()).morph();
-    m._expander.expand();
+    m.expand();
     m.grabMeWithoutZoomingAroundFirst(evt);
     m.getAllMirrors();
     return m;
@@ -221,8 +225,8 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     
     oldParentMorph.ensureIsInWorld(world, this.getPosition().addXY(0, -150), false, false, false, function() {
       evt.hand.world().addMorphAt(newParentMorph, pt(-1000, -1000));
-                this.expander().expand();
-      newParentMorph.expander().expand();
+                this.expand();
+      newParentMorph.expand();
       newParentMorph.growFromNothingAt(this.getPosition().midPt(oldParentMorph.getPosition()).addPt(newParentMorph.getExtent().scaleBy(0.5)), function() {
         this.mirror().setParent(newParent);
         this.mirror().parentSlot().beCreator();
@@ -299,7 +303,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     // might as well show the arrow from the child to the parent
 
     evt.hand.world().addMorphAt(childMirMorph, pt(-1000, -1000));
-    childMirMorph.expander().expand();
+    childMirMorph.expand();
 
     childMirMorph.growFromNothing(evt, function() {
       var parentSlotMorph = childMirMorph.slotMorphFor(child.parentSlot());
@@ -312,7 +316,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     var subclassMirMorph = avocado.ui.grab(subclass, evt);
 
     // might as well show the arrow from the subclass to the superclass
-    subclassMirMorph.expander().expand();
+    subclassMirMorph.expand();
     var superclassSlotMorph = subclassMirMorph.slotMorphFor(subclass.slotAt('superclass'));
     superclassSlotMorph.contentsPointer().pushMe();
   }, {category: ['creating children']});

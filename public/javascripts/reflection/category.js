@@ -198,8 +198,8 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
   add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
 
-  add.method('eachImmediateSubnode', function (f) {
-    this.mirror().eachImmediateSubcategoryOf(this, f);
+  add.method('immediateSubnodes', function () {
+    return this.mirror().immediateSubcategoriesOf(this);
   }, {category: ['iterating']});
 
   add.method('removeSlots', function () {

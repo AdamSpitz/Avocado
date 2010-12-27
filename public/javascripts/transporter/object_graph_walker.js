@@ -305,6 +305,10 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
         marker.markObject(type.prototype, pathToTypePrototype, true);
         marker.walk(type.prototype);
     });
+    
+    // aaa - another special case, I think
+    marker.markObject(window['__proto__'], { slotHolder: window, slotName: '__proto__' }, true);
+    
     marker.undoAllMarkings();
   });
 

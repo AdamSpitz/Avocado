@@ -34,9 +34,9 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
 thisModule.addSlots(avocado.category.Morph, function(add) {
 
-  add.data('superclass', avocado.TreeNodeMorph);
+  add.data('superclass', avocado.ZoomableTreeNodeMorph);
 
-  add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
+  add.creator('prototype', Object.create(avocado.ZoomableTreeNodeMorph.prototype));
 
   add.data('type', 'avocado.category.Morph');
 
@@ -94,7 +94,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     var hr = this._headerRow;
     if (hr) { return hr; }
     this._titleLabel = this.createTitleLabel();
-    hr = avocado.RowMorph.createSpaceFilling([this._expander, this._titleLabel], this.defaultStyle.headerRowPadding);
+    hr = avocado.RowMorph.createSpaceFilling([this._expander, this._titleLabel].compact(), this.defaultStyle.headerRowPadding);
     this._headerRow = hr;
     return hr;
   }, {category: ['creating']});
@@ -110,7 +110,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   }, {category: ['contents panel']});
 
   add.method('subnodeMorphsInOrder', function () {
-    var subnodeMorphs = this.immediateSubnodeMorphs();
+    var subnodeMorphs = this.immediateSubnodeMorphs().toArray();
     // aaa - Blecch, I hate this whole thing where the categories don't really exist until they've got a slot in them.
     // Maybe make categories a bit more real, part of the object annotation or something, instead of just having them
     // live inside the slot annotations?
@@ -131,7 +131,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   }, {category: ['contents panel']});
 
   add.method('nodeMorphFor', function (cat) {
-    return cat.ofMirror(this.mirror()).morph();
+    return cat.morph();
   }, {category: ['contents panel']});
 
   add.method('nonNodeMorphFor', function (slot) {
@@ -209,7 +209,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.method('addCategory', function (evt) {
     this.mirrorMorph().expandCategoryMorph(this);
     var cm = this.category().subcategory("").newMorph();
-    this.contentsPanel().addRow(cm);
+    this.addToContentsPanel(cm);
     cm.wasJustShown(evt);
     // aaa blecch, I feel like this line should be here, but bad things happen: avocado.ui.justChanged(this.category());
   }, {category: ['adding']});
@@ -242,8 +242,6 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 
 
 thisModule.addSlots(avocado.category.Morph.prototype.defaultStyle, function(add) {
-
-  add.data('padding', {top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}, {initializeTo: '{top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}'});
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 

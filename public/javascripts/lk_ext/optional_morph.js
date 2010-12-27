@@ -11,7 +11,7 @@ thisModule.addSlots(avocado, function(add) {
 thisModule.addSlots(avocado.optionalMorph, function(add) {
 
   add.method('create', function (updateFunction, morphToShowOrHide, criterionForShowing) {
-    return Object.newChildOf(this, updateFunction, morphToShowOrHide);
+    return Object.newChildOf(this, updateFunction, morphToShowOrHide, criterionForShowing);
   });
 
   add.method('initialize', function (morphToUpdate, morphToShowOrHide, criterionForShowing) {
