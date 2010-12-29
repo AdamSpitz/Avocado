@@ -137,7 +137,11 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['source']});
 
   add.method('sourceMorph', function () {
-    return this._sourceMorph || (this._sourceMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'sourceCode')).applyStyle(this.sourceMorphStyle));
+    var sm = this._sourceMorph;
+    if (sm) { return sm; }
+    sm = this._sourceMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'sourceCode')).applyStyle(this.sourceMorphStyle);
+    sm._maxSpace = pt(200,200);
+    return sm;
   }, {category: ['source']});
 
   add.method('annotationMorph', function () {

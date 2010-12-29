@@ -109,7 +109,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     var hasChanged = this._hasChangedFromSavedText = (currentText !== savedText);
     this.applyStyle(hasChanged ? this.modifiedStyle : this.normalStyle);
     
-    //this.adjustScale(); // aaa - this doesn't really belong here, just trying it as an experiment
+    this.adjustScale(); // aaa - this doesn't really belong here, just trying it as an experiment
     
     this.minimumExtentMayHaveChanged();
     delete this._isChangingRightNow;
