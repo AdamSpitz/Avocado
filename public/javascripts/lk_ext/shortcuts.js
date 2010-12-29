@@ -9,7 +9,7 @@ lively.paint.defaultFillWithColor = function(c) {
 
 TextMorph.createLabel = function(textOrFunction, pos, extent) {
   var initialText = typeof textOrFunction === 'function' ? textOrFunction() : textOrFunction || "";
-  var tf = new this((pos || pt(5, 10)).extent(extent || pt(50, 20)), initialText);
+  var tf = new this((pos || pt(5, 10)).extent(extent || pt(0, 0)), initialText);
   tf.acceptInput = false;
   tf.closeDnD();
   tf.beLabel();

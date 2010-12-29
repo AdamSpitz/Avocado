@@ -64,6 +64,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
       // Ignore the default toString because it just says [object Object] all the time and it's annoying.
       if (o.toString === Object.prototype.toString) { return ""; } 
+      if (o.toString === window.prototype.toString) { return ""; } 
       
       return o.toString();
     } catch (ex) {
@@ -84,11 +85,19 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['accessing']});
     
   add.method('inspect', function () {
-    if (this.isRootOfGlobalNamespace()) {return "window";}
-    if (! this.canHaveSlots()) {return Object.inspect(this.primitiveReflectee());}
-    var n = this.name();
-    if (this.isReflecteeFunction()) { return n; } // the code will be visible through the *code* fake-slot
-    var s = [n];
+    var name = this.name();
+    var desc = this.shortDescription();
+    if (desc) {
+      return [name, "(", desc, ")"].join("");
+    } else {
+      return name;
+    }
+  }, {category: ['naming']});
+    
+  add.method('shortDescription', function () {
+    if (! this.canHaveSlots()) { return ""; }
+    if (this.isReflecteeFunction()) { return ""; }
+    
     var maxToStringLength = 40;
     var toString;
     if (this.isReflecteeArray()) {
@@ -101,10 +110,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
     } else {
       toString = this.reflecteeToString();
     }
-    if (typeof toString === 'string' && toString && toString.length < maxToStringLength) {
-      s.push("(", toString, ")");
+    if (typeof toString === 'string' && toString.length < maxToStringLength) {
+      return toString;
     }
-    return s.join("");
+    return "";
   }, {category: ['naming']});
 
   add.method('convertCreatorSlotChainToString', function (chain) {
@@ -127,7 +136,9 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['naming']});
 
   add.method('name', function () {
+    if (this.isRootOfGlobalNamespace()) { return "window"; }
     if (! this.canHaveCreatorSlot()) {return Object.inspect(this.primitiveReflectee());}
+    if (! this.canHaveSlots()) { return Object.inspect(this.primitiveReflectee()); }
 
     var chain = this.creatorSlotChainOfMeOrAnAncestor('probableCreatorSlot');
 
@@ -561,8 +572,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['booleans']});
 
   add.method('canHaveCreatorSlot', function () {
-    var t = this.reflecteeType();
-    return t === 'function' || (t === 'object' && ! this.isReflecteeNull());
+    return this.canHaveSlots();
   }, {category: ['annotations', 'creator slot']});
 
   add.method('convertAnnotationCreatorSlotToRealSlot', function (s) {

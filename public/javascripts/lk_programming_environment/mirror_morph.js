@@ -51,7 +51,8 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     
     this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
 
-    this._titleLabel = TextMorph.createLabel(function() {return m.inspect();});
+    this._nameMorph = TextMorph.createLabel(function() {return m.name();});
+    this._descMorph = TextMorph.createLabel(function() {return m.shortDescription();});
 
     if (this.mirror().canHaveAnnotation()) {
       if (this.shouldUseZooming()) {
@@ -73,7 +74,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     var optionalAKAButtonMorph     = Morph.createOptionalMorph(this.    akaButton, function() { return this.mirror().hasMultiplePossibleNames(); }.bind(this));
     var optionalParentButtonMorph  = Morph.createOptionalMorph(this. parentButton, function() { return this.mirror().hasAccessibleParent(); }.bind(this));
     
-    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._titleLabel, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this._evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
+    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._nameMorph, this._descMorph, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this._evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
     this.setPotentialRows([this._headerRow, this._annotationToggler, this._commentToggler, this._rootCategoryMorph, this._evaluatorsPanel].compact());
