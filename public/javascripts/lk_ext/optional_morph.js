@@ -31,6 +31,14 @@ thisModule.addSlots(avocado.optionalMorph, function(add) {
     return typeof(m) === 'function' ? m() : m;
   });
 
+  add.method('constructUIStateMemento', function () {
+    return undefined;
+  }, {category: ['UI state']});
+
+  add.method('assumeUIState', function (uiState, evt) {
+    // no UI state
+  }, {category: ['UI state']});
+
 });
 
 

@@ -59,19 +59,36 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
     this.applyStyle(this.appropriateStyle());
 
-    this._sourceToggler = avocado.scaleBasedOptionalMorph.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)), this, 1);
-    
+    var optionalCommentButtonMorph, buttonChooserMorph;
     if (slot.annotationForReading) {
-      this._annotationToggler = avocado.scaleBasedOptionalMorph.create(this, this.createRow(function() { return this.annotationMorph(); }.bind(this)), this, 1);
-    }
-    
-    var buttonChooserMorph = Morph.createOptionalMorph(this.contentsPointer(), function() { return ! this.slot().isSimpleMethod(); }.bind(this));
+      if (this.shouldUseZooming()) {
+        this._annotationToggler = avocado.scaleBasedOptionalMorph.create(this, this.createRow(function() { return this.annotationMorph(); }.bind(this)), this, 1);
+      } else {
+        this._commentToggler    = avocado.toggler.create(this, this.createRow(function() {return this.   commentMorph();}.bind(this)));
+        this._annotationToggler = avocado.toggler.create(this, this.createRow(function() {return this.annotationMorph();}.bind(this)));
 
-    var signatureRowContent = [this.descriptionMorph(), Morph.createSpacer(), buttonChooserMorph];
+        var commentButton = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
+        optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
+      }
+    }
+
+    if (this.shouldUseZooming()) {
+      this._sourceToggler = avocado.scaleBasedOptionalMorph.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)), this, 1);
+      buttonChooserMorph = Morph.createOptionalMorph(this.contentsPointer(), function() { return ! this.slot().isSimpleMethod(); }.bind(this));
+    } else {
+      this._sourceToggler = avocado.toggler.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)));
+      buttonChooserMorph = Morph.createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.slot().isSimpleMethod(); }.bind(this));
+    }
+
+    var signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph].compact();
     this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
   }, {category: ['creating']});
 
   add.method('slot', function () { return this._model; }, {category: ['accessing']});
+
+  add.data('shouldUseZooming', function () {
+    return avocado.shouldMirrorsUseZooming;
+  }, {category: ['zooming']});
 
   add.creator('defaultStyle', {}, {category: ['styles']});
 
@@ -98,6 +115,10 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('contentsPointer', function () {
     return this._contentsPointer || (this._contentsPointer = this.constructor.pointer.create(this).newMorph());
   }, {category: ['contents']});
+
+  add.method('sourceButton', function () {
+    return this._sourceButton || (this._sourceButton = this._sourceToggler.commandForToggling("code").newMorph(this.createIconForButton("images/icon-method-slot.gif")));
+  }, {category: ['source']});
 
   add.method('createIconForButton', function (path) {
     return new ImageMorph(pt(10,10).extentAsRectangle(), (transporter.avocadoBaseURL || "") + path).beLabel();
@@ -132,7 +153,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var sp = this._sourcePane;
     if (sp) { return sp; }
     sp = this._sourcePane = ScrollPane.ifNecessaryToContain(this.sourceMorph(), pt(400,300));
-    this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3);
+    if (this.shouldUseZooming()) { this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3); }
     return sp;
   }, {category: ['source']});
 
@@ -140,31 +161,43 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var sm = this._sourceMorph;
     if (sm) { return sm; }
     sm = this._sourceMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'sourceCode')).applyStyle(this.sourceMorphStyle);
-    sm._maxSpace = pt(200,200);
+    if (this.shouldUseZooming()) { sm._maxSpace = pt(200,200); }
     return sm;
   }, {category: ['source']});
 
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = new avocado.ColumnMorph().beInvisible().applyStyle(this.annotationStyle);
-    m.setScale(0.5);
     
-    var commentMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'comment'));
-    var commentRow = avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Comment:"), commentMorph]);
-    
-    var otherAnnotationStuff = new avocado.TableMorph().beInvisible().applyStyle(this.annotationStyle).setScale(0.5);
+    var otherAnnotationStuff = new avocado.TableMorph().beInvisible().applyStyle(this.annotationStyle);
     otherAnnotationStuff.replaceContentWith(avocado.tableContents.createWithRows([
       [TextMorph.createLabel("Module:"       ), new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'moduleName')) ],
       [TextMorph.createLabel("Initialize to:"), new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'initializationExpression'))]
     ]));
     
-    m.setRows([commentRow, otherAnnotationStuff]);
+    m = this._annotationMorph = new avocado.ColumnMorph().beInvisible().applyStyle(this.annotationStyle);
+    var rows = [otherAnnotationStuff];
+    
+    if (this.shouldUseZooming()) {
+      m.setScale(0.5);
+      otherAnnotationStuff.setScale(0.5);
+      rows.unshift(avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Comment:"), this.commentMorph()]));
+    }
+    
+    m.setRows(rows);
     return m;
   }, {category: ['annotation']});
 
+  add.method('commentMorph', function () {
+    return this._commentMorph || (this._commentMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'comment')).applyStyle(this.commentStyle));
+  }, {category: ['comment']});
+
   add.method('wasJustShown', function (evt) {
-    this.sourcePane().setScale(0.9);
+    if (this.shouldUseZooming()) {
+      this.sourcePane().setScale(0.9);
+    } else {
+      this._sourceToggler.beOn(evt);
+    }
     this._nameMorph.wasJustShown(evt);
   }, {category: ['events']});
 
@@ -189,12 +222,17 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     // than a method. (The method I'm likely to be editing again. But editing the
     // source of a data slot is usually just done when initially creating the
     // slot.)
-    this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3);
     
-    // aaa - Um, I need a better understanding of what exactly needs to happen
-    // when I change the scale of a morph. -- Adam
-    this.sourcePane()._cachedMinimumExtent = false;
-    this.sourcePane().forceLayoutRejiggering(true);
+    if (this.shouldUseZooming()) {
+      this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3);
+
+      // aaa - Um, I need a better understanding of what exactly needs to happen
+      // when I change the scale of a morph. -- Adam
+      this.sourcePane()._cachedMinimumExtent = false;
+      this.sourcePane().forceLayoutRejiggering(true);
+    } else {
+      if (! this.slot().isSimpleMethod()) { this._sourceToggler.beOff(evt); }
+    }
   }, {category: ['contents']});
 
   add.method('setContents', function (c, evt) {
@@ -237,6 +275,9 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('partsOfUIState', function () {
     return {
+      isSourceOpen:     this._sourceToggler,
+      isCommentOpen:    this._commentToggler,
+      isAnnotationOpen: this._annotationToggler,
       isArrowVisible:   this.contentsPointer().arrow
     };
   }, {category: ['UI state']});
@@ -292,6 +333,11 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       if (isModifiable && this.slot().rename) { cmdList.addAllCommands(this._nameMorph.editingCommands()); }
       cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }, isApplicable: function() { return this.slot().copyTo; }.bind(this)});
       cmdList.addItem({label: "move", go: function(evt) { this.grabCopyAndRemoveMe(evt); }, isApplicable: function() { return isModifiable && this.slot().remove; }.bind(this)});
+      if (! this.shouldUseZooming()) {
+        cmdList.addItem(this._sourceToggler.commandForToggling("contents"));
+        cmdList.addItem(this._commentToggler.commandForToggling("comment").onlyApplicableIf(function() {return this.slot().comment; }.bind(this)));
+        cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this.slot().annotation; }.bind(this)));
+      }
     }
     
     cmdList.addAllCommands(this.slot().commands().wrapWithPromptersForArguments().wrapForMorph(this));

@@ -34,9 +34,9 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
 thisModule.addSlots(avocado.category.Morph, function(add) {
 
-  add.data('superclass', avocado.ZoomableTreeNodeMorph);
+  add.data('superclass', avocado.TreeNodeMorph);
 
-  add.creator('prototype', Object.create(avocado.ZoomableTreeNodeMorph.prototype));
+  add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
 
   add.data('type', 'avocado.category.Morph');
 
@@ -65,6 +65,10 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 
   add.method('mirrorMorph', function () { return this.mirror().morph(); }, {category: ['accessing']});
 
+  add.data('shouldUseZooming', function () {
+    return avocado.shouldMirrorsUseZooming;
+  }, {category: ['zooming']});
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.creator('grabbedStyle', Object.create(avocado.category.Morph.prototype.defaultStyle), {category: ['styles']});
@@ -87,7 +91,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     // summaryLabel.setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     // return summaryLabel;
     
-    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding).setScale(0.5);
+    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
   }, {category: ['creating']});
 
   add.method('headerRow', function () {

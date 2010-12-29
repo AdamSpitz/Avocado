@@ -61,12 +61,14 @@ thisModule.addSlots(Morph.prototype, function(add) {
       reflect(parts).normalSlots().each(function(slot) {
         var partName = slot.name();
         var part = slot.contents().reflectee();
-        if (!(part instanceof Morph) && part.collection && part.keyOf && part.getPartWithKey) {
-          uiState[partName] = part.collection.map(function(elem) {
-            return { key: part.keyOf(elem), uiState: elem.constructUIStateMemento() };
-          });
-        } else {
-          uiState[partName] = part.constructUIStateMemento();
+        if (part) {
+          if (!(part instanceof Morph) && part.collection && part.keyOf && part.getPartWithKey) {
+            uiState[partName] = part.collection.map(function(elem) {
+              return { key: part.keyOf(elem), uiState: elem.constructUIStateMemento() };
+            });
+          } else {
+            uiState[partName] = part.constructUIStateMemento();
+          }
         }
       });
       return uiState;
@@ -85,12 +87,14 @@ thisModule.addSlots(Morph.prototype, function(add) {
       reflect(parts).normalSlots().each(function(slot) {
         var partName = slot.name();
         var part = slot.contents().reflectee();
-        if (!(part instanceof Morph) && part.collection && part.keyOf && part.getPartWithKey) {
-          uiState[partName].each(function(elemKeyAndUIState) {
-            part.getPartWithKey(this, elemKeyAndUIState.key).assumeUIState(elemKeyAndUIState.uiState);
-          }.bind(this));
-        } else {
-          part.assumeUIState(uiState[partName], evt);
+        if (part) {
+          if (!(part instanceof Morph) && part.collection && part.keyOf && part.getPartWithKey) {
+            uiState[partName].each(function(elemKeyAndUIState) {
+              part.getPartWithKey(this, elemKeyAndUIState.key).assumeUIState(elemKeyAndUIState.uiState);
+            }.bind(this));
+          } else {
+            part.assumeUIState(uiState[partName], evt);
+          }
         }
       }.bind(this));
     }
