@@ -72,15 +72,22 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       }
     }
 
+    var signatureRowContent;
     if (this.shouldUseZooming()) {
-      this._sourceToggler = avocado.scaleBasedOptionalMorph.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)), this, 1);
-      buttonChooserMorph = Morph.createOptionalMorph(this.contentsPointer(), function() { return ! this.slot().isSimpleMethod(); }.bind(this));
+      /* aaa why does this produce weird shrinking behaviour?   avocado.scaleBasedOptionalMorph.create(this, function() { */
+      buttonChooserMorph = Morph.wrapToTakeUpConstantHeight(10, 
+        this.slot().isSimpleMethod() ? this.sourcePane() : Morph.createEitherOrMorph(function() { return slot.contents().morph(); }, this.contentsPointer.bind(this), function() {
+          return this.slot().equals(this.slot().contents().probableCreatorSlot());
+        }.bind(this))
+      );
+      //}.bind(this), this, 1.5);
+      signatureRowContent = [this.descriptionMorph(), Morph.createSpacer(), this._annotationToggler, Morph.createSpacer(), buttonChooserMorph].compact();
     } else {
       this._sourceToggler = avocado.toggler.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)));
       buttonChooserMorph = Morph.createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.slot().isSimpleMethod(); }.bind(this));
+      signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph].compact();
     }
 
-    var signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph].compact();
     this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
   }, {category: ['creating']});
 
@@ -153,7 +160,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var sp = this._sourcePane;
     if (sp) { return sp; }
     sp = this._sourcePane = ScrollPane.ifNecessaryToContain(this.sourceMorph(), pt(400,300));
-    if (this.shouldUseZooming()) { this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3); }
+    //if (this.shouldUseZooming()) { this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3); }
     return sp;
   }, {category: ['source']});
 
@@ -169,22 +176,18 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var m = this._annotationMorph;
     if (m) { return m; }
     
-    var otherAnnotationStuff = new avocado.TableMorph().beInvisible().applyStyle(this.annotationStyle);
-    otherAnnotationStuff.replaceContentWith(avocado.tableContents.createWithRows([
+    m = this._annotationMorph = new avocado.TableMorph().beInvisible().applyStyle(this.annotationStyle);
+    var rows = [
       [TextMorph.createLabel("Module:"       ), new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'moduleName')) ],
       [TextMorph.createLabel("Initialize to:"), new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'initializationExpression'))]
-    ]));
-    
-    m = this._annotationMorph = new avocado.ColumnMorph().beInvisible().applyStyle(this.annotationStyle);
-    var rows = [otherAnnotationStuff];
+    ];
     
     if (this.shouldUseZooming()) {
-      m.setScale(0.5);
-      otherAnnotationStuff.setScale(0.5);
-      rows.unshift(avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Comment:"), this.commentMorph()]));
+      rows.unshift([TextMorph.createLabel("Comment:"), this.commentMorph()]);
+      m.setScale(0.25);
     }
     
-    m.setRows(rows);
+    m.replaceContentWith(avocado.tableContents.createWithRows(rows));
     return m;
   }, {category: ['annotation']});
 
@@ -194,7 +197,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('wasJustShown', function (evt) {
     if (this.shouldUseZooming()) {
-      this.sourcePane().setScale(0.9);
+      // I don't like this; let's make it auto-zoom in instead.
+      // this.sourcePane().setScale(0.9);
     } else {
       this._sourceToggler.beOn(evt);
     }
@@ -291,7 +295,11 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('potentialContent', function () {
-    return avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler].compact()]);
+    if (this.shouldUseZooming()) {
+      return avocado.tableContents.createWithColumns([[this.signatureRow]]);
+    } else {
+      return avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler].compact()]);
+    }
   }, {category: ['updating']});
 
   add.method('wasJustDroppedOnWorld', function (world) {
@@ -336,7 +344,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       if (! this.shouldUseZooming()) {
         cmdList.addItem(this._sourceToggler.commandForToggling("contents"));
         cmdList.addItem(this._commentToggler.commandForToggling("comment").onlyApplicableIf(function() {return this.slot().comment; }.bind(this)));
-        cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this.slot().annotation; }.bind(this)));
+        cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this.slot().annotationForReading; }.bind(this)));
       }
     }
     

@@ -64,7 +64,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
       // Ignore the default toString because it just says [object Object] all the time and it's annoying.
       if (o.toString === Object.prototype.toString) { return ""; } 
-      if (o.toString === window.prototype.toString) { return ""; } 
+      if (o.toString === window.toString) { return ""; } 
       
       return o.toString();
     } catch (ex) {

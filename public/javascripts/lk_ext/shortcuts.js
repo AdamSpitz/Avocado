@@ -73,6 +73,21 @@ Morph.createSpacer = function() {
   return new avocado.RowMorph().beInvisible().beSpaceFilling();
 };
 
+Morph.wrapToTakeUpConstantWidth = function(width, morph) {
+  return this.wrapToTakeUpConstantSpace(pt(width, null), morph);
+};
+
+Morph.wrapToTakeUpConstantHeight = function(height, morph) {
+  return this.wrapToTakeUpConstantSpace(pt(null, height), morph);
+};
+
+Morph.wrapToTakeUpConstantSpace = function(space, morph) {
+  var wrapper = new avocado.RowMorph().beInvisible();
+  wrapper._desiredSpaceToScaleTo = space;
+  wrapper.setColumns([morph]);
+  return wrapper;
+};
+
 Event.createFake = function (hand) {
   hand = hand || WorldMorph.current().firstHand();
   return {

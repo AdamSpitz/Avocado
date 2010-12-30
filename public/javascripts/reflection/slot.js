@@ -194,6 +194,11 @@ thisModule.addSlots(avocado.slots.functionBody, function(add) {
 
   add.method('isFunctionBody', function () { return true; }, {category: ['testing']});
 
+  add.method('toString', function () {
+    if (this.name() === undefined) { return ""; }
+    return this.name();
+  }, {category: ['printing']});
+
 });
 
 
@@ -223,7 +228,7 @@ thisModule.addSlots(avocado.slots.parent, function(add) {
 
   add.method('toString', function () {
     if (this.name() === undefined) { return ""; }
-    return this.mirror().name() + "." + this.name() + " slot";
+    return this.name();
   }, {category: ['printing']});
 
   add.method('isSimpleMethod', function () { return false; }, {category: ['testing']});

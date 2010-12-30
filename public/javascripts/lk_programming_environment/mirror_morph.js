@@ -65,16 +65,27 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       }
     }
     
-    this.akaButton         = avocado.command.create("AKA",   function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
-    this.parentButton      = avocado.command.create("^",     function(evt) { this.mirror().getParent(evt);     }.bind(this)).setHelpText('Get my parent').newMorph();
-    if (window.avocado && avocado.EvaluatorMorph) {
-      this._evaluatorButton = avocado.command.create("E",     function(evt) { this.openEvaluator(evt);          }.bind(this)).setHelpText('Show an evaluator box').newMorph();
-    }
-    var optionalDismissButtonMorph = this.createDismissButtonThatOnlyAppearsIfTopLevel();
-    var optionalAKAButtonMorph     = Morph.createOptionalMorph(this.    akaButton, function() { return this.mirror().hasMultiplePossibleNames(); }.bind(this));
-    var optionalParentButtonMorph  = Morph.createOptionalMorph(this. parentButton, function() { return this.mirror().hasAccessibleParent(); }.bind(this));
+    var akaButton         = avocado.command.create("AKA",   function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
     
-    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._nameMorph, this._descMorph, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), optionalParentButtonMorph, this._evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
+    if (! this.shouldUseZooming()) {
+      // With zooming, these buttons clutter up the object. Plus the parent button isn't really necessary and doesn't make sense
+      // now that the __proto__ slot is always visible (rather than hidden because the object isn't expanded). And the E button
+      // is less interesting now that we have the "script me" command, plus it's kinda weird because evaluators belong to vocab
+      // morphs instead of mirror morphs.
+      
+      if (this.mirror().hasAccessibleParent()) {
+        var parentButton = avocado.command.create("^", function(evt) { this.mirror().getParent(evt); }.bind(this)).setHelpText('Get my parent').newMorph();
+      }
+
+      if (window.avocado && avocado.EvaluatorMorph) {
+        var evaluatorButton = avocado.command.create("E", function(evt) { this.openEvaluator(evt); }.bind(this)).setHelpText('Show an evaluator box').newMorph();
+      }
+    }
+    
+    var optionalDismissButtonMorph = this.createDismissButtonThatOnlyAppearsIfTopLevel();
+    var optionalAKAButtonMorph     = Morph.createOptionalMorph(   akaButton, function() { return this.mirror().hasMultiplePossibleNames(); }.bind(this));
+    
+    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._nameMorph, this._descMorph, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
     this.setPotentialRows([this._headerRow, this._annotationToggler, this._commentToggler, this._rootCategoryMorph, this._evaluatorsPanel].compact());
@@ -104,6 +115,8 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.creator('annotationStyle', {}, {category: ['styles']});
 
   add.creator('commentStyle', {}, {category: ['styles']});
+  
+  add.creator('copyDownParentsStyle', {}, {category: ['styles']});
 
   add.method('createRow', function (m) {
     var r = avocado.RowMorph.createSpaceFilling([m], this.defaultStyle.internalPadding);
@@ -115,11 +128,10 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     var m = this._annotationMorph;
     if (m) { return m; }
     m = this._annotationMorph = new avocado.ColumnMorph(this).beInvisible().applyStyle(this.annotationStyle);
-    if (this.shouldUseZooming()) { m.setScale(0.5); }
+    if (this.shouldUseZooming()) { m.setScale(0.25); }
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
-    this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString'));
-    this._copyDownParentsLabel.suppressHandles = true;
+    this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString')).applyStyle(this.copyDownParentsStyle);
 
     var rows = [];
     if (this.shouldUseZooming()) { rows.push(avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Comment:"), this.commentMorph()])); }
@@ -415,6 +427,13 @@ thisModule.addSlots(avocado.mirror.Morph.prototype.annotationStyle, function(add
 
 
 thisModule.addSlots(avocado.mirror.Morph.prototype.commentStyle, function(add) {
+  
+  add.data('suppressHandles', true);
+  
+});
+
+
+thisModule.addSlots(avocado.mirror.Morph.prototype.copyDownParentsStyle, function(add) {
   
   add.data('suppressHandles', true);
   

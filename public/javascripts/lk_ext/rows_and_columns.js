@@ -138,13 +138,26 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     if (! this._cachedMinimumExtent) {
       this._cachedMinimumExtent = this.calculateOverallMinimumExtent(this.calculateMinimumExtentsForRowsAndColumns());
     }
-    return this.adjustForRigidity(this._cachedMinimumExtent).scaleBy(this.getScale());
+    return this.adjustForRigidityAndScale(this._cachedMinimumExtent);
+  }, {category: ['layout']});
+
+  add.method('adjustForRigidityAndScale', function (e) {
+    var e2 = this.adjustForRigidity(e);
+    return e2.scaleBy(this.currentOrDesiredScaleGivenExtent(e2));
   }, {category: ['layout']});
 
   add.method('adjustForRigidity', function (e) {
     var currentExtent = this.getExtent();
     return pt(this.horizontalLayoutMode === avocado.LayoutModes.Rigid ? Math.max(e.x, currentExtent.x) : e.x,
               this.  verticalLayoutMode === avocado.LayoutModes.Rigid ? Math.max(e.y, currentExtent.y) : e.y);
+  }, {category: ['layout']});
+
+  add.method('currentOrDesiredScaleGivenExtent', function (e) {
+    if (this._desiredSpaceToScaleTo) {
+      if      (this._desiredSpaceToScaleTo.x && e.x) { return this._desiredSpaceToScaleTo.x / e.x; }
+      else if (this._desiredSpaceToScaleTo.y && e.y) { return this._desiredSpaceToScaleTo.y / e.y; }
+    }
+    return this.getScale();
   }, {category: ['layout']});
 
   add.method('calculateMinimumExtentsForRowsAndColumns', function () {
@@ -225,11 +238,19 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['layout']});
 
   add.method('calculateSpaceToUseOutOf', function (availableSpace, thisExtent) {
-    var availableSpaceToUse = availableSpace.scaleBy(1 / this.getScale());
+    var availableSpaceToUse = pt(null, null);
+    
     if (this.horizontalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.x =          this._cachedMinimumExtent.x;                }
     if (this.horizontalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.x = Math.max(this._cachedMinimumExtent.x, thisExtent.x); }
     if (this.  verticalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.y =          this._cachedMinimumExtent.y;                }
     if (this.  verticalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.y = Math.max(this._cachedMinimumExtent.y, thisExtent.y); }
+    
+    var scale = this.currentOrDesiredScaleGivenExtent(availableSpaceToUse);
+    if (scale !== this.getScale()) { this.setScale(scale); }
+    
+    if (availableSpaceToUse.x === null) { availableSpaceToUse.x = availableSpace.x / scale; }
+    if (availableSpaceToUse.y === null) { availableSpaceToUse.y = availableSpace.y / scale; }
+    
     if (this._debugMyLayout) { console.log(this.inspect() + ": availableSpace: " + availableSpace + ", availableSpaceToUse: " + availableSpaceToUse + ", this.getScale(): " + this.getScale() + ", this._cachedMinimumExtent: " + this._cachedMinimumExtent + ", thisExtent: " + thisExtent); }
     return availableSpaceToUse;
   }, {category: ['layout']});
