@@ -94,15 +94,6 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
   }, {category: ['creating']});
 
-  add.method('headerRow', function () {
-    var hr = this._headerRow;
-    if (hr) { return hr; }
-    this._titleLabel = this.createTitleLabel();
-    hr = avocado.RowMorph.createSpaceFilling([this._expander, this._titleLabel].compact(), this.defaultStyle.headerRowPadding);
-    this._headerRow = hr;
-    return hr;
-  }, {category: ['creating']});
-
   add.method('partsOfUIState', function ($super) {
     var parts = $super();
     if (this._shouldOmitHeaderRow) { delete parts['isExpanded']; } // the mirror will handle it
@@ -258,8 +249,6 @@ thisModule.addSlots(avocado.category.Morph.prototype.defaultStyle, function(add)
   add.data('fill', null);
 
   add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
-
-  add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
 
 });
 
