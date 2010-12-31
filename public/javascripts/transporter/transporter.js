@@ -349,6 +349,8 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.creator('annotationlessFilerOuter', Object.create(transporter.module.abstractFilerOuter), {category: ['transporting']});
 
+  add.creator('jsonFilerOuter', Object.create(transporter.module.abstractFilerOuter), {category: ['transporting']});
+
   add.creator('mockFilerOuter', Object.create(transporter.module.abstractFilerOuter), {category: ['transporting']});
 
   add.method('codeToFileOut', function (filerOuter) {
@@ -357,16 +359,7 @@ thisModule.addSlots(transporter.module, function(add) {
     }
     
     filerOuter.writeModule(this.name(), this._requirements, function() {
-      this.slotsInOrderForFilingOut().each(function(s) {
-        try {
-          var h = s.holder();
-          filerOuter.nextSlotIsIn(h);
-          s.fileOutWith(filerOuter);
-        } catch (ex) {
-          filerOuter.errors().push(ex);
-        }
-      }.bind(this));
-      filerOuter.doneWithThisObject();
+      filerOuter.fileOutSlots(this.slotsInOrderForFilingOut());
     }.bind(this));
 
     return filerOuter.fullText();
@@ -375,7 +368,7 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('codeOfMockFileOut', function () {
     return this.codeToFileOut(Object.newChildOf(this.mockFilerOuter)).toString();
   }, {category: ['transporting']});
-
+  
   add.method('fileOut', function (filerOuter, repo, successBlock, failBlock) {
     var codeToFileOut;
     filerOuter = filerOuter || Object.newChildOf(this.filerOuter);
@@ -475,57 +468,60 @@ thisModule.addSlots(transporter.module.prompter, function(add) {
 thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('fileOutInfo', function () {
-    var creationMethod = "data";
-    var contentsExpr;
-    var contents = this.contents();
+    var info = {
+      creationMethod: "data",
+      contents: this.contents(),
+      contentsExpr: undefined,
+      isCreator: false,
+      isReferenceToWellKnownObjectThatIsCreatedElsewhere: false
+    };
     var array = null;
-    var isCreator = false;
     var initializer = this.initializationExpression();
     if (initializer) {
-      contentsExpr = initializer;
+      info.contentsExpr = initializer;
     } else {
-      var storeString = contents.reflecteeStoreString();
+      var storeString = info.contents.reflecteeStoreString();
       if (storeString) {
-        contentsExpr = storeString;
-      } else if (! contents.canHaveCreatorSlot()) {
-        contentsExpr = contents.expressionEvaluatingToMe();
+        info.contentsExpr = storeString;
+      } else if (! info.contents.canHaveCreatorSlot()) {
+        info.contentsExpr = info.contents.expressionEvaluatingToMe();
       } else {
-        var cs = contents.theCreatorSlot();
+        var cs = info.contents.theCreatorSlot();
         if (!cs) {
-          var err = new Error("Cannot file out a reference to an object without a creator slot: " + contents.name());
-          err.mirrorWithoutCreatorPath = contents;
+          var err = new Error("Cannot file out a reference to an object without a creator slot: " + info.contents.name());
+          err.mirrorWithoutCreatorPath = info.contents;
           throw err;
         } else if (! cs.equals(this)) {
-          // This is just a reference to some well-known object that's created elsewhere.
+          info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = true;
           transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
-            contentsExpr = contents.creatorSlotChainExpression();
+            info.contentsExpr = info.contents.creatorSlotChainExpression();
           }, transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
         } else {
-          isCreator = true;
-          if (contents.isReflecteeFunction()) {
-            creationMethod = "method";
-            contentsExpr = contents.reflecteeToString();
-            //contentsExpr = contents.prettyPrint({indentationLevel: 2});
+          info.isCreator = true;
+          if (info.contents.isReflecteeFunction()) {
+            info.creationMethod = "method";
+            info.contentsExpr = info.contents.reflecteeToString();
+            //info.contentsExpr = info.contents.prettyPrint({indentationLevel: 2});
           } else {
-            creationMethod = "creator";
-            if (contents.isReflecteeArray()) {
-              contentsExpr = "[]";
+            info.creationMethod = "creator";
+            if (info.contents.isReflecteeArray()) {
+              info.contentsExpr = "[]";
             } else {
-              var contentsParent = contents.parent();
+              var contentsParent = info.contents.parent();
               if (contentsParent.equals(reflect(Object.prototype))) {
-                contentsExpr = "{}";
+                info.contentsExpr = "{}";
               } else {
                 transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
-                  var parentInfo = contents.parentSlot().fileOutInfo();
-                  contentsExpr = "Object.create(" + parentInfo.contentsExpr + ")";
-                }, transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(contents));
+                  var parentInfo = info.contents.parentSlot().fileOutInfo();
+                  info.contentsExpr = "Object.create(" + parentInfo.contentsExpr + ")";
+                }, transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(info.contents));
               }
             }
           }
         }
       }
     }
-    return {creationMethod: creationMethod, contentsExpr: contentsExpr, isCreator: isCreator};
+    return info;
   }, {category: ['transporting']});
 
   add.method('fileOutWith', function (filerOuter) {
@@ -544,7 +540,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
       optionalArgs = ", " + slotAnnoExpr + optionalArgs;
     }
 
-    filerOuter.writeSlot(info.creationMethod, this.name(), info.contentsExpr, optionalArgs);
+    filerOuter.writeSlot(this.name(), info, optionalArgs);
 
     // aaa - Stupid hack because some browsers won't let you set __proto__ so we have to treat it specially.
     if (info.isCreator) {
@@ -586,6 +582,10 @@ thisModule.addSlots(avocado.annotator.slotAnnotationPrototype, function(add) {
 
 thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
 
+  add.method('create', function () {
+    return Object.newChildOf(this);
+  }, {category: ['creating']});
+  
   add.method('initialize', function () {
     this._buffer = avocado.stringBuffer.create();
     this._currentHolder = null;
@@ -597,12 +597,29 @@ thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
     return this._buffer.toString();
   }, {category: ['accessing']});
 
+  add.method('fileOutSlots', function (slots) {
+    slots.each(function(s) {
+      try {
+        var h = s.holder();
+        this.nextSlotIsIn(h);
+        s.fileOutWith(this);
+      } catch (ex) {
+        this.errors().push(ex);
+      }
+    }.bind(this));
+    this.doneWithThisObject();
+  }, {category: ['writing']});
+
+  add.method('setCurrentHolder', function (holder) {
+    this._currentHolder = holder;
+    this._currentHolderExpr = holder.creatorSlotChainExpression();
+  }, {category: ['writing']});
+  
   add.method('nextSlotIsIn', function (holder) {
     if (!this._currentHolder || ! holder.equals(this._currentHolder)) {
       this.doneWithThisObject();
       transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
-        this._currentHolder = holder;
-        this._currentHolderExpr = holder.creatorSlotChainExpression();
+        this.setCurrentHolder(holder);
       }.bind(this), transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule.create());
       this.writeObjectStarter();
     }
@@ -659,8 +676,8 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
     this._buffer.append("});\n\n\n");
   }, {category: ['writing']});
 
-  add.method('writeSlot', function (creationMethod, slotName, contentsExpr, optionalArgs) {
-    this._buffer.append("  add.").append(creationMethod).append("('").append(slotName).append("', ").append(contentsExpr);
+  add.method('writeSlot', function (slotName, info, optionalArgs) {
+    this._buffer.append("  add.").append(info.creationMethod).append("('").append(slotName).append("', ").append(info.contentsExpr);
     this._buffer.append(optionalArgs);
     this._buffer.append(");\n\n");
   }, {category: ['writing']});
@@ -706,15 +723,97 @@ thisModule.addSlots(transporter.module.annotationlessFilerOuter, function(add) {
     // Let's try the latter for now; it actually kinda looks cleaner. -- Adam
     // this._buffer.append("Object.extend(").append(this._currentHolderExpr).append(", {\n\n");
   }, {category: ['writing']});
-
+  
   add.method('writeObjectEnder', function () {
     // this._buffer.append("});\n\n\n");
     this._buffer.append("\n\n");
   }, {category: ['writing']});
 
-  add.method('writeSlot', function (creationMethod, slotName, contentsExpr, optionalArgs) {
-    // this._buffer.append("  ").append(slotName).append(": ").append(contentsExpr).append(",\n\n");
-    this._buffer.append(this._currentHolder.creatorSlotChainExpression()).append(".").append(slotName).append(" = ").append(contentsExpr).append(";\n\n");
+  add.method('writeSlot', function (slotName, info, optionalArgs) {
+    // this._buffer.append("  ").append(slotName).append(": ").append(info.contentsExpr).append(",\n\n");
+    this._buffer.append(this._currentHolder.creatorSlotChainExpression()).append(".").append(slotName).append(" = ").append(info.contentsExpr).append(";\n\n");
+  }, {category: ['writing']});
+
+  add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
+    // nothing to do here, I think;
+  }, {category: ['writing']});
+
+});
+
+
+thisModule.addSlots(transporter.module.jsonFilerOuter, function(add) {
+  
+  add.method('initialize', function ($super) {
+    $super();
+    this._indention = 0;
+  }, {category: ['creating']});
+
+  add.method('writeModule', function (name, reqs, bodyBlock) {
+    throw new Error("Can we do modules with the JSON filer outer?");
+  }, {category: ['writing']});
+
+  add.method('indent', function () {
+    for (var i = 0; i < this._indention; ++i) { this._buffer.append("  "); }
+  }, {category: ['writing']});
+
+  add.method('writeObjectStarter', function () {
+    this._buffer.append(this._currentHolder.isReflecteeArray() ? "[" : "{");
+    this._indention += 1;
+    this._slotSeparator = "";
+  }, {category: ['writing']});
+
+  add.method('writeObjectEnder', function () {
+    this._indention -= 1;
+    this._buffer.append("\n");
+    this.indent();
+    this._buffer.append(this._currentHolder.isReflecteeArray() ? "]" : "}");
+  }, {category: ['writing']});
+
+  add.method('setCurrentHolder', function (holder) {
+    this._currentHolder = holder;
+    // don't actually need this._currentHolderExpr, and trying to get the holder's
+    // creatorSlotChainExpression will cause an error if we're doing the __creatorPath thing. -- Adam
+  }, {category: ['writing']});
+
+  add.method('temporarilySwitchHolder', function (f) {
+    var currentHolder = this._currentHolder;
+    this._currentHolder = null;
+    var result = f();
+    this.doneWithThisObject();
+    this._currentHolder = currentHolder;
+    return result;
+  }, {category: ['writing']});
+
+  add.method('writeSlot', function (slotName, info, optionalArgs) {
+    this._buffer.append(this._slotSeparator).append("\n");
+    this.indent();
+    
+    if (this._currentHolder.isReflecteeArray()) {
+      if (parseInt(slotName, 10).toString() !== slotName) {
+        throw new Error("Trying to file out an array that has a slot named " + slotName);
+      }
+    } else {
+      var slotNameToWrite = info.isReferenceToWellKnownObjectThatIsCreatedElsewhere ? slotName + "__creatorPath" : slotName;
+      this._buffer.append(slotNameToWrite.inspect(true)).append(": ");
+    }
+    
+    if (info.isCreator) {
+      this.temporarilySwitchHolder(function() {
+        this.fileOutSlots(info.contents.normalSlots());
+      }.bind(this));
+    } else if (info.isReferenceToWellKnownObjectThatIsCreatedElsewhere) {
+      this.temporarilySwitchHolder(function() {
+        this.fileOutSlots(reflect(info.contents.creatorSlotChain().reverse().map(function(s) { return s.name(); })).normalSlots());
+      }.bind(this));
+    } else {
+      // aaa - Hack because JSON only accepts double-quotes.
+      if (info.contents.isReflecteeString()) {
+        info.contentsExpr = info.contents.primitiveReflectee().inspect(true);
+      }
+      
+      this._buffer.append(info.contentsExpr);
+    }
+    this._slotSeparator = ",";
   }, {category: ['writing']});
 
   add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
@@ -739,8 +838,8 @@ thisModule.addSlots(transporter.module.mockFilerOuter, function(add) {
     this._buffer.append("  end object ").append(this._currentHolderExpr).append("\n");
   }, {category: ['writing']});
 
-  add.method('writeSlot', function (creationMethod, slotName, contentsExpr, optionalArgs) {
-    this._buffer.append("    slot ").append(slotName).append(": ").append(contentsExpr).append("\n");
+  add.method('writeSlot', function (slotName, info, optionalArgs) {
+    this._buffer.append("    slot ").append(slotName).append(": ").append(info.contentsExpr).append("\n");
   }, {category: ['writing']});
 
   add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
@@ -1181,7 +1280,7 @@ thisModule.addSlots(transporter.tests, function(add) {
     var s1 = this.addSlot(m, o, 'x', 3);
     var s2 = this.addSlot(m, o, 'y', 'four');
     
-    var fo = Object.newChildOf(transporter.module.mockFilerOuter);
+    var fo = transporter.module.mockFilerOuter.create();
     m.codeToFileOut(fo);
     this.assertEqual(1, fo.errors().length);
     this.assertEqual(oMir, fo.errors()[0].mirrorWithoutCreatorPath);
@@ -1201,7 +1300,7 @@ thisModule.addSlots(transporter.tests, function(add) {
     var s2 = this.addSlot(m, this.someObject, 'pleh', o);
     s2.beCreator();
     
-    var fo = Object.newChildOf(transporter.module.mockFilerOuter);
+    var fo = transporter.module.mockFilerOuter.create();
     m.codeToFileOut(fo);
     this.assertEqual(1, fo.errors().length);
     this.assertEqual(pMir, fo.errors()[0].mirrorWithoutCreatorPath);
@@ -1209,6 +1308,24 @@ thisModule.addSlots(transporter.tests, function(add) {
     
     m.uninstall();
   });
+
+    add.method('testFilingOutToJSON', function () {
+      var m = transporter.module.named('test_JSON_fileout');
+
+      this.addSlot(m, this.someObject, 'x', 123);
+      this.addSlot(m, this.someObject, 'a', ['a', 2, 'three', false]).beCreator();
+      this.addSlot(m, this.someObject, 's', 'pleh');
+      this.addSlot(m, this.someObject, 'b', true);
+      this.addSlot(m, this.someObject, 'o', {n: 456}).beCreator();
+      this.addSlot(m, this.someObject, 'r', transporter.tests);
+      
+      var fo = transporter.module.jsonFilerOuter.create();
+      fo.fileOutSlots(reflect(this.someObject).normalSlots());
+      this.assertEqual([], fo.errors());
+      this.assertEqual('{\n  "x": 123,\n  "a": [\n    "a",\n    2,\n    "three",\n    false\n  ],\n  "s": "pleh",\n  "b": true,\n  "o": {\n    "n": 456\n  },\n  "r__creatorPath": [\n    "transporter",\n    "tests"\n  ]\n}', fo.fullText());
+
+      m.uninstall();
+    });
 
 });
 

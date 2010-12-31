@@ -245,6 +245,7 @@ thisModule.addSlots(avocado.slots.parent, function(add) {
   add.method('beCreator', function () {
     this.markModuleAsChanged();
     this.contents().setCreatorSlot(this);
+    return this;
   }, {category: ['creator slots']});
 
 });
@@ -358,6 +359,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   add.method('beCreator', function () {
     this.markModuleAsChanged();
     this.contents().setCreatorSlot(this);
+    return this;
   }, {category: ['creator slots']});
 
   add.method('module', function () {

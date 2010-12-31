@@ -1169,7 +1169,7 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     this.assertEqual("an Array", reflect([1, 'two', 3]).name());
     this.assertEqual("transporter", reflect(transporter).name());
     this.assertEqual("transporter.module", reflect(transporter.module).name());
-    this.assertEqual("", reflect(window).name()); // aaa - maybe just fix this to say 'window'?;
+    this.assertEqual("window", reflect(window).name());
     
     this.createNestedClasses(function() {
       this.assertEqual("an Argle.Bargle", reflect(new Argle.prototype.Bargle()).name());
