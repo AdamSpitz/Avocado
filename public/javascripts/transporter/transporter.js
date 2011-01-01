@@ -527,7 +527,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   add.method('fileOutWith', function (filerOuter) {
     var info = this.fileOutInfo();
     var contents = this.contents();
-    var slotAnno = this.annotationForReading();
+    var slotAnno = this.annotationForReading && this.annotationForReading();
     var slotAnnoExpr = slotAnno ? slotAnno.asExpressionForTransporter() : '{}';
     var objectAnnoExpr = info.isCreator && contents.annotationForReading() ? contents.annotationForReading().asExpressionForTransporter() : null;
     
@@ -793,7 +793,9 @@ thisModule.addSlots(transporter.module.jsonFilerOuter, function(add) {
         throw new Error("Trying to file out an array that has a slot named " + slotName);
       }
     } else {
-      var slotNameToWrite = info.isReferenceToWellKnownObjectThatIsCreatedElsewhere ? slotName + "__creatorPath" : slotName;
+      var slotNameToWrite = slotName;
+      if (slotNameToWrite[0] === '_') { slotNameToWrite = 'underscoreHack' + slotNameToWrite; }
+      if (info.isReferenceToWellKnownObjectThatIsCreatedElsewhere) { slotNameToWrite = slotNameToWrite + "__creatorPath"; }
       this._buffer.append(slotNameToWrite.inspect(true)).append(": ");
     }
     

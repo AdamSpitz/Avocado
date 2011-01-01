@@ -237,7 +237,8 @@ thisModule.addSlots(avocado.testCase, function(add) {
       avocado.prettyPrinter.tests,
       avocado.organization.tests,
       avocado.process.tests,
-      avocado.remoteMirror.tests
+      avocado.remoteMirror.tests,
+      avocado.couch.db.tests
     ];
   });
 

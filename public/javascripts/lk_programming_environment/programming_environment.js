@@ -14,6 +14,7 @@ requires('lk_programming_environment/process_morph');
 requires('lk_programming_environment/evaluator_morph');
 requires('lk_programming_environment/searching');
 requires('lk_programming_environment/test_case_morph');
+requires('db/couch');
 
 }, function(thisModule) {
 
