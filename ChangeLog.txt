@@ -1,3 +1,7 @@
+Sunday, January 2, 2010
+
+  - Made the morph menu be a wheel menu too. Use Ctrl to access it (though this breaks using Ctrl keys for text editing). Not quite sure that I like that, plus we should probably do something different Windows, but having easily-accessible "pick up" and "drop" commands might be important. Anyway, it's easily turned off if we change our minds.
+
 Wednesday, December 29, 2010
 
   - Working on a zoomable UI! Not usable yet, but it's kinda fun.

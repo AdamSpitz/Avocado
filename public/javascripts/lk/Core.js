@@ -6038,6 +6038,14 @@ lookTouchy: function(morph) {
         return;
       }
     }
+    if (evt.isCtrlDown()) {
+      if (evt.getKeyCode() === 17) { // I think this means no other key is pressed, just Ctrl -- Adam
+        evt.mousePoint = this.getPosition();
+        var receiver = this.world().morphToReceiveEvent(evt);
+        receiver.showMorphMenu(evt);
+        return;
+      }
+    }
       
       
         if (this.hasSubmorphs())  {

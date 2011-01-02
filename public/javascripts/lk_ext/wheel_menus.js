@@ -31,7 +31,15 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype, function(add) {
 		this._mode = this.modes.transientInactive;
 		$super(new lively.scene.Ellipse(pt(0,0), this._outerRadius));
 		this.applyStyle(this.defaultStyle);
-		
+  }, {category: ['creating']});
+  
+  add.method('commandArray', function () {
+    return this._commands;
+  }, {category: ['accessing']});
+  
+  add.method('createCommandMorphsIfNecessary', function () {
+    if (this._hasCreatedCommandMorphs) { return; }
+    this._hasCreatedCommandMorphs = true;
 		var r = (this._innerRadius + this._outerRadius) / 2;
 		for (var i = 0; i <= 8; ++i) {
 		  var c = this._commands[i];
@@ -42,11 +50,13 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype, function(add) {
 		}
   }, {category: ['creating']});
   
-  add.method('commandArray', function () {
-    return this._commands;
-  }, {category: ['accessing']});
-  
   add.creator('defaultStyle', {}, {category: ['styles']});
+
+  add.creator('contextCommandStyle', {}, {category: ['styles']});
+
+  add.creator('morphCommandStyle', {}, {category: ['styles']});
+
+  add.data('commandStyle', avocado.WheelMenuMorph.prototype.contextCommandStyle, {category: ['styles']});
 
   add.data('focusHaloBorderWidth', 0, {category: ['styles']});
 
@@ -162,6 +172,7 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype, function(add) {
   }, {category: ['events']});
   
   add.method('openIn', function (parentMorph, loc, remainOnScreen, captionIfAny) {
+		this.createCommandMorphsIfNecessary();
     parentMorph.addMorphAt(this, loc.addXY(- this._outerRadius, - this._outerRadius));
     this.takeMouseAndKeyboardFocus(parentMorph.world().firstHand());
     this.waitForABitAndThenBecomeActive();
@@ -246,6 +257,7 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.CommandMorph.prototype, fun
 		this._labelMorph = TextMorph.createLabel(this.command().labelString().attemptToInsertALineBreak()).fitText();
 		this.addMorphAt(this._labelMorph, this._labelMorph.getExtent().scaleBy(-0.5));
 		this.applyStyle(this.defaultStyle);
+		this.applyStyle(this._menuMorph.commandStyle);
   }, {category: ['creating']});
   
   add.method('commandIndex', function () {
@@ -313,6 +325,20 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.defaultStyle, function(add)
   add.data('openForDragAndDrop', false);
 
   add.data('suppressHandles', true);
+  
+});
+
+
+thisModule.addSlots(avocado.WheelMenuMorph.prototype.contextCommandStyle, function(add) {
+    
+  add.data('textColor', Color.black);
+  
+});
+
+
+thisModule.addSlots(avocado.WheelMenuMorph.prototype.morphCommandStyle, function(add) {
+    
+  add.data('textColor', Color.blue);
   
 });
 

@@ -171,10 +171,11 @@ Morph.addMethods({
 	  
     morphMenu: function(evt) {
         var items = [
-            ["remove", this.startZoomingOuttaHere], // so much cooler this way -- Adam
-            ["drill", this.showOwnerChain.curry(evt)],
             ["grab", this.pickMeUpLeavingPlaceholderIfNecessary.curry(evt)], // need the placeholders -- Adam
-            ["drag", this.dragMe.curry(evt)],
+            ["remove", this.startZoomingOuttaHere], // so much cooler this way -- Adam
+            this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
+            // ["drill", this.showOwnerChain.curry(evt)], // not needed now that we have core samplers. -- Adam
+            // ["drag", this.dragMe.curry(evt)], // This menu has too much stuff in it. -- Adam
             this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
                                 : ["turn on edit mode" , function() { this.switchEditModeOn (); }.bind(this)],
             ["edit style", function() { new StylePanel(this).open()}],
@@ -184,22 +185,22 @@ Morph.addMethods({
               var mirMorph = this.world().morphFor(mir);
               mirMorph.openEvaluator(evt);
             }], // simple scripting interface -- Adam
+            /* No browser, mirrors are enough, plus this menu has too much stuff in it. -- Adam
             ["show class in browser", function(evt) { var browser = new SimpleBrowser(this);
                                               browser.openIn(this.world(), evt.point());
                                               browser.getModel().setClassName(this.getType());
             }]
-        ];
-
-        if (this.okToDuplicate()) {
-            items.unshift(["duplicate", this.copyToHand.curry(evt.hand)]);
-        }
+            */
+        ].compact();
 
         if (this.getModel() instanceof SyntheticModel)
             items.push( ["show Model dump", this.addModelInspector.curry(this)]);
 
-        var menu = new MenuMorph(items, this);
-        menu.addLine();
-        menu.addItems(this.subMenuItems(evt));
+        var cmdList = avocado.command.list.create(this, items);
+        cmdList.addLine();
+        cmdList.addItems(this.subMenuItems(evt));
+        var menu = cmdList.createMenu(this);
+    		menu.commandStyle = menu.morphCommandStyle;
         return menu;
     },
     
