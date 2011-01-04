@@ -220,7 +220,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     mirMorph.ensureIsInWorld(w, this._contentsPointer.worldPoint(pt(150,0)), false, true, true, callWhenContentsAreVisible);
   }, {category: ['contents']});
   
-  add.method('updateScaleOfSourcePane', function () {
+  add.method('updateScaleOfSourcePane', function (evt) {
     // Not sure this is really what I want, but I think I don't like it when the
     // source keeps taking up space after I edit it, at least if it's data rather
     // than a method. (The method I'm likely to be editing again. But editing the
@@ -249,7 +249,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     // source editor doesn't stay red.
     if (this._sourceMorph) { this._sourceMorph.cancelChanges(); }
 
-    this.updateScaleOfSourcePane();
+    this.updateScaleOfSourcePane(evt);
 
     avocado.ui.justChanged(this.slot());
   }, {category: ['accessing']});

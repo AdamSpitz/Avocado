@@ -137,8 +137,8 @@ thisModule.addSlots(avocado.animation, function(add) {
 
   add.method('newFader', function (morph, endingAlpha) {
     return this.newSpeedStepper(morph, endingAlpha, {
-      getValue: function(m   ) { return m.getOpacity( ); },
-      setValue: function(m, a) {        m.setOpacity(a); }
+      getValue: function(m   ) { return m.getFillOpacity( ); },
+      setValue: function(m, a) {        m.setFillOpacity(a); }
     }, 1000, 400);
   });
 

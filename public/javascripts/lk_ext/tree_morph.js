@@ -87,7 +87,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     if (this.shouldUseZooming()) {
       return [this._titleLabel, avocado.scaleBasedOptionalMorph.create(this, this.contentsPanel(), this, 0.5)];
     } else {
-      return [this._expander, this._titleLabel];
+      
+      return [this._expander, this._titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
     }
   }, {category: ['header row']});
 

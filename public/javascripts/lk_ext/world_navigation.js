@@ -34,9 +34,12 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     // make the top-left corner be (-X,-Y) instead of (0,0). But that was turning out to be complicated.
     // So for now, just move all the morphs by (X,Y).
     this.submorphs.each(function(m) {
-      // The animated version is a bit weird for now, I think. -- Adam
-      // m.startZoomingInAStraightLineTo(m.position().addPt(delta), false, false, true);
-      m.moveBy(delta);
+      if (! m.shouldStickToScreen) {
+        // The animated version is a bit weird for now, I think. -- Adam
+        // m.startZoomingInAStraightLineTo(m.position().addPt(delta), false, false, true);
+        
+        m.moveBy(delta);
+      }
     });
     
     this.hands.each(function(m) {
@@ -53,8 +56,15 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     worldNavigator.staySameSizeAndScaleTo(this.getScale() * factor, pointerPosition, function() {
     }.bind(this));
   }, {category: ['navigation']});
+  
+  add.method('stickyMorphs', function (f) {
+    return this.submorphs.select(function(m) { return m.shouldStickToScreen; });
+  });
 
   add.method('staySameSizeAndSmoothlyScaleTo', function (desiredScale, currentPointerPos, functionToCallWhenDone) {
+    
+    throw new Error("This code is just broken, replace it with something that repeatedly calls staySameSizeAndScaleTo instead.");
+    
     var originalViewableArea = this.getExtent();
     var originalScale = this.getScale();
     var scalingFactor = desiredScale / originalScale;
@@ -107,6 +117,17 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 });
 
 
+thisModule.addSlots(Point.prototype, function(add) {
+  
+  add.method('translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy', function (scalingFactor) {
+    var desiredNewPosition = this.scaleBy(1 / scalingFactor);
+    var delta = desiredNewPosition.subPt(this);
+    return delta;
+  }, {category: ['scaling']});
+  
+});
+
+
 thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
 
   add.method('initialize', function (w) {
@@ -142,13 +163,14 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
   
   add.method('staySameSizeAndScaleTo', function (s, currentPointerPos) {
     var oldScale = this.getScale();
+    var scalingFactor = s / oldScale;
     var desiredSize = this.getExtent().scaleBy(oldScale);
     this.setScale(s);
     this.setExtent(desiredSize.scaleBy(1 / s));
-    this.setPositionAndDoMotionBlurIfNecessary(this.getPosition().addPt(currentPointerPos.subPt(currentPointerPos.scaleBy(s / oldScale))));
-    this.hands().forEach(function(h) {
-      h.setScale(1 / s);
-    });
+    var delta = currentPointerPos.translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor);
+    this._world.slideBy(delta);
+    this._world.hands.each(function(m) { m.setScale(1 / s); });
+    this._world.stickyMorphs().each(function(m) { m.setScale(1 / s); m.moveBy(m.origin.translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor)); });
   });
 
   add.method('isOnScreen', function () {

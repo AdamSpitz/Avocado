@@ -170,8 +170,14 @@ Morph.addMethods({
 	  },
 	  
     morphMenu: function(evt) {
+        var carryingHand = avocado.CarryingHandMorph.forWorld(this.world());
+        var dropCmd = carryingHand.applicableCommandForDroppingOn(this);
+        var handEmpty = !carryingHand.carriedMorph();
         var items = [
-            ["grab", this.pickMeUpLeavingPlaceholderIfNecessary.curry(evt)], // need the placeholders -- Adam
+            // ["grab", this.pickMeUpLeavingPlaceholderIfNecessary.curry(evt)], // need the placeholders -- Adam  // not needed now that we have "pick up"
+            dropCmd ? ["drop",    function() { carryingHand.dropOn(this, evt); }.bind(this)]
+                    : handEmpty ? ["pick up", function() { carryingHand.pickUp(this, evt); }.bind(this)]
+                                : null, // aaa - Shoot, leaving a null currently doesn't leave a hole in the menu; I want it to, so that the layout doesn't change around.
             ["remove", this.startZoomingOuttaHere], // so much cooler this way -- Adam
             this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
             // ["drill", this.showOwnerChain.curry(evt)], // not needed now that we have core samplers. -- Adam
@@ -191,7 +197,7 @@ Morph.addMethods({
                                               browser.getModel().setClassName(this.getType());
             }]
             */
-        ].compact();
+        ];
 
         if (this.getModel() instanceof SyntheticModel)
             items.push( ["show Model dump", this.addModelInspector.curry(this)]);
@@ -257,7 +263,7 @@ Morph.addMethods({
   // really should fix the names of these two functions; without animation should be the default -- Adam
   withoutAnimationAddMorphCentered: function(m, callWhenDone) {
     var p = this.getExtent().subPt(m.getExtent()).scaleBy(0.5);
-    console.log("this.getExtent(): " + this.getExtent() + ", m.getExtent(): " + m.getExtent() + ", p: " + p);
+    // console.log("this.getExtent(): " + this.getExtent() + ", m.getExtent(): " + m.getExtent() + ", p: " + p);
     this.addMorphAt(m, p);
   },
 });

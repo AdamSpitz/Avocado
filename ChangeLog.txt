@@ -1,3 +1,7 @@
+Monday, January 3, 2010
+
+  - First attempt at having Pick Up put the morph in a CarryingHandMorph that's off to the side, rather than keeping it right at the mouse cursor. It's not really right yet.
+
 Sunday, January 2, 2010
 
   - Made the morph menu be a wheel menu too. Use Ctrl to access it (though this breaks using Ctrl keys for text editing). Not quite sure that I like that, plus we should probably do something different Windows, but having easily-accessible "pick up" and "drop" commands might be important. Anyway, it's easily turned off if we change our minds.
