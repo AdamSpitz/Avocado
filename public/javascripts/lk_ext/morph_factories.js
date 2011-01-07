@@ -9,8 +9,29 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.morphFactories, function(add) {
+  
+  add.creator('simpleMorphs', {}, {category: ['simple morphs']});
 
-  add.method('createFactoryForSimpleMorphs', function (evt) {
+  add.data('globalFactories', [], {initializeTo: '[]', category: ['registering']});
+
+  add.method('addGlobalCommandsTo', function (menu) {
+    menu.addLine();
+    
+    menu.addItem(["morph factory", avocado.morphFactories.globalFactories.map(function(factory) {
+      return [factory.factoryName() + " morphs", function(evt) { factory.createFactoryMorph().grabMe(evt); }]
+    })]);
+  }, {category: ['menu']});
+  
+  add.creator('defaultStyle', {}, {category: ['styles']})
+
+});
+
+
+thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
+  
+  add.method('factoryName', function () { return 'simple'; });
+
+  add.method('createFactoryMorph', function () {
     var line     = Morph.makeLine([pt(0,0), pt(60, 30)], 2, Color.black).closeDnD();
     var rect     = Morph.makeRectangle(pt(0,0), pt(60, 30)).closeDnD();
     var ellipse  = Morph.makeCircle(pt(0,0), 25).closeDnD();
@@ -27,11 +48,10 @@ thisModule.addSlots(avocado.morphFactories, function(add) {
     buttonLabel.backgroundColorWhenWritable = Color.white;
     var button  = ButtonMorph.createButton(buttonLabel, function(event) {this.world().showMessage('Hello!');}).closeDnD();
 
-    var factory = Morph.makeRectangle(pt(0,0), pt(300, 400));
-
     ellipse.setFill(new Color(0.8, 0.5, 0.5)); // make it a different color than the rectangle
-    factory.setFill(new Color(0.1, 0.6, 0.7)); // make it a different color than the rectangle
 
+    var factory = Morph.makeRectangle(pt(0,0), pt(300, 400));
+    factory.applyStyle(avocado.morphFactories.defaultStyle);
     factory.addMorphAt(line,     pt( 20,  20));
     factory.addMorphAt(rect,     pt(120,  20));
     factory.addMorphAt(ellipse,  pt( 20, 120));
@@ -40,18 +60,26 @@ thisModule.addSlots(avocado.morphFactories, function(add) {
     factory.addMorphAt(heart,    pt(200, 300));
     factory.addMorphAt(button,   pt( 20, 340));
     factory.addMorphAt(triangle, pt(150, 340));
-    factory.closeDnD();
     return factory;
   });
 
-  add.method('addGlobalCommandsTo', function (menu) {
-    menu.addLine();
-    
-    menu.addItem(["morph factory", function(evt) {
-      this.createFactoryForSimpleMorphs(evt).grabMe(evt);
-    }.bind(this)]);
-  }, {category: ['menu']});
+  add.data('postFileIn', function () {
+    avocado.morphFactories.globalFactories.push(this);
+  });
+  
+});
 
+
+thisModule.addSlots(avocado.morphFactories.defaultStyle, function(add) {
+  
+  add.data('fill', new Color(0.1, 0.6, 0.7));
+  
+  add.data('borderWidth', 1);
+  
+  add.data('borderColor', Color.black);
+  
+  add.data('openForDragAndDrop', false);
+  
 });
 
 

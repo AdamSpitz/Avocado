@@ -561,6 +561,11 @@ thisModule.addSlots(avocado.mirror, function(add) {
     });
     return ! nonTrivialSlot;
   }, {category: ['testing']});
+
+  add.method('isReflecteeRemoteReference', function () {
+    if (! this.canHaveSlots()) { return false; }
+    return this.reflectee().isRemoteReference;
+  }, {category: ['testing']});
   
   add.method('reflecteeLength', function () {
     return this.primitiveContentsAt('length');

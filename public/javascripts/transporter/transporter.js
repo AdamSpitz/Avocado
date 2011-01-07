@@ -488,9 +488,13 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
       } else {
         var cs = info.contents.theCreatorSlot();
         if (!cs) {
-          var err = new Error("Cannot file out a reference to an object without a creator slot: " + info.contents.name());
-          err.mirrorWithoutCreatorPath = info.contents;
-          throw err;
+          if (info.contents.isReflecteeRemoteReference()) {
+            info.isReferenceToRemoteObject = true;
+          } else {
+            var err = new Error("Cannot file out a reference to an object without a creator slot: " + info.contents.name());
+            err.mirrorWithoutCreatorPath = info.contents;
+            throw err;
+          }
         } else if (! cs.equals(this)) {
           info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = true;
           transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
@@ -540,7 +544,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
       optionalArgs = ", " + slotAnnoExpr + optionalArgs;
     }
 
-    filerOuter.writeSlot(this.name(), info, optionalArgs);
+    filerOuter.writeSlot(this, info, optionalArgs);
 
     // aaa - Stupid hack because some browsers won't let you set __proto__ so we have to treat it specially.
     if (info.isCreator) {
@@ -583,7 +587,9 @@ thisModule.addSlots(avocado.annotator.slotAnnotationPrototype, function(add) {
 thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
 
   add.method('create', function () {
-    return Object.newChildOf(this);
+    var o = Object.create(this);
+    o.initialize.apply(o, arguments);
+    return o;
   }, {category: ['creating']});
   
   add.method('initialize', function () {
@@ -676,8 +682,8 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
     this._buffer.append("});\n\n\n");
   }, {category: ['writing']});
 
-  add.method('writeSlot', function (slotName, info, optionalArgs) {
-    this._buffer.append("  add.").append(info.creationMethod).append("('").append(slotName).append("', ").append(info.contentsExpr);
+  add.method('writeSlot', function (slot, info, optionalArgs) {
+    this._buffer.append("  add.").append(info.creationMethod).append("('").append(slot.name()).append("', ").append(info.contentsExpr);
     this._buffer.append(optionalArgs);
     this._buffer.append(");\n\n");
   }, {category: ['writing']});
@@ -729,9 +735,8 @@ thisModule.addSlots(transporter.module.annotationlessFilerOuter, function(add) {
     this._buffer.append("\n\n");
   }, {category: ['writing']});
 
-  add.method('writeSlot', function (slotName, info, optionalArgs) {
-    // this._buffer.append("  ").append(slotName).append(": ").append(info.contentsExpr).append(",\n\n");
-    this._buffer.append(this._currentHolder.creatorSlotChainExpression()).append(".").append(slotName).append(" = ").append(info.contentsExpr).append(";\n\n");
+  add.method('writeSlot', function (slot, info, optionalArgs) {
+    this._buffer.append(this._currentHolder.creatorSlotChainExpression()).append(".").append(slot.name()).append(" = ").append(info.contentsExpr).append(";\n\n");
   }, {category: ['writing']});
 
   add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
@@ -743,8 +748,9 @@ thisModule.addSlots(transporter.module.annotationlessFilerOuter, function(add) {
 
 thisModule.addSlots(transporter.module.jsonFilerOuter, function(add) {
   
-  add.method('initialize', function ($super) {
+  add.method('initialize', function ($super, db) {
     $super();
+    this._db = db;
     this._indention = 0;
   }, {category: ['creating']});
 
@@ -784,18 +790,20 @@ thisModule.addSlots(transporter.module.jsonFilerOuter, function(add) {
     return result;
   }, {category: ['writing']});
 
-  add.method('writeSlot', function (slotName, info, optionalArgs) {
+  add.method('writeSlot', function (slot, info, optionalArgs) {
     this._buffer.append(this._slotSeparator).append("\n");
     this.indent();
     
+    var slotName = slot.name();
     if (this._currentHolder.isReflecteeArray()) {
       if (parseInt(slotName, 10).toString() !== slotName) {
         throw new Error("Trying to file out an array that has a slot named " + slotName);
       }
     } else {
       var slotNameToWrite = slotName;
-      if (slotNameToWrite[0] === '_') { slotNameToWrite = 'underscoreHack' + slotNameToWrite; }
+      if (slotNameToWrite[0] === '_' && !slot.isHardWired()) { slotNameToWrite = 'underscoreHack' + slotNameToWrite; }
       if (info.isReferenceToWellKnownObjectThatIsCreatedElsewhere) { slotNameToWrite = slotNameToWrite + "__creatorPath"; }
+      if (info.isReferenceToRemoteObject) { slotNameToWrite = slotNameToWrite + "__id"; }
       this._buffer.append(slotNameToWrite.inspect(true)).append(": ");
     }
     
@@ -807,6 +815,14 @@ thisModule.addSlots(transporter.module.jsonFilerOuter, function(add) {
       this.temporarilySwitchHolder(function() {
         this.fileOutSlots(reflect(info.contents.creatorSlotChain().reverse().map(function(s) { return s.name(); })).normalSlots());
       }.bind(this));
+    } else if (info.isReferenceToRemoteObject) {
+      var ref = info.contents.reflectee();
+      if (! (ref.db() && typeof(ref.id()) !== 'undefined')) { throw new Error("Trying to file out a remote reference, but not sure where it lives. The object is " + ref.object()); }
+      if (ref.db() === this._db) {
+        this._buffer.append(("" + ref.id()).inspect(true));
+      } else {
+        throw new Error("Not implemented yet: how do we file out a remote ref to an object in a whole nother DB?");
+      }
     } else {
       // aaa - Hack because JSON only accepts double-quotes.
       if (info.contents.isReflecteeString()) {
@@ -840,8 +856,8 @@ thisModule.addSlots(transporter.module.mockFilerOuter, function(add) {
     this._buffer.append("  end object ").append(this._currentHolderExpr).append("\n");
   }, {category: ['writing']});
 
-  add.method('writeSlot', function (slotName, info, optionalArgs) {
-    this._buffer.append("    slot ").append(slotName).append(": ").append(info.contentsExpr).append("\n");
+  add.method('writeSlot', function (slot, info, optionalArgs) {
+    this._buffer.append("    slot ").append(slot.name()).append(": ").append(info.contentsExpr).append("\n");
   }, {category: ['writing']});
 
   add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {

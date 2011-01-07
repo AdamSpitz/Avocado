@@ -16,18 +16,19 @@ thisModule.addSlots(avocado.enumerator, function(add) {
     return e;
   }, {category: ['creating']});
 
-  add.method('createForFunction', function (f) {
-    var e = Object.create(this);
-    e.setFunction()
-    return e;
-  }, {category: ['creating']});
-
   add.method('initialize', function () {
     var args = $A(arguments);
     this._object = args.shift();
     this._methodName = args.shift();
     this._methodArgs = args;
   }, {category: ['creating']});
+  
+  add.method('toString', function () {
+    var s = [this._object.toString(), ".", this._methodName, "("];
+    this._methodArgs.each(function(arg) { s.push("" + arg); });
+    s.push(")");
+    return s.join("");
+  }, {category: ['printing']});
 
   add.method('_each', function (f) {
     var method = this._object[this._methodName];

@@ -1,8 +1,12 @@
-Monday, January 3, 2010
+Saturday, January 15, 2011
+
+  - First steps towards a UI for doing simple things with CouchDB. Can get a DB morph, and drop a mirror on it to add the object to the database (or update the object, if it's already in the database).
+
+Monday, January 3, 2011
 
   - First attempt at having Pick Up put the morph in a CarryingHandMorph that's off to the side, rather than keeping it right at the mouse cursor. It's not really right yet.
 
-Sunday, January 2, 2010
+Sunday, January 2, 2011
 
   - Made the morph menu be a wheel menu too. Use Ctrl to access it (though this breaks using Ctrl keys for text editing). Not quite sure that I like that, plus we should probably do something different Windows, but having easily-accessible "pick up" and "drop" commands might be important. Anyway, it's easily turned off if we change our minds.
 

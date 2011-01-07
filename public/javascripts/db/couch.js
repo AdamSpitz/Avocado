@@ -18,7 +18,7 @@ thisModule.addSlots(avocado.couch, function(add) {
   
   add.creator('dbServer', {});
 
-  add.creator('db', {});
+  add.creator('db', Object.create(avocado.db));
 
 });
 
@@ -80,15 +80,18 @@ thisModule.addSlots(avocado.couch.db, function(add) {
   
   add.method('findDBAtURL', function (url, callback) {
     var i = url.lastIndexOf("/");
-    var server = avocado.couch.dbServer.atURL(url.substr(0, i));
+    if (i < 0 || i === url.length - 1) { throw new Error("A CouchDB URL should be of the form http://server:5984/db"); }
+    var server = avocado.couch.dbServer.atURL(url.substr(0, i), 'http://localhost/~adam/avocado/cgi/proxy.cgi'); // aaa don't hard-code the proxy URL
     var db = server.dbNamed(url.substr(i + 1));
     db.ensureExists(callback);
   }, {category: ['creating']});
   
+  add.creator('prompter', {}, {category: ['user interface']});
+  
   add.method('initialize', function (server, name) {
     this._server = server;
     this._name = name;
-    this._revsByID = {};
+    this._refsByID = {};
     this._designsByName = {};
   }, {category: ['creating']});
   
@@ -97,6 +100,8 @@ thisModule.addSlots(avocado.couch.db, function(add) {
   add.method('name', function () { return this._name; }, {category: ['accessing']});
   
   add.method('baseURL', function () { return this._server.baseURL() + "/" + this.name(); }, {category: ['accessing']});
+  
+  add.method('labelString', function () { return this._name; }, {category: ['user interface']});
 
   add.method('textualReference', function () { return 'couch:' + this.baseURL(); }, {category: ['accessing']});
  
@@ -120,7 +125,7 @@ thisModule.addSlots(avocado.couch.db, function(add) {
   add.method('ensureDoesNotExist', function (callback) {
     this.doRequest("DELETE", "", "", "", function (responseObj) {
       delete this._isKnownToExist;
-      this._revsByID = {};
+      this._refsByID = {};
       callback(this);
     }.bind(this));
   }, {category: ['creating']});
@@ -129,31 +134,79 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     throw new Error(responseObj.error + ": " + responseObj.reason);
   }, {category: ['handling errors']});
   
+  add.method('remoteRefForID', function (id) {
+    var ref = this.existingRemoteRefForID(id);
+    if (ref) { return ref; }
+    ref = avocado.remoteObjectReference.create(undefined, this, id);
+    this.rememberRemoteRefForID(id, ref);
+    return ref;
+  }, {category: ['documents']});
+  
+  add.method('rememberRemoteRefForID', function (id, ref) {
+    this._refsByID[id] = ref;
+  }, {category: ['documents']});
+  
+  add.method('forgetRemoteRefForID', function (id) {
+    delete this._refsByID[id];
+    
+  }, {category: ['documents']});
+  
+  add.method('existingRemoteRefForID', function (id, throwErrorIfNotFound) {
+    var ref = this._refsByID[id];
+    if (throwErrorIfNotFound && !ref) { throw new Error("Don't know anything about a document with ID " + id); }
+    return ref;
+  }, {category: ['documents']});
+  
   add.method('addDocument', function (obj, callback) {
-    var json = this.convertRealObjectToJSON(obj);
-    this.doRequest("POST", "", "", json, function(responseObj) {
-      if (responseObj.ok) {
-        var id = responseObj.id; // aaa - What should I do with this?
-        callback(responseObj);
+    var ref = avocado.remoteObjectReference.table.refForObject(obj);
+
+    var alreadyInDB = ref.db();
+    if (alreadyInDB) {
+      if (alreadyInDB === this) {
+        this.putDocumentAt(ref.id(), obj, callback);
       } else {
-        this.error(responseObj);
+        throw new Error("That object is already in a different DB: " + alreadyInDB);
       }
-    }.bind(this));
+    } else {
+      var json = this.convertRealObjectToJSON(obj);
+      this.doRequest("POST", "", "", json, function(responseObj) {
+        if (responseObj.ok) {
+          ref.setDBInfo(this, responseObj.id, responseObj.rev);
+          responseObj.ref = ref;
+          callback(responseObj);
+        } else {
+          this.error(responseObj);
+        }
+      }.bind(this));
+    }
   }, {category: ['documents']});
   
   add.method('putDocumentAt', function (id, obj, callback) {
-    var json = this.convertRealObjectToJSON(obj);
-    this.doRequest("PUT", "/" + id, "", json, function(responseObj) {
-      if (responseObj.ok) {
-        callback(responseObj);
-      } else {
-        this.error(responseObj);
-      }
-    }.bind(this));
+    var ref = avocado.remoteObjectReference.table.refForObject(obj);
+    
+    var alreadyInDB = ref.db();
+    if (alreadyInDB && alreadyInDB !== this) {
+      throw new Error("That object is already in a different DB: " + alreadyInDB);
+    } else if (alreadyInDB && ref.id() !== id) {
+      throw new Error("That object is already in this DB under a different ID: " + ref.id());
+    } else {
+      var json = this.convertRealObjectToJSON(obj, ref.rev());
+      this.doRequest("PUT", "/" + id, "", json, function(responseObj) {
+        if (responseObj.ok) {
+          ref.setRev(responseObj.rev);
+          responseObj.ref = ref;
+          callback(responseObj);
+        } else {
+          this.error(responseObj);
+        }
+      }.bind(this));
+    }
   }, {category: ['documents']});
   
   add.method('deleteDocumentAt', function (id, callback) {
-    var rev = this._revsByID[id];
+    var ref = this.existingRemoteRefForID(id);
+    if (! ref) { callback(); return; } // aaa - this is probably not the right thing to do, but right now I just want to say "delete the object if it's there, otherwise don't worry about it"
+    var rev = ref._rev;
     this.doRequest("DELETE", "/" + id, "rev=" + rev, null, function(responseObj) {
       callback(responseObj);
     }.bind(this));
@@ -163,27 +216,41 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     this.doRequest("GET", "/" + id, "", null, function(responseObj) {
       var idAgain = responseObj._id;
       if (id !== idAgain) { throw new Error("Uh oh, something's wrong, why does the document that came back from the DB have a different ID than the one we asked for?"); }
-      delete responseObj._id;
-      this._revsByID[id] = responseObj._rev;
-      delete responseObj._rev;
-      callback(this.convertDumbDataObjectToRealObject(responseObj), id);
+      var ref = this.updateRealObjectFromDumbDataObject(responseObj);
+      callback(ref.object(), ref.id());
     }.bind(this));
   }, {category: ['documents']});
   
-  add.method('convertRealObjectToJSON', function (obj) {
+  add.method('convertRealObjectToJSON', function (obj, rev) {
     if (typeof(obj) === 'string') { return obj; } // allow raw JSON
     
-    var fo = transporter.module.jsonFilerOuter.create();
-    fo.fileOutSlots(reflect(obj).slots());
+    var mir = reflect(obj);
+    var slots = mir.slots();
+    if (rev) {
+      slots = slots.toArray();
+      slots.push(Object.newChildOf(avocado.slots.hardWiredContents, mir, '_rev', reflect(rev)));
+    }
+    
+    var fo = transporter.module.jsonFilerOuter.create(this);
+    fo.fileOutSlots(slots);
     if (fo.errors().size() > 0) { throw new Error("Errors converting " + obj + " to JSON: " + fo.errors().map(function(e) { return e.toString(); }).join(", ")); }
     return fo.fullText();
   }, {category: ['documents', 'converting']});
   
-  add.method('convertDumbDataObjectToRealObject', function (dumbDataObj) {
+  add.method('updateRealObjectFromDumbDataObject', function (dumbDataObj) {
     var id = dumbDataObj._id;
+    delete dumbDataObj._id;
+    var ref = this.remoteRefForID(id);
+    ref._rev = dumbDataObj._rev;
+    
+    var obj = ref.object() || dumbDataObj;
+    if (obj === dumbDataObj) {
+      ref.setObject(obj);
+    }
     
     var underscoreHackLength = 'underscoreHack'.length;
-    for (var name in dumbDataObj) {
+    var names = reflect(dumbDataObj).normalSlotNames();
+    names.each(function(name) {
       var contents = dumbDataObj[name];
       var realName = name;
       var realContents = contents;
@@ -205,30 +272,44 @@ thisModule.addSlots(avocado.couch.db, function(add) {
       }
       
       var nameChanged = name !== realName;
-      if (nameChanged) {
-        delete dumbDataObj[name];
-      }
+      if (nameChanged) { delete dumbDataObj[name]; }
       
-      if (nameChanged || contents !== realContents) {
-        dumbDataObj[realName] = realContents;
+      if (obj !== dumbDataObj || nameChanged || contents !== realContents) {
+        obj[realName] = realContents;
       }
-    }
+    }.bind(this));
     
-    return dumbDataObj;
+    return ref;
   }, {category: ['documents', 'converting']});
   
   add.method('findObjectByID', function (id, callback) {
-    this.getDocument(id, function(obj) {
-      avocado.objectsAndDBsAndIDs.rememberObject(obj, this, id);
-      callback(obj);
-    }.bind(this));
+    this.remoteRefForID(id).fetchObjectIfNotYetPresent(callback);
   }, {category: ['objects']});
   
+  add.creator('relationships', {}, {category: ['relationships']});
+  
   add.creator('design', {}, {category: ['designs']});
+  
+  add.creator('view', {}, {category: ['designs']});
+  
+  add.creator('query', {}, {category: ['designs']});
   
   add.method('designWithName', function (n) {
     return this._designsByName[n] || (this._designsByName[n] = Object.newChildOf(this.design, this, n));
   }, {category: ['designs']});
+
+  add.method('dragAndDropCommands', function () {
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addItem(avocado.command.create("add object", function(evt, mir) {
+      this.addDocument(mir.reflectee(), function(responseObj) {
+        var ref = responseObj.ref;
+        // anything to do here?
+      });
+    }).setArgumentSpecs([avocado.command.argumentSpec.create('mir').onlyAccepts(function(o) {
+      return o && typeof(o.reflectee) === 'function' && o.reflectee();
+    })]));
+    return cmdList;
+  }, {category: ['user interface', 'drag and drop']});
   
 });
 
@@ -239,16 +320,20 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
     this._db = db;
     this._name = n;
     var id = "_design/" + n;
+    var ref = db.existingRemoteRefForID(id);
     this._rawDoc = {
       "_id" : id,
-      "_rev" : db._revsByID[id],
+      "_rev" : (ref ? ref.rev() : undefined),
       "views" : {}
     };
+    this._viewsByName = {};
   }, {category: ['creating']});
 
   add.method('rawDoc', function () { return this._rawDoc; }, {category: ['accessing']});
   
   add.method('name', function () { return this._name; }, {category: ['accessing']});
+  
+  add.method('db', function () { return this._db; }, {category: ['accessing']});
   
   add.method('id', function () { return this.rawDoc()._id; }, {category: ['accessing']});
   
@@ -260,11 +345,134 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
     var json = JSON.stringify(this.rawDoc());
     this._db.putDocumentAt(this.id(), json, callback);
   }, {category: ['adding and removing']});
-  
-  
-  add.method('getViewResults', function (viewName, callback) {
-    this._db.doRequest("GET", "/" + this.id() + "/_view/" + viewName, "", null, callback);
+
+  add.method('doRequest', function (httpMethod, url, paramsString, body, callback) {
+    this._db.doRequest(httpMethod, "/" + this.id() + url, paramsString, body, callback);
+  }, {category: ['requests']});
+ 
+  add.method('viewNamed', function (viewName) {
+    return this._viewsByName[viewName] || (this._viewsByName[viewName] = Object.newChildOf(avocado.couch.db.view, this, viewName));
   }, {category: ['views']});
+  
+  add.method('addViewForRelationship', function (r) {
+    this.rawDoc().views[r.viewName()] = { map: r.stringForMapFunction() };
+  }, {category: ['views']});
+  
+});
+
+
+thisModule.addSlots(avocado.couch.db.view, function(add) {
+  
+  add.method('initialize', function (design, n) {
+    this._design = design;
+    this._name = n;
+  }, {category: ['creating']});
+
+  add.method('design', function () { return this._design; }, {category: ['accessing']});
+  
+  add.method('name', function () { return this._name; }, {category: ['accessing']});
+
+  add.method('newQuery', function (options) {
+    return Object.newChildOf(avocado.couch.db.query, this, options);
+  }, {category: ['queries']});
+
+  add.method('queryForAllResults', function () {
+    return this.newQuery();
+  }, {category: ['queries']});
+  
+});
+
+
+thisModule.addSlots(avocado.couch.db.query, function(add) {
+  
+  add.method('initialize', function (view, options) {
+    this._view = view;
+    this._options = options;
+  }, {category: ['creating']});
+
+  add.method('view', function () { return this._view; }, {category: ['accessing']});
+  
+  add.method('options', function () { return this._options; }, {category: ['accessing']});
+  
+  add.method('getResults', function (callback) {
+    // aaa - implement other kinds of queries, not just "get all results"
+    var db = this.view().design().db();
+    this.view().design().doRequest("GET", "/_view/" + this.view().name(), "", null, function(responseObj) {
+      responseObj.refs = responseObj.rows.map(function(row) { return db.updateRealObjectFromDumbDataObject(row.value); });
+      callback(responseObj);
+    });
+  }, {category: ['views']});
+  
+});
+
+
+thisModule.addSlots(avocado.couch.db.relationships, function(add) {
+
+  add.creator('oneToMany', {});
+
+});
+
+
+thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
+
+  add.method('create', function (containerType, elementType, nameOfAttributePointingToContainer) {
+    return Object.newChildOf(this, containerType, elementType, nameOfAttributePointingToContainer);
+  }, {category: ['creating']});
+
+  add.method('initialize', function (containerType, elementType, nameOfAttributePointingToContainer) {
+    this._containerType = containerType;
+    this._elementType = elementType;
+    this._nameOfAttributePointingToContainer = nameOfAttributePointingToContainer;
+  }, {category: ['creating']});
+  
+  add.method('viewName', function () {
+    return reflect(this._elementType).explicitlySpecifiedCreatorSlot().name() + "__" + this._nameOfAttributePointingToContainer;
+  }, {category: ['views']});
+  
+  add.method('stringForMapFunction', function () {
+    var containerCreatorSlotChain = reflect(this._containerType).creatorSlotChain();
+    var   elementCreatorSlotChain = reflect(this._elementType  ).creatorSlotChain();
+    var s = ["function(doc) { var p = doc.underscoreHack__proto____creatorPath; if (!p) { return; }"];
+    
+    s.push(" if (p.length === ", containerCreatorSlotChain.length);
+    for (var i = 0, n = containerCreatorSlotChain.length; i < n; ++i) {
+      s.push(" && p[", i, "] === ", containerCreatorSlotChain[n - 1 - i].name().inspect());
+    }
+    s.push(") { emit([doc._id, 0], doc); } else");
+    
+    s.push(" if (p.length === ", elementCreatorSlotChain.length);
+    for (var i = 0, n = elementCreatorSlotChain.length; i < n; ++i) {
+      s.push(" && p[", i, "] === ", elementCreatorSlotChain[n - 1 - i].name().inspect());
+    }
+    s.push(") { emit([doc.", this._nameOfAttributePointingToContainer, ", 1], doc); }");
+    
+    s.push(" }");
+    return s.join("");
+  }, {category: ['views']});
+  
+  add.method('viewInDesign', function (design) {
+    return design.viewNamed(this.viewName());
+  }, {category: ['views']});
+  
+  add.method('queryFor', function (container, design) {
+    var ref = avocado.remoteObjectReference.table.existingRefForObject(container);
+    if (!ref) { throw new Error("Can't create a oneToMany query for " + container + " because we don't know its ID."); }
+    var id = ref.id();
+    return this.viewInDesign(design).newQuery({startkey: '[' + id.inspect(true) + ']', endkey: '[' + id.inspect(true) + ',{}]'});
+  }, {category: ['querying']});
+
+});
+
+
+thisModule.addSlots(avocado.couch.db.prompter, function(add) {
+  
+  add.method('prompt', function (caption, context, evt, callback) {
+    WorldMorph.current().prompt('CouchDB URL?', function(url) {
+      if (url) {
+        avocado.couch.db.findDBAtURL(url, callback);
+      }
+    }, 'http://localhost:5984/dbname');
+  }, {category: ['prompting']});
   
 });
 
@@ -272,6 +480,8 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
 thisModule.addSlots(avocado.couch.db.tests, function(add) {
   
   add.creator('argle', {});
+
+  add.creator('bargle', {});
   
   add.method('asynchronouslyTestBasicStuff', function (callIfSuccessful) {
     var server = avocado.couch.dbServer.atURL('http://localhost:5984', 'http://localhost/~adam/avocado/cgi/proxy.cgi');
@@ -283,20 +493,20 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
         db2.ensureExists(function () {
           var argle1 = Object.newChildOf(this.argle, 1, 2, 3);
           db1.addDocument(argle1, function(responseObj) {
-            var id = responseObj.id;
+            var ref = responseObj.ref;
+            var id = ref.id();
+            ref.forgetMe();
             db1.getDocument(id, function(obj, idAgain) {
               this.assertEqual(id, idAgain);
               this.assertEqual("123", obj.toString());
-              avocado.objectsAndDBsAndIDs.rememberObject(obj, db1, id);
               var argle2 = Object.newChildOf(this.argle, 'one', 'two', 'three'); // aaa - change one of these to say argle1, try inter-db references
               db2.addDocument(argle2, function(responseObj) {
-                var id2 = responseObj.id;
+                var ref2 = responseObj.ref;
+                var id2 = ref2.id();
+                ref2.forgetMe();
                 db2.getDocument(id2, function(obj2, id2Again) {
                   this.assertEqual("onetwothree", obj2.toString());
-                  
-                  // Don't remember argle2 in avocado.objectsAndDBsAndIDs just yet; first, try getting it
-                  // from the DB via a textual reference.
-                  avocado.objectsAndDBsAndIDs.findObjectReferredToAs('{"db": ' + db2.textualReference().inspect(true) + ', "id": ' + id2.inspect(true) + '}', function(obj2Again) {
+                  avocado.remoteObjectReference.table.findObjectReferredToAs('{"db": ' + db2.textualReference().inspect(true) + ', "id": ' + id2.inspect(true) + '}', function(obj2Again) {
                     this.assertEqual("onetwothree", obj2Again.toString());
                     callIfSuccessful();
                   }.bind(this));
@@ -315,19 +525,53 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
     db.ensureDoesNotExist(function () {
       db.ensureExists(function () {
         var design = db.designWithName("queryTest");
+        var argleBargles = avocado.couch.db.relationships.oneToMany.create(avocado.couch.db.tests.argle, avocado.couch.db.tests.bargle, 'argle__ref__id');
+        design.addViewForRelationship(argleBargles);
         design.rawDoc().views.bFive = { map: "function(doc) { if (doc.b === 5) { emit(doc._id, doc); }}" };
         design.remove(function(responseObj) {
           design.put(function(responseObj) {
-            db.addDocument(Object.newChildOf(this.argle, 1, 2, 3), function(responseObj) {
-              db.addDocument(Object.newChildOf(this.argle, 3, 5, 7), function(responseObj) {
-                db.addDocument(Object.newChildOf(this.argle, 4, 5, 6), function(responseObj) {
-                  design.getViewResults('bFive', function(responseObj) {
-                    var results = responseObj.rows.map(function(row) { return db.convertDumbDataObjectToRealObject(row.value); }.bind(this));
-                    this.assertEqual(2, results.size());
-                    this.assertEqual("357", results[0].toString());
-                    this.assertEqual("456", results[1].toString());
-                    callIfSuccessful();
+            var argle1 = Object.newChildOf(this.argle, 1, 2, 3);
+            var argle2 = Object.newChildOf(this.argle, 3, 5, 7);
+            var argle3 = Object.newChildOf(this.argle, 4, 5, 6);
+            db.addDocument(argle1, function(responseObj) {
+              db.addDocument(argle2, function(responseObj) {
+                db.addDocument(argle3, function(responseObj) {
+
+                  argle3.c = 'six';
+                  // I think addDocument should do a putDocumentAt if the object is already in the DB.
+                  db.addDocument(argle3, function(responseObj) {
+                    
+                    design.viewNamed('bFive').queryForAllResults().getResults(function(responseObj) {
+                      var results = responseObj.refs;
+                      this.assertEqual(2, results.size());
+                      this.assertEqual("357",   results[0].object().toString());
+                      this.assertEqual("45six", results[1].object().toString());
+
+                      // Let's try out the oneToMany relationship object.
+                      var bargle11 = Object.newChildOf(this.bargle, argle1, "one", 1);
+                      var bargle12 = Object.newChildOf(this.bargle, argle1, "two", 2);
+                      var bargle21 = Object.newChildOf(this.bargle, argle2, "one", 1);
+                      var bargle22 = Object.newChildOf(this.bargle, argle2, "two", 2);
+                      var argle1Bargles = argleBargles.queryFor(argle1, design);
+                      var argle2Bargles = argleBargles.queryFor(argle2, design);
+                      db.addDocument(bargle11, function(responseObj) {
+                        db.addDocument(bargle12, function(responseObj) {
+                          db.addDocument(bargle21, function(responseObj) {
+                            db.addDocument(bargle22, function(responseObj) {
+                              argle1Bargles.getResults(function(responseObj) {
+                                var argle1BarglesResults = responseObj.refs;
+                                this.assertEqual(argle1,   argle1BarglesResults[0].object());
+                                this.assertEqual(bargle11, argle1BarglesResults[1].object());
+                                this.assertEqual(bargle12, argle1BarglesResults[2].object());
+                                callIfSuccessful();
+                              }.bind(this));
+                            }.bind(this));
+                          }.bind(this));
+                        }.bind(this));
+                      }.bind(this));
+                    }.bind(this));
                   }.bind(this));
+
                 }.bind(this));
               }.bind(this));
             }.bind(this));
@@ -350,6 +594,29 @@ thisModule.addSlots(avocado.couch.db.tests.argle, function(add) {
   
   add.method('toString', function () {
     return "" + this.a + this.b + this.c;
+  });
+  
+});
+
+
+thisModule.addSlots(avocado.couch.db.tests.bargle, function(add) {
+  
+  add.method('initialize', function (argle, s, t) {
+    this.s = s;
+    this.t = t;
+    this.setArgle(argle);
+  });
+  
+  add.method('toString', function () {
+    return "" + this.argle() + this.s + this.t;
+  });
+  
+  add.method('argle', function () {
+    return this.argle__ref.object();
+  });
+  
+  add.method('setArgle', function (argle) {
+    this.argle__ref = avocado.remoteObjectReference.table.refForObject(argle);
   });
   
 });

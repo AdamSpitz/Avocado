@@ -18,10 +18,20 @@ Morph.addMethods({
   		return this.openForDragAndDrop && !(morph instanceof WindowMorph);
   	},
   
-    justReceivedDrop: function(morph) {
+    justReceivedDrop: function(morph, hand) {
   	  var c = this.applicableCommandForDropping(morph);
   	  if (c) {
   	    c.go(Event.createFake(), morph); // aaa - can't we get a real event?
+  	    if (morph.owner === this && ! this.openForDragAndDrop && hand.grabInfo) {
+					var previousOwner    = hand.grabInfo[0];
+					var previousPosition = hand.grabInfo[1];
+					var world = previousOwner.world();
+					if (world) {
+  					morph.ensureIsInWorld(world, previousPosition, true, true, false, function() {
+  						previousOwner.addMorph(morph);
+  					});
+					}
+	      }
   	  } else {
   	    if (! this.openForDragAndDrop) {
           throw new Error("for drag-and-drop, children should implement either dragAndDropCommands or justReceivedDrop");

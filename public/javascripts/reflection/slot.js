@@ -22,6 +22,8 @@ thisModule.addSlots(avocado.slots, function(add) {
 
   add.creator('functionBody', Object.create(avocado.slots['abstract']));
 
+  add.creator('hardWiredContents', Object.create(avocado.slots['abstract']));
+
 });
 
 
@@ -40,9 +42,16 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('inspect', function () { return this.name(); }, {category: ['printing']});
 
+  add.method('toString', function () {
+    if (this.name() === undefined) { return ""; }
+    return this.name();
+  }, {category: ['printing']});
+
   add.method('sortOrder', function () { return this.name().toUpperCase(); }, {category: ['sorting']});
 
   add.method('isFunctionBody', function () { return false; }, {category: ['testing']});
+
+  add.method('isHardWired', function () { return false; }, {category: ['testing']});
 
   add.method('isParent', function () { return false; }, {category: ['testing']});
 
@@ -194,10 +203,26 @@ thisModule.addSlots(avocado.slots.functionBody, function(add) {
 
   add.method('isFunctionBody', function () { return true; }, {category: ['testing']});
 
-  add.method('toString', function () {
-    if (this.name() === undefined) { return ""; }
-    return this.name();
-  }, {category: ['printing']});
+});
+
+
+thisModule.addSlots(avocado.slots.hardWiredContents, function(add) {
+
+  add.method('initialize', function (m, n, c) {
+    this._mirror = m;
+    this._name = n;
+    this._contents = c;
+  }, {category: ['creating']});
+
+  add.method('name', function () { return this._name; }, {category: ['accessing']});
+
+  add.method('contents', function () { return this._contents; }, {category: ['accessing']});
+  
+  add.method('initializationExpression', function () {
+    return "";
+  }, {category: ['accessing annotation', 'initialization expression']});
+
+  add.method('isHardWired', function () { return true; }, {category: ['testing']});
 
 });
 
@@ -225,11 +250,6 @@ thisModule.addSlots(avocado.slots.parent, function(add) {
   add.method('hashCode', function () {
     return 'parent_' + this.mirror().hashCode();
   }, {category: ['comparing']});
-
-  add.method('toString', function () {
-    if (this.name() === undefined) { return ""; }
-    return this.name();
-  }, {category: ['printing']});
 
   add.method('isSimpleMethod', function () { return false; }, {category: ['testing']});
 
@@ -281,11 +301,6 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   add.method('hashCode', function () {
     return this.name().hashCode() + this.mirror().hashCode();
   }, {category: ['comparing']});
-
-  add.method('toString', function () {
-    if (this.name() === undefined) { return ""; }
-    return this.name();
-  }, {category: ['printing']});
 
   add.method('copyTo', function (targetCatOfNewMir) {
     var newSlot = targetCatOfNewMir.mirror().slotAt(this.name());
