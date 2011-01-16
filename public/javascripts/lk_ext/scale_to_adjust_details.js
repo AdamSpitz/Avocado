@@ -25,7 +25,7 @@ thisModule.addSlots(avocado.scaleBasedOptionalMorph, function(add) {
   });
 
   add.method('shouldBeShown', function () {
-    return this._owner.overallScale() >= this._threshold;
+    return this._owner.isOnScreen() && this._owner.overallScale() >= this._threshold;
   });
 
 });

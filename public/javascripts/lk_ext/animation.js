@@ -11,13 +11,14 @@ thisModule.addSlots(Morph.prototype, function(add) {
       var w = this.world();
       if (!w) { return false; }
       if (w === this) { return true; }
+      var wTransform = w.getTransform();
+      var wBounds = w.visibleBounds();
       var thisBounds = this.shape.bounds();
-      var topLeft     = this.worldPoint(thisBounds.topLeft()    ).matrixTransform(w.getTransform());
-      var topRight    = this.worldPoint(thisBounds.topRight()   ).matrixTransform(w.getTransform());
-      var bottomRight = this.worldPoint(thisBounds.bottomRight()).matrixTransform(w.getTransform());
-      var bottomLeft  = this.worldPoint(thisBounds.bottomLeft() ).matrixTransform(w.getTransform());
-      var worldBounds = w.visibleBounds();
-      return worldBounds.containsPoint(topLeft) || worldBounds.containsPoint(topRight) || worldBounds.containsPoint(bottomRight) || worldBounds.containsPoint(bottomLeft);
+      if (wBounds.containsPoint(this.worldPoint(thisBounds.topLeft()    ).matrixTransform(wTransform))) { return true; }
+      if (wBounds.containsPoint(this.worldPoint(thisBounds.bottomRight()).matrixTransform(wTransform))) { return true; }
+      if (wBounds.containsPoint(this.worldPoint(thisBounds.bottomLeft() ).matrixTransform(wTransform))) { return true; }
+      if (wBounds.containsPoint(this.worldPoint(thisBounds.topRight()   ).matrixTransform(wTransform))) { return true; }
+      return false;
     }, {category: ['testing']});
 
   add.method('startZoomingOuttaHere', function () {
