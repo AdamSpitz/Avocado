@@ -11,14 +11,13 @@ thisModule.addSlots(Morph.prototype, function(add) {
       var w = this.world();
       if (!w) { return false; }
       if (w === this) { return true; }
-      var wTransform = w.getTransform();
+      // var wTransform = w.getTransform();
       var wBounds = w.visibleBounds();
       var thisBounds = this.shape.bounds();
-      if (wBounds.containsPoint(this.worldPoint(thisBounds.topLeft()    ).matrixTransform(wTransform))) { return true; }
-      if (wBounds.containsPoint(this.worldPoint(thisBounds.bottomRight()).matrixTransform(wTransform))) { return true; }
-      if (wBounds.containsPoint(this.worldPoint(thisBounds.bottomLeft() ).matrixTransform(wTransform))) { return true; }
-      if (wBounds.containsPoint(this.worldPoint(thisBounds.topRight()   ).matrixTransform(wTransform))) { return true; }
-      return false;
+      var transformedBounds = rect(this.worldPoint(thisBounds.topLeft()), this.worldPoint(thisBounds.bottomRight()));
+      var intersects = wBounds.intersects(transformedBounds);
+      // console.log("intersects is " + intersects + "; wBounds is " + wBounds + ", transformedBounds is " + transformedBounds);
+      return intersects;
     }, {category: ['testing']});
 
   add.method('startZoomingOuttaHere', function () {
@@ -115,6 +114,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
         var initialLoc = (!owner || this.world() !== w) ? this.getExtent().scaleBy(-1.1) : owner.worldPoint(this.getPosition());
         if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
         w.addMorphAt(this, initialLoc);
+        this.updateAppearance(); // aaa - not sure this is a good idea, but maybe; it makes sure that a mirror will be updated as soon as it's visibie, for one thing.
       }
     } else {
       if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }

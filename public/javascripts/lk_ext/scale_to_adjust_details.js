@@ -14,8 +14,8 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.scaleBasedOptionalMorph, function(add) {
 
-  add.method('create', function (updateFunction, morphToShowOrHide, owner, threshold) {
-    return Object.newChildOf(this, updateFunction, morphToShowOrHide, owner, threshold);
+  add.method('create', function (morphToUpdate, morphToShowOrHide, owner, threshold) {
+    return Object.newChildOf(this, morphToUpdate, morphToShowOrHide, owner, threshold);
   });
 
   add.method('initialize', function ($super, morphToUpdate, morphToShowOrHide, owner, threshold) {
@@ -25,7 +25,14 @@ thisModule.addSlots(avocado.scaleBasedOptionalMorph, function(add) {
   });
 
   add.method('shouldBeShown', function () {
-    return this._owner.isOnScreen() && this._owner.overallScale() >= this._threshold;
+    var b = false;
+    var onScreen = this._owner.isOnScreen();
+    if (onScreen) {
+      var s = this._owner.overallScale();
+      b = s >= this._threshold;
+    }
+    // console.log("shouldBeShown is " + b + " for " + this._owner + ", scale is " + s + ", threshold is " + this._threshold + ", onScreen is " + onScreen);
+    return b;
   });
 
 });

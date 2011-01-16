@@ -96,6 +96,10 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
+  
+  add.method('toString', function () {
+    return this.mirror().inspect();
+  }, {category: ['printing']});
 
   add.data('shouldUseZooming', function () {
     return avocado.shouldMirrorsUseZooming;

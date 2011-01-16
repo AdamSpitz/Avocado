@@ -120,6 +120,7 @@ Morph.addMethods({
   grabMeWithoutZoomingAroundFirst: function(evt) {
     // Had to do this to make the morph be right under the hand, and to get the drop shadows right.
     this.addCenteredAt(evt.hand.position(), evt.hand.world());
+    this.updateAppearance(); // aaa - not sure this is a good idea, but maybe; it makes sure that a mirror will be updated as soon as it's visibie, for one thing.
     evt.hand.grabMorph(this, evt);
   },
 

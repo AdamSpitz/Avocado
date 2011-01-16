@@ -44,6 +44,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['initializing']});
 
   add.method('treeNode', function () { return this._model; }, {category: ['accessing']});
+  
+  add.method('toString', function () {
+    if (this._titleLabel) { return this._titleLabel.getText(); }
+    return "a tree node";
+  }, {category: ['printing']});
 
   add.method('headerRow', function () {
     var hr = this._headerRow;
@@ -85,7 +90,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   
   add.method('headerRowContents', function () {
     if (this.shouldUseZooming()) {
-      return [this._titleLabel, avocado.scaleBasedOptionalMorph.create(this, this.contentsPanel(), this, 1.0)];
+      return [this._titleLabel, avocado.scaleBasedOptionalMorph.create(this, this.contentsPanel(), this, 2.0)];
     } else {
       
       return [this._expander, this._titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
@@ -94,11 +99,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('potentialContent', function () {
     if (this.shouldUseZooming()) {
-      var rows = this._shouldOmitHeaderRow ? [this.contentsPanel()] : [this.headerRow()];
+      var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedOptionalMorph.create(this, this.contentsPanel(), this, 0.75)] : [this.headerRow()];
       return avocado.tableContents.createWithColumns([rows]);
     } else {
       var rows = [];
-      if (! this._shouldOmitHeaderRow)   { rows.push(this.headerRow()); }
+      if (! this._shouldOmitHeaderRow)  { rows.push(this.headerRow()); }
       if (this.expander().isExpanded()) { rows.push(this.contentsPanel()); }
       return avocado.tableContents.createWithColumns([rows]);
     }
@@ -117,7 +122,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     cp = this._contentsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.contentsPanelStyle());
     this.adjustScaleOfContentsPanel();
     cp.potentialContent = this.potentialContentsOfContentsPanel.bind(this);
-    cp.refreshContent();
+    // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
     return cp;
   }, {category: ['contents panel']});
 
