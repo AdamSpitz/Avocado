@@ -78,10 +78,18 @@ thisModule.addSlots(avocado.couch.dbServer, function(add) {
 
 thisModule.addSlots(avocado.couch.db, function(add) {
   
+  add.method('proxyURL', function () {
+    // aaa - This is still a bit too hard-coded. Should be configurable from within Avocado, I think. -- Adam
+    var baseURL = transporter.avocadoBaseURL;
+    if (baseURL === undefined) { baseURL = document.documentURI; }
+    baseURL = baseURL.substring(0, baseURL.lastIndexOf("/")) + '/';
+    return baseURL + "cgi/proxy.cgi";
+  });
+  
   add.method('findDBAtURL', function (url, callback) {
     var i = url.lastIndexOf("/");
     if (i < 0 || i === url.length - 1) { throw new Error("A CouchDB URL should be of the form http://server:5984/db"); }
-    var server = avocado.couch.dbServer.atURL(url.substr(0, i), 'http://localhost/~adam/avocado/cgi/proxy.cgi'); // aaa don't hard-code the proxy URL
+    var server = avocado.couch.dbServer.atURL(url.substr(0, i), this.proxyURL());
     var db = server.dbNamed(url.substr(i + 1));
     db.ensureExists(callback);
   }, {category: ['creating']});
@@ -484,7 +492,7 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
   add.creator('bargle', {});
   
   add.method('asynchronouslyTestBasicStuff', function (callIfSuccessful) {
-    var server = avocado.couch.dbServer.atURL('http://localhost:5984', 'http://localhost/~adam/avocado/cgi/proxy.cgi');
+    var server = avocado.couch.dbServer.atURL('http://localhost:5984', avocado.couch.db.proxyURL());
     server.doRequest("GET", "/", "", null, function (responseObj) {
       this.assertEqual(responseObj.couchdb, 'Welcome');
       var db1 = server.dbNamed('avocado_tests_1');
@@ -520,7 +528,7 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
   });
 
   add.method('asynchronouslyTestQuerying', function (callIfSuccessful) {
-    var server = avocado.couch.dbServer.atURL('http://localhost:5984', 'http://localhost/~adam/avocado/cgi/proxy.cgi');
+    var server = avocado.couch.dbServer.atURL('http://localhost:5984', avocado.couch.db.proxyURL());
     var db = server.dbNamed('avocado_querying_tests');
     db.ensureDoesNotExist(function () {
       db.ensureExists(function () {
