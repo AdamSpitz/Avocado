@@ -31,7 +31,27 @@ thisModule.addSlots(avocado.project, function(add) {
   add.method('inspect', function () { return this.name(); }, {category: ['printing']});
   
   add.method('save', function () {
-    throw new Error("Time to implement project-saving!");
+    var versionsToSave = {};
+    var modulesNotToSave = {};
+    var modulesLeftToLookAt = [this.module()];
+    while (modulesLeftToLookAt.length > 0) {
+      var m = modulesLeftToLookAt.pop();
+      if (!modulesNotToSave[m.name()] && !versionsToSave[m.name()]) {
+        // aaa - Could make this algorithm faster if each module knew who required him - just check
+        // if m itself has changed, and if so then walk up the requirements chain making sure that
+        // they're included.
+        if (m.haveIOrAnyOfMyRequirementsChangedSinceLastFileOut()) {
+          versionsToSave[m.name()] = m.createNewVersion();
+          m.requirements().each(function(requiredModuleName) { modulesLeftToLookAt.push(modules[requiredModuleName])});
+        } else {
+          modulesNotToSave[m.name()] = m;
+        }
+      }
+    }
+    reflect(versionsToSave).normalSlots().each(function(s) {
+      console.log("Found module to save: " + s.name());
+    })
+    console.log("Time to implement project-saving!");
   }, {category: ['saving']});
 
   add.method('buttonCommands', function () {

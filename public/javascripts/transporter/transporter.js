@@ -318,6 +318,24 @@ thisModule.addSlots(transporter.module, function(add) {
     return !!this.repository();
   }, {category: ['transporting']});
 
+  add.method('currentVersion', function () {
+    if (! this._currentVersion) { this._currentVersion = this.version.create(); }
+    return this._currentVersion;
+  }, {category: ['versions']});
+
+  add.method('createNewVersion', function () {
+    this._currentVersion = this.version.create(transporter.module.newTemporaryVersionID(), [this.currentVersion()]);
+    return this._currentVersion;
+  }, {category: ['versions']});
+  
+  add.method('newTemporaryVersionID', function () {
+    return "tempVersionID" + (++this.latestTemporaryVersionIDNumber);
+  }, {category: ['versions']});
+  
+  add.data('latestTemporaryVersionIDNumber', 0, {category: ['versions']});
+  
+  add.creator('version', {}, {category: ['versions']});
+
   add.method('repository', function () {
     return this._repository;
   }, {category: ['accessing']});
@@ -477,6 +495,24 @@ thisModule.addSlots(transporter.module.prompter, function(add) {
     transporter.chooseOrCreateAModule(evt, context.likelyModules(), context, caption, function(m, evt) { callback(m); });
   }, {category: ['prompting']});
 
+});
+
+
+thisModule.addSlots(transporter.module.version, function(add) {
+  
+  add.method('create', function (id, parentVersions) {
+    return Object.newChildOf(this, id, parentVersions);
+  }, {category: ['creating']});
+  
+  add.method('initialize', function (id, parentVersions) {
+    this._id = id || "";
+    this._parentVersions = parentVersions || [];
+  }, {category: ['creating']});
+  
+  add.method('versionID', function () { return this._id; }, {category: ['accessing']});
+  
+  add.method('replaceTemporaryVersionIDWithRealOne', function (id) { this._id = id; }, {category: ['accessing']});
+  
 });
 
 
