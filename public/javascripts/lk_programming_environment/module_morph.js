@@ -13,7 +13,12 @@ thisModule.addSlots(transporter.module, function(add) {
     var m = new avocado.RowMorph().setModel(this).applyStyle(this.defaultMorphStyle);
     var module = this;
 
-    var changeIndicator = TextMorph.createLabel(function() { return module.hasChangedSinceLastFileOut() ? ' has changed ' : ''; });
+    var changeIndicator = TextMorph.createLabel(function() {
+      if (module.hasChangedSinceLastFileOut()) { return ' has changed '; }
+      // aaa - maybe it's fine to just say 'has changed' here too?
+      if (module.haveIOrAnyOfMyRequirementsChangedSinceLastFileOut()) { return ' dependencies have changed '; }
+      return '';
+    });
     changeIndicator.setTextColor(Color.green.darker());
 
     var columns = [m.createNameLabel()];

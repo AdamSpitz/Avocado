@@ -279,6 +279,16 @@ thisModule.addSlots(transporter.module, function(add) {
     return this._hasChangedSinceLastFileOut;
   }, {category: ['keeping track of changes']});
 
+  add.method('haveIOrAnyOfMyRequirementsChangedSinceLastFileOut', function () {
+    if (this.hasChangedSinceLastFileOut()) { return true; }
+    var reqs = this.requirements();
+    for (var i = 0, n = reqs.length; i < n; ++i) {
+      var req = modules[reqs[i]];
+      if (req && req.haveIOrAnyOfMyRequirementsChangedSinceLastFileOut()) { return true; }
+    }
+    return false;
+  }, {category: ['keeping track of changes']});
+
   add.method('markAsChanged', function () {
     this._hasChangedSinceLastFileOut = true;
     this.notifyObserversOfChange();
