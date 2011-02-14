@@ -22,6 +22,11 @@ thisModule.addSlots(transporter, function(add) {
     cmdList.addLine();
 
     cmdList.addItem(["show modules...", [
+      // this doesn't really belong here; how should this stuff be organized?
+      ["current project", function(evt) {
+        avocado.ui.grab(avocado.project.current(), evt);
+      }],
+      
       ["changed modules", function(evt) {
         avocado.ui.showObjects(transporter.module.changedOnes(), "changed modules", evt);
       }],
