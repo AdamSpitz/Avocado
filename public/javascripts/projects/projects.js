@@ -48,9 +48,18 @@ thisModule.addSlots(avocado.project, function(add) {
         }
       }
     }
-    reflect(versionsToSave).normalSlots().each(function(s) {
-      console.log("Found module to save: " + s.name());
-    })
+    
+    var moduleGraph = avocado.graphs.directed.create([this.module()], function(m) { return m.requiredModules(); });
+    var sortedModules = moduleGraph.topologicalSort();
+    var sortedVersionsToSave = [];
+    sortedModules.each(function(m) {
+      var v = versionsToSave[m.name()];
+      if (v) { sortedVersionsToSave.push(v); }
+    });
+    
+    sortedVersionsToSave.each(function(v) {
+      console.log("Found module to save: " + v.module().name());
+    });
     console.log("Time to implement project-saving!");
   }, {category: ['saving']});
 

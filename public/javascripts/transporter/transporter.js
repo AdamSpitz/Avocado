@@ -319,12 +319,12 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['transporting']});
 
   add.method('currentVersion', function () {
-    if (! this._currentVersion) { this._currentVersion = this.version.create(); }
+    if (! this._currentVersion) { this._currentVersion = this.version.create(this); }
     return this._currentVersion;
   }, {category: ['versions']});
 
   add.method('createNewVersion', function () {
-    this._currentVersion = this.version.create(transporter.module.newTemporaryVersionID(), [this.currentVersion()]);
+    this._currentVersion = this.version.create(this, transporter.module.newTemporaryVersionID(), [this.currentVersion()]);
     return this._currentVersion;
   }, {category: ['versions']});
   
@@ -335,6 +335,10 @@ thisModule.addSlots(transporter.module, function(add) {
   add.data('latestTemporaryVersionIDNumber', 0, {category: ['versions']});
   
   add.creator('version', {}, {category: ['versions']});
+
+  add.method('requiredModules', function () {
+    return this.requirements().map(function(mName) { return modules[mName]; });
+  }, {category: ['requirements']});
 
   add.method('repository', function () {
     return this._repository;
@@ -500,14 +504,17 @@ thisModule.addSlots(transporter.module.prompter, function(add) {
 
 thisModule.addSlots(transporter.module.version, function(add) {
   
-  add.method('create', function (id, parentVersions) {
-    return Object.newChildOf(this, id, parentVersions);
+  add.method('create', function (module, id, parentVersions) {
+    return Object.newChildOf(this, module, id, parentVersions);
   }, {category: ['creating']});
   
-  add.method('initialize', function (id, parentVersions) {
+  add.method('initialize', function (module, id, parentVersions) {
+    this._module = module;
     this._id = id || "";
     this._parentVersions = parentVersions || [];
   }, {category: ['creating']});
+  
+  add.method('module', function () { return this._module; }, {category: ['accessing']});
   
   add.method('versionID', function () { return this._id; }, {category: ['accessing']});
   

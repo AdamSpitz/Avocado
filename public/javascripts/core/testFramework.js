@@ -234,6 +234,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
       Array.prototype.tests,
       avocado.dependencies.tests,
       avocado.list.tests,
+      avocado.graphs.tests,
       avocado.prettyPrinter.tests,
       avocado.organization.tests,
       avocado.process.tests,
