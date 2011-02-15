@@ -59,7 +59,7 @@ thisModule.addSlots(transporter, function(add) {
   add.method('fileOutPluralMorphs', function (morphsAndCommands, evt) {
     // aaa - This is a hack. Come up with a more general, cleaner way of doing
     // plural commands that can handle both SelectionMorph and other mechanisms.
-    morphsAndCommands.each(function(x) { x.module = x.morph._model; });
+    morphsAndCommands.each(function(x) { x.moduleVersion = x.morph._model.currentVersion(); });
     transporter.fileOutPlural(morphsAndCommands, evt);
   }, {category: ['user interface', 'commands', 'filing out']});
 

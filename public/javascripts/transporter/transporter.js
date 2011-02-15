@@ -50,15 +50,17 @@ thisModule.addSlots(transporter, function(add) {
     var errorMessage = "";
     
     specs.each(function(spec) {
-      spec.module.fileOut(spec.filerOuter || filerOuterProto ? Object.newChildOf(filerOuterProto) : null, repo, function() {}, function(msg, errors) {
+      spec.moduleVersion.fileOut(spec.filerOuter || filerOuterProto ? Object.newChildOf(filerOuterProto) : null, repo, function() {}, function(msg, errors) {
         errorMessage += msg + "\n";
-        errors.each(function(e) { allErrors.push({module: spec.module, error: e}); });
+        errors.each(function(e) { allErrors.push({moduleVersion: spec.moduleVersion, error: e}); });
       }.bind(this));
     });
     
     if (allErrors.length > 0) {
       this.errorFilingOut(errorMessage, allErrors, evt);
     }
+    
+    return allErrors;
   }, {category: ['user interface', 'commands', 'filing out']});
 
   add.method('errorFilingOut', function (msg, errors, evt) {
@@ -68,10 +70,11 @@ thisModule.addSlots(transporter, function(add) {
 
   add.method('objectsToShowForErrors', function (errors) {
     var objectsToShow = [];
-    errors.each(function(moduleAndError) {
-      var err    = moduleAndError.error;
-      var module = moduleAndError.module;
-      var mir = err.mirrorWithoutCreatorPath;
+    errors.each(function(moduleVersionAndError) {
+      var err     = moduleVersionAndError.error;
+      var version = moduleVersionAndError.moduleVersion;
+      var module  = version.module();
+      var mir     = err.mirrorWithoutCreatorPath;
       if (mir) {
         if (! objectsToShow.include(mir)) {
           var reason = err.reasonForNeedingCreatorPath || "I said so, that's why.";
@@ -146,7 +149,32 @@ thisModule.addSlots(transporter, function(add) {
       return function(evt) { callback(module, evt); };
     }
   }, {category: ['module tree']});
+  
+  add.creator('idTracker', {}, {category: ['version IDs']});
 
+});
+
+
+thisModule.addSlots(transporter.idTracker, function(add) {
+  
+  add.data('latestTemporaryIDNumber', 0, {initializeTo: '0'});
+  
+  add.data('objectsByTemporaryID', {}, {initializeTo: '{}'});
+  
+  add.method('createTemporaryIDFor', function (obj) {
+    var tempID = "tempID_" + (++this.latestTemporaryIDNumber);
+    this.objectsByTemporaryID[tempID] = obj;
+    obj.setID(tempID);
+    return tempID;
+  });
+  
+  add.method('recordRealID', function (tempID, realID) {
+    var obj = this.objectsByTemporaryID[tempID];
+    obj.setID(realID);
+    delete this.objectsByTemporaryID[tempID];
+    return obj;
+  });
+  
 });
 
 
@@ -324,15 +352,10 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['versions']});
 
   add.method('createNewVersion', function () {
-    this._currentVersion = this.version.create(this, transporter.module.newTemporaryVersionID(), [this.currentVersion()]);
+    this._currentVersion = this.version.create(this, [this.currentVersion()]);
+    transporter.idTracker.createTemporaryIDFor(this._currentVersion);
     return this._currentVersion;
   }, {category: ['versions']});
-  
-  add.method('newTemporaryVersionID', function () {
-    return "tempVersionID" + (++this.latestTemporaryVersionIDNumber);
-  }, {category: ['versions']});
-  
-  add.data('latestTemporaryVersionIDNumber', 0, {category: ['versions']});
   
   add.creator('version', {}, {category: ['versions']});
 
@@ -384,6 +407,8 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.creator('filerOuter', Object.create(transporter.module.abstractFilerOuter), {category: ['transporting']});
 
+  add.creator('justBodyFilerOuter', Object.create(transporter.module.filerOuter), {category: ['transporting']});
+
   add.creator('annotationlessFilerOuter', Object.create(transporter.module.abstractFilerOuter), {category: ['transporting']});
 
   add.creator('jsonFilerOuter', Object.create(transporter.module.abstractFilerOuter), {category: ['transporting']});
@@ -405,21 +430,6 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('codeOfMockFileOut', function () {
     return this.codeToFileOut(Object.newChildOf(this.mockFilerOuter)).toString();
   }, {category: ['transporting']});
-  
-  add.method('fileOut', function (filerOuter, repo, successBlock, failBlock) {
-    var codeToFileOut;
-    filerOuter = filerOuter || Object.newChildOf(this.filerOuter);
-    try {
-      codeToFileOut = this.codeToFileOut(filerOuter).toString();
-      var errors = filerOuter.errors();
-      if (errors.length > 0) {
-        return failBlock(errors.length.toString() + " error" + (errors.length === 1 ? "" : "s") + " trying to file out " + this, errors);
-      }
-    } catch (ex) {
-      return failBlock(ex, [ex]);
-    }
-    transporter.fileOut(this, repo, codeToFileOut, function() {this.markAsUnchanged(); if (successBlock) { successBlock(); }}.bind(this), failBlock);
-  }, {category: ['transporting']});
 
   add.creator('slotOrderizer', {}, {category: ['transporting']});
 
@@ -428,7 +438,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['transporting']});
 
   add.method('fileOutAndReportErrors', function (evt, repo, filerOuterProto) {
-    transporter.fileOutPlural([{module: this}], evt, repo, filerOuterProto);
+    transporter.fileOutPlural([{moduleVersion: this.currentVersion()}], evt, repo, filerOuterProto);
   }, {category: ['user interface', 'commands', 'filing out']});
 
   add.method('fileOutWithoutAnnotations', function (evt) {
@@ -518,7 +528,35 @@ thisModule.addSlots(transporter.module.version, function(add) {
   
   add.method('versionID', function () { return this._id; }, {category: ['accessing']});
   
-  add.method('replaceTemporaryVersionIDWithRealOne', function (id) { this._id = id; }, {category: ['accessing']});
+  add.method('setID', function (id) { this._id = id; }, {category: ['accessing']});
+  
+  add.method('parentVersions', function () { return this._parentVersions; }, {category: ['accessing']});
+  
+  add.method('requiredModuleVersions', function () {
+    // aaa should probably make this refer to them directly or something
+    return this.module().requiredModules().map(function(m) { return m.currentVersion(); });
+  }, {category: ['accessing']});
+  
+  add.method('toString', function () { return this.module().toString() + (this._id ? " version " + this._id : ""); }, {category: ['printing']});
+  
+  add.method('fileOut', function (filerOuter, repo, successBlock, failBlock) {
+    var codeToFileOut;
+    filerOuter = filerOuter || Object.newChildOf(this.module().filerOuter);
+    try {
+      codeToFileOut = this.module().codeToFileOut(filerOuter).toString();
+      var errors = filerOuter.errors();
+      if (errors.length > 0) {
+        return failBlock(errors.length.toString() + " error" + (errors.length === 1 ? "" : "s") + " trying to file out " + this.module(), errors);
+      }
+    } catch (ex) {
+      return failBlock(ex, [ex]);
+    }
+    transporter.fileOut(this, repo, codeToFileOut, function() {this.module().markAsUnchanged(); if (successBlock) { successBlock(); }}.bind(this), failBlock);
+  }, {category: ['transporting']});
+
+  add.method('constructBody', function () {
+    aaawaowjgtowag;
+  }, {category: ['body']});
   
 });
 
@@ -768,6 +806,19 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
     */
     
     this._buffer.append("\n");
+  }, {category: ['writing']});
+
+});
+
+
+thisModule.addSlots(transporter.module.justBodyFilerOuter, function(add) {
+
+  add.method('writeModule', function (name, reqs, bodyBlock) {
+    this._buffer.append("function(thisModule) {\n\n\n");
+
+    bodyBlock();
+
+    this._buffer.append("}");
   }, {category: ['writing']});
 
 });

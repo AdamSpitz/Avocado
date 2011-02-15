@@ -830,10 +830,11 @@ thisModule.addSlots(transporter, function(add) {
     this.repositoryContainingModuleNamed(name).fileIn(name, moduleLoadedCallback);
   }, {category: ['loading']});
 
-  add.method('fileOut', function (m, repo, codeToFileOut, successBlock, failBlock) {
+  add.method('fileOut', function (moduleVersion, repo, codeToFileOut, successBlock, failBlock) {
+    var m = moduleVersion.module();
     var r = repo || m._repository;
     if (!r) { throw new Error("Don't have a repository for: " + m); }
-    r.fileOutModule(m, codeToFileOut.replace(/[\r]/g, "\n"), successBlock, failBlock);
+    r.fileOutModuleVersion(moduleVersion, codeToFileOut.replace(/[\r]/g, "\n"), successBlock, failBlock);
   }, {category: ['saving']});
 
   add.method('fileInIfWanted', function (name, callWhenDone) {
@@ -1098,7 +1099,8 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
 
 thisModule.addSlots(transporter.repositories.httpWithWebDAV, function(add) {
 
-  add.method('fileOutModule', function (m, codeToFileOut, successBlock, failBlock) {
+  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
+    var m = moduleVersion.module();
     var url = this.urlForModuleName(m.name());
     var isAsync = true;
     var req = new XMLHttpRequest();
@@ -1126,12 +1128,13 @@ thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add)
     this._savingScriptURL = savingScriptURL;
   }, {category: ['creating']});
 
-  add.method('fileOutModule', function (m, codeToFileOut, successBlock, failBlock) {
+  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
+    var m = moduleVersion.module();
     var repoURL = this.url();
     if (repoURL.endsWith("/")) { repoURL = repoURL.substring(0, repoURL.length - 1); }
     var url = this._savingScriptURL;
     var postBody = "repoURL=" + encodeURIComponent(repoURL) + "&module=" + encodeURIComponent(m.name()) + "&code=" + encodeURIComponent(codeToFileOut);
-    //console.log("About to fileOutModule " + m.name() + " using saving script URL " + url + " and POST body:\n" + postBody);
+    //console.log("About to fileOutModuleVersion " + moduleVersion + " using saving script URL " + url + " and POST body:\n" + postBody);
     var req = new Ajax.Request(url, {
       method: 'post',
       postBody: postBody,
@@ -1164,7 +1167,7 @@ thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add)
 
 thisModule.addSlots(transporter.repositories.console, function(add) {
 
-  add.method('fileOutModule', function (m, codeToFileOut, successBlock, failBlock) {
+  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
     console.log(codeToFileOut);
   });
 
