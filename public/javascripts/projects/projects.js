@@ -91,7 +91,7 @@ thisModule.addSlots(avocado.project.repository, function(add) {
   
   add.method('initialize', function (project) {
     this._project = project;
-    this._projectData = { _id: project.id(), modules: [] };
+    this._projectData = { _id: project.id(), name: project.name(), modules: [] };
   }, {category: ['creating']});
 
   add.method('setRoot', function (rootModuleVersion) {
