@@ -112,7 +112,7 @@ thisModule.addSlots(avocado.project.repository, function(add) {
     var json = Object.toJSON(this._projectData);
     // aaa - I imagine it's possible to send the JSON without encoding it as a POST parameter, but let's not worry about it yet.
     var postBody = "projectDataJSON=" + encodeURIComponent(json);
-    var url = "http://localhost:3000/save_project"; // aaa don't hard-code this
+    var url = "http://localhost:3000/project/save"; // aaa don't hard-code this
     console.log("About to save the project to URL " + url + ", sending JSON:\n" + json);
     var req = new Ajax.Request(url, {
       method: 'post',
