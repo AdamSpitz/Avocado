@@ -30,11 +30,12 @@ thisModule.addSlots(avocado.project, function(add) {
     } else {
       transporter.idTracker.createTemporaryIDFor(this);
     }
+    this.markAsUnchanged();
   }, {category: ['creating']});
   
   add.method('name', function () { return this._name; }, {category: ['accessing']});
   
-  add.method('setName', function (n) { this._name = n; }, {category: ['accessing']});
+  add.method('setName', function (n) { this._name = n; this.markAsChanged(); }, {category: ['accessing']});
   
   add.method('id', function () { return this._projectID; }, {category: ['accessing']});
   
@@ -42,17 +43,44 @@ thisModule.addSlots(avocado.project, function(add) {
   
   add.method('isPrivate', function () { return this._isPrivate; }, {category: ['accessing']});
   
-  add.method('setIsPrivate', function (b) { this._isPrivate = b; }, {category: ['accessing']});
+  add.method('setIsPrivate', function (b) { this._isPrivate = b; this.markAsChanged(); }, {category: ['accessing']});
   
   add.method('isInTrashCan', function () { return this._isInTrashCan; }, {category: ['accessing']});
   
-  add.method('putInTrashCan', function () { this._isInTrashCan = true; }, {category: ['accessing']});
+  add.method('putInTrashCan', function () { this._isInTrashCan = true; this.markAsChanged(); }, {category: ['accessing']});
 
   add.method('module', function () { return modules.thisProject; }, {category: ['accessing']});
   
   add.method('inspect', function () { return this.name(); }, {category: ['printing']});
   
+  add.method('toString', function () { return this.name(); }, {category: ['printing']});
+  
+  add.method('hasChangedSinceLastFileOut', function () {
+    return this._hasChanged || this.module().haveIOrAnyOfMyRequirementsChangedSinceLastFileOut();
+  }, {category: ['noticing changes']});
+  
+  add.method('markAsChanged', function () {
+    this._hasChanged = true;
+  }, {category: ['noticing changes']});
+  
+  add.method('markAsUnchanged', function () {
+    this._hasChanged = false;
+  }, {category: ['noticing changes']});
+  
+  add.method('togglePrivacy', function (evt) {
+    this.setIsPrivate(! this.isPrivate());
+  }, {category: ['commands']});
+  
+  add.method('grabRootModule', function (evt) {
+    avocado.ui.grab(this.module(), evt);
+  }, {category: ['commands']});
+  
+  add.method('rename', function (evt) {
+    avocado.ui.prompt("New name?", function(n) { if (n) { this.setName(n); }}.bind(this), this.name(), evt);
+  }, {category: ['commands']});
+  
   add.method('save', function (evt) {
+    var rootModule = this.module();
     var versionsToSave = {};
     var modulesNotToSave = {};
     var modulesLeftToLookAt = [this.module()];
@@ -62,7 +90,7 @@ thisModule.addSlots(avocado.project, function(add) {
         // aaa - Could make this algorithm faster if each module knew who required him - just check
         // if m itself has changed, and if so then walk up the requirements chain making sure that
         // they're included.
-        if (m.haveIOrAnyOfMyRequirementsChangedSinceLastFileOut()) {
+        if (m === rootModule || m.haveIOrAnyOfMyRequirementsChangedSinceLastFileOut()) { // always save the root, just makes things simpler
           versionsToSave[m.name()] = m.createNewVersion();
           m.requirements().each(function(requiredModuleName) { modulesLeftToLookAt.push(modules[requiredModuleName])});
         } else {
@@ -83,7 +111,11 @@ thisModule.addSlots(avocado.project, function(add) {
     mockRepo.setRoot(versionsToSave[this.module().name()]);
     var errors = transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, transporter.module.justBodyFilerOuter);
     if (errors.length === 0) {
-      mockRepo.save(function() { console.log("Triumph!"); }, function(failureReason) { console.log("Aww, man: " + failureReason); });
+      mockRepo.save(function() {
+        this.markAsUnchanged();
+      }.bind(this), function(failureReason) {
+        console.log("Error saving " + this + ": " + failureReason);
+      });
     } else {
       console.log("Not saving because there were transporter errors.");
     }
@@ -94,6 +126,15 @@ thisModule.addSlots(avocado.project, function(add) {
   add.method('buttonCommands', function () {
     return avocado.command.list.create(this, [
       avocado.command.create('Save', this.save)
+    ]);
+  }, {category: ['user interface', 'commands']});
+  
+  add.method('commands', function () {
+    return avocado.command.list.create(this, [
+      avocado.command.create('save', this.save),
+      avocado.command.create('rename', this.rename),
+      avocado.command.create('get root module', this.grabRootModule),
+      avocado.command.create(this.isPrivate() ? 'be public' : 'be private', this.togglePrivacy)
     ]);
   }, {category: ['user interface', 'commands']});
   

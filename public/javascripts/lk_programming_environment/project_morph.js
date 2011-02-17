@@ -2,6 +2,7 @@ transporter.module.create('lk_programming_environment/project_morph', function(r
 
 requires('lk_ext/shortcuts');
 requires('lk_ext/rows_and_columns');
+requires('lk_ext/check_box');
 requires('projects/projects');
 
 }, function(thisModule) {
@@ -10,12 +11,12 @@ requires('projects/projects');
 thisModule.addSlots(avocado.project, function(add) {
 
   add.method('newMorph', function () {
-    var m = new avocado.RowMorph().setModel(this).applyStyle(this.defaultMorphStyle);
+    var m = new avocado.ColumnMorph().setModel(this).applyStyle(this.defaultMorphStyle);
+    var headerRow = new avocado.RowMorph().beInvisible().setPadding(3);
     var project = this;
     
     var changeIndicator = TextMorph.createLabel(function() {
-      if (project.module().haveIOrAnyOfMyRequirementsChangedSinceLastFileOut()) { return ' has changed '; }
-      return '';
+      return project.hasChangedSinceLastFileOut() ? ' has changed ' : '';
     });
     changeIndicator.setTextColor(Color.green.darker());
 
@@ -23,11 +24,19 @@ thisModule.addSlots(avocado.project, function(add) {
     columns.push(changeIndicator);
     this.buttonCommands().commands().each(function(c) { columns.push(c.newMorph()); });
     columns.push(m.createDismissButton());
-    m.setColumns(columns);
-
-    m.commands = function() {
-      return project.module().commands().wrapForMorph(m);
-    };
+    headerRow.setColumns(columns);
+    
+    /* Why isn't this working?
+    var privacyRow = new avocado.RowMorph().beInvisible().setPadding({between: {x: 3}});
+    var privacyLabel = TextMorph.createLabel("Private: ");
+    var privacyCheckbox = new CheckBoxMorph();
+    privacyRow.setColumns([privacyLabel, privacyCheckbox]);
+    privacyCheckbox.notifier.addObserver(function(a, b, c) {
+      console.log("Clicked the checkbox: " + a + ", " + b + ", " + c);
+    });
+    */
+    
+    m.setRows([headerRow]);
 
     project.module().whenChangedNotify(m.updateAppearance.bind(m));
     m.startPeriodicallyUpdating();
