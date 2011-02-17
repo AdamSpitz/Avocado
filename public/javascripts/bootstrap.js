@@ -733,6 +733,9 @@ transporter.module.doneLoadingModuleNamed = function(n) {
     onLoadCallback();
   } else if (onLoadCallback === 'done') {
     // Fine, I think.
+  } else if (typeof(onLoadCallback) === 'undefined') {
+    // aaa - I think this is OK too. Really, this whole callback system is a mess - needs to be cleaned up. -- Adam, Feb. 2011
+    transporter.module.onLoadCallbacks[n] = 'done';
   } else {
     throw "Whoa, what's wrong with the on-load callback for " + n + "? " + typeof(onLoadCallback);
   }
