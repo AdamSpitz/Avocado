@@ -145,18 +145,22 @@ thisModule.addSlots(avocado.project.repository, function(add) {
       contentType: 'application/json',
 
       asynchronous: true,
-      onSuccess:   function(transport) { this.onSuccessfulSave(transport.responseText, successBlock, failBlock); }.bind(this),
+      onSuccess:   function(transport) { this.onSuccessfulPost(JSON.parse(transport.responseText), successBlock, failBlock); }.bind(this),
       onFailure:   function(t        ) { failBlock("Failed to file out project " + this._project + " to repository " + this + "; HTTP status code was " + req.getStatus()); }.bind(this),
       onException: function(r,      e) { failBlock("Failed to file out project " + this._project + " to repository " + this + "; exception was " + e); }.bind(this)
     });
   }, {category: ['saving']});
   
-  add.method('onSuccessfulSave', function (responseText, successBlock, failBlock) {
-    var realIDsByTempID = JSON.parse(responseText);
-    for (var tempID in realIDsByTempID) {
-      transporter.idTracker.recordRealID(tempID, realIDsByTempID[tempID]);
+  add.method('onSuccessfulPost', function (responseJSON, successBlock, failBlock) {
+    if (responseJSON.error) {
+      failBlock("Server responded with error: " + responseJSON.error);
+    } else {
+      var realIDsByTempID = responseJSON;
+      for (var tempID in realIDsByTempID) {
+        transporter.idTracker.recordRealID(tempID, realIDsByTempID[tempID]);
+      }
+      successBlock();
     }
-    successBlock();
   }, {category: ['saving']});
   
 });
