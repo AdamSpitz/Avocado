@@ -1,7 +1,6 @@
 transporter.module.create('lk_programming_environment/programming_environment', function(requires) {
 
 requires('avocado_lib');
-requires('thisProject');
 requires('lk_ext/core_sampler');
 requires('lk_ext/poses');
 requires('lk_ext/morph_factories');
