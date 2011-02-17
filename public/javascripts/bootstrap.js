@@ -667,6 +667,9 @@ transporter.shouldLog = false;
 transporter.module = {};
 annotator.annotationOf(transporter.module).setCreatorSlot('module', transporter);
 
+transporter.module.version = {};
+annotator.annotationOf(transporter.module.version).setCreatorSlot('version', transporter.module);
+
 transporter.module.cache = {};
 
 transporter.module.onLoadCallbacks = {};
@@ -682,9 +685,14 @@ transporter.module.named = function(n) {
   return m;
 };
 
-transporter.module.create = function(n, reqBlock, contentsBlock) {
+transporter.module.create = function(n, reqBlock, contentsBlock, versionInfo) {
   if (modules[n]) { throw 'The ' + n + ' module is already loaded.'; }
   var newModule = this.named(n);
+
+  if (versionInfo) {
+    newModule.setCurrentVersion(Object.newChildOf(transporter.module.version, newModule, versionInfo.versionID, 'unknown'));
+  }
+  
   avocado.callbackWaiter.on(function(finalCallback) {
     reqBlock(function(reqName) {
       newModule.requires(reqName, Object.extend(finalCallback(), {aaa_name: reqName}));
@@ -701,6 +709,16 @@ transporter.module.create = function(n, reqBlock, contentsBlock) {
     }
     transporter.module.doneLoadingModuleNamed(n);
   }, n);
+};
+
+transporter.module.setCurrentVersion = function (v) {
+  this._currentVersion = v;
+};
+
+transporter.module.version.initialize = function (module, id, parentVersions) {
+  this._module = module;
+  this._id = id || "";
+  this._parentVersions = parentVersions || [];
 };
 
 transporter.module.callWhenDoneLoadingModuleNamed = function(n, callback) {
