@@ -753,10 +753,9 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
 
   add.method('writeModule', function (name, reqs, bodyBlock) {
     //this._buffer.append("//@ sourceURL=").append(name).append(".js    so that the debugger shows the right file name when we load it using eval\n\n");
-    this._buffer.append("transporter.module.create(").append(name.inspect()).append(", function(requires) {");
+    this._buffer.append("transporter.module.create(").append(name.inspect()).append(", function(requires) {\n\n");
     
     if (reqs && reqs.length > 0) {
-      this._buffer.append("\n\n");
       reqs.each(function(req) {
         this._buffer.append("requires(").append(req.inspect()).append(");\n");
       }.bind(this));
