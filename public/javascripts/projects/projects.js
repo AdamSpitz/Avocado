@@ -43,6 +43,10 @@ thisModule.addSlots(avocado.project, function(add) {
   add.method('isPrivate', function () { return this._isPrivate; }, {category: ['accessing']});
   
   add.method('setIsPrivate', function (b) { this._isPrivate = b; }, {category: ['accessing']});
+  
+  add.method('isInTrashCan', function () { return this._isInTrashCan; }, {category: ['accessing']});
+  
+  add.method('putInTrashCan', function () { this._isInTrashCan = true; }, {category: ['accessing']});
 
   add.method('module', function () { return modules.thisProject; }, {category: ['accessing']});
   
@@ -104,7 +108,13 @@ thisModule.addSlots(avocado.project.repository, function(add) {
   
   add.method('initialize', function (project) {
     this._project = project;
-    this._projectData = { _id: project.id(), name: project.name(), isPrivate: project.isPrivate(), modules: [] };
+    this._projectData = {
+      _id: project.id(),
+      name: project.name(),
+      isPrivate: project.isPrivate(),
+      isInTrashCan: project.isInTrashCan(),
+      modules: []
+    };
   }, {category: ['creating']});
 
   add.method('setRoot', function (rootModuleVersion) {
