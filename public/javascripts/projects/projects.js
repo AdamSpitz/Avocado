@@ -113,6 +113,9 @@ thisModule.addSlots(avocado.project, function(add) {
     if (errors.length === 0) {
       mockRepo.save(function() {
         this.markAsUnchanged();
+        for (var moduleName in versionsToSave) {
+          modules[moduleName].markAsUnchanged();
+        }
       }.bind(this), function(failureReason) {
         console.log("Error saving " + this + ": " + failureReason);
       });
