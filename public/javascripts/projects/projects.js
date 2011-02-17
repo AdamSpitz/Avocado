@@ -11,16 +11,25 @@ thisModule.addSlots(avocado, function(add) {
 thisModule.addSlots(avocado.project, function(add) {
   
   add.method('current', function () {
-    return this._current || (this._current = this.create("This project"));
+    return this._current || (this._current = this.create({ name: "This project" }));
   }, {category: ['current one']});
   
-  add.method('create', function (name) {
-    return Object.newChildOf(this, name);
+  add.method('setCurrent', function (p) {
+    this._current = p;
+  }, {category: ['current one']});
+  
+  add.method('create', function (info) {
+    return Object.newChildOf(this, info);
   }, {category: ['creating']});
   
-  add.method('initialize', function (name) {
-    this.setName(name);
-    transporter.idTracker.createTemporaryIDFor(this);
+  add.method('initialize', function (info) {
+    this.setName(info.name);
+    this.setIsPrivate(info.isPrivate);
+    if (info._id) {
+      this.setID(info._id);
+    } else {
+      transporter.idTracker.createTemporaryIDFor(this);
+    }
   }, {category: ['creating']});
   
   add.method('name', function () { return this._name; }, {category: ['accessing']});
@@ -31,6 +40,10 @@ thisModule.addSlots(avocado.project, function(add) {
   
   add.method('setID', function (id) { this._projectID = id; }, {category: ['accessing']});
   
+  add.method('isPrivate', function () { return this._isPrivate; }, {category: ['accessing']});
+  
+  add.method('setIsPrivate', function (b) { this._isPrivate = b; }, {category: ['accessing']});
+
   add.method('module', function () { return modules.thisProject; }, {category: ['accessing']});
   
   add.method('inspect', function () { return this.name(); }, {category: ['printing']});
@@ -91,7 +104,7 @@ thisModule.addSlots(avocado.project.repository, function(add) {
   
   add.method('initialize', function (project) {
     this._project = project;
-    this._projectData = { _id: project.id(), name: project.name(), modules: [] };
+    this._projectData = { _id: project.id(), name: project.name(), isPrivate: project.isPrivate(), modules: [] };
   }, {category: ['creating']});
 
   add.method('setRoot', function (rootModuleVersion) {
