@@ -11,6 +11,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('newMorph', function () {
     var m = new avocado.RowMorph().setModel(this).applyStyle(this.defaultMorphStyle);
+    m.typeName = 'test case';
 
     var columns = [m.createNameLabel()];
     this.buttonCommands().commands().each(function(c) { columns.push(c.newMorph()); });

@@ -7,6 +7,24 @@ requires('reflection/reflection');
 }, function(thisModule) {
 
 
+thisModule.addSlots(window, function(add) {
+	add.method('onbeforeunload', function(evt) { 
+	  // Probably not necessary to be this careful, but just in case some stuff isn't loaded.
+	  // if (window.avocado && avocado.project && avocado.project.current() && avocado.project.current().hasChangedSinceLastFileOut()) {
+		//   var msg = "Your project has changed since the last time you saved it. Are you sure you want to leave this page?";
+	  // Wait a sec, we don't check for expatriate slots. So even if the project doesn't know it's been changed, they could have changed it.
+	  // Blecch. OK, just show the message all the time.
+	  if (true) {
+	    var msg = "If you have unsaved work, it will be lost. Are you sure you want to leave this page?";
+			evt.returnValue = msg;
+			return msg;
+		} else {
+		  return null;
+		};
+	}, {category: ['avocado', 'transporter']});
+});
+
+
 thisModule.addSlots(transporter, function(add) {
 
   add.method('prepareToFileStuffOut', function () {

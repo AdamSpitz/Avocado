@@ -318,18 +318,26 @@ thisModule.addSlots(avocado.command.list, function(add) {
     return null;
   }, {category: ['accessing']});
 
+  add.method('typeNameOfMorph', function (m) {
+    if (typeof(m.typeName) === 'string') { return m.typeName; }
+    if (typeof(m.typeName) === 'function') { return m.typeName(); }
+    var type = m['__proto__'];
+    if (window.reflect) { return reflect(type).name(); }
+    return 'morph';
+  }, {category: ['groups of objects']});
+  
   add.method('descriptionOfGroup', function (commandBearers) {
     if (!commandBearers || commandBearers.length === 0) { return "nothing here"; }
     
-    var byClass = avocado.dictionary.copyRemoveAll();
+    var byTypeName = avocado.dictionary.copyRemoveAll();
     commandBearers.each(function(m) {
-      byClass.getOrIfAbsentPut(m.constructor, function() {return [];}).push(m);
-    });
+      byTypeName.getOrIfAbsentPut(this.typeNameOfMorph(m), function() {return [];}).push(m);
+    }.bind(this));
 
     var buf = avocado.stringBuffer.create();
     var sep = "";
-    byClass.eachKeyAndValue(function(c, ms) {
-      buf.append(sep).append(ms.length.toString()).append(" ").append(reflect ? reflect(c).name() : c.type).append(ms.length === 1 ? "" : "s");
+    byTypeName.eachKeyAndValue(function(typeName, ms) {
+      buf.append(sep).append(ms.length.toString()).append(" ").append(typeName).append(ms.length === 1 ? "" : "s");
       sep = ", ";
     });
     return buf.toString();

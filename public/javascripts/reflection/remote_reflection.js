@@ -265,7 +265,7 @@ thisModule.addSlots(avocado.remoteMirror.tests, function(add) {
       this.assertEqual(0, rootOID);
       var rootMir = s.mirrorForOIDAndType(rootOID, 'object');
       this.assertEqual(['x', 'y'], rootMir.normalSlotNames().toArray());
-      rootMir.morph().grabMe();
+      // rootMir.morph().grabMe();
     }.bind(this));
   });
 

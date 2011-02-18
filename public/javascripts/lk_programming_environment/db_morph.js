@@ -28,7 +28,7 @@ thisModule.addSlots(avocado.db, function(add) {
 
 thisModule.addSlots(avocado.db.morphFactory, function(add) {
 
-  add.method('factoryName', function () { return 'database'; }, {category: ['user interface']});
+  add.method('factoryName', function () { return 'database'; });
 
   add.method('createFactoryMorph', function () {
     var dbMorph = new avocado.db.Morph(null);
@@ -37,13 +37,15 @@ thisModule.addSlots(avocado.db.morphFactory, function(add) {
     factory.applyStyle(avocado.morphFactories.defaultStyle);
     factory.replaceContentWith(avocado.tableContents.createWithRows([[dbMorph]]));
     return factory;
-  }, {category: ['user interface']});
+  });
+  
+  add.data('enableDBExperiment', false)
 
   add.data('postFileIn', function () {
-    if (avocado.morphFactories) {
+    if (this.enableDBExperiment && avocado.morphFactories) {
       avocado.morphFactories.globalFactories.push(this);
     }
-  }, {category: ['user interface']});
+  });
 
 });
 

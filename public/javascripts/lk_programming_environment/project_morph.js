@@ -12,6 +12,7 @@ thisModule.addSlots(avocado.project, function(add) {
 
   add.method('newMorph', function () {
     var m = new avocado.ColumnMorph().setModel(this).applyStyle(this.defaultMorphStyle);
+    m.typeName = 'project';
     var headerRow = new avocado.RowMorph().beInvisible().setPadding(3);
     var project = this;
     
