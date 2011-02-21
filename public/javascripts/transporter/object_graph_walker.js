@@ -222,18 +222,20 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     if (! this._marked) { return; }
     this._marked.each(function(obj) {
       var anno = avocado.annotator.actualExistingAnnotationOf(obj);
-      if (anno.walkers) {
-        if (anno.walkers.remove) {
-          anno.walkers.remove(this);
-        } else {
-          anno.walkers = anno.walkers.without(this);
+      if (anno) {
+        if (anno.walkers) {
+          if (anno.walkers.remove) {
+            anno.walkers.remove(this);
+          } else {
+            anno.walkers = anno.walkers.without(this);
+          }
+
+          // Probably better to remove the walkers collection, so it doesn't stick around as a memory leak.
+          if (anno.walkers.size() === 0) { delete anno.walkers; }
         }
-      
-        // Probably better to remove the walkers collection, so it doesn't stick around as a memory leak.
-        if (anno.walkers.size() === 0) { delete anno.walkers; }
+
+        anno.deleteIfRedundant(obj);
       }
-      
-      anno.deleteIfRedundant(obj);
     }.bind(this));
     this._marked = [];
   });
@@ -253,16 +255,18 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     this._objectCount += 1;
     this.reachedObject(currentObj, howDidWeGetHere);
 
-    for (var name in currentObj) {
-      if (currentObj.hasOwnProperty(name) && ! this.namesToIgnore.include(name)) {
-        this.walkAttribute(currentObj, name, howDidWeGetHere);
+    if (typeof(currentObj.hasOwnProperty) === 'function') {
+      for (var name in currentObj) {
+        if (currentObj.hasOwnProperty(name) && ! this.namesToIgnore.include(name)) {
+          this.walkAttribute(currentObj, name, howDidWeGetHere);
+        }
       }
-    }
 
-    // Workaround for Chrome bug. -- Adam
-    if (! avocado.javascript.prototypeAttributeIsEnumerable) {
-      if (currentObj.hasOwnProperty("prototype")) {
-        this.walkAttribute(currentObj, "prototype", howDidWeGetHere);
+      // Workaround for Chrome bug. -- Adam
+      if (! avocado.javascript.prototypeAttributeIsEnumerable) {
+        if (currentObj.hasOwnProperty("prototype")) {
+          this.walkAttribute(currentObj, "prototype", howDidWeGetHere);
+        }
       }
     }
   });

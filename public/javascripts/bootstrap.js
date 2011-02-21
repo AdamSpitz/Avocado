@@ -452,7 +452,11 @@ var annotator = {
   
   isEmptyObject: function(o) {
     if (typeof(o) !== 'object') { return false; }
-    if (o['__proto__'] !== Object.prototype) { return false; }
+    try { // workaround for ridiculous Firefox problem
+      if (o['__proto__'] !== Object.prototype) { return false; }
+    } catch (ex) {
+      return false;
+    }
     for (var n in o) {
       if (o.hasOwnProperty(n)) {
         return false;
