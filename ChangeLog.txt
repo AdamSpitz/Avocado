@@ -1,3 +1,15 @@
+Monday, February 21, 2011
+
+  - Some little workarounds and fixes to get Avocado working in Firefox.
+
+Thursday, February 17, 2011
+
+  - Teaching the project-saving code to talk to a server.
+
+Monday, February 14, 2011
+
+  - Enhancing the module-dependency system so that we can save a whole "project" at a time. (We want modules to depend on specific versions of other modules, so when we save a new version of a module, we need to save a new version of every module that depends on it.)
+
 Saturday, January 15, 2011
 
   - First steps towards a UI for doing simple things with CouchDB. Can get a DB morph, and drop a mirror on it to add the object to the database (or update the object, if it's already in the database).
