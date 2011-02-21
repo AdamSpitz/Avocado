@@ -16,6 +16,10 @@ thisModule.addSlots(avocado.project, function(add) {
   
   add.method('setCurrent', function (p) {
     this._current = p;
+    
+    if (typeof(avocado.justSetCurrentProject) === 'function') {
+      avocado.justSetCurrentProject(p);
+    }
   }, {category: ['current one']});
   
   add.method('create', function (info) {
