@@ -70,7 +70,7 @@ thisModule.addSlots(transporter, function(add) {
     specs.each(function(spec) {
       spec.moduleVersion.fileOut(spec.filerOuter || filerOuterProto ? Object.newChildOf(filerOuterProto) : null, repo, function() {}, function(msg, errors) {
         errorMessage += msg + "\n";
-        errors.each(function(e) { allErrors.push({moduleVersion: spec.moduleVersion, error: e}); });
+        (errors || [msg]).each(function(e) { allErrors.push({moduleVersion: spec.moduleVersion, error: e}); });
       }.bind(this));
     });
     
@@ -361,7 +361,8 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['keeping track of changes']});
 
   add.method('canBeFiledOut', function () {
-    return !!this.repository();
+    var r = this.repository();
+    return r && r.canFileOutIndividualModules();
   }, {category: ['transporting']});
 
   add.method('currentVersion', function () {

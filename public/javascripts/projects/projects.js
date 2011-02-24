@@ -90,9 +90,9 @@ thisModule.addSlots(avocado.project, function(add) {
     avocado.ui.prompt("New name?", function(n) { if (n) { this.setName(n); }}.bind(this), this.name(), evt);
   }, {category: ['commands']});
   
-  add.method('save', function (evt) {
-    var rootModule = this.module();
+  add.method('determineVersionsToSave', function () {
     var versionsToSave = {};
+    var rootModule = this.module();
     var modulesNotToSave = {};
     var modulesLeftToLookAt = [this.module()];
     while (modulesLeftToLookAt.length > 0) {
@@ -109,7 +109,10 @@ thisModule.addSlots(avocado.project, function(add) {
         }
       }
     }
-    
+    return versionsToSave;
+  }, {category: ['saving']});
+
+  add.method('sortVersionsToSave', function (versionsToSave) {
     var moduleGraph = avocado.graphs.directed.create([this.module()], function(m) { return m.requiredModules(); });
     var sortedModules = moduleGraph.topologicalSort();
     var sortedVersionsToSave = [];
@@ -117,6 +120,20 @@ thisModule.addSlots(avocado.project, function(add) {
       var v = versionsToSave[m.name()];
       if (v) { sortedVersionsToSave.push(v); }
     });
+    return sortedVersionsToSave;
+  }, {category: ['saving']});
+  
+  add.method('save', function (evt) {
+    var versionsToSave = this.determineVersionsToSave();
+    var sortedVersionsToSave = this.sortVersionsToSave(versionsToSave);
+    
+    // Check to make sure there aren't any *other* changes in the image that aren't part of this project.
+    var allChangedModules = transporter.module.changedOnes();
+    var changedModulesNotInThisProject = allChangedModules.select(function(m) { return ! versionsToSave[m.name()]; }).toArray();
+    if (changedModulesNotInThisProject.size() > 0) {
+      avocado.ui.showObjects(changedModulesNotInThisProject, "changed modules not in this project", evt);
+      avocado.MessageNotifierMorph.showError("WARNING: You have modified modules that are not part of your project; they will not be saved.", evt, Color.orange);
+    }
     
     var mockRepo = avocado.project.repository.create(this);
     mockRepo.setRoot(versionsToSave[this.module().name()]);

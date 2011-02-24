@@ -889,8 +889,11 @@ thisModule.addSlots(transporter, function(add) {
       var savingScriptURL = window.kernelModuleSavingScriptURL || "http://coolfridgesoftware.com/cgi-bin/savefile.cgi";
       kernelRepo = Object.create(transporter.repositories.httpWithSavingScript);
       kernelRepo.initialize(repoURL, savingScriptURL);
-    } else {
+    } else if (avocado.kernelModuleSupportsWebDAV) {
       kernelRepo = Object.create(transporter.repositories.httpWithWebDAV);
+      kernelRepo.initialize(repoURL);
+    } else {
+      kernelRepo = Object.create(transporter.repositories.http);
       kernelRepo.initialize(repoURL);
     }
     
@@ -1118,6 +1121,10 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
       head.appendChild(script);
     }
   }, {category: ['loading']});
+  
+  add.method('canFileOutIndividualModules', function () {
+    return typeof(this.fileOutModuleVersion) === 'function';
+  }, {category: ['saving']});
 
 });
 
