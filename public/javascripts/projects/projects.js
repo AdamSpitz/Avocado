@@ -123,7 +123,13 @@ thisModule.addSlots(avocado.project, function(add) {
     return sortedVersionsToSave;
   }, {category: ['saving']});
   
-  add.method('save', function (evt) {
+  
+  
+  add.method('autoSave', function (evt) {
+  	this.save(evt, true);
+  });
+  
+  add.method('save', function (evt, isAutoSave) {
     var versionsToSave = this.determineVersionsToSave();
     var sortedVersionsToSave = this.sortVersionsToSave(versionsToSave);
     
@@ -135,7 +141,7 @@ thisModule.addSlots(avocado.project, function(add) {
       avocado.MessageNotifierMorph.showError("WARNING: You have modified modules that are not part of your project; they will not be saved.", evt, Color.orange);
     }
     
-    var mockRepo = avocado.project.repository.create(this);
+    var mockRepo = avocado.project.repository.create(this, isAutoSave);
     mockRepo.setRoot(versionsToSave[this.module().name()]);
     var errors = transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, transporter.module.justBodyFilerOuter);
     if (errors.length === 0) {
@@ -174,17 +180,18 @@ thisModule.addSlots(avocado.project, function(add) {
 
 thisModule.addSlots(avocado.project.repository, function(add) {
   
-  add.method('create', function (project) {
-    return Object.newChildOf(this, project);
+  add.method('create', function (project, isAutoSave) {
+    return Object.newChildOf(this, project, isAutoSave);
   }, {category: ['creating']});
   
-  add.method('initialize', function (project) {
+  add.method('initialize', function (project, isAutoSave) {
     this._project = project;
     this._projectData = {
       _id: project.id(),
       name: project.name(),
       isPrivate: project.isPrivate(),
       isInTrashCan: project.isInTrashCan(),
+      isAutoSave: isAutoSave,
       modules: []
     };
   }, {category: ['creating']});

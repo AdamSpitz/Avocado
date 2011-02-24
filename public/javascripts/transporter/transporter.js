@@ -15,9 +15,11 @@ thisModule.addSlots(window, function(add) {
 	  // Wait a sec, we don't check for expatriate slots. So even if the project doesn't know it's been changed, they could have changed it.
 	  // Blecch. OK, just show the message all the time.
 	  if (true) {
-	    var msg = "If you have unsaved work, it will be lost. Are you sure you want to leave this page?";
-			evt.returnValue = msg;
-			return msg;
+	  	avocado.project.current().autoSave();
+	    //var msg = "If you have unsaved work, it will be lost. Are you sure you want to leave this page?";
+		//	evt.returnValue = msg;
+		//	return msg;
+          return null;
 		} else {
 		  return null;
 		};
