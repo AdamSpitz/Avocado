@@ -61,15 +61,22 @@ thisModule.addSlots(avocado.project, function(add) {
   
   add.method('hasChangedSinceLastFileOut', function () {
     return this._hasChanged || this.module().haveIOrAnyOfMyRequirementsChangedSinceLastFileOut();
-  }, {category: ['noticing changes']});
+  }, {category: ['keeping track of changes']});
   
   add.method('markAsChanged', function () {
     this._hasChanged = true;
-  }, {category: ['noticing changes']});
+    if (this._changeNotifier) { this._changeNotifier.notifyAllObservers(); }
+  }, {category: ['keeping track of changes']});
   
   add.method('markAsUnchanged', function () {
     this._hasChanged = false;
-  }, {category: ['noticing changes']});
+    if (this._changeNotifier) { this._changeNotifier.notifyAllObservers(); }
+  }, {category: ['keeping track of changes']});
+
+  add.method('whenChangedNotify', function (observer) {
+    if (! this._changeNotifier) { this._changeNotifier = avocado.notifier.on(this); }
+    this._changeNotifier.addObserver(observer);
+  }, {category: ['keeping track of changes']});
   
   add.method('togglePrivacy', function (evt) {
     this.setIsPrivate(! this.isPrivate());
