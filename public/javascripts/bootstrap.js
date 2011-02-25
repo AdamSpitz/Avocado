@@ -998,7 +998,7 @@ thisModule.addSlots(transporter, function(add) {
         
         transporter.fileInIfWanted("avocado_lib", function() {
           transporter.doBootstrappingStep('doneLoadingAvocadoLib');
-          transporter.userInterfaceInitializer.loadProgrammingEnvironmentIfWanted(function() {
+          transporter.userInterfaceInitializer.loadTopLevelEnvironment(function() {
             transporter.doBootstrappingStep('doneLoadingAllAvocadoCode');
 
             var shouldPrintLoadOrder = false;

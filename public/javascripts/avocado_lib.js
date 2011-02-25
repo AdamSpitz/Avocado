@@ -5,6 +5,7 @@ requires('core/core');
 requires('lk_ext/lk_ext');
 requires('transporter/transporter');
 requires('reflection/reflection');
+requires('projects/projects');
 
 }, function(thisModule) {
 

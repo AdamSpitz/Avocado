@@ -8,17 +8,6 @@ thisModule.addSlots(transporter, function(add) {
   add.data('userInterfaceInitializer', transporter.livelyKernelInitializer, {category: ['user interface']});
 
   add.method('shouldLoadModule', function (name) {
-    // This is a total hack, not meant to be secure; I'm just putting it
-    // in here to show how it's possible to avoid loading in the
-    // programming environment. -- Adam
-    if (name === "lk_programming_environment/programming_environment") {
-      if (UserAgent.isIPhone) { return false; }
-      if (window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
-      //if (window.wasServedFromGoogleAppEngine) { return currentUser && currentUser.isAdmin; }
-    }
-    if (name === "lk_programming_environment/code_organizer") {
-      if (! window.isInCodeOrganizingMode) { return false; } // aaa HACK - what's the right way to do this?
-    }
     return true;
   }, {category: ['bootstrapping']});
   
@@ -39,10 +28,17 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
     }
   }, {category: ['bootstrapping']});
   
-  add.method('loadProgrammingEnvironmentIfWanted', function (callWhenDone) {
-    transporter.fileInIfWanted("lk_programming_environment/code_organizer", function() {
-      transporter.fileInIfWanted("lk_programming_environment/programming_environment", callWhenDone);
-    });
+  add.method('loadTopLevelEnvironment', function (callWhenDone) {
+    // This is a total hack, not meant to be secure; I'm just putting it
+    // in here to show how it's possible to avoid loading in the
+    // programming environment. -- Adam
+    
+    var whichOne;
+    if (window.isInCodeOrganizingMode) { whichOne = "lk_programming_environment/code_organizer";          }
+    else if (window.isInRunMode)       { whichOne = "lk_programming_environment/runtime_environment";     }
+    else                               { whichOne = "lk_programming_environment/programming_environment"; }
+    
+    transporter.fileInIfWanted(whichOne, callWhenDone);
   }, {category: ['bootstrapping']});
 
   add.method('createCanvasIfNone', function () {
