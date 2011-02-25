@@ -1000,6 +1000,9 @@ thisModule.addSlots(transporter, function(add) {
           transporter.doBootstrappingStep('doneLoadingAvocadoLib');
           transporter.userInterfaceInitializer.loadProgrammingEnvironmentIfWanted(function() {
             transporter.doBootstrappingStep('doneLoadingAllAvocadoCode');
+
+            var shouldPrintLoadOrder = false;
+            if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
           });
         });
       });

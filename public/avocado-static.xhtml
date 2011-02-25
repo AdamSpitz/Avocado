@@ -9,19 +9,21 @@
 
 <meta name="viewport" content="user-scalable=no, width=device-width" />
 
-<script type="text/ecmascript" src="javascripts/static.js"></script>
-
-
 <script>
 if (! window.hasOwnProperty('avocado')) { window.avocado = {}; }
+avocado.kernelModuleSupportsWebDAV = true; // aaa hack because I want saving to keep working on my local machine
 avocado.doneLoadingWindow = function() {
-  transporter.callWhenDoneLoadingAvocado = function(world) {
-    new avocado.MessageNotifierMorph("Right-click the background to start", Color.green).ignoreEvents().showTemporarilyInCenterOfWorld(world);
-  };
   transporter.isDoneLoadingWindow = true;
   transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
 };
+
+if (! window.hasOwnProperty('transporter')) { window.transporter = {}; }
+transporter.callWhenDoneLoadingAvocado = function(world) {
+  new avocado.MessageNotifierMorph("Right-click the background to start", Color.green).ignoreEvents().showTemporarilyInCenterOfWorld(world);
+};
 </script>
+
+<script type="text/ecmascript" src="javascripts/auto_generated/static_with_dev.js"></script>
 
 </head>
 

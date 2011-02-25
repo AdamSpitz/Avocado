@@ -24,9 +24,6 @@ requires('db/couch');
 thisModule.addSlots(modules['lk_programming_environment/programming_environment'], function(add) {
 
   add.method('postFileIn', function () {
-    var shouldPrintLoadOrder = false;
-    if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
-
     avocado.categorizeGlobals();
 
     // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
