@@ -6027,23 +6027,26 @@ lookTouchy: function(morph) {
 		if(evt.type == "KeyUp") {
  			this.forgetKeyDown(evt);			
 		};
-      
+    
     // Experimenting with a menu idea that I learned from Richard Kulisz. -- Adam
     // http://www.c2.com/cgi/wiki?WheelMenu
-    if (evt.isAltDown()) {
-      if (evt.getKeyCode() === 18) { // I think this means no other key is pressed, just Alt -- Adam
-        evt.mousePoint = this.getPosition();
-        var receiver = this.world().morphToReceiveEvent(evt);
-        receiver.showContextMenu(evt);
-        return;
+    var shouldEnableMouseFreeMenuExperiment = false;
+    if (shouldEnableMouseFreeMenuExperiment) {
+      if (evt.isAltDown()) {
+        if (evt.getKeyCode() === 18) { // I think this means no other key is pressed, just Alt -- Adam
+          evt.mousePoint = this.getPosition();
+          var receiver = this.world().morphToReceiveEvent(evt);
+          receiver.showContextMenu(evt);
+          return;
+        }
       }
-    }
-    if (evt.isCtrlDown()) {
-      if (evt.getKeyCode() === 17) { // I think this means no other key is pressed, just Ctrl -- Adam
-        evt.mousePoint = this.getPosition();
-        var receiver = this.world().morphToReceiveEvent(evt);
-        receiver.showMorphMenu(evt);
-        return;
+      if (evt.isCtrlDown()) {
+        if (evt.getKeyCode() === 17) { // I think this means no other key is pressed, just Ctrl -- Adam
+          evt.mousePoint = this.getPosition();
+          var receiver = this.world().morphToReceiveEvent(evt);
+          receiver.showMorphMenu(evt);
+          return;
+        }
       }
     }
       
