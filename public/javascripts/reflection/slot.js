@@ -125,10 +125,12 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     avocado.ui.justChanged(this.contents());
     avocado.ui.justChanged(this);
   }, {category: ['user interface', 'creator slots']});
-
+  
   add.method('likelyModules', function () {
-   return this.holder().likelyModules();
- }, {category: ['user interface', 'modules']});
+    return this.holder().likelyModules();
+  }, {category: ['user interface', 'modules']});
+ 
+  add.creator('filterizer', {}, {category: ['filtering']});
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
@@ -190,6 +192,43 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     return cmdList;
   }, {category: ['user interface', 'commands']});
 
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].filterizer, function(add) {
+
+  add.method('create', function () {
+    return Object.newChildOf(this);
+  }, {category: ['creating']});
+
+  add.method('initialize', function () {
+  }, {category: ['creating']});
+  
+  add.method('excludeSlotsNotInModuleNamed', function (moduleName) {
+    this._moduleName = moduleName;
+    return this;
+  }, {category: ['filtering']});
+  
+  add.method('excludeSlotsAlreadyAssignedToAModule', function () {
+    this._wantOnlyUnowned = true;
+    return this;
+  }, {category: ['filtering']});
+  
+  add.method('excludeCopyDowns', function () {
+    this._shouldExcludeCopyDowns = true;
+    return this;
+  }, {category: ['filtering']});
+
+  add.method('matchesSlot', function (slot) {
+    if (this._shouldExcludeCopyDowns && slot.isFromACopyDownParent()) { return false; }
+    
+    var m = slot.module();
+    if (this._wantOnlyUnowned) { return !m; }
+    if (this._moduleName) { return m && m.name() === this._moduleName; }
+    
+    return true;
+  }, {category: ['matching']});
+  
 });
 
 

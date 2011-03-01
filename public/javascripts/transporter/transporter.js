@@ -31,7 +31,7 @@ thisModule.addSlots(transporter, function(add) {
 
   add.method('prepareToFileStuffOut', function () {
     // aaa - Not sure yet whether this is more confusing than it's worth.
-    // avocado.creatorSlotMarker.annotateExternalObjects(true);
+    // avocado.objectGraphAnnotator.create(true, true).go();
   }, {category: ['filing out']});
 
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});

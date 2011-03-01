@@ -9,7 +9,7 @@ thisModule.addSlots(avocado, function(add) {
 
   add.creator('objectGraphWalker', {}, {category: ['object graph']});
 
-  add.creator('creatorSlotMarker', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
+  add.creator('objectGraphAnnotator', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
   add.creator('implementorsFinder', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
@@ -145,6 +145,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     this.reset();
     this._startTime = new Date().getTime();
     this.walk(root === undefined ? window : root, 0);
+    if (this.shouldAlsoWalkSpecialUnreachableObjects) { this.walkSpecialUnreachableObjects(); }
     this.undoAllMarkings();
     return this.results();
   });
@@ -162,6 +163,23 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
   });
 
   add.method('objectCount', function () { return this._objectCount; });
+
+  add.method('walkSpecialUnreachableObjects', function () {
+    var walker = this;
+    
+    // WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
+    ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function', 'Error'].forEach(function(typeName) {
+        var type = window[typeName];
+        var pathToType          = {                       slotHolder: window, slotName:  typeName   };
+        var pathToTypePrototype = { previous: pathToType, slotHolder:   type, slotName: 'prototype' };
+        walker.markObject(type, pathToType, true);
+        walker.markObject(type.prototype, pathToTypePrototype, true);
+        walker.walk(type.prototype);
+    });
+    
+    // another special case, I think
+    this.markObject(window['__proto__'], { slotHolder: window, slotName: '__proto__' }, true);
+  });
 
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
@@ -292,28 +310,24 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
 });
 
 
-thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
+thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
 
-  add.method('annotateExternalObjects', function (shouldMakeCreatorSlots, moduleForExpatriateSlots) {
-    var marker = this.create();
-    marker.moduleForExpatriateSlots = moduleForExpatriateSlots;
-    marker.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
-    marker.reset();
-    marker.walk(window);
-    // WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
-    ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function', 'Error'].each(function(typeName) {
-        var type = window[typeName];
-        var pathToType          = {                       slotHolder: window, slotName:  typeName   };
-        var pathToTypePrototype = { previous: pathToType, slotHolder:   type, slotName: 'prototype' };
-        marker.markObject(type, pathToType, true);
-        marker.markObject(type.prototype, pathToTypePrototype, true);
-        marker.walk(type.prototype);
+  add.method('initialize', function ($super, shouldMakeCreatorSlots, shouldAlsoWalkSpecialUnreachableObjects) {
+    $super();
+    this.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
+    this.shouldAlsoWalkSpecialUnreachableObjects = shouldAlsoWalkSpecialUnreachableObjects;
+  });
+  
+  add.method('alsoAssignUnownedSlotsToModule', function (module) {
+    return this.alsoAssignSlotsToModule(module, function(holder, slotName, contents, slotAnno) {
+      return ! slotAnno.getModule();
     });
-    
-    // aaa - another special case, I think
-    marker.markObject(window['__proto__'], { slotHolder: window, slotName: '__proto__' }, true);
-    
-    marker.undoAllMarkings();
+  });
+  
+  add.method('alsoAssignSlotsToModule', function (module, shouldSlotBeAssignedToModule) {
+    this.moduleToAssignSlotsTo = module;
+    this.shouldSlotBeAssignedToModule = shouldSlotBeAssignedToModule;
+    return this;
   });
 
   add.method('shouldIgnoreObject', function ($super, o) {
@@ -357,10 +371,10 @@ thisModule.addSlots(avocado.creatorSlotMarker, function(add) {
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
-    if (! this.moduleForExpatriateSlots) { return; }
+    if (! this.moduleToAssignSlotsTo) { return; }
     var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
-    if (slotAnno.getModule()) { return; }
-    slotAnno.setModule(this.moduleForExpatriateSlots);
+    if (! this.shouldSlotBeAssignedToModule(holder, slotName, contents, slotAnno)) { return; }
+    slotAnno.setModule(this.moduleToAssignSlotsTo);
   });
 
 });

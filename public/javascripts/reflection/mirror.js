@@ -299,6 +299,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('normalSlotNames', function () {
     return avocado.enumerator.create(this, 'eachNormalSlotName');
   }, {category: ['iterating']});
+
+  add.method('normalNonCopiedDownSlots', function () {
+    return this.normalSlots().select(function(s) { return ! s.isFromACopyDownParent(); });
+  }, {category: ['iterating']});
   
   add.method('category', function (parts) {
     // aaa shouldn't need this test after I'm done refactoring to eliminate the stupid raw category objects
@@ -695,28 +699,18 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['annotations', 'module']});
 
   add.method('slotsInModuleNamed', function (moduleName) {
-    // Pass in '-' or null if you want unowned slots.
-    // Pass in something like {} if you want all non-copied-down slots.
-    var wantUnowned = moduleName === '-' || !moduleName;
-    var wantAll = !wantUnowned && typeof(moduleName) !== 'string';
-    return this.normalSlots().select(function(slot) {
-      if (! slot.isFromACopyDownParent()) {
-        var m = slot.module();
-        if (wantAll || (!m && wantUnowned) || (m && m.name() === moduleName)) {
-          return true;
-        }
-      }
-      return false;
-    }); 
+    var filterizer = avocado.slots['abstract'].filterizer.create().excludeCopyDowns();
+    if (moduleName === '-' || !moduleName) { filterizer.excludeSlotsAlreadyAssignedToAModule(); }
+    else if (typeof(moduleName) === 'string') { filterizer.excludeSlotsNotInModuleNamed(moduleName); }
+    
+    return this.normalSlots().select(function(slot) { return filterizer.matchesSlot(slot); });
   }, {category: ['annotations', 'module']});
 
   add.method('modules', function () {
     var modules = [];
-    this.normalSlots().each(function(s) {
-      if (! s.isFromACopyDownParent()) {
-        var m = s.module();
-        if (! modules.include(m)) { modules.push(m); }
-      }
+    this.normalNonCopiedDownSlots().each(function(s) {
+      var m = s.module();
+      if (! modules.include(m)) { modules.push(m); }
     });
     return modules.sort();
   }, {category: ['annotations', 'module']});

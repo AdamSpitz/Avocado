@@ -925,7 +925,7 @@ thisModule.addSlots(transporter, function(add) {
     // The right solution in the long run, I think, is to have some clear way of specifying
     // whether the programming-environment stuff should be loaded. -- Adam
     if (!UserAgent.isIPhone) {
-      avocado.creatorSlotMarker.annotateExternalObjects(true, initModule);
+      avocado.objectGraphAnnotator.create(true, true).alsoAssignUnownedSlotsToModule(initModule).go();
     }
   }, {category: ['bootstrapping']});
 
