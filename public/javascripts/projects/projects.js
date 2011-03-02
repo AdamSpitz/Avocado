@@ -123,6 +123,58 @@ thisModule.addSlots(avocado.project, function(add) {
     return sortedVersionsToSave;
   }, {category: ['saving']});
   
+  add.method('resetCurrentWorldStateModule', function () {
+    if (!modules.currentWorldState) { return; }
+    if (!modules.currentWorldState.morphs) { return; }
+    var morphs = modules.currentWorldState.morphs;
+  	var morphsArrayMir = reflect(morphs);
+    // Need to take the slots in the "morphs" array out of the module whenever we reset the
+    // array to an empty, so that the transporter doesn't gripe about the old array not
+    // being well-known.
+    morphs.forEach(function(m, i) { morphsArrayMir.slotAt(i).setModule(null); });
+	  modules.currentWorldState.morphs = [];
+  	reflect(modules.currentWorldState).slotAt('morphs').beCreator();
+  }, {category: ['saving']});
+  
+  add.method('assignCurrentWorldStateToTheRightModule', function () {
+  	var currentWorldStateModule = modules.currentWorldState || this.module().createNewOneRequiredByThisOne('currentWorldState');
+  	
+  	currentWorldStateModule.morphs = [];
+  	reflect(currentWorldStateModule).slotAt('morphs').beCreator().setInitializationExpression('[]');
+  	var morphsArrayMir = reflect(currentWorldStateModule.morphs);
+  	WorldMorph.current().submorphs.forEach(function(m, i) {
+  	  currentWorldStateModule.morphs.push(m);
+      morphsArrayMir.slotAt(currentWorldStateModule.morphs.length - 1).beCreator();
+  	});
+  	
+  	currentWorldStateModule.postFileIn = function() {
+  	  var w = WorldMorph.current();
+  	  modules.currentWorldState.morphs.forEach(function(m) { w.addMorph(m); });
+  	  avocado.project.resetCurrentWorldStateModule();
+  	};
+  	reflect(currentWorldStateModule).slotAt('postFileIn').beCreator();
+  	
+  	var walker = avocado.objectGraphAnnotator.create().setShouldWalkIndexables(true).beInDebugMode().alsoAssignUnownedSlotsToModule(currentWorldStateModule);
+  	
+    walker.shouldContinueRecursingIntoObject = function (object, objectAnno, howDidWeGetHere) {
+      if (object === currentWorldStateModule) { return true; }
+      if (typeof(object.storeString) === 'function') { return false; }
+      var cs = objectAnno.explicitlySpecifiedCreatorSlot();
+      if (!cs) { return true; }
+      return cs.name === howDidWeGetHere.slotName && cs.holder === howDidWeGetHere.slotHolder;
+    };
+  	
+    walker.shouldContinueRecursingIntoSlot = function (holder, slotName, howDidWeGetHere) {
+      // aaa - hack; really these slots should be annotated with an initializeTo: 'undefined' or something like that
+      if (['pvtCachedTransform', 'fullBounds', '_currentVersion', '_requirements'].include(slotName)) { return false; }
+      return true;
+    };
+
+  	walker.go(currentWorldStateModule);
+    currentWorldStateModule.markAsChanged();
+    
+  });
+  
   
   
   add.method('autoSave', function (evt) {
@@ -130,6 +182,8 @@ thisModule.addSlots(avocado.project, function(add) {
   });
   
   add.method('save', function (evt, isAutoSave) {
+    if (!this._shouldNotSaveCurrentWorld) { this.assignCurrentWorldStateToTheRightModule(); }
+    
     var versionsToSave = this.determineVersionsToSave();
     var sortedVersionsToSave = this.sortVersionsToSave(versionsToSave);
     
@@ -146,6 +200,7 @@ thisModule.addSlots(avocado.project, function(add) {
     var errors = transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, transporter.module.justBodyFilerOuter);
     if (errors.length === 0) {
       mockRepo.save(function() {
+    	  if (!this._shouldNotSaveCurrentWorld) { avocado.project.resetCurrentWorldStateModule(); }
         this.markAsUnchanged();
         for (var moduleName in versionsToSave) {
           modules[moduleName].markAsUnchanged();

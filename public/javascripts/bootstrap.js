@@ -1221,6 +1221,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['requirements']});
 
   add.method('addRequirement', function (nameOfRequiredModule) {
+    if (this.requirements().include(nameOfRequiredModule)) { return; }
     this.requirements().push(nameOfRequiredModule);
     this.markAsChanged();
   }, {category: ['requirements']});

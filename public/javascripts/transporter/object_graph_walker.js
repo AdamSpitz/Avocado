@@ -163,6 +163,11 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
   });
 
   add.method('objectCount', function () { return this._objectCount; });
+  
+  add.method('beInDebugMode', function () {
+    this._debugMode = true;
+    return this;
+  });
 
   add.method('walkSpecialUnreachableObjects', function () {
     var walker = this;
@@ -179,6 +184,22 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     
     // another special case, I think
     this.markObject(window['__proto__'], { slotHolder: window, slotName: '__proto__' }, true);
+  });
+  
+  add.method('setShouldWalkIndexables', function (b) {
+    this.shouldWalkIndexables = true;
+    return this;
+  });
+  
+  add.method('nameOfObjectWithPath', function (howDidWeGetHere) {
+    // useful for debugging
+    var s = [];
+    var p = howDidWeGetHere;
+    while (p) {
+      s.unshift(p.slotName);
+      p = p.previous;
+    }
+    return s.join('.');
   });
 
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
@@ -220,6 +241,16 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     return false;
   });
 
+  add.method('shouldContinueRecursingIntoObject', function (object, objectAnno, howDidWeGetHere) {
+    // children can override
+    return true;
+  });
+
+  add.method('shouldContinueRecursingIntoSlot', function (holder, slotName, howDidWeGetHere) {
+    // children can override
+    return true;
+  });
+
   add.method('markObject', function (object, howDidWeGetHere) {
     // Return false if this object has already been marked; otherwise mark it and return true.
     //
@@ -227,6 +258,9 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     // have to mark the annotation and then come by again and unmark it.
     var objectAnno;
     try { objectAnno = avocado.annotator.annotationOf(object); } catch (ex) { return false; } // stupid FireFox bug
+    
+    if (! this.shouldContinueRecursingIntoObject(object, objectAnno, howDidWeGetHere)) { return false; }
+    
     var walkers = objectAnno.walkers = objectAnno.walkers || (window.avocado && avocado.set && Object.newChildOf(avocado.set, avocado.hashTable.identityComparator)) || [];
     if (walkers.include(this)) { return false; }
     walkers.push(this);
@@ -274,8 +308,9 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     this.reachedObject(currentObj, howDidWeGetHere);
 
     if (typeof(currentObj.hasOwnProperty) === 'function') {
+      if (this._debugMode) { console.log("About to walk through the properties of object " + this.nameOfObjectWithPath(howDidWeGetHere)); }
       for (var name in currentObj) {
-        if (currentObj.hasOwnProperty(name) && ! this.namesToIgnore.include(name)) {
+        if (currentObj.hasOwnProperty(name) && ! this.namesToIgnore.include(name) && this.shouldContinueRecursingIntoSlot(currentObj, name, howDidWeGetHere)) {
           this.walkAttribute(currentObj, name, howDidWeGetHere);
         }
       }
@@ -337,6 +372,7 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
   });
 
   add.method('markObject', function ($super, contents, howDidWeGetHere, shouldExplicitlySetIt) {
+    if (this._debugMode) { console.log("Marking object " + this.nameOfObjectWithPath(howDidWeGetHere)); }
     this.reachedObject(contents, howDidWeGetHere, shouldExplicitlySetIt); // in case this is a shorter path
     return $super(contents, howDidWeGetHere);
   });
@@ -373,8 +409,13 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
   add.method('reachedSlot', function (holder, slotName, contents) {
     if (! this.moduleToAssignSlotsTo) { return; }
     var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
-    if (! this.shouldSlotBeAssignedToModule(holder, slotName, contents, slotAnno)) { return; }
-    slotAnno.setModule(this.moduleToAssignSlotsTo);
+    if (this.shouldSlotBeAssignedToModule(holder, slotName, contents, slotAnno)) {
+      if (this._debugMode) { console.log("Setting module of " + slotName + " to " + this.moduleToAssignSlotsTo.name()); }
+      slotAnno.setModule(this.moduleToAssignSlotsTo);
+      this.moduleToAssignSlotsTo.objectsThatMightContainSlotsInMe().push(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
+    } else {
+      if (this._debugMode) { console.log("NOT setting module of " + slotName + " to " + this.moduleToAssignSlotsTo.name()); }
+    }
   });
 
 });
