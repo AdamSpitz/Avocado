@@ -342,9 +342,9 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }, isApplicable: function() { return this.slot().copyTo; }.bind(this)});
       cmdList.addItem({label: "move", go: function(evt) { this.grabCopyAndRemoveMe(evt); }, isApplicable: function() { return isModifiable && this.slot().remove; }.bind(this)});
       if (! this.shouldUseZooming()) {
-        cmdList.addItem(this._sourceToggler.commandForToggling("contents"));
-        cmdList.addItem(this._commentToggler.commandForToggling("comment").onlyApplicableIf(function() {return this.slot().comment; }.bind(this)));
-        cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this.slot().annotationForReading; }.bind(this)));
+        if (this._sourceToggler) { cmdList.addItem(this._sourceToggler.commandForToggling("contents")); }
+        if (this._commentToggler) { cmdList.addItem(this._commentToggler.commandForToggling("comment").onlyApplicableIf(function() {return this.slot().comment; }.bind(this))); }
+        if (this._annotationToggler) { cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this.slot().annotationForReading; }.bind(this))); }
       }
     }
     
