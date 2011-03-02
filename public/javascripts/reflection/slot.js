@@ -426,9 +426,15 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     var oldModule = a.getModule();
     var holder = this.holder();
     a.setModule(m);
-    m.objectsThatMightContainSlotsInMe().push(holder.reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
-    if (oldModule) { oldModule.markAsChanged(); }
-    if (m)         { m.markAsChanged(); }
+    
+    if (m)         {
+      m.objectsThatMightContainSlotsInMe().push(holder.reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
+      m.markAsChanged();
+    }
+    
+    if (oldModule) {
+      oldModule.markAsChanged();
+    }
 
     this.contents().hackToMakeSureArrayIndexablesGetFiledOut(this);
     
