@@ -397,6 +397,12 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['accessing']});
 
   add.method('eachSlotInMirror', function (mir, f) {
+    // We used to keep going and treat this as an error, but it got annoying and unusable;
+    // we need to be able to just unhook an object from the well-known tree and assume that
+    // it won't be saved anymore. So the plan now is to just offer a warning when putting the
+    // mirror morph in the trash.
+    if (! mir.isWellKnown()) { return; }
+    
     mir.normalSlots().each(function(s) {
       if (s.module() === this) {
         f(s);
@@ -1332,8 +1338,8 @@ thisModule.addSlots(transporter.tests, function(add) {
   add.method('testRenaming', function () {
     var m = transporter.module.named('test_blah');
 
-    var s1 = this.addSlot(m, this.someObject, 'qwerty', {});
-    var s2 = this.addSlot(m, this.someObject.qwerty, 'uiop',   4 );
+    var s1 = this.addSlot(m, this.someObject, 'qwerty', {}).beCreator();
+    var s2 = this.addSlot(m, this.someObject.qwerty, 'uiop', 4);
 
     this.assertEqual("test_blah", m.name());
     this.assertEqual(m, s1.module());
@@ -1418,7 +1424,8 @@ thisModule.addSlots(transporter.tests, function(add) {
     m.uninstall();
   });
 
-  add.method('testObjectsWithNoCreatorPath', function () {
+  add.method('aaa_obsolete_testObjectsWithNoCreatorPath', function () {
+    // This test is obsolete, but we should do something similar to test the trash-can warning, once we've implemented that. -- Adam, Mar. 2011
     var m = transporter.module.named('test_non_well_known_objects');
 
     var o = {};

@@ -1398,16 +1398,18 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     var cdp = {copiedDown: true};
     var p = {c: 3};
     var o = Object.create(p);
+    window.tempObj = o;
     Object.extend(o, {a: 1, b: 2, x: {xa: 'one', xb: 'two'}, y: {ya: 'un'}});
     
+    reflect(window).slotAt('tempObj').beCreator();
     reflect(o).setCopyDownParents([{parent: cdp}]);
     reflect(o).slotAt('x').beCreator();
     reflect(o).parentSlot().beCreator();
-    reflect(o).setModuleRecursively(m);
+    reflect(window).slotAt('tempObj').setModuleRecursively(m);
     
     // Slots accessible through creator slots should be included.
     // Copied-down slots should not be included.
-    this.assertEqual('a, b, c, x, xa, xb, y', m.slots().map(function(s) { return s.name(); }).sort().join(', '));
+    this.assertEqual('a, b, c, tempObj, x, xa, xb, y', m.slots().map(function(s) { return s.name(); }).sort().join(', '));
     
     m.uninstall();
   });
