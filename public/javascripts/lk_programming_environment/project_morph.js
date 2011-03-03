@@ -17,7 +17,7 @@ thisModule.addSlots(avocado.project, function(add) {
     var project = this;
     
     var changeIndicator = TextMorph.createLabel(function() {
-      return project.hasChangedSinceLastFileOut() ? ' has changed ' : '';
+      return project.modificationFlag().hasThisOneOrChildrenChanged() ? ' has changed ' : '';
     });
     changeIndicator.setTextColor(Color.green.darker());
 

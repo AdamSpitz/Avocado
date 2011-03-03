@@ -62,10 +62,6 @@ thisModule.addSlots(avocado.project, function(add) {
   
   add.method('toString', function () { return this.name(); }, {category: ['printing']});
   
-  add.method('hasChangedSinceLastFileOut', function () {
-    return this.modificationFlag().hasChanged();
-  }, {category: ['keeping track of changes']});
-
   add.method('markAsChanged', function () {
     this.modificationFlag().markAsChanged();
   }, {category: ['keeping track of changes']});
@@ -101,7 +97,7 @@ thisModule.addSlots(avocado.project, function(add) {
         // aaa - Could make this algorithm faster if each module knew who required him - just check
         // if m itself has changed, and if so then walk up the requirements chain making sure that
         // they're included.
-        if (m === rootModule || m.haveIOrAnyOfMyRequirementsChangedSinceLastFileOut()) { // always save the root, just makes things simpler
+        if (m === rootModule || m.modificationFlag().hasThisOneOrChildrenChanged()) { // always save the root, just makes things simpler
           versionsToSave[m.name()] = m.createNewVersion();
           m.requirements().each(function(requiredModuleName) { modulesLeftToLookAt.push(modules[requiredModuleName])});
         } else {
@@ -197,7 +193,7 @@ thisModule.addSlots(avocado.project, function(add) {
     
     var mockRepo = avocado.project.repository.create(this, isAutoSave);
     mockRepo.setRoot(versionsToSave[this.module().name()]);
-    var errors = transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, transporter.module.justBodyFilerOuter);
+    var errors = transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, transporter.module.filerOuters.justBody);
     if (errors.length === 0) {
       mockRepo.save(function() {
     	  if (!this._shouldNotSaveCurrentWorld) { avocado.project.resetCurrentWorldStateModule(); }

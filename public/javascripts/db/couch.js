@@ -239,7 +239,7 @@ thisModule.addSlots(avocado.couch.db, function(add) {
       slots.push(Object.newChildOf(avocado.slots.hardWiredContents, mir, '_rev', reflect(rev)));
     }
     
-    var fo = transporter.module.jsonFilerOuter.create(this);
+    var fo = transporter.module.filerOuters.json.create(this);
     fo.fileOutSlots(slots);
     if (fo.errors().size() > 0) { throw new Error("Errors converting " + obj + " to JSON: " + fo.errors().map(function(e) { return e.toString(); }).join(", ")); }
     return fo.fullText();
