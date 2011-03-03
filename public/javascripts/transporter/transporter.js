@@ -7,26 +7,6 @@ requires('reflection/reflection');
 }, function(thisModule) {
 
 
-thisModule.addSlots(window, function(add) {
-	add.method('onbeforeunload', function(evt) { 
-	  // Probably not necessary to be this careful, but just in case some stuff isn't loaded.
-	  // if (window.avocado && avocado.project && avocado.project.current() && avocado.project.current().modificationFlag().hasThisOneOrChildrenChanged()) {
-		//   var msg = "Your project has changed since the last time you saved it. Are you sure you want to leave this page?";
-	  // Wait a sec, we don't check for expatriate slots. So even if the project doesn't know it's been changed, they could have changed it.
-	  // Blecch. OK, just show the message all the time.
-	  if (true) {
-	  	avocado.project.current().autoSave();
-	    //var msg = "If you have unsaved work, it will be lost. Are you sure you want to leave this page?";
-		//	evt.returnValue = msg;
-		//	return msg;
-          return null;
-		} else {
-		  return null;
-		};
-	}, {category: ['avocado', 'transporter']});
-});
-
-
 thisModule.addSlots(transporter, function(add) {
 
   add.method('prepareToFileStuffOut', function () {
@@ -170,32 +150,32 @@ thisModule.addSlots(transporter, function(add) {
       return function(evt) { callback(module, evt); };
     }
   }, {category: ['module tree']});
-  
+
   add.creator('idTracker', {}, {category: ['version IDs']});
 
 });
 
 
 thisModule.addSlots(transporter.idTracker, function(add) {
-  
+
   add.data('latestTemporaryIDNumber', 0, {initializeTo: '0'});
-  
+
   add.data('objectsByTemporaryID', {}, {initializeTo: '{}'});
-  
+
   add.method('createTemporaryIDFor', function (obj) {
     var tempID = "tempID_" + (++this.latestTemporaryIDNumber);
     this.objectsByTemporaryID[tempID] = obj;
     obj.setID(tempID);
     return tempID;
   });
-  
+
   add.method('recordRealID', function (tempID, realID) {
     var obj = this.objectsByTemporaryID[tempID];
     obj.setID(realID);
     delete this.objectsByTemporaryID[tempID];
     return obj;
   });
-  
+
 });
 
 
@@ -424,7 +404,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['iterating']});
 
   add.creator('filerOuters', {}, {category: ['transporting']});
-  
+
   add.method('codeToFileOut', function (filerOuter) {
     if (this.preFileInFunctionName) {
       filerOuter.writePreFileInFunction(this.preFileInFunctionName);
@@ -523,26 +503,26 @@ thisModule.addSlots(transporter.module.prompter, function(add) {
 
 
 thisModule.addSlots(transporter.module.version, function(add) {
-  
+
   add.method('create', function (module, id, parentVersions) {
     return Object.newChildOf(this, module, id, parentVersions);
   }, {category: ['creating']});
-  
+
   add.method('module', function () { return this._module; }, {category: ['accessing']});
-  
+
   add.method('versionID', function () { return this._id; }, {category: ['accessing']});
-  
+
   add.method('setID', function (id) { this._id = id; }, {category: ['accessing']});
-  
+
   add.method('parentVersions', function () { return this._parentVersions; }, {category: ['accessing']});
-  
+
   add.method('requiredModuleVersions', function () {
     // aaa should probably make this refer to them directly or something
     return this.module().requiredModules().map(function(m) { return m.currentVersion(); });
   }, {category: ['accessing']});
-  
+
   add.method('toString', function () { return this.module().toString() + (this._id ? " version " + this._id : ""); }, {category: ['printing']});
-  
+
   add.method('fileOut', function (filerOuter, repo, successBlock, failBlock) {
     var codeToFileOut;
     filerOuter = filerOuter || Object.newChildOf(this.module().filerOuters.normal);
@@ -561,7 +541,7 @@ thisModule.addSlots(transporter.module.version, function(add) {
   add.method('constructBody', function () {
     aaawaowjgtowag;
   }, {category: ['body']});
-  
+
 });
 
 
@@ -685,7 +665,7 @@ thisModule.addSlots(transporter.module.filerOuters.general, function(add) {
     o.initialize.apply(o, arguments);
     return o;
   }, {category: ['creating']});
-  
+
   add.method('initialize', function () {
     this._buffer = avocado.stringBuffer.create();
     this._currentHolder = null;
@@ -740,7 +720,7 @@ thisModule.addSlots(transporter.module.filerOuters.general, function(add) {
     this._currentHolder = holder;
     this._currentHolderExpr = holder.creatorSlotChainExpression();
   }, {category: ['writing']});
-  
+
   add.method('nextSlotIsIn', function (holder, slot) {
     if (!this._currentHolder || ! holder.equals(this._currentHolder)) {
       this.doneWithThisObject();
@@ -861,7 +841,7 @@ thisModule.addSlots(transporter.module.filerOuters.annotationless, function(add)
     // Let's try the latter for now; it actually kinda looks cleaner. -- Adam
     // this._buffer.append("Object.extend(").append(this._currentHolderExpr).append(", {\n\n");
   }, {category: ['writing']});
-  
+
   add.method('writeObjectEnder', function () {
     // this._buffer.append("});\n\n\n");
     this._buffer.append("\n\n");
@@ -879,7 +859,7 @@ thisModule.addSlots(transporter.module.filerOuters.annotationless, function(add)
 
 
 thisModule.addSlots(transporter.module.filerOuters.json, function(add) {
-  
+
   add.method('initialize', function ($super, db) {
     $super();
     this._db = db;
@@ -1072,7 +1052,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
                        contentDeps: avocado.dependencies.copyRemoveAll() };
     
     this._module.slots().each(function(s) { this.addSlotDependenciesFor(s); }.bind(this));
-  }, {comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.', category: ['dependencies']});
+  }, {category: ['dependencies'], comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.'});
 
   add.method('recalculateObjectDependencies', function () {
     this._objDeps = avocado.dependencies.copyRemoveAll();
@@ -1461,7 +1441,7 @@ thisModule.addSlots(transporter.tests, function(add) {
     m.uninstall();
   });
 
-    add.method('testFilingOutToJSON', function () {
+  add.method('testFilingOutToJSON', function () {
       var m = transporter.module.named('test_JSON_fileout');
 
       this.addSlot(m, this.someObject, 'x', 123);

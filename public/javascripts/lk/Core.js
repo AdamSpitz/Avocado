@@ -250,6 +250,7 @@ Object.extend(Global.window, {
 	onerror: function(message, url, code) {
 		console.log('in %s: %s, code %s', url, message, code);
 	},
+	/* commented out by Adam, don't want this at all, because it overwrites our own version
 	onbeforeunload: function(evt) { 
 		if (Config.askBeforeQuit) {
 			var msg = "Lively Kernel data may be lost if not saved.";
@@ -257,6 +258,7 @@ Object.extend(Global.window, {
 			return msg;
 		} else return null;
 	}
+	*/
 	// onblur: function(evt) { console.log('window got blur event %s', evt); },
 	// onfocus: function(evt) { console.log('window got focus event %s', evt); }
 });
