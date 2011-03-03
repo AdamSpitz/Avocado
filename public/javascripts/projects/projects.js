@@ -34,7 +34,6 @@ thisModule.addSlots(avocado.project, function(add) {
     } else {
       transporter.idTracker.createTemporaryIDFor(this);
     }
-    this.markAsUnchanged();
   }, {category: ['creating']});
   
   add.method('name', function () { return this._name; }, {category: ['accessing']});
@@ -44,6 +43,10 @@ thisModule.addSlots(avocado.project, function(add) {
   add.method('id', function () { return this._projectID; }, {category: ['accessing']});
   
   add.method('setID', function (id) { this._projectID = id; }, {category: ['accessing']});
+  
+  add.method('modificationFlag', function () {
+    return this._modificationFlag || (this._modificationFlag = avocado.modificationFlag.create(this, [this.module().modificationFlag()]));
+  }, {category: ['accessing']});
   
   add.method('isPrivate', function () { return this._isPrivate; }, {category: ['accessing']});
   
@@ -60,22 +63,19 @@ thisModule.addSlots(avocado.project, function(add) {
   add.method('toString', function () { return this.name(); }, {category: ['printing']});
   
   add.method('hasChangedSinceLastFileOut', function () {
-    return this._hasChanged || this.module().haveIOrAnyOfMyRequirementsChangedSinceLastFileOut();
+    return this.modificationFlag().hasChanged();
   }, {category: ['keeping track of changes']});
-  
+
   add.method('markAsChanged', function () {
-    this._hasChanged = true;
-    if (this._changeNotifier) { this._changeNotifier.notifyAllObservers(); }
+    this.modificationFlag().markAsChanged();
   }, {category: ['keeping track of changes']});
-  
+
   add.method('markAsUnchanged', function () {
-    this._hasChanged = false;
-    if (this._changeNotifier) { this._changeNotifier.notifyAllObservers(); }
+    this.modificationFlag().markAsUnchanged();
   }, {category: ['keeping track of changes']});
 
   add.method('whenChangedNotify', function (observer) {
-    if (! this._changeNotifier) { this._changeNotifier = avocado.notifier.on(this); }
-    this._changeNotifier.addObserver(observer);
+    this.modificationFlag().notifier().addObserver(observer);
   }, {category: ['keeping track of changes']});
   
   add.method('togglePrivacy', function (evt) {

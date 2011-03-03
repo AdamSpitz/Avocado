@@ -17,6 +17,7 @@ requires('core/sound');
 requires('core/linked_list');
 requires('core/graphs');
 requires('core/types');
+requires('core/modification_flag');
 
 }, function(thisModule) {
 

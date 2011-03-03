@@ -330,38 +330,35 @@ thisModule.addSlots(transporter.module, function(add) {
     // aaa - crap, should fix up the modules that depend on this one;
   }, {category: ['accessing']});
 
+  add.method('eachRequiredModule', function (f) {
+    this.requiredModules().each(f);
+  }, {category: ['requirements']});
+
   add.method('hasChangedSinceLastFileOut', function () {
-    return this._hasChangedSinceLastFileOut;
+    return this.modificationFlag().hasJustThisOneChanged();
   }, {category: ['keeping track of changes']});
 
   add.method('haveIOrAnyOfMyRequirementsChangedSinceLastFileOut', function () {
-    if (this.hasChangedSinceLastFileOut()) { return true; }
-    var reqs = this.requirements();
-    for (var i = 0, n = reqs.length; i < n; ++i) {
-      var req = modules[reqs[i]];
-      if (req && req.haveIOrAnyOfMyRequirementsChangedSinceLastFileOut()) { return true; }
-    }
-    return false;
+    return this.modificationFlag().hasChanged();
+  }, {category: ['keeping track of changes']});
+  
+  add.method('modificationFlag', function () {
+    if (this._modificationFlag) { return this._modificationFlag; }
+    var subflags = avocado.enumerator.create(this, 'eachRequiredModule').map(function(m) { return m.modificationFlag(); });
+    this._modificationFlag = avocado.modificationFlag.create(this, subflags);
+    return this._modificationFlag;
   }, {category: ['keeping track of changes']});
 
   add.method('markAsChanged', function () {
-    this._hasChangedSinceLastFileOut = true;
-    this.notifyObserversOfChange();
+    this.modificationFlag().markAsChanged();
   }, {category: ['keeping track of changes']});
 
   add.method('markAsUnchanged', function () {
-    this._hasChangedSinceLastFileOut = false;
-    this.notifyObserversOfChange();
+    this.modificationFlag().markAsUnchanged();
   }, {category: ['keeping track of changes']});
 
   add.method('whenChangedNotify', function (observer) {
-    if (! this._changeNotifier) { this._changeNotifier = avocado.notifier.on(this); }
-    this._changeNotifier.addObserver(observer);
-  }, {category: ['keeping track of changes']});
-
-  add.method('notifyObserversOfChange', function () {
-    if (! this._changeNotifier) { return; }
-    this._changeNotifier.notifyAllObservers();
+    this.modificationFlag().notifier().addObserver(observer);
   }, {category: ['keeping track of changes']});
 
   add.method('canBeFiledOut', function () {
@@ -381,7 +378,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['versions']});
 
   add.method('requiredModules', function () {
-    return this.requirements().map(function(mName) { return modules[mName]; });
+    return this.requirements().map(function(mName) { return modules[mName]; }).compact();
   }, {category: ['requirements']});
 
   add.method('createNewOneRequiredByThisOne', function (name) {
