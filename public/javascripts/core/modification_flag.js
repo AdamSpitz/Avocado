@@ -29,6 +29,10 @@ thisModule.addSlots(avocado.modificationFlag, function(add) {
     return this._children;
   }, {category: ['accessing']});
 
+  add.method('toString', function () {
+    return ["modificationFlag(", this.hasJustThisOneChanged(), ") for ", this.object().toString()].join("");
+  }, {category: ['printing']});
+
   add.method('hasChanged', function () {
     return this.hasThisOneOrChildrenChanged();
   }, {category: ['testing']});
@@ -46,7 +50,7 @@ thisModule.addSlots(avocado.modificationFlag, function(add) {
   }, {category: ['testing']});
 
   add.method('notifier', function () {
-    return this._notifier || (this._notifier = avocado.notifier.on(this));
+    return this._notifier || (this._notifier = avocado.notifier.on(this.object()));
   }, {category: ['notification']});
 
   add.method('markAsChanged', function () {

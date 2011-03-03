@@ -749,6 +749,7 @@ this.Node.addMethods({
 		if (!this.cachedTransforms) {
 			var list = this.rawNode.transform.baseVal;
 			var array = this.cachedTransforms = new Array(list.numberOfItems);
+  		reflect(this).slotAt('cachedTransforms').setInitializationExpression('undefined'); // aaa hack? -- Adam
 			for (var i = 0; i < list.numberOfItems; i++) {
 				// FIXME: create specialized classes (Rotate/Translate etc)
 				array[i] = new lively.scene.Transform(list.getItem(i), this);
@@ -764,6 +765,7 @@ this.Node.addMethods({
 			list.clear();
 		}
 		this.cachedTransforms = array;
+		reflect(this).slotAt('cachedTransforms').setInitializationExpression('undefined'); // aaa hack? -- Adam
 		for (var i = 0; i < array.length; i++) {
 			var existingTargetNode = array[i].targetNode;
 			if (existingTargetNode && existingTargetNode !== this) 
@@ -2138,6 +2140,7 @@ this.Shape.subclass('lively.scene.Group', {
 	initialize: function() {
 		this.rawNode = NodeFactory.create("g");
 		this.content = [];
+		reflect(this).slotAt('content').setInitializationExpression('[]'); // aaa hack, or broken? -- Adam
 	},
 
 	copyFrom: function($super, copier, other) {

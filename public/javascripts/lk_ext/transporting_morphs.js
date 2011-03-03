@@ -45,10 +45,11 @@ thisModule.addSlots(Morph.prototype, function(add) {
 thisModule.addSlots(Node.prototype, function(add) {
 
   add.method('storeString', function () {
-    var encoded = Exporter.stringify(this);
-    var s = avocado.stringBuffer.create('document.importNode(new DOMParser().parseFromString(');
-    s.append(encoded.inspect()).append(', "text/xml").documentElement, false)');
-    return s.toString();
+    return [
+      'document.importNode(new DOMParser().parseFromString(',
+      Exporter.stringify(this).inspect(),
+      ', "text/xml").documentElement, false)'
+    ].join('');
   }, {category: ['transporting']});
 
 });
@@ -106,6 +107,19 @@ thisModule.addSlots(lively.scene.Similitude.prototype, function(add) {
 
   add.method('storeStringNeeds', function () {
     return lively.scene.Similitude.prototype;
+  }, {category: ['transporting']});
+
+});
+
+
+thisModule.addSlots(lively.Text.Font.prototype, function(add) {
+
+  add.method('storeString', function () {
+    return ['new lively.Text.Font(', this.family.inspect(), ', ', this.size, ', ', this.style.inspect(), ')'].join('');
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return lively.Text.Font.prototype;
   }, {category: ['transporting']});
 
 });

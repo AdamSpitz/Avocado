@@ -957,6 +957,15 @@ BoxMorph.subclass('TextMorph', {
 		this.priorSelection = [0, -1];	// for double-clicks
 		// note selection is transient
 		this.lines = null;//: TextLine[]
+		
+		// aaa not sure whether this is a hack or not -- Adam
+		this.doNotSerialize.forEach(function(attrName) {
+  		reflect(this).slotAt(attrName).setInitializationExpression('undefined');
+		}.bind(this));
+		reflect(this).slotAt('selectionRange').setInitializationExpression('[0, -1]'); 
+		reflect(this).slotAt('priorSelection').setInitializationExpression('[0, -1]'); 
+		//reflect(this).slotAt('previousSelection').setInitializationExpression('undefined'); 
+		//reflect(this).slotAt('lines').setInitializationExpression('null');
 	
 		if (this.isInputLine) {	 // for discussion, see beInputLine...
 			this.beInputLine(this.historySize)
@@ -967,6 +976,7 @@ BoxMorph.subclass('TextMorph', {
 	initializePersistentState: function($super, shape) {
 		$super(shape);
 		this.textContent = this.addWrapper(new lively.scene.Text());
+		reflect(this).slotAt('textContent').beCreator(); // added by Adam to make morph-saving work
 		this.resetRendering();
 		// KP: set attributes on the text elt, not on the morph, so that we can retrieve it
 		this.applyStyle({fill: this.backgroundColor, borderWidth: this.borderWidth, borderColor: this.borderColor});
@@ -983,6 +993,7 @@ BoxMorph.subclass('TextMorph', {
 		if ($super(importer, rawNode)) return true;
 		if (rawNode.localName == "text") {
 			this.textContent = new lively.scene.Text(importer, rawNode);   
+  		reflect(this).slotAt('textContent').beCreator(); // added by Adam to make morph-saving work
 			this.fontFamily = this.textContent.getFontFamily();
 			this.fontSize = this.textContent.getFontSize();
 			this.font = thisModule.Font.forFamily(this.fontFamily, this.fontSize);
