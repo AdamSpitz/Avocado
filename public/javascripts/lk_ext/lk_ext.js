@@ -42,7 +42,7 @@ requires('lk_ext/carrying_hand');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('ui', {}, {comment: 'An extra layer of indirection, in case we want to switch to a non-LK UI someday.\n\nDefinitely not complete yet. -- Adam, Oct. 2010', category: ['user interface']});
+  add.creator('ui', {}, {category: ['user interface'], comment: 'An extra layer of indirection, in case we want to switch to a non-LK UI someday.\n\nDefinitely not complete yet. -- Adam, Oct. 2010'});
 
 });
 

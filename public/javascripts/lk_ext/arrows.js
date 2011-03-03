@@ -18,8 +18,6 @@ thisModule.addSlots(avocado.ArrowMorph, function(add) {
 
   add.data('superclass', Morph);
 
-  add.creator('prototype', Object.create(Morph.prototype));
-
   add.data('type', 'avocado.ArrowMorph');
 
   add.method('createButtonForToggling', function (pointer) {
@@ -56,6 +54,8 @@ thisModule.addSlots(avocado.ArrowMorph, function(add) {
 
     return m;
   }, {category: ['toggling buttons']});
+
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -122,7 +122,7 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
 
   add.method('prepareToBeShown', function (callWhenDone) {
     callWhenDone();
-  }, {comment: 'Feel free to override me.', category: ['showing and hiding']});
+  }, {category: ['showing and hiding'], comment: 'Feel free to override me.'});
 
   add.method('showMe', function (callWhenDone) {
     if (this.noLongerNeedsToBeUpdated) {
@@ -244,8 +244,6 @@ thisModule.addSlots(avocado.ArrowEndpoint, function(add) {
 
   add.data('superclass', Morph);
 
-  add.creator('prototype', Object.create(Morph.prototype));
-
   add.data('type', 'avocado.ArrowEndpoint');
 
   add.method('createForSetting', function (evt, tr, fep) {
@@ -258,6 +256,8 @@ thisModule.addSlots(avocado.ArrowEndpoint, function(add) {
     }
     evt.hand.grabMorph(arrow.endpoint2, evt);
   }, {category: ['creating']});
+
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 

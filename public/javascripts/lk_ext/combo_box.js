@@ -16,8 +16,6 @@ thisModule.addSlots(avocado.ComboBoxMorph, function(add) {
 
   add.data('superclass', avocado.RowMorph);
 
-  add.creator('prototype', Object.create(avocado.RowMorph.prototype));
-
   add.data('type', 'avocado.ComboBoxMorph');
 
   add.method('prompt', function (msg, okButtonText, cancelButtonText, values, defaultValue, onAccept, onCancel) {
@@ -34,6 +32,8 @@ thisModule.addSlots(avocado.ComboBoxMorph, function(add) {
     world.addMorphAt(promptBox, promptBox.positionToCenterIn(world));
     comboBox.selectAll();
   });
+
+  add.creator('prototype', Object.create(avocado.RowMorph.prototype));
 
 });
 

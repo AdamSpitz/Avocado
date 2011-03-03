@@ -1,4 +1,6 @@
-transporter.module.create('core/dependencies', function(requires) {}, function(thisModule) {
+transporter.module.create('core/dependencies', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {

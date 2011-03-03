@@ -1,4 +1,6 @@
-transporter.module.create('lk_ext/edit_mode', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/edit_mode', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(Morph.prototype, function(add) {

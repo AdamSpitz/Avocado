@@ -13,11 +13,11 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.vocabulary, function(add) {
-  
+
   add.method('create', function (mir) {
     return Object.newChildOf(this, mir);
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (mir) {
     this._mirror = mir;
   }, {category: ['creating']});
@@ -41,7 +41,7 @@ thisModule.addSlots(avocado.vocabulary, function(add) {
   add.method('toString', function () {
     return this.inspect();
   }, {category: ['printing']});
-  
+
 });
 
 

@@ -51,7 +51,7 @@ thisModule.addSlots(avocado.project, function(add) {
 
 thisModule.addSlots(avocado.project.defaultMorphStyle, function(add) {
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.7, 0.6, 0.7)), new lively.paint.Stop(1, new Color(0.8, 0.7, 0.8))], lively.paint.LinearGradient.SouthNorth));
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.7019607843137254, 0.6, 0.7019607843137254)), new lively.paint.Stop(1, new Color(0.8, 0.7019607843137254, 0.8))], lively.paint.LinearGradient.SouthNorth));
 
 });
 

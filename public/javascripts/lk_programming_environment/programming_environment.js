@@ -20,7 +20,7 @@ requires('db/couch');
 
 }, function(thisModule) {
 
-  
+
 thisModule.addSlots(modules['lk_programming_environment/programming_environment'], function(add) {
 
   add.method('postFileIn', function () {
@@ -35,7 +35,7 @@ thisModule.addSlots(modules['lk_programming_environment/programming_environment'
       avocado.world.addApplication(avocado);
     }
   });
-  
+
 });
 
 

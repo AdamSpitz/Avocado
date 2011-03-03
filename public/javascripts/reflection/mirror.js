@@ -83,7 +83,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('primitiveReflectee', function () {
     return this.reflectee();
   }, {category: ['accessing']});
-    
+
   add.method('inspect', function () {
     var name = this.name();
     var desc = this.shortDescription();
@@ -93,7 +93,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
       return name;
     }
   }, {category: ['naming']});
-    
+
   add.method('shortDescription', function () {
     if (! this.canHaveSlots()) { return ""; }
     if (this.isReflecteeFunction()) { return ""; }
@@ -303,12 +303,12 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('normalNonCopiedDownSlots', function () {
     return this.normalSlots().select(function(s) { return ! s.isFromACopyDownParent(); });
   }, {category: ['iterating']});
-  
+
   add.method('category', function (parts) {
     // aaa shouldn't need this test after I'm done refactoring to eliminate the stupid raw category objects
     return avocado.category.ofAParticularMirror.create(this, parts.parts ? parts.parts() : parts);
   }, {category: ['categories']});
-  
+
   add.method('rootCategory', function () {
     return this.category([]);
   }, {category: ['categories']});
@@ -514,7 +514,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('reflecteeType', function () {
     return typeof(this.reflectee());
   }, {category: ['accessing']});
-  
+
   add.method('canHaveSlots', function () {
     var t = this.reflecteeType();
     return t === 'function' || (t === 'object' && ! this.isReflecteeNull());
@@ -570,11 +570,11 @@ thisModule.addSlots(avocado.mirror, function(add) {
     if (! this.canHaveSlots()) { return false; }
     return this.reflectee().isRemoteReference;
   }, {category: ['testing']});
-  
+
   add.method('reflecteeLength', function () {
     return this.primitiveContentsAt('length');
   }, {category: ['arrays']});
-  
+
   add.method('oppositeBoolean', function () {
     if (! this.isReflecteeBoolean()) { throw new Error("not a boolean"); }
     return ! this.reflectee();

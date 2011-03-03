@@ -1,4 +1,6 @@
-transporter.module.create('lk_ext/layout', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/layout', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {

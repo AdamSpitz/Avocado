@@ -1,4 +1,6 @@
-transporter.module.create('core/linked_list', function(requires) {}, function(thisModule) {
+transporter.module.create('core/linked_list', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {

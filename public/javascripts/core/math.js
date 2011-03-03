@@ -1,4 +1,6 @@
-transporter.module.create('core/math', function(requires) {}, function(thisModule) {
+transporter.module.create('core/math', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(Number.prototype, function(add) {

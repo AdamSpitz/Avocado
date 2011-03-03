@@ -1,4 +1,6 @@
-transporter.module.create('reflection/annotation', function(requires) {}, function(thisModule) {
+transporter.module.create('reflection/annotation', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado.annotator, function(add) {

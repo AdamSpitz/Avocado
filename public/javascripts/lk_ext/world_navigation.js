@@ -1,4 +1,6 @@
-transporter.module.create('lk_ext/world_navigation', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/world_navigation', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(WorldMorph.prototype, function(add) {
@@ -56,7 +58,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     worldNavigator.staySameSizeAndScaleTo(this.getScale() * factor, pointerPosition, function() {
     }.bind(this));
   }, {category: ['navigation']});
-  
+
   add.method('stickyMorphs', function (f) {
     return this.submorphs.select(function(m) { return m.shouldStickToScreen; });
   });
@@ -118,13 +120,13 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
 
 thisModule.addSlots(Point.prototype, function(add) {
-  
+
   add.method('translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy', function (scalingFactor) {
     var desiredNewPosition = this.scaleBy(1 / scalingFactor);
     var delta = desiredNewPosition.subPt(this);
     return delta;
   }, {category: ['scaling']});
-  
+
 });
 
 
@@ -160,7 +162,7 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
   add.method('setExtent', function (r) {
     return this._world.setExtent(r);
   });
-  
+
   add.method('staySameSizeAndScaleTo', function (s, currentPointerPos) {
     var oldScale = this.getScale();
     var scalingFactor = s / oldScale;

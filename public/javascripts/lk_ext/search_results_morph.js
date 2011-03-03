@@ -16,9 +16,9 @@ thisModule.addSlots(avocado.SearchResultsMorph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
-
   add.data('type', 'avocado.SearchResultsMorph');
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
 });
 

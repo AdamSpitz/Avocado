@@ -40,11 +40,11 @@ thisModule.addSlots(avocado.slots['abstract'].Morph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
-
   add.data('type', 'avocado.slots.abstract.Morph');
 
   add.creator('pointer', {});
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
 });
 
@@ -93,7 +93,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('slot', function () { return this._model; }, {category: ['accessing']});
 
-  add.data('shouldUseZooming', function () {
+  add.method('shouldUseZooming', function () {
     return avocado.shouldMirrorsUseZooming;
   }, {category: ['zooming']});
 
@@ -219,7 +219,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var mirMorph = w.morphFor(mir);
     mirMorph.ensureIsInWorld(w, this._contentsPointer.worldPoint(pt(150,0)), false, true, true, callWhenContentsAreVisible);
   }, {category: ['contents']});
-  
+
   add.method('updateScaleOfSourcePane', function (evt) {
     // Not sure this is really what I want, but I think I don't like it when the
     // source keeps taking up space after I edit it, at least if it's data rather
@@ -396,13 +396,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.grabbedStyle, func
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.annotationStyle, function(add) {
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
-  
+
   add.data('padding', {left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}'});
-
-});
-
-
-thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.commentStyle, function(add) {
 
 });
 
@@ -410,7 +405,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.commentStyle, func
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.sourceMorphStyle, function(add) {
 
   add.data('fontFamily', 'monospace');
-  
+
   add.data('suppressHandles', true);
 
 });

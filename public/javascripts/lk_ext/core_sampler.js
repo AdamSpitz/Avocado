@@ -16,13 +16,13 @@ thisModule.addSlots(avocado.CoreSamplerMorph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
-
   add.data('type', 'avocado.CoreSamplerMorph');
 
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addItem({label: 'core sampler', go: function(evt) {new avocado.CoreSamplerMorph().grabMe(evt);}});
   });
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
 });
 

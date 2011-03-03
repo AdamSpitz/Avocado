@@ -1,4 +1,6 @@
-transporter.module.create('lk_ext/morph_factories', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/morph_factories', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -9,10 +11,10 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.morphFactories, function(add) {
-  
+
   add.creator('simpleMorphs', {}, {category: ['simple morphs']});
 
-  add.data('globalFactories', [], {initializeTo: '[]', category: ['registering']});
+  add.data('globalFactories', [], {category: ['registering'], initializeTo: '[]'});
 
   add.method('addGlobalCommandsTo', function (menu) {
     menu.addLine();
@@ -21,14 +23,14 @@ thisModule.addSlots(avocado.morphFactories, function(add) {
       return [factory.factoryName() + " morphs", function(evt) { factory.createFactoryMorph().grabMe(evt); }]
     })]);
   }, {category: ['menu']});
-  
-  add.creator('defaultStyle', {}, {category: ['styles']})
+
+  add.creator('defaultStyle', {}, {category: ['styles']});
 
 });
 
 
 thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
-  
+
   add.method('factoryName', function () { return 'simple'; });
 
   add.method('createFactoryMorph', function () {
@@ -63,23 +65,23 @@ thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
     return factory;
   });
 
-  add.data('postFileIn', function () {
+  add.method('postFileIn', function () {
     avocado.morphFactories.globalFactories.push(this);
   });
-  
+
 });
 
 
 thisModule.addSlots(avocado.morphFactories.defaultStyle, function(add) {
-  
+
   add.data('fill', new Color(0.1, 0.6, 0.7));
-  
+
   add.data('borderWidth', 1);
-  
-  add.data('borderColor', Color.black);
-  
+
+  add.data('borderColor', new Color(0, 0, 0));
+
   add.data('openForDragAndDrop', false);
-  
+
 });
 
 

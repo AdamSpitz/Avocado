@@ -7,7 +7,7 @@ requires('transporter/object_graph_walker');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('snapshotter', Object.create(avocado.objectGraphWalker), {comment: 'Does not actually work yet; may not even be possible\nwithout reflective access to local variables.', category: ['snapshotting']});
+  add.creator('snapshotter', Object.create(avocado.objectGraphWalker), {category: ['snapshotting'], comment: 'Does not actually work yet; may not even be possible\nwithout reflective access to local variables.'});
 
 });
 

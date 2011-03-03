@@ -16,9 +16,9 @@ thisModule.addSlots(avocado.EvaluatorMorph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
-
   add.data('type', 'avocado.EvaluatorMorph');
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
 });
 
@@ -111,9 +111,9 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
   add.method('isTicking', function (evt) {
     return !!this._ticker;
   }, {category: ['running the code']});
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
-  
+
   add.creator('textStyle', {}, {category: ['styles']});
 
 });
@@ -140,7 +140,7 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype.defaultStyle, function(add)
 
 thisModule.addSlots(avocado.EvaluatorMorph.prototype.textStyle, function(add) {
 
-  add.data('fill', Color.white);
+  add.data('fill', new Color(1, 1, 1));
 
   add.data('fontFamily', 'monospace');
 

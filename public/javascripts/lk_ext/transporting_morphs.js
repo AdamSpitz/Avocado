@@ -1,4 +1,6 @@
-transporter.module.create('lk_ext/transporting_morphs', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/transporting_morphs', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules['lk_ext/transporting_morphs'], function(add) {

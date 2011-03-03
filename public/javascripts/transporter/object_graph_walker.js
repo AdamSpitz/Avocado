@@ -42,6 +42,7 @@ thisModule.addSlots(avocado.childFinder, function(add) {
 
 });
 
+
 thisModule.addSlots(avocado.annotationWalker, function(add) {
 
   add.method('initialize', function ($super, o) {
@@ -163,7 +164,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
   });
 
   add.method('objectCount', function () { return this._objectCount; });
-  
+
   add.method('beInDebugMode', function () {
     this._debugMode = true;
     return this;
@@ -185,12 +186,12 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     // another special case, I think
     this.markObject(window['__proto__'], { slotHolder: window, slotName: '__proto__' }, true);
   });
-  
+
   add.method('setShouldWalkIndexables', function (b) {
     this.shouldWalkIndexables = true;
     return this;
   });
-  
+
   add.method('nameOfObjectWithPath', function (howDidWeGetHere) {
     // useful for debugging
     var s = [];
@@ -352,13 +353,13 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
     this.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
     this.shouldAlsoWalkSpecialUnreachableObjects = shouldAlsoWalkSpecialUnreachableObjects;
   });
-  
+
   add.method('alsoAssignUnownedSlotsToModule', function (module) {
     return this.alsoAssignSlotsToModule(module, function(holder, slotName, contents, slotAnno) {
       return ! slotAnno.getModule();
     });
   });
-  
+
   add.method('alsoAssignSlotsToModule', function (module, shouldSlotBeAssignedToModule) {
     this.moduleToAssignSlotsTo = module;
     this.shouldSlotBeAssignedToModule = shouldSlotBeAssignedToModule;

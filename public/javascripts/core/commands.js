@@ -1,4 +1,6 @@
-transporter.module.create('core/commands', function(requires) {}, function(thisModule) {
+transporter.module.create('core/commands', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -54,7 +56,7 @@ thisModule.addSlots(avocado.command, function(add) {
     this.label = label;
     return this;
   }, {category: ['accessing']});
-  
+
   add.method('labelString', function () {
     return typeof(this.label) === 'function' ? this.label(target) : this.label;
   }, {category: ['accessing']});
@@ -325,7 +327,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
     if (window.reflect) { return reflect(type).name(); }
     return 'morph';
   }, {category: ['groups of objects']});
-  
+
   add.method('descriptionOfGroup', function (commandBearers) {
     if (!commandBearers || commandBearers.length === 0) { return "nothing here"; }
     

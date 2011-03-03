@@ -1,4 +1,6 @@
-transporter.module.create('core/string_extensions', function(requires) {}, function(thisModule) {
+transporter.module.create('core/string_extensions', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(String.prototype, function(add) {
@@ -18,7 +20,7 @@ thisModule.addSlots(String.prototype, function(add) {
   add.method('withoutSuffix', function (suffix) {
     return this.endsWith(suffix) ? this.substr(0, this.length - suffix.length) : this;
   });
-  
+
   add.method('replaceAt', function (i, n, s) {
     return this.substr(0, i).concat(s, this.substr(i + n));
   });

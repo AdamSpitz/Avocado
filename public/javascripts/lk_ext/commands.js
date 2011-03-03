@@ -82,7 +82,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
   }, {category: ['user interface']});
 
   add.data('shouldUseWheelMenus', false);
-  
+
   add.method('createMenu', function (target, menuClass) {
     menuClass = menuClass || (this.shouldUseWheelMenus ? avocado.WheelMenuMorph : MenuMorph);
     var commands = this.commandsForMenu(menu, target);
@@ -94,7 +94,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
     var menu = new menuClass(menuItems, target);
     return menu;
   }, {category: ['converting']});
-  
+
   add.method('itemsFor', function (menu, target) {
   }, {category: ['converting']});
 
@@ -123,7 +123,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
 
 
 thisModule.addSlots(MenuMorph, function(add) {
-  
+
   add.method('itemsForCommands', function (commands) {
     return commands.map(function(c) {
       if (!c) {
@@ -137,16 +137,16 @@ thisModule.addSlots(MenuMorph, function(add) {
       }
     });
   }, {category: ['converting']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.WheelMenuMorph, function(add) {
-  
+
   add.method('itemsForCommands', function (commands) {
     return commands.compact();
   }, {category: ['converting']});
-  
+
 });
 
 

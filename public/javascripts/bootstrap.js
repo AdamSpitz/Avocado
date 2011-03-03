@@ -830,7 +830,9 @@ bootstrapTheModuleSystem();
 
 
 
-transporter.module.create('bootstrap', function(requires) {}, function(thisModule) {
+transporter.module.create('bootstrap', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules.bootstrap, function(add) {
@@ -909,7 +911,7 @@ thisModule.addSlots(transporter, function(add) {
     // place where we really know where the emailing script is? -- Adam
     transporter.emailingScriptURL = "http://" + document.domain + "/cgi-bin/emailSource.cgi";
   }, {category: ['bootstrapping']});
-  
+
   add.method('initializeCallbackWaiters', function () {
     avocado.callbackWaiter.on(function(callback) {
       transporter.callWhenWorldIsCreated = callback();
@@ -1124,7 +1126,7 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
       head.appendChild(script);
     }
   }, {category: ['loading']});
-  
+
   add.method('canFileOutIndividualModules', function () {
     return typeof(this.fileOutModuleVersion) === 'function';
   }, {category: ['saving']});

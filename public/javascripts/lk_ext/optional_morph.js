@@ -1,4 +1,6 @@
-transporter.module.create('lk_ext/optional_morph', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/optional_morph', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -19,7 +21,7 @@ thisModule.addSlots(avocado.optionalMorph, function(add) {
     this._morphToShowOrHide = morphToShowOrHide;
     if (criterionForShowing) { this.shouldBeShown = criterionForShowing; }
   });
-  
+
   add.method('shouldNotBeShown', function () { return ! this.shouldBeShown(); });
 
   add.method('update', function (evt) {

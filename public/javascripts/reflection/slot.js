@@ -125,11 +125,11 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     avocado.ui.justChanged(this.contents());
     avocado.ui.justChanged(this);
   }, {category: ['user interface', 'creator slots']});
-  
+
   add.method('likelyModules', function () {
     return this.holder().likelyModules();
   }, {category: ['user interface', 'modules']});
- 
+
   add.creator('filterizer', {}, {category: ['filtering']});
 
   add.method('commands', function () {
@@ -203,17 +203,17 @@ thisModule.addSlots(avocado.slots['abstract'].filterizer, function(add) {
 
   add.method('initialize', function () {
   }, {category: ['creating']});
-  
+
   add.method('excludeSlotsNotInModuleNamed', function (moduleName) {
     this._moduleName = moduleName;
     return this;
   }, {category: ['filtering']});
-  
+
   add.method('excludeSlotsAlreadyAssignedToAModule', function () {
     this._wantOnlyUnowned = true;
     return this;
   }, {category: ['filtering']});
-  
+
   add.method('excludeCopyDowns', function () {
     this._shouldExcludeCopyDowns = true;
     return this;
@@ -228,7 +228,7 @@ thisModule.addSlots(avocado.slots['abstract'].filterizer, function(add) {
     
     return true;
   }, {category: ['matching']});
-  
+
 });
 
 
@@ -256,7 +256,7 @@ thisModule.addSlots(avocado.slots.hardWiredContents, function(add) {
   add.method('name', function () { return this._name; }, {category: ['accessing']});
 
   add.method('contents', function () { return this._contents; }, {category: ['accessing']});
-  
+
   add.method('initializationExpression', function () {
     return "";
   }, {category: ['accessing annotation', 'initialization expression']});
@@ -270,7 +270,7 @@ thisModule.addSlots(avocado.slots.parent, function(add) {
 
   add.method('name', function () { return "__proto__"; }, {category: ['accessing']});
 
-  add.method('sortOrder', function () { return ''; }, {comment: 'Should come first.', category: ['sorting']});
+  add.method('sortOrder', function () { return ''; }, {category: ['sorting'], comment: 'Should come first.'});
 
   add.method('isParent', function () { return true; }, {category: ['testing']});
 
