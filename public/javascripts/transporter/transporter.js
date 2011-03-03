@@ -390,7 +390,7 @@ thisModule.addSlots(transporter.module, function(add) {
     // we need to be able to just unhook an object from the well-known tree and assume that
     // it won't be saved anymore. So the plan now is to just offer a warning when putting the
     // mirror morph in the trash.
-    if (! mir.isWellKnown()) { return; }
+    if (! mir.isWellKnown('probableCreatorSlot')) { return; }
     
     mir.normalSlots().each(function(s) {
       if (s.module() === this) {
