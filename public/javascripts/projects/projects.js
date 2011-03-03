@@ -120,6 +120,8 @@ thisModule.addSlots(avocado.project, function(add) {
     });
     return sortedVersionsToSave;
   }, {category: ['saving']});
+  
+  add.data('_shouldNotSaveCurrentWorld', true, {category: ['saving']});
 
   add.method('resetCurrentWorldStateModule', function () {
     if (!modules.currentWorldState) { return; }
