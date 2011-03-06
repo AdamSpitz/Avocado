@@ -1,5 +1,7 @@
 transporter.module.create('lk_ext/transporting_morphs', function(requires) {
 
+requires('core/dom_stuff');
+
 }, function(thisModule) {
 
 
@@ -22,9 +24,11 @@ thisModule.addSlots(modules['lk_ext/transporting_morphs'], function(add) {
 thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('postFileIn', function () {
+    /* I think this should be unnecessary now that we're saving the nodes right.
     if (this.shape) {
       this.initializePersistentState(this.shape);
     }
+    */
 
     if (this.owner) {
       this.owner.addMorphAt(this, this.getPosition());
@@ -42,19 +46,6 @@ thisModule.addSlots(Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(Node.prototype, function(add) {
-
-  add.method('storeString', function () {
-    return [
-      'document.importNode(new DOMParser().parseFromString(',
-      Exporter.stringify(this).inspect(),
-      ', "text/xml").documentElement, false)'
-    ].join('');
-  }, {category: ['transporting']});
-
-});
-
-
 thisModule.addSlots(Color.prototype, function(add) {
 
   add.method('storeString', function () {
@@ -67,6 +58,32 @@ thisModule.addSlots(Color.prototype, function(add) {
 
 });
 
+
+thisModule.addSlots(TextEmphasis.prototype, function(add) {
+
+  add.method('storeString', function () {
+		var props = reflect(this).normalSlots().toArray().map(function(s) { return s.name() + ": " + Object.inspect(s.contents().reflectee()); });
+    return ['new TextEmphasis({', props.join(", "), '})'].join('');
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return TextEmphasis.prototype;
+  }, {category: ['transporting']});
+
+});
+
+
+thisModule.addSlots(Text.prototype, function(add) {
+
+  add.method('storeString', function () {
+    return ['document.createTextNode(', this.textContent.inspect(), ')'].join('');
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return Text.prototype;
+  }, {category: ['transporting']});
+
+});
 
 thisModule.addSlots(lively.paint.LinearGradient.prototype, function(add) {
 

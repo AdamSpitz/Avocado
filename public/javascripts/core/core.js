@@ -18,6 +18,7 @@ requires('core/linked_list');
 requires('core/graphs');
 requires('core/types');
 requires('core/modification_flag');
+requires('core/dom_stuff');
 
 }, function(thisModule) {
 

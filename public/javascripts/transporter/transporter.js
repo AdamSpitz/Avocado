@@ -314,6 +314,8 @@ thisModule.addSlots(transporter.module, function(add) {
     this.requiredModules().each(f);
   }, {category: ['requirements']});
 
+  add.data('_modificationFlag', null, {category: ['keeping track of changes'], initializeTo: 'null'});
+
   add.method('modificationFlag', function () {
     if (this._modificationFlag) { return this._modificationFlag; }
     var subflags = avocado.enumerator.create(this, 'eachRequiredModule').map(function(m) { return m.modificationFlag(); });
@@ -377,13 +379,11 @@ thisModule.addSlots(transporter.module, function(add) {
         f(s);
       }
     }.bind(this));
-
-    if (mir.isReflecteeArray()) {
+    
+    if (mir.canHaveIndexableSlots()) {
       var cs = mir.theCreatorSlot();
       if (cs && cs.module() === this && cs.contents().equals(mir)) {
-        for (var i = 0, n = mir.reflecteeLength(); i < n; ++i) {
-          f(mir.slotAt(i.toString()));
-        }
+        mir.eachIndexableSlot(f);
       }
     }
   }, {category: ['iterating']});
@@ -583,7 +583,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
           info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = true;
           transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
             info.contentsExpr = info.contents.creatorSlotChainExpression();
-          }, transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
+            if (this.isDOMChildNode()) { info.creationMethod = 'domChildNode'; } // hack to let us transport morphs
+          }.bind(this), transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
         } else {
           info.isCreator = true;
           if (info.contents.isReflecteeFunction()) {
@@ -594,6 +595,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
             info.creationMethod = "creator";
             if (info.contents.isReflecteeArray()) {
               info.contentsExpr = "[]";
+            } else if (info.contents.isReflecteeDOMNode()) {
+              info.contentsExpr = info.contents.reflectee().storeStringWithoutChildren(); // let the children be recreated as "slots"
             } else {
               var contentsParent = info.contents.parent();
               if (contentsParent.equals(reflect(Object.prototype))) {
@@ -1287,6 +1290,13 @@ thisModule.addSlots(transporter.tests, function(add) {
     var s2 = this.addSlot(m, this.someObject, 'uiop', 4);
     this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(reflect).toSet().toArray().sort());
     this.assertEqual([s1, s2], m.slots().sort());
+
+    var n1 = new DOMParser().parseFromString('<abc def="ghi"><xyz></xyz></abc>', 'text/xml').documentElement;
+    var n2 = n1.firstChild;
+    var s3 = this.addSlot(m, this.someObject, 'node1', n1);
+    var s4 = this.addSlot(m, this.someObject, 'node2', n2);
+    this.assertEqual([reflect(n1), reflect(n2), reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(reflect).toSet().toArray().sort());
+    this.assertEqual([s3, s4, s1, s2], m.slots().sort());
 
     m.uninstall();
   });

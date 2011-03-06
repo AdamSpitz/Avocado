@@ -33,6 +33,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('startUsingEditModeLayoutManager', function () {
     this.layoutManager = Object.extend(Object.create(this.layoutManager), this.editModeLayoutManagerTraits);
+    reflect(this).slotAt('layoutManager').beCreator();
   }, {category: ['edit mode']});
 
   add.method('stopUsingEditModeLayoutManager', function () {

@@ -3,6 +3,7 @@ transporter.module.create('reflection/mirror', function(requires) {
 requires('core/enumerator');
 requires('core/identity_hash');
 requires('core/testFramework');
+requires('core/dom_stuff');
 
 }, function(thisModule) {
 
@@ -304,6 +305,30 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return this.normalSlots().select(function(s) { return ! s.isFromACopyDownParent(); });
   }, {category: ['iterating']});
 
+  add.method('canHaveIndexableSlots', function () {
+    return this.isReflecteeArray() || this.isReflecteeDOMNode();
+  }, {category: ['testing']});
+  
+  add.method('eachIndexableSlot', function (f) {
+    if (this.isReflecteeArray()) {
+      for (var i = 0, n = this.reflecteeLength(); i < n; ++i) {
+        f(this.slotAt(i.toString()));
+      }
+    } else if (this.isReflecteeDOMNode()) {
+      // I'm not completely sure it makes sense to treat DOM nodes as indexable, but
+      // for now let's try it. -- Adam, March 2011
+      var parentNode = this.reflectee();
+      var childNodes = parentNode.childNodes;
+      for (var i = 0, n = childNodes.length; i < n; ++i) {
+        f(avocado.slots.domChildNode.create(this, "childnode" + i, reflect(childNodes[i])));
+      }
+    }
+  }, {category: ['iterating']});
+
+  add.method('indexableSlots', function () {
+    return avocado.enumerator.create(this, 'eachIndexableSlot');
+  }, {category: ['iterating']});
+
   add.method('category', function (parts) {
     // aaa shouldn't need this test after I'm done refactoring to eliminate the stupid raw category objects
     return avocado.category.ofAParticularMirror.create(this, parts.parts ? parts.parts() : parts);
@@ -571,6 +596,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return this.reflectee().isRemoteReference;
   }, {category: ['testing']});
 
+  add.method('isReflecteeDOMNode', function () {
+    return avocado.DOMStuff.isDOMNode(this.reflectee());
+  }, {category: ['testing']});
+  
   add.method('reflecteeLength', function () {
     return this.primitiveContentsAt('length');
   }, {category: ['arrays']});
@@ -653,7 +682,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['annotations', 'creator slot']});
 
   add.method('hackToMakeSureArrayIndexablesGetFiledOut', function (s) {
-    if (this.isReflecteeArray()) {
+    if (this.canHaveIndexableSlots()) {
       var module = s.module();
       if (module) { module.objectsThatMightContainSlotsInMe().push(this.reflectee()); }
     }
@@ -893,6 +922,11 @@ thisModule.addSlots(avocado.mirror.sourceModulePrompter, function(add) {
 
 thisModule.addSlots(Array.prototype, function(add) {
 
+  add.method('makeAllCreatorSlots', function () {
+    this.makeCreatorSlots(0, this.length);
+    return this;
+  }, {category: ['reflection', 'creator slots']});
+
   add.method('makeCreatorSlots', function (start, end) {
     var thisMir = reflect(this);
     for (var i = start; i < end; ++i) {
@@ -905,6 +939,7 @@ thisModule.addSlots(Array.prototype, function(add) {
         thisMir.slotAt(i).beCreator();
       }
     }
+    return this;
   }, {category: ['reflection', 'creator slots']});
 
   add.method('unmakeCreatorSlots', function (start, end) {
@@ -919,10 +954,11 @@ thisModule.addSlots(Array.prototype, function(add) {
         }
       }
     }
+    return this;
   }, {category: ['reflection', 'creator slots']});
 
   add.method('adjustCreatorSlots', function (start, end, shiftAmount) {
-    if (shiftAmount === 0) { return; }
+    if (shiftAmount === 0) { return this; }
     if (shiftAmount === undefined) { shiftAmount = 1; }
     var thisMir = reflect(this);
     for (var i = start; i < end; ++i) {
@@ -930,6 +966,7 @@ thisModule.addSlots(Array.prototype, function(add) {
         thisMir.slotAt(i).beCreator();
       }
     }
+    return this;
   }, {category: ['reflection', 'creator slots']});
 
   add.method('unshiftAndAdjustCreatorSlots', function (newElem) {

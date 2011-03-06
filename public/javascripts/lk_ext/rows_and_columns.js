@@ -382,6 +382,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     if (this._tableContent && this._tableContent.equals(newContent)) { return; }
     if (this._debugMyLayout) { console.log("About to replaceContentWith " + newContent.primaryLines().size() + " lines in direction " + newContent._direction2); }
     this._tableContent = newContent;
+    reflect(this).slotAt('_tableContent').beCreator();
     this.setSubmorphsFromTableContent();
     this.forceLayoutRejiggering();
   }, {category: ['adding and removing']});
@@ -592,6 +593,8 @@ thisModule.addSlots(avocado.tableContents, function(add) {
       if (! reflect(r).isReflecteeArray()) { throw "Why ain't the row or column an array? " + r; }
     });
     this._data = a;
+    reflect(this).slotAt('_data').beCreator();
+    reflect(this._data).eachIndexableSlot(function(s) { s.beCreator(); });
     this._direction1 = dir1;
     this._direction2 = dir1.sideways;
   }, {category: ['creating']});
@@ -695,7 +698,7 @@ thisModule.addSlots(avocado.tableContents, function(add) {
   }, {category: ['accessing']});
 
   add.method('insertPrimaryLine', function (line, i) {
-    this._data.splice(i, 0, line);
+    this._data.spliceAndAdjustCreatorSlots(i, 0, line);
   }, {category: ['inserting']});
 
   add.method('selectThenMap', function (selectFn, mapFn) {

@@ -767,6 +767,14 @@ transporter.module.objectsThatMightContainSlotsInMe = function() {
   return transporter.module.cache[this._name];
 };
 
+transporter.hackToMakeSureArrayIndexablesGetFiledOut = function (contents, module) {
+  // aaa see hackToMakeSureArrayIndexablesGetFiledOut in the slot object
+  if (! module) { return; }
+  if (typeof contents === 'object' && ((contents instanceof Array) || (contents instanceof Node))) {
+    module.objectsThatMightContainSlotsInMe().push(contents);
+  }
+};
+
 transporter.module.slotAdder = {
   data: function(name, contents, slotAnnotation, contentsAnnotation) {
     if (! slotAnnotation) { slotAnnotation = Object.create(annotator.slotAnnotationPrototype); }
@@ -777,11 +785,8 @@ transporter.module.slotAdder = {
     if (contentsAnnotation) { // used for creator slots
       annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);
     }
-
-    // aaa see hackToMakeSureArrayIndexablesGetFiledOut
-    if (typeof contents === 'object' && contents instanceof Array) {
-      this.module.objectsThatMightContainSlotsInMe().push(contents);
-    }
+    
+    transporter.hackToMakeSureArrayIndexablesGetFiledOut(contents, this.module);
 
     if (name === 'postFileIn') {
       this.module.objectsWithAPostFileInMethod = this.module.objectsWithAPostFileInMethod || [];
@@ -810,6 +815,10 @@ transporter.module.slotAdder = {
     contents.displayName = name; // this'll show up in the Safari debugger
     contents._creatorSlotHolder = this.holder; // to allow implicit creator slots
     this.creator(name, avocado.hackToMakeSuperWork(this.holder, name, contents), slotAnnotation);
+  },
+  
+  domChildNode: function(name, contents, slotAnnotation, contentsAnnotation) {
+    this.holder.appendChild(contents);
   }
 };
 

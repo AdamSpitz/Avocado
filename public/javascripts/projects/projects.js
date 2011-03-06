@@ -46,6 +46,8 @@ thisModule.addSlots(avocado.project, function(add) {
 
   add.method('setID', function (id) { this._projectID = id; }, {category: ['accessing']});
 
+  add.data('_modificationFlag', null, {category: ['accessing'], initializeTo: 'null'});
+  
   add.method('modificationFlag', function () {
     return this._modificationFlag || (this._modificationFlag = avocado.modificationFlag.create(this, [this.module().modificationFlag()]));
   }, {category: ['accessing']});
@@ -166,7 +168,7 @@ thisModule.addSlots(avocado.project, function(add) {
   	
     walker.shouldContinueRecursingIntoSlot = function (holder, slotName, howDidWeGetHere) {
       // aaa - hack; really these slots should be annotated with an initializeTo: 'undefined' or something like that
-      if (['pvtCachedTransform', 'fullBounds', '_currentVersion', '_requirements'].include(slotName)) { return false; }
+      if (['pvtCachedTransform', 'fullBounds', '_currentVersion', '_requirements', '_modificationFlag'].include(slotName)) { return false; }
       return true;
     };
 

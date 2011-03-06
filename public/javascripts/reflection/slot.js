@@ -24,10 +24,18 @@ thisModule.addSlots(avocado.slots, function(add) {
 
   add.creator('hardWiredContents', Object.create(avocado.slots['abstract']));
 
+  add.creator('domChildNode', Object.create(avocado.slots.hardWiredContents));
+
 });
 
 
 thisModule.addSlots(avocado.slots['abstract'], function(add) {
+
+  add.method('create', function () {
+    var s = Object.create(this);
+    s.initialize.apply(s, arguments);
+    return s;
+  });
 
   add.method('initialize', function (m) {
     this._mirror = m;
@@ -52,6 +60,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   add.method('isFunctionBody', function () { return false; }, {category: ['testing']});
 
   add.method('isHardWired', function () { return false; }, {category: ['testing']});
+
+  add.method('isDOMChildNode', function () { return false; }, {category: ['testing']});
 
   add.method('isParent', function () { return false; }, {category: ['testing']});
 
@@ -262,6 +272,19 @@ thisModule.addSlots(avocado.slots.hardWiredContents, function(add) {
   }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('isHardWired', function () { return true; }, {category: ['testing']});
+
+  add.method('equals', function (s) {
+    if (!s) { return false; }
+    if (typeof(s.name) !== 'function' || typeof(s.isHardWired) !== 'function') { return false; }
+    return s.isHardWired() && this.name() === s.name() && this.mirror().equals(s.mirror()) && this.contents().equals(s.contents());
+  }, {category: ['comparing']});
+
+});
+
+
+thisModule.addSlots(avocado.slots.domChildNode, function(add) {
+
+  add.method('isDOMChildNode', function () { return true; }, {category: ['testing']});
 
 });
 
