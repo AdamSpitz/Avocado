@@ -451,7 +451,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     a.setModule(m);
     
     if (m)         {
-      m.objectsThatMightContainSlotsInMe().push(holder.reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
+      m.slotCollection().addPossibleHolder(holder.reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
       m.markAsChanged();
     }
     

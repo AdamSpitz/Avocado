@@ -394,7 +394,7 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.method('eachSlot', function (f) {
     var alreadySeen = avocado.set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
-    this.objectsThatMightContainSlotsInMe().each(function(obj) {
+    this.slotCollection().possibleHolders().each(function(obj) {
       var mir = reflect(obj);
       if (! alreadySeen.includes(mir)) {
         alreadySeen.add(mir);
@@ -453,7 +453,7 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.method('showAllObjects', function (evt) {
     var objectsToShow = [this];
-    this.objectsThatMightContainSlotsInMe().each(function(o) { objectsToShow.push(reflect(o)); });
+    this.slotCollection().possibleHolders().each(function(o) { objectsToShow.push(reflect(o)); });
     avocado.ui.showObjects(objectsToShow, "objects in module " + this.name(), evt);
   }, {category: ['user interface', 'commands']});
 
@@ -994,7 +994,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     this._cycleBreakersByOriginalSlot = avocado.dictionary.copyRemoveAll();
 
     this._remainingSlotsByMirror = avocado.dictionary.copyRemoveAll();
-    this._module.objectsThatMightContainSlotsInMe().each(function(obj) {
+    this._module.slotCollection().possibleHolders().each(function(obj) {
       var mir = reflect(obj);
       var slots = avocado.set.copyRemoveAll();
       this._module.slotsInMirror(mir).each(function(s) {
@@ -1281,21 +1281,21 @@ thisModule.addSlots(transporter.tests, function(add) {
   add.method('testModuleCache', function () {
     var m = transporter.module.named('test_blah');
 
-    this.assertEqual(0, m.objectsThatMightContainSlotsInMe().size());
+    this.assertEqual(0, m.slotCollection().possibleHolders().size());
 
     var s1 = this.addSlot(m, this.someObject, 'qwerty', 3);
-    this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(reflect).sort());
+    this.assertEqual([reflect(this.someObject)], m.slotCollection().possibleHolders().map(reflect).sort());
     this.assertEqual([s1], m.slots().sort());
 
     var s2 = this.addSlot(m, this.someObject, 'uiop', 4);
-    this.assertEqual([reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(reflect).toSet().toArray().sort());
+    this.assertEqual([reflect(this.someObject)], m.slotCollection().possibleHolders().map(reflect).toSet().toArray().sort());
     this.assertEqual([s1, s2], m.slots().sort());
 
     var n1 = new DOMParser().parseFromString('<abc def="ghi"><xyz></xyz></abc>', 'text/xml').documentElement;
     var n2 = n1.firstChild;
     var s3 = this.addSlot(m, this.someObject, 'node1', n1);
     var s4 = this.addSlot(m, this.someObject, 'node2', n2);
-    this.assertEqual([reflect(n1), reflect(n2), reflect(this.someObject)], m.objectsThatMightContainSlotsInMe().map(reflect).toSet().toArray().sort());
+    this.assertEqual([reflect(n1), reflect(n2), reflect(this.someObject)], m.slotCollection().possibleHolders().map(reflect).toSet().toArray().sort());
     this.assertEqual([s3, s4, s1, s2], m.slots().sort());
 
     m.uninstall();
@@ -1390,8 +1390,8 @@ thisModule.addSlots(transporter.tests, function(add) {
     var s1 = this.addSlot(m, this.someObject, 'anArrayToFileOut', ['a', 2, 'three']);
     s1.beCreator();
     var a = s1.contents();
-    this.assert(m.objectsThatMightContainSlotsInMe().include(this.someObject), "the creator slot should be in the module");
-    this.assert(m.objectsThatMightContainSlotsInMe().include(a.reflectee()), "the indexable slots should be in the module");
+    this.assert(m.slotCollection().possibleHolders().include(this.someObject), "the creator slot should be in the module");
+    this.assert(m.slotCollection().possibleHolders().include(a.reflectee()), "the indexable slots should be in the module");
     var indexables = [a.slotAt('0'), a.slotAt('1'), a.slotAt('2')];
     this.assertEqual([s1].concat(indexables), m.slotsInOrderForFilingOut());
     this.assertEqual([s1], m.slotsInMirror(reflect(this.someObject)).toArray());

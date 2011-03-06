@@ -678,6 +678,21 @@ transporter.module.cache = {};
 
 transporter.module.onLoadCallbacks = {};
 
+transporter.slotCollection = {};
+annotator.annotationOf(transporter.slotCollection).setCreatorSlot('slotCollection', transporter);
+
+transporter.slotCollection.initialize = function() {
+  this._possibleHolders = [];
+};
+
+transporter.slotCollection.possibleHolders = function() {
+  return this._possibleHolders;
+};
+
+transporter.slotCollection.addPossibleHolder = function(h) {
+  this._possibleHolders.push(h);
+};
+
 transporter.module.named = function(n) {
   var m = modules[n];
   if (m) {return m;}
@@ -685,7 +700,7 @@ transporter.module.named = function(n) {
   m = modules[n] = Object.create(this);
   m._name = n;
   annotator.annotationOf(m).setCreatorSlot(n, modules);
-  transporter.module.cache[n] = [];
+  transporter.module.cache[n] = Object.newChildOf(transporter.slotCollection);
   return m;
 };
 
@@ -763,7 +778,7 @@ transporter.module.doneLoadingModuleNamed = function(n) {
   }
 };
 
-transporter.module.objectsThatMightContainSlotsInMe = function() {
+transporter.module.slotCollection = function() {
   return transporter.module.cache[this._name];
 };
 
@@ -771,7 +786,7 @@ transporter.hackToMakeSureArrayIndexablesGetFiledOut = function (contents, modul
   // aaa see hackToMakeSureArrayIndexablesGetFiledOut in the slot object
   if (! module) { return; }
   if (typeof contents === 'object' && ((contents instanceof Array) || (contents instanceof Node))) {
-    module.objectsThatMightContainSlotsInMe().push(contents);
+    module.slotCollection().addPossibleHolder(contents);
   }
 };
 
@@ -823,7 +838,7 @@ transporter.module.slotAdder = {
 };
 
 transporter.module.addSlots = function(holder, block) {
-  this.objectsThatMightContainSlotsInMe().push(holder);
+  this.slotCollection().addPossibleHolder(holder);
   var slotAdder = Object.create(this.slotAdder);
   slotAdder.module = this;
   slotAdder.holder = holder;

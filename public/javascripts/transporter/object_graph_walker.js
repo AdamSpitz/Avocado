@@ -392,7 +392,7 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
     if (this.shouldSlotBeAssignedToModule(holder, slotName, contents, slotAnno)) {
       if (this._debugMode) { console.log("Setting module of " + slotName + " to " + this.moduleToAssignSlotsTo.name()); }
       slotAnno.setModule(this.moduleToAssignSlotsTo);
-      this.moduleToAssignSlotsTo.objectsThatMightContainSlotsInMe().push(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
+      this.moduleToAssignSlotsTo.slotCollection().addPossibleHolder(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
       transporter.hackToMakeSureArrayIndexablesGetFiledOut(contents, this.moduleToAssignSlotsTo);
     } else {
       if (this._debugMode) { console.log("NOT setting module of " + slotName + " to " + this.moduleToAssignSlotsTo.name()); }

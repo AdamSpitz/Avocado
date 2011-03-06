@@ -684,7 +684,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('hackToMakeSureArrayIndexablesGetFiledOut', function (s) {
     if (this.canHaveIndexableSlots()) {
       var module = s.module();
-      if (module) { module.objectsThatMightContainSlotsInMe().push(this.reflectee()); }
+      if (module) { module.slotCollection().addPossibleHolder(this.reflectee()); }
     }
   }, {category: ['annotations', 'creator slot']});
 
