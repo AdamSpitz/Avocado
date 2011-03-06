@@ -112,6 +112,36 @@ thisModule.addSlots(avocado.ui, function(add) {
     avocado.MessageNotifierMorph.showError(err, evt);
   });
 
+  add.method('showErrorsThatOccurDuring', function (f, evt) {
+    var allErrors = [];
+    var errorMessage = "";
+    f(function(msg, errors) {
+      errorMessage += msg + "\n";
+      (errors || [msg]).each(function(e) { allErrors.push(e); });
+    });
+    if (allErrors.length > 0) {
+      this.showErrors(errorMessage, allErrors, evt);
+    }
+    return allErrors;
+  });
+
+  add.method('showErrors', function (msg, errors, evt) {
+    var objectsToShow = [];
+    errors.each(function(err) {
+      if (err.objectsToShow) {
+        err.objectsToShow.each(function(o) {
+          if (! objectsToShow.include(o)) {
+            objectsToShow.push(o);
+          }
+        });
+      } else {
+        objectsToShow.push(err);
+      }
+    });
+    this.showObjects(objectsToShow, "file-out errors", evt);
+    this.showError(msg, evt);
+  });
+
   add.method('showMessage', function (msg, evt) {
     new avocado.MessageNotifierMorph(msg, Color.green).showTemporarilyInCenterOfWorld(this.worldFor(evt));
   });

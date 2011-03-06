@@ -44,50 +44,26 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['user interface', 'commands']});
 
   add.method('fileOutPlural', function (specs, evt, repo, filerOuterProto) {
-    this.prepareToFileStuffOut();
-    
-    var allErrors = [];
-    var errorMessage = "";
-    
-    specs.each(function(spec) {
-      spec.moduleVersion.fileOut(spec.filerOuter || filerOuterProto ? Object.newChildOf(filerOuterProto) : null, repo, function() {}, function(msg, errors) {
-        errorMessage += msg + "\n";
-        (errors || [msg]).each(function(e) { allErrors.push({moduleVersion: spec.moduleVersion, error: e}); });
-      }.bind(this));
-    });
-    
-    if (allErrors.length > 0) {
-      this.errorFilingOut(errorMessage, allErrors, evt);
-    }
-    
-    return allErrors;
-  }, {category: ['user interface', 'commands', 'filing out']});
-
-  add.method('errorFilingOut', function (msg, errors, evt) {
-    avocado.ui.showObjects(this.objectsToShowForErrors(errors), "file-out errors", evt);
-    avocado.ui.showError(msg, evt);
-  }, {category: ['user interface', 'error reporting']});
-
-  add.method('objectsToShowForErrors', function (errors) {
-    var objectsToShow = [];
-    errors.each(function(moduleVersionAndError) {
-      var err     = moduleVersionAndError.error;
-      var version = moduleVersionAndError.moduleVersion;
-      var module  = version.module();
-      var mir     = err.mirrorWithoutCreatorPath;
-      if (mir) {
-        if (! objectsToShow.include(mir)) {
-          // if (! err.reasonForNeedingCreatorPath) { debugger; }  // useful for finding out why the error doesn't have a reasonForNeedingCreatorPath
-          var reason = err.reasonForNeedingCreatorPath || "I said so, that's why.";
-          objectsToShow.push(mir);
-          objectsToShow.push(module + " needs " + mir.inspect() + " to have a creator path because " + reason);
-        }
-      } else {
-        objectsToShow.push(err);
-      }
+    return avocado.ui.showErrorsThatOccurDuring(function(failBlock) {
+      this.prepareToFileStuffOut();
+      specs.each(function(spec) {
+        spec.moduleVersion.fileOut(spec.filerOuter || filerOuterProto ? Object.newChildOf(filerOuterProto) : null, repo, function() {}, function(msg, errors) {
+          if (errors) {
+            errors.forEach(function(err) {
+              var mir = err.mirrorWithoutCreatorPath;
+              if (mir) {
+                var module = spec.moduleVersion.module();
+                var reason = err.reasonForNeedingCreatorPath || "I said so, that's why.";
+                err.objectsToShow = err.objectsToShow || [];
+                err.objectsToShow.push(module + " needs " + mir.inspect() + " to have a creator path because " + reason);
+              }
+            });
+          }
+          failBlock(msg, errors);
+        });
+      });
     }.bind(this));
-    return objectsToShow;
-  }, {category: ['user interface', 'error reporting']});
+  }, {category: ['user interface', 'commands', 'filing out']});
 
   add.method('chooseARepository', function (evt, target, menuCaption, callback) {
     if (transporter.availableRepositories.length === 1) { callback(transporter.availableRepositories[0], evt); return; }
@@ -576,6 +552,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
           } else {
             var err = new Error("Cannot file out a reference to an object without a creator slot: " + info.contents.name());
             err.mirrorWithoutCreatorPath = info.contents;
+            err.objectsToShow = [info.contents];
             err.reasonForNeedingCreatorPath = "it is referenced from " + this.holder().name() + "." + this.name();
             throw err;
           }

@@ -187,6 +187,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
     if (! chain) {
       var err = new Error(this.name() + " does not have a creator slot chain");
       err.mirrorWithoutCreatorPath = this;
+      err.objectsToShow = [this];
       throw err;
     }
     if (chain.length === 0) {return "window";}
