@@ -28,11 +28,11 @@ thisModule.addSlots(Morph.prototype, function(add) {
     if (this.shape) {
       this.initializePersistentState(this.shape);
     }
-    */
 
     if (this.owner) {
       this.owner.addMorphAt(this, this.getPosition());
     }
+    */
 
     // aaa - hack for TTT demo; this is the wrong place for this.
     if (this.worldMenuContributors) {

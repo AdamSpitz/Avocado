@@ -400,7 +400,7 @@ thisModule.addSlots(transporter.module, function(add) {
   add.creator('slotOrderizer', {}, {category: ['transporting']});
 
   add.method('slotsInOrderForFilingOut', function (f) {
-    return Object.newChildOf(this.slotOrderizer, this).determineOrder();
+    return Object.newChildOf(this.slotOrderizer, this).calculateDependencies().determineOrder();
   }, {category: ['transporting']});
 
   add.method('fileOutAndReportErrors', function (evt, repo, filerOuterProto) {
@@ -964,7 +964,9 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
   add.method('initialize', function (m) {
     this._module = m;
     this._slotsInOrder = [];
+  }, {category: ['creating']});
 
+  add.method('calculateDependencies', function () {
     this.calculateSlotDependencies();
 
     this._cycleBreakersMir = reflect({});
@@ -984,11 +986,19 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     }.bind(this));
 
     this.recalculateObjectDependencies();
-  }, {category: ['creating']});
+    
+    return this;
+  }, {category: ['dependencies']});
+
+  add.method('beInDebugMode', function () {
+    this._debugMode = true;
+    return this;
+  });
 
   add.method('addSlotDependenciesFor', function (s) {
       var contents = s.contents();
-      if (s.equals(contents.theCreatorSlot())) {
+      var contentsCreatorSlot = contents.theCreatorSlot();
+      if (s.equals(contentsCreatorSlot)) {
         var parentSlot = contents.parentSlot();
         this.addSlotDependenciesFor(parentSlot);
         var parentCreatorSlot = parentSlot.contents().theCreatorSlot();
@@ -1020,7 +1030,6 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
           this._slotDeps.holderDeps.addDependency(slotInContents, s);
         }.bind(this));
       } else if (! s.initializationExpression()) {
-        var contentsCreatorSlot = contents.canHaveCreatorSlot() && contents.theCreatorSlot();
         if (contentsCreatorSlot && contentsCreatorSlot.module() === this._module) {
           this._slotDeps.contentDeps.addDependency(s, contentsCreatorSlot);
         }
@@ -1032,7 +1041,16 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
                        contentDeps: avocado.dependencies.copyRemoveAll() };
     
     this._module.slots().each(function(s) { this.addSlotDependenciesFor(s); }.bind(this));
+    
+    if (this._debugMode) { this.printDependencies(); }
   }, {category: ['dependencies'], comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.'});
+  
+  add.method('printDependencies', function () {
+    console.log("Holder dependencies:");
+    this._slotDeps.holderDeps.printToConsole();
+    console.log("Content dependencies:");
+    this._slotDeps.contentDeps.printToConsole();
+  }, {category: ['printing']});
 
   add.method('recalculateObjectDependencies', function () {
     this._objDeps = avocado.dependencies.copyRemoveAll();
@@ -1115,10 +1133,12 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     while (! this._remainingSlotsByMirror.isEmpty()) {
       var nextMirrorToFileOut = this.chooseAMirrorWithNoDependees();
       if (nextMirrorToFileOut) {
+        if (this._debugMode) { console.log("Choosing mirror " + nextMirrorToFileOut + " because it has no dependees."); }
         this.nextObjectIs(nextMirrorToFileOut);
       } else {
         var nextSlotToFileOut = this.chooseASlotWithThisManyDependees(0);
         if (nextSlotToFileOut) {
+          if (this._debugMode) { console.log("Ain't no mirror with no dependees; choosing slot " + nextSlotToFileOut + " because it has no dependees."); }
           this.nextSlotIs(nextSlotToFileOut, true);
         } else {
           this.insertCycleBreakerSlot();

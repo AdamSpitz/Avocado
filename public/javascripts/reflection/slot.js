@@ -274,9 +274,14 @@ thisModule.addSlots(avocado.slots.hardWiredContents, function(add) {
   add.method('isHardWired', function () { return true; }, {category: ['testing']});
 
   add.method('equals', function (s) {
+    if (this === s) { return true; }
     if (!s) { return false; }
     if (typeof(s.name) !== 'function' || typeof(s.isHardWired) !== 'function') { return false; }
     return s.isHardWired() && this.name() === s.name() && this.mirror().equals(s.mirror()) && this.contents().equals(s.contents());
+  }, {category: ['comparing']});
+
+  add.method('hashCode', function () {
+    return this.name().hashCode() + this.mirror().hashCode();
   }, {category: ['comparing']});
 
 });
