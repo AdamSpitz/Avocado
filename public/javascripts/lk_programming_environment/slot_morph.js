@@ -148,7 +148,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('nameMorph', function () {
     // ignoreEvents so that the menu request passes through, though this breaks double-clicking-to-edit
-    return this._nameMorph || (this._nameMorph = new TwoModeTextMorph(avocado.accessors.forMethods(this, 'slotName')).setNameOfEditCommand("rename").ignoreEvents());
+    return this._nameMorph || (this._nameMorph = new avocado.TwoModeTextMorph(avocado.accessors.forMethods(this, 'slotName')).setNameOfEditCommand("rename").ignoreEvents());
   }, {category: ['signature']});
 
   add.method('descriptionMorph', function () {
@@ -167,7 +167,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('sourceMorph', function () {
     var sm = this._sourceMorph;
     if (sm) { return sm; }
-    sm = this._sourceMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'sourceCode')).applyStyle(this.sourceMorphStyle);
+    sm = this._sourceMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'sourceCode')).applyStyle(this.sourceMorphStyle);
     if (this.shouldUseZooming()) { sm._maxSpace = pt(200,200); }
     return sm;
   }, {category: ['source']});
@@ -178,8 +178,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     
     m = this._annotationMorph = new avocado.TableMorph().beInvisible().applyStyle(this.annotationStyle);
     var rows = [
-      [TextMorph.createLabel("Module:"       ), new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'moduleName')) ],
-      [TextMorph.createLabel("Initialize to:"), new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'initializationExpression'))]
+      [TextMorph.createLabel("Module:"       ), new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'moduleName')) ],
+      [TextMorph.createLabel("Initialize to:"), new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'initializationExpression'))]
     ];
     
     if (this.shouldUseZooming()) {
@@ -192,7 +192,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['annotation']});
 
   add.method('commentMorph', function () {
-    return this._commentMorph || (this._commentMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'comment')).applyStyle(this.commentStyle));
+    return this._commentMorph || (this._commentMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.slot(), 'comment')).applyStyle(this.commentStyle));
   }, {category: ['comment']});
 
   add.method('wasJustShown', function (evt) {

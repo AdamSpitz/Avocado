@@ -1528,6 +1528,12 @@ lively.data.Wrapper.subclass('Morph', {
 			if (!(other[p] instanceof lively.paint.Gradient)) {
 				this[p] = other[p];
 			}
+			
+		  // set the creator slot if necessary -- Adam
+		  var creatorSlot = reflect(other[p]).theCreatorSlot();
+		  if (creatorSlot && creatorSlot.name() === p && creatorSlot.holder().reflectee() === other) {
+		    reflect(this).slotAt(p).beCreator();
+			}
 
 		} // shallow copy by default, note that arrays of Morphs are not handled
 	},
@@ -1554,12 +1560,21 @@ lively.data.Wrapper.subclass('Morph', {
 			}
 		};
 
-                // hack to make ButtonMorphs duplicatable, not sure what the right fix is -- Adam
+    // hack to make ButtonMorphs duplicatable; I think the right fix is to implement a deepCopy that uses creator slots -- Adam
 		if (other.modelPlug && other.modelPlug.model.morph === other) {
 			this.modelPlug = Object.shallowCopy(other.modelPlug);
 			this.modelPlug.model = Object.shallowCopy(other.modelPlug.model);
 			this.modelPlug.model.morph = this;
-                }
+			reflect(this).slotAt('modelPlug').beCreator();
+			reflect(this.modelPlug).slotAt('model').beCreator();
+    }
+    
+    // same hack for TextMorphs and others that just have 'model' point right at the morph -- Adam
+		if (other.modelPlug && other.modelPlug.model === other) {
+			this.modelPlug = Object.shallowCopy(other.modelPlug);
+			this.modelPlug.model = this;
+			reflect(this).slotAt('modelPlug').beCreator();
+	  }
 	},
 
 	copyFrom: function(copier, other) {
@@ -4002,6 +4017,7 @@ ViewTrait = {
 	    console.log("model " + model +  " is not a Model, view " + this);
 
 	this.modelPlug = newPlug;
+	reflect(this).slotAt('modelPlug').beCreator(); // aaa hack for morph-saving -- Adam
 
 	if (model.addDependent) { // for mvc-style updating
 	    model.addDependent(this);

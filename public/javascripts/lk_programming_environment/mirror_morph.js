@@ -135,7 +135,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     if (this.shouldUseZooming()) { m.setScale(0.25); }
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
-    this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString')).applyStyle(this.copyDownParentsStyle);
+    this._copyDownParentsLabel = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString')).applyStyle(this.copyDownParentsStyle);
 
     var rows = [];
     if (this.shouldUseZooming()) { rows.push(avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Comment:"), this.commentMorph()])); }
@@ -145,7 +145,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['annotation']});
 
   add.method('commentMorph', function () {
-    return this._commentMorph || (this._commentMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.mirror(), 'comment')).applyStyle(this.commentStyle));
+    return this._commentMorph || (this._commentMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.mirror(), 'comment')).applyStyle(this.commentStyle));
   }, {category: ['comment']});
 
   add.method('copyDownParentsString', function () {

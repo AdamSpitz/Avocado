@@ -42,7 +42,7 @@ thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
     var heart    = Morph.makeHeart(pt(0,0)).closeDnD();
     var triangle = Morph.makePolygon([pt(-30,0), pt(30,0), pt(0,-50)], 1, Color.black, Color.green.darker());
     
-    var buttonLabel = new TwoModeTextMorph();
+    var buttonLabel = new avocado.TwoModeTextMorph();
     buttonLabel.setText("Button");
     buttonLabel.acceptChanges();
     buttonLabel.suppressHandles = true;

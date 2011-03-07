@@ -215,7 +215,7 @@ thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCre
 thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule, function(add) {
 
   add.method('toString', function () {
-    return "it's referenced from the " + this._param;
+    return "it's referenced from " + this._param;
   });
 
 });

@@ -46,6 +46,18 @@ thisModule.addSlots(Morph.prototype, function(add) {
 });
 
 
+thisModule.addSlots(lively.scene.Node.prototype, function(add) {
+
+  add.method('postFileIn', function () {
+    // aaa - hack, not sure why the fill node isn't getting filed in right
+    if (this._fill) {
+      this.setFill(this._fill);
+    }
+  }, {category: ['transporting']});
+
+});
+
+
 thisModule.addSlots(Color.prototype, function(add) {
 
   add.method('storeString', function () {

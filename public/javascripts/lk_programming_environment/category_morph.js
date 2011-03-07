@@ -74,7 +74,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.creator('grabbedStyle', Object.create(avocado.category.Morph.prototype.defaultStyle), {category: ['styles']});
 
   add.method('createTitleLabel', function () {
-    var lbl = new TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
+    var lbl = new avocado.TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
                                                             function(n) { this.rename(n); }.bind(this)));
     lbl.setEmphasis({style: 'italic'});
     lbl.setNameOfEditCommand("rename");
