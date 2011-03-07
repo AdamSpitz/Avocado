@@ -1,4 +1,6 @@
-transporter.module.create('lk_ext/carrying_hand', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/carrying_hand', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -12,8 +14,6 @@ thisModule.addSlots(avocado.CarryingHandMorph, function(add) {
 
   add.data('superclass', Morph);
 
-  add.creator('prototype', Object.create(Morph.prototype));
-
   add.data('type', 'avocado.CarryingHandMorph');
 
   add.method('forWorld', function (w) {
@@ -21,6 +21,8 @@ thisModule.addSlots(avocado.CarryingHandMorph, function(add) {
     w.carryingHand = new this(w);
     return w.carryingHand;
   });
+
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -34,11 +36,11 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
     this._world = w;
     this.applyStyle(this.defaultStyle);
   }, {category: ['creating']});
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
-  
+
   add.data('shouldStickToScreen', true, {category: ['showing']});
-  
+
   add.method('ensureVisible', function (callWhenDone) {
     if (this.owner) {
       if (callWhenDone) { callWhenDone(); }
@@ -49,7 +51,7 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
       if (callWhenDone) { callWhenDone(); }
     }
   }, {category: ['showing']});
-  
+
   add.method('hideIfEmpty', function (callWhenDone) {
     if (this.submorphs.length > 0) {
       if (callWhenDone) { callWhenDone(); }
@@ -58,17 +60,17 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
       if (callWhenDone) { callWhenDone(); }
     }
   }, {category: ['showing']});
-  
+
   add.method('carriedMorph', function () {
     return this.submorphs[0];
   }, {category: ['accessing']});
-  
+
   add.method('applicableCommandForDroppingOn', function (targetMorph) {
     var carriedMorph = this.carriedMorph();
     if (!carriedMorph) { return null; }
     return targetMorph.applicableCommandForDropping(carriedMorph);
   }, {category: ['accessing']});
-  
+
   add.method('pickUp', function (m, evt, callWhenDone) {
     this.ensureVisible(function() {
       var extent = m.getExtent();
@@ -97,22 +99,22 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
       if (callWhenDone) { callWhenDone(); }
     }.bind(this));
   }, {category: ['picking up and dropping']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.CarryingHandMorph.prototype.defaultStyle, function(add) {
-  
+
   add.data('grabsShouldFallThrough', true);
-  
+
   add.data('openForDragAndDrop', false);
 
   add.data('suppressGrabbing', true);
 
   add.data('suppressHandles', true);
-  
-  add.data('fill', Color.black);
-  
+
+  add.data('fill', new Color(0, 0, 0));
+
 });
 
 

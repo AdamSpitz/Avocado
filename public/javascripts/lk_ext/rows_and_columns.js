@@ -12,7 +12,7 @@ thisModule.addSlots(avocado, function(add) {
   add.method('RowMorph', function RowMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui', 'rows and columns']});
 
   add.method('ColumnMorph', function ColumnMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui', 'rows and columns']});
-  
+
   add.creator('directions', {}, {category: ['ui', 'rows and columns']});
 
   add.creator('tableContents', {}, {category: ['ui', 'rows and columns']});
@@ -23,7 +23,7 @@ thisModule.addSlots(avocado, function(add) {
 thisModule.addSlots(avocado.directions, function(add) {
 
   add.creator('abstractDirection', {});
-  
+
   add.creator('vertical', Object.create(avocado.directions.abstractDirection));
 
   add.creator('horizontal', Object.create(avocado.directions.abstractDirection));
@@ -35,11 +35,11 @@ thisModule.addSlots(avocado.TableMorph, function(add) {
 
   add.data('superclass', Morph);
 
-  add.creator('prototype', Object.create(Morph.prototype));
-
   add.data('type', 'avocado.TableMorph');
 
   add.creator('boxStyle', {});
+
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -58,8 +58,6 @@ thisModule.addSlots(avocado.TableMorph.boxStyle, function(add) {
 thisModule.addSlots(avocado.RowMorph, function(add) {
 
   add.data('superclass', avocado.TableMorph);
-
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
 
   add.data('type', 'avocado.RowMorph');
 
@@ -83,6 +81,8 @@ thisModule.addSlots(avocado.RowMorph, function(add) {
     return m;
   });
 
+  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+
 });
 
 
@@ -90,9 +90,9 @@ thisModule.addSlots(avocado.ColumnMorph, function(add) {
 
   add.data('superclass', avocado.TableMorph);
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
-
   add.data('type', 'avocado.ColumnMorph');
+
+  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
 
 });
 
@@ -358,7 +358,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
       this.forceLayoutRejiggering();
     }
   }, {category: ['adding and removing']});
-  
+
   add.method('replaceMorph', function (m, newSubmorph) {
     if (!this._tableContent) { throw new Error("How do I do replaceMorph if there's no _tableContent?"); }
     
@@ -382,6 +382,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     if (this._tableContent && this._tableContent.equals(newContent)) { return; }
     if (this._debugMyLayout) { console.log("About to replaceContentWith " + newContent.primaryLines().size() + " lines in direction " + newContent._direction2); }
     this._tableContent = newContent;
+    reflect(this).slotAt('_tableContent').beCreator();
     this.setSubmorphsFromTableContent();
     this.forceLayoutRejiggering();
   }, {category: ['adding and removing']});
@@ -592,6 +593,8 @@ thisModule.addSlots(avocado.tableContents, function(add) {
       if (! reflect(r).isReflecteeArray()) { throw "Why ain't the row or column an array? " + r; }
     });
     this._data = a;
+    reflect(this).slotAt('_data').beCreator();
+    reflect(this._data).eachIndexableSlot(function(s) { s.beCreator(); });
     this._direction1 = dir1;
     this._direction2 = dir1.sideways;
   }, {category: ['creating']});
@@ -695,7 +698,7 @@ thisModule.addSlots(avocado.tableContents, function(add) {
   }, {category: ['accessing']});
 
   add.method('insertPrimaryLine', function (line, i) {
-    this._data.splice(i, 0, line);
+    this._data.spliceAndAdjustCreatorSlots(i, 0, line);
   }, {category: ['inserting']});
 
   add.method('selectThenMap', function (selectFn, mapFn) {

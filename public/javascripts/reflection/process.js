@@ -15,36 +15,36 @@ thisModule.addSlots(avocado, function(add) {
     avocado.ui.grab(p);
     return p;
   }, {category: ['avocado', 'reflection']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.process, function(add) {
-  
+
   add.method('create', function () {
     return Object.newChildOf(this, arguments.callee.caller);
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (f) {
     this._leaf = this.contextFor(f);
   }, {category: ['creating']});
 
   add.creator('context', {}, {category: ['contexts']});
-  
+
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-  
+
   add.method('leafContext', function () {
     return this._leaf;
   }, {category: ['accessing']});
-  
+
   add.method('contextFor', function (f) {
     return this.context.create(f, this);
   }, {category: ['accessing']});
-  
+
   add.method('inspect', function () {
     return "a process";
   }, {category: ['printing']});
-  
+
   add.method('printTo', function (logger) {
     var c = this.leafContext();
     while (c) {
@@ -52,7 +52,7 @@ thisModule.addSlots(avocado.process, function(add) {
       c = c.callerContext();
     }
   }, {category: ['printing']});
-  
+
   add.method('trimLeaves', function (n) {
     for (var i = 0; i < n; ++i) {
       this._leaf = this._leaf.callerContext();
@@ -64,11 +64,11 @@ thisModule.addSlots(avocado.process, function(add) {
 
 
 thisModule.addSlots(avocado.process.context, function(add) {
-  
+
   add.method('create', function (f, p) {
     return Object.newChildOf(this, f, p);
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (f, p) {
     this._function = f;
     this._process = p;
@@ -77,27 +77,27 @@ thisModule.addSlots(avocado.process.context, function(add) {
     var caller = this._function.caller;
     this._caller = caller ? this._process.contextFor(caller) : null;
   }, {category: ['creating']});
-  
+
   add.method('rawFunction', function () {
     return this._function;
   }, {category: ['accessing']});
-  
+
   add.method('functionMirror', function () {
     return this._functionMirror || (this._functionMirror = reflect(this._function));
   }, {category: ['accessing']});
-  
+
   add.method('callerContext', function () {
     return this._caller;
   }, {category: ['accessing']});
-  
+
   add.method('args', function () {
     return this._args;
   }, {category: ['accessing']});
-  
+
   add.method('functionName', function () {
     return this.rawFunction().displayName || this.functionMirror().inspect();
   }, {category: ['accessing']});
-  
+
   add.method('argNames', function () {
     var names = this._argNames;
     if (names) { return names; }
@@ -114,44 +114,44 @@ thisModule.addSlots(avocado.process.context, function(add) {
     this._argNames = names;
     return names;
   }, {category: ['accessing']});
-  
+
   add.method('toString', function () {
     return this.functionName();
   }, {category: ['printing']});
-  
+
   add.method('inspect', function () {
     return this.toString();
   }, {category: ['printing']});
-  
+
   add.method('printTo', function (logger) {
     logger.log(this.inspect());
   }, {category: ['printing']});
-  
+
   add.method('commandToGrabAllArgs', function () {
     return avocado.command.create("arguments", function(evt) { avocado.ui.grab(reflect(this.args()), evt); }, this);
   }, {category: ['user interface']});
-  
+
   add.method('commandToGrabArg', function (i) {
     return avocado.command.create(this.argNames()[i], function(evt) { avocado.ui.grab(reflect(this.args()[i]), evt); }, this);
   }, {category: ['user interface']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.process.tests, function(add) {
-  
+
   add.method('simpleNestingA', function (x) {
     return this.simpleNestingB(x + 4, 'neat');
   });
-  
+
   add.method('simpleNestingB', function (y, z) {
     return this.simpleNestingC('a', 'b', 'c');
   });
-  
+
   add.method('simpleNestingC', function () {
     return this.simpleNestingD(111);
   });
-  
+
   add.method('simpleNestingD', function () {
     return avocado.process.create();
   });

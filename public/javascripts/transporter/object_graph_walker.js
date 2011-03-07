@@ -1,6 +1,7 @@
 transporter.module.create('transporter/object_graph_walker', function(requires) {
 
 requires('core/testFramework');
+requires('core/dom_stuff');
 
 }, function(thisModule) {
 
@@ -41,6 +42,7 @@ thisModule.addSlots(avocado.childFinder, function(add) {
   });
 
 });
+
 
 thisModule.addSlots(avocado.annotationWalker, function(add) {
 
@@ -163,7 +165,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
   });
 
   add.method('objectCount', function () { return this._objectCount; });
-  
+
   add.method('beInDebugMode', function () {
     this._debugMode = true;
     return this;
@@ -185,12 +187,12 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     // another special case, I think
     this.markObject(window['__proto__'], { slotHolder: window, slotName: '__proto__' }, true);
   });
-  
+
   add.method('setShouldWalkIndexables', function (b) {
     this.shouldWalkIndexables = true;
     return this;
   });
-  
+
   add.method('nameOfObjectWithPath', function (howDidWeGetHere) {
     // useful for debugging
     var s = [];
@@ -214,30 +216,8 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     return t === 'object' || t === 'function';
   });
 
-  add.method('isDOMNode', function (o) {
-    // http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
-    try {
-      if (typeof Node === "object" && o instanceof Node) { return true; }
-      if (typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName === "string") { return true; }
-    } catch (ex) {
-      // Firefox sometimes throws an exception here. Don't know why.
-    }
-    return false;
-  });
-
-  add.method('isDOMElement', function (o) {
-    try {
-      if (typeof HTMLElement       === "object" && o instanceof HTMLElement          ) { return true; }
-      if (typeof HTMLIFrameElement === "object" && o instanceof HTMLIFrameElement    ) { return true; }
-      if (typeof o === "object" && o.nodeType === 1 && typeof o.nodeName === "string") { return true; }
-    } catch (ex) {
-      // Firefox sometimes throws an exception here. Don't know why.
-    }
-    return false;
-  });
-
   add.method('shouldIgnoreObject', function (o) {
-    if (this.isDOMNode(o) || this.isDOMElement(o)) { return true; } // the DOM is a nightmare, stay the hell away
+    if (avocado.DOMStuff.isDOMNode(o) || avocado.DOMStuff.isDOMElement(o)) { return true; } // the DOM is a nightmare, stay the hell away
     return false;
   });
 
@@ -352,13 +332,13 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
     this.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
     this.shouldAlsoWalkSpecialUnreachableObjects = shouldAlsoWalkSpecialUnreachableObjects;
   });
-  
+
   add.method('alsoAssignUnownedSlotsToModule', function (module) {
     return this.alsoAssignSlotsToModule(module, function(holder, slotName, contents, slotAnno) {
       return ! slotAnno.getModule();
     });
   });
-  
+
   add.method('alsoAssignSlotsToModule', function (module, shouldSlotBeAssignedToModule) {
     this.moduleToAssignSlotsTo = module;
     this.shouldSlotBeAssignedToModule = shouldSlotBeAssignedToModule;
@@ -412,7 +392,8 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
     if (this.shouldSlotBeAssignedToModule(holder, slotName, contents, slotAnno)) {
       if (this._debugMode) { console.log("Setting module of " + slotName + " to " + this.moduleToAssignSlotsTo.name()); }
       slotAnno.setModule(this.moduleToAssignSlotsTo);
-      this.moduleToAssignSlotsTo.objectsThatMightContainSlotsInMe().push(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
+      this.moduleToAssignSlotsTo.slotCollection().addPossibleHolder(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
+      transporter.hackToMakeSureArrayIndexablesGetFiledOut(contents, this.moduleToAssignSlotsTo);
     } else {
       if (this._debugMode) { console.log("NOT setting module of " + slotName + " to " + this.moduleToAssignSlotsTo.name()); }
     }

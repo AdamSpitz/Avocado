@@ -7,36 +7,36 @@ requires('core/hash_table');
 
 
 thisModule.addSlots(avocado, function(add) {
-  
+
   add.creator('graphs', {}, {category: ['graphs']});
 
 });
 
 
 thisModule.addSlots(avocado.graphs, function(add) {
-  
+
   add.creator('directed', {});
 
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.graphs.directed, function(add) {
-  
+
   add.method('create', function (roots, adjacencyFn) {
     return Object.newChildOf(this, roots, adjacencyFn);
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (roots, adjacencyFn) {
     this._roots = roots;
     this._adjacencyFn = adjacencyFn;
   }, {category: ['creating']});
-  
+
   add.method('verticesPointedToBy', function (v) {
     return this._adjacencyFn(v);
   }, {category: ['accessing']});
-  
+
   add.method('topologicalSort', function () {
     var sorted = [];
     var visited = avocado.set.copyRemoveAll();
@@ -59,7 +59,7 @@ thisModule.addSlots(avocado.graphs.directed, function(add) {
 
 
 thisModule.addSlots(avocado.graphs.tests, function(add) {
-  
+
   add.method('checkTopologicalSort', function (graph) {
     var sorted = graph.topologicalSort();
     for (var i = 0; i < sorted.length; ++i) {
@@ -70,7 +70,7 @@ thisModule.addSlots(avocado.graphs.tests, function(add) {
       }.bind(this));
     }
   });
-  
+
   add.method('testTopologicalSort', function () {
     var adjacencyLists = {
       a: ['b', 'c'],
@@ -81,7 +81,7 @@ thisModule.addSlots(avocado.graphs.tests, function(add) {
     var graph = avocado.graphs.directed.create(['a'], function(v) { return adjacencyLists[v] || []; });
     this.checkTopologicalSort(graph);
   });
-  
+
 });
 
 

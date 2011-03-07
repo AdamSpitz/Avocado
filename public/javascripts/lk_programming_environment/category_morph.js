@@ -36,9 +36,9 @@ thisModule.addSlots(avocado.category.Morph, function(add) {
 
   add.data('superclass', avocado.TreeNodeMorph);
 
-  add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
-
   add.data('type', 'avocado.category.Morph');
+
+  add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
 
 });
 
@@ -65,7 +65,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 
   add.method('mirrorMorph', function () { return this.mirror().morph(); }, {category: ['accessing']});
 
-  add.data('shouldUseZooming', function () {
+  add.method('shouldUseZooming', function () {
     return avocado.shouldMirrorsUseZooming;
   }, {category: ['zooming']});
 
@@ -74,7 +74,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.creator('grabbedStyle', Object.create(avocado.category.Morph.prototype.defaultStyle), {category: ['styles']});
 
   add.method('createTitleLabel', function () {
-    var lbl = new TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
+    var lbl = new avocado.TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
                                                             function(n) { this.rename(n); }.bind(this)));
     lbl.setEmphasis({style: 'italic'});
     lbl.setNameOfEditCommand("rename");
@@ -255,7 +255,7 @@ thisModule.addSlots(avocado.category.Morph.prototype.defaultStyle, function(add)
 
 thisModule.addSlots(avocado.category.Morph.prototype.grabbedStyle, function(add) {
 
-  add.data('fill', lively.paint.defaultFillWithColor(Color.gray));
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.8, 0.8, 0.8)), new lively.paint.Stop(1, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255))], lively.paint.LinearGradient.SouthNorth));
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.ShrinkWrap);
 

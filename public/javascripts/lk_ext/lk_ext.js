@@ -42,7 +42,7 @@ requires('lk_ext/carrying_hand');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('ui', {}, {comment: 'An extra layer of indirection, in case we want to switch to a non-LK UI someday.\n\nDefinitely not complete yet. -- Adam, Oct. 2010', category: ['user interface']});
+  add.creator('ui', {}, {category: ['user interface'], comment: 'An extra layer of indirection, in case we want to switch to a non-LK UI someday.\n\nDefinitely not complete yet. -- Adam, Oct. 2010'});
 
 });
 
@@ -110,6 +110,36 @@ thisModule.addSlots(avocado.ui, function(add) {
 
   add.method('showError', function (err, evt) {
     avocado.MessageNotifierMorph.showError(err, evt);
+  });
+
+  add.method('showErrorsThatOccurDuring', function (f, evt) {
+    var allErrors = [];
+    var errorMessage = "";
+    f(function(msg, errors) {
+      errorMessage += msg + "\n";
+      (errors || [msg]).each(function(e) { allErrors.push(e); });
+    });
+    if (allErrors.length > 0) {
+      this.showErrors(errorMessage, allErrors, evt);
+    }
+    return allErrors;
+  });
+
+  add.method('showErrors', function (msg, errors, evt) {
+    var objectsToShow = [];
+    errors.each(function(err) {
+      if (err.objectsToShow) {
+        err.objectsToShow.each(function(o) {
+          if (! objectsToShow.include(o)) {
+            objectsToShow.push(o);
+          }
+        });
+      } else {
+        objectsToShow.push(err);
+      }
+    });
+    this.showObjects(objectsToShow, "file-out errors", evt);
+    this.showError(msg, evt);
   });
 
   add.method('showMessage', function (msg, evt) {

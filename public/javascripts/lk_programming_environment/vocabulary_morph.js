@@ -4,6 +4,7 @@ requires('reflection/vocabulary');
 
 }, function(thisModule) {
 
+
 thisModule.addSlots(avocado.vocabulary, function(add) {
 
   add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
@@ -17,7 +18,7 @@ thisModule.addSlots(avocado.vocabulary, function(add) {
   }, {category: ['user interface']});
 
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
-  
+
 });
 
 
@@ -25,9 +26,9 @@ thisModule.addSlots(avocado.vocabulary.Morph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
-
   add.data('type', 'avocado.vocabulary.Morph');
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
 });
 
@@ -61,9 +62,9 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     
     this.refreshContent();
   }, {category: ['creating']});
-    
+
   add.creator('defaultStyle', {}, {category: ['styles']});
-  
+
   add.method('mirror', function () { return this._model.mirror(); }, {category: ['accessing']});
 
   add.method('expand', function () {
@@ -107,24 +108,24 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
       resultMirMorph.grabMe(evt);
     }
   }, {category: ['evaluators']});
-  
+
   add.method('doIWantToLeaveAPlaceholderWhenRemoving', function (m) {
     return m.owner === this._mirrorsPanel && m instanceof avocado.mirror.Morph;
   }, {category: ['placeholders']});
-  
+
   add.method('placeholderForMirror', function (mir) {
     return this.placeholderMorphs().find(function(placeholderMorph) { return mir.equals(placeholderMorph.originalMorph().mirror()); });
   }, {category: ['placeholders']});
-  
+
   add.method('placeholderMorphs', function () {
     return this._mirrorsPanel.thingies().select(function(m) { return m instanceof avocado.PlaceholderMorph; });
   }, {category: ['placeholders']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.vocabulary.Morph.prototype.defaultStyle, function(add) {
-  
+
   add.data('borderColor', new Color(0.6, 0.6, 0.6));
 
   add.data('borderWidth', 1);
@@ -133,14 +134,14 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype.defaultStyle, function(ad
 
   add.data('openForDragAndDrop', false);
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9, 0.9, 0.6)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.5))], lively.paint.LinearGradient.NorthSouth));
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.6)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.4980392156862745))], lively.paint.LinearGradient.NorthSouth));
 
   add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}'});
 
   add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
 
   add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
-  
+
 });
 
 

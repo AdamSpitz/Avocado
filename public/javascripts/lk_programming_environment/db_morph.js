@@ -6,7 +6,7 @@ requires('db/abstract');
 
 
 thisModule.addSlots(avocado.db, function(add) {
-  
+
   add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
 
   add.method('newMorph', function () {
@@ -17,11 +17,7 @@ thisModule.addSlots(avocado.db, function(add) {
     return WorldMorph.current().morphFor(this);
   }, {category: ['user interface']});
 
-  add.method('newMorph', function () {
-    return new this.Morph(this);
-  }, {category: ['user interface']});
-  
-  add.creator('morphFactory', {}, {category: ['user interface']})
+  add.creator('morphFactory', {}, {category: ['user interface']});
 
 });
 
@@ -38,10 +34,10 @@ thisModule.addSlots(avocado.db.morphFactory, function(add) {
     factory.replaceContentWith(avocado.tableContents.createWithRows([[dbMorph]]));
     return factory;
   });
-  
-  add.data('enableDBExperiment', false)
 
-  add.data('postFileIn', function () {
+  add.data('enableDBExperiment', false);
+
+  add.method('postFileIn', function () {
     if (this.enableDBExperiment && avocado.morphFactories) {
       avocado.morphFactories.globalFactories.push(this);
     }
@@ -54,9 +50,9 @@ thisModule.addSlots(avocado.db.Morph, function(add) {
 
   add.data('superclass', Morph);
 
-  add.creator('prototype', Object.create(Morph.prototype));
-
   add.data('type', 'avocado.db.Morph');
+
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -72,18 +68,18 @@ thisModule.addSlots(avocado.db.Morph.prototype, function(add) {
   });
 
   add.creator('defaultStyle', {}, {category: ['styles']});
-  
+
   add.method('db', function () { return this._model; }, {category: ['accessing']});
-  
+
   add.method('setDB', function (db) {
     this._model = db;
     if (this._labelMorph) { this._labelMorph.remove(); }
 		this._labelMorph = TextMorph.createLabel(this.labelString()).fitText();
 		this.addMorphAt(this._labelMorph, this._labelMorph.getExtent().scaleBy(-0.5));
   }, {category: ['accessing']});
-  
+
   add.method('labelString', function () { return this.db() ? this.db().labelString() : 'DB'; }, {category: ['accessing']});
-  
+
   add.method('commands', function ($super) {
     if (this._model) { return $super(); }
     
@@ -101,15 +97,15 @@ thisModule.addSlots(avocado.db.Morph.prototype, function(add) {
 
 
 thisModule.addSlots(avocado.db.Morph.prototype.defaultStyle, function(add) {
-  
-  add.data('fill', Color.purple);
-  
+
+  add.data('fill', new Color(1, 0, 1));
+
   add.data('borderWidth', 1);
-  
-  add.data('borderColor', Color.black);
-  
+
+  add.data('borderColor', new Color(0, 0, 0));
+
   add.data('openForDragAndDrop', false);
-  
+
 });
 
 

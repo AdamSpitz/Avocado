@@ -1,4 +1,8 @@
-transporter.module.create('lk_ext/transporting_morphs', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/transporting_morphs', function(requires) {
+
+requires('core/dom_stuff');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules['lk_ext/transporting_morphs'], function(add) {
@@ -20,6 +24,7 @@ thisModule.addSlots(modules['lk_ext/transporting_morphs'], function(add) {
 thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('postFileIn', function () {
+    /* I think this should be unnecessary now that we're saving the nodes right.
     if (this.shape) {
       this.initializePersistentState(this.shape);
     }
@@ -27,6 +32,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     if (this.owner) {
       this.owner.addMorphAt(this, this.getPosition());
     }
+    */
 
     // aaa - hack for TTT demo; this is the wrong place for this.
     if (this.worldMenuContributors) {
@@ -40,13 +46,13 @@ thisModule.addSlots(Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(Node.prototype, function(add) {
+thisModule.addSlots(lively.scene.Node.prototype, function(add) {
 
-  add.method('storeString', function () {
-    var encoded = Exporter.stringify(this);
-    var s = avocado.stringBuffer.create('document.importNode(new DOMParser().parseFromString(');
-    s.append(encoded.inspect()).append(', "text/xml").documentElement, false)');
-    return s.toString();
+  add.method('postFileIn', function () {
+    // aaa - hack, not sure why the fill node isn't getting filed in right
+    if (this._fill) {
+      this.setFill(this._fill);
+    }
   }, {category: ['transporting']});
 
 });
@@ -64,6 +70,32 @@ thisModule.addSlots(Color.prototype, function(add) {
 
 });
 
+
+thisModule.addSlots(TextEmphasis.prototype, function(add) {
+
+  add.method('storeString', function () {
+		var props = reflect(this).normalSlots().toArray().map(function(s) { return s.name() + ": " + Object.inspect(s.contents().reflectee()); });
+    return ['new TextEmphasis({', props.join(", "), '})'].join('');
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return TextEmphasis.prototype;
+  }, {category: ['transporting']});
+
+});
+
+
+thisModule.addSlots(Text.prototype, function(add) {
+
+  add.method('storeString', function () {
+    return ['document.createTextNode(', this.textContent.inspect(), ')'].join('');
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return Text.prototype;
+  }, {category: ['transporting']});
+
+});
 
 thisModule.addSlots(lively.paint.LinearGradient.prototype, function(add) {
 
@@ -104,6 +136,19 @@ thisModule.addSlots(lively.scene.Similitude.prototype, function(add) {
 
   add.method('storeStringNeeds', function () {
     return lively.scene.Similitude.prototype;
+  }, {category: ['transporting']});
+
+});
+
+
+thisModule.addSlots(lively.Text.Font.prototype, function(add) {
+
+  add.method('storeString', function () {
+    return ['new lively.Text.Font(', this.family.inspect(), ', ', this.size, ', ', this.style.inspect(), ')'].join('');
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return lively.Text.Font.prototype;
   }, {category: ['transporting']});
 
 });

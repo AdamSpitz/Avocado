@@ -26,9 +26,9 @@ thisModule.addSlots(avocado.CollectionMorph, function(add) {
 
   add.data('superclass', avocado.TableMorph);
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
-
   add.data('type', 'avocado.CollectionMorph');
+
+  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
 
 });
 

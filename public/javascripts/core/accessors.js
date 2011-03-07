@@ -1,4 +1,6 @@
-transporter.module.create('core/accessors', function(requires) {}, function(thisModule) {
+transporter.module.create('core/accessors', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -53,7 +55,7 @@ thisModule.addSlots(avocado.methodAccessors, function(add) {
     var obj = this._object;
     obj[this._setterName].call(obj, v);
   }, {category: ['accessing']});
-  
+
 });
 
 
@@ -71,9 +73,8 @@ thisModule.addSlots(avocado.attributeAccessors, function(add) {
   add.method('set', function (v) {
     this._object[this._attrName] = v;
   }, {category: ['accessing']});
-  
-});
 
+});
 
 
 });

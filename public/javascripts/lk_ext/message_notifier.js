@@ -16,8 +16,6 @@ thisModule.addSlots(avocado.MessageNotifierMorph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
-
   add.data('type', 'avocado.MessageNotifierMorph');
 
   add.method('showIfErrorDuring', function (f, evt, color) {
@@ -35,6 +33,8 @@ thisModule.addSlots(avocado.MessageNotifierMorph, function(add) {
     console.log(msg);
     new this(err, color || Color.red).showTemporarilyInCenterOfWorld((evt || Event.createFake()).hand.world());
   });
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
 });
 

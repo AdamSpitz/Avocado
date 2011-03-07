@@ -32,11 +32,11 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
     avocado.grabStack(); // aaa remove this line
     throw new Error('Cannot access reflectee of a remote object');
   }, {category: ['accessing']});
-  
+
   add.method('remoteOIDOrPrimitive', function () {
     return this._remoteOIDOrPrimitive;
   }, {category: ['numbers']});
-  
+
   add.method('primitiveReflectee', function () {
     if (this.hasOID()) { throw new Error("not a primitive"); }
     return this._remoteOIDOrPrimitive;
@@ -46,7 +46,7 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
     if (! this.hasOID()) { throw new Error("not an object"); }
     return this._remoteOIDOrPrimitive;
   }, {category: ['accessing']});
-  
+
   add.method('hasOID', function () {
     return this.canHaveSlots();
   }, {category: ['testing']});
@@ -54,7 +54,7 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
   add.method('server', function () {
     return this._server;
   }, {category: ['accessing']});
-  
+
   add.method('updateContentsAndTypes', function (contentsByName, typesByName) {
     this._contentsByName = contentsByName;
     this._typesByName = typesByName;
@@ -88,7 +88,7 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
     if (n.substring(0, 5) !== 'slot_') { throw new Error("Assertion failure: why doesn't it start with 'slot_'?"); }
     return n.substring(5);
   }, {category: ['accessing slot contents']});
-  
+
   add.method('eachNormalSlotName', function (f) {
     reflect(this._contentsByName).eachNormalSlotName(function (key) {
       var n = this.realSlotNameFor(key);
@@ -97,7 +97,7 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
       }
     }.bind(this));
   }, {category: ['iterating']});
-  
+
   add.method('contentsAt', function (n) {
     var key = 'slot_' + n;
     return this._server.mirrorForOIDAndType(this._contentsByName[key], this._typesByName[key]);
@@ -118,7 +118,7 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
   add.method('reflecteeType', function () {
     return this._type;
   }, {category: ['accessing']});
-  
+
   add.method('canAccessParent', function () {
     return this.hasOID(); // aaa for now, can't access Number.prototype, String.prototype, etc.
   }, {category: ['testing']});
@@ -130,15 +130,15 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
   add.method('isReflecteeArray', function () {
     return this.reflecteeType() === 'object' && this.reflecteeHasOwnProperty('length'); // aaa reasonable approximation for now
   }, {category: ['testing']});
-  
+
   add.method('isReflecteeSimpleMethod', function () {
     return false; // aaa for now
   }, {category: ['testing']});
-  
+
   add.method('isReflecteeProbablyAClass', function () {
     return false; // aaa for now
   }, {category: ['testing']});
-  
+
   add.method('reflecteeLength', function () {
     return this.contentsAt('length').primitiveReflectee();
   }, {category: ['arrays']});
@@ -146,12 +146,12 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
   add.method('getExistingAnnotation', function () {
     return null; // aaa how do we do annotations?
   }, {category: ['annotations']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.remoteObjectServer, function(add) {
-  
+
   add.method('create', function () {
     var c = Object.create(this);
     c.initialize.apply(c, arguments);
@@ -161,7 +161,7 @@ thisModule.addSlots(avocado.remoteObjectServer, function(add) {
   add.method('initialize', function () {
     this._cachedMirrors = avocado.set.copyRemoveAll();
   }, {category: ['creating']});
-  
+
   add.method('mirrorForOIDAndType', function (oid, t) {
     var mir = Object.newChildOf(avocado.remoteMirror, this, oid, t);
     var existingMir = this._cachedMirrors.entryForKey(mir);
@@ -170,7 +170,7 @@ thisModule.addSlots(avocado.remoteObjectServer, function(add) {
     this.updateMirror(mir);
     return mir;
   });
-  
+
   add.method('updateMirror', function (mir) {
     this.getObjectContents(mir.remoteOIDOrPrimitive(), mir.reflecteeType(), function(contentsByName, typesByName) {
       mir.updateContentsAndTypes(contentsByName, typesByName);
@@ -193,7 +193,7 @@ thisModule.addSlots(avocado.mockRemoteObjectServer, function(add) {
   add.method('inspect', function () {
     return "mock server";
   }, {category: ['printing']});
-  
+
   add.method('addObject', function (o) {
     var remoteOID = this._nextOID++;
     this._objectsByOID[remoteOID] = o;
@@ -205,7 +205,7 @@ thisModule.addSlots(avocado.mockRemoteObjectServer, function(add) {
     // aaa not right, obviously
     callback(0);
   }, {category: ['remote protocol']});
-  
+
   add.method('getObjectContents', function (oidOrPrimitive, type, callback) {
     var localObj = (type === 'function' || (type === 'object' && oidOrPrimitive !== null)) ? this.objectForOID(oidOrPrimitive) : oidOrPrimitive;
     var localMir = reflect(localObj);
@@ -223,7 +223,7 @@ thisModule.addSlots(avocado.mockRemoteObjectServer, function(add) {
   add.method('objectForOID', function (oid) {
     return this._objectsByOID[oid];
   }, {category: ['mocking']});
-  
+
   add.method('isPrimitive', function (obj) {
     var t = typeof(obj);
     return ! (t === 'function' || (t === 'object' && obj !== null));
@@ -236,8 +236,8 @@ thisModule.addSlots(avocado.mockRemoteObjectServer, function(add) {
       return this._oidsByObject.getOrIfAbsent(obj, function() { return this.addObject(obj); }.bind(this));
     }
   }, {category: ['mocking']});
-  
-  add.method('setSlotContents', function(remoteOID, n, contentsRemoteOID, contentsType, callback) {
+
+  add.method('setSlotContents', function (remoteOID, n, contentsRemoteOID, contentsType, callback) {
     var v;
     if (contentsType === 'function' || (contentsType === 'object' && contentsRemoteOID !== null)) {
       v = this.objectForOID(contentsRemoteOID);
@@ -247,8 +247,8 @@ thisModule.addSlots(avocado.mockRemoteObjectServer, function(add) {
     reflect(this.objectForOID(remoteOID)).setContentsAt(n, reflect(v));
     if (callback) { callback(); }
   }, {category: ['remote protocol']});
-  
-  add.method('removeSlot', function(remoteOID, n, callback) {
+
+  add.method('removeSlot', function (remoteOID, n, callback) {
     reflect(this.objectForOID(remoteOID)).removeSlotAt(n);
     if (callback) { callback(); }
   }, {category: ['remote protocol']});

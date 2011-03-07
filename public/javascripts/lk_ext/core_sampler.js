@@ -16,13 +16,13 @@ thisModule.addSlots(avocado.CoreSamplerMorph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
-
   add.data('type', 'avocado.CoreSamplerMorph');
 
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addItem({label: 'core sampler', go: function(evt) {new avocado.CoreSamplerMorph().grabMe(evt);}});
   });
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
 });
 
@@ -73,19 +73,23 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
       var evt = Event.createFake();
       evt.mousePoint = p;
       var topmostMorph = w.morphToReceiveEvent(evt);
-      //console.log("Core sampler found morph " + reflect(topmostMorph).name());
-      var morphs = topmostMorph.ownerChain().reverse(); // topmostMorph should be first
-      var morphSummaries = [];
-      w.eachMorphAt(p, function(m) {
-        if (! this._crosshairMorphs.include(m)) {
-          var summary = avocado.RowMorph.createSpaceFilling([TextMorph.createLabel(reflect(m).name())]).enableEvents();
-          summary.grabsShouldFallThrough = true;
-          summary.contextMenu = m.morphMenu.bind(m);
-          morphSummaries.push(summary);
+      if (topmostMorph) {
+        //console.log("Core sampler found morph " + reflect(topmostMorph).name());
+        var morphs = topmostMorph.ownerChain().reverse(); // topmostMorph should be first
+        var morphSummaries = [];
+        w.eachMorphAt(p, function(m) {
+          if (! this._crosshairMorphs.include(m)) {
+            var summary = avocado.RowMorph.createSpaceFilling([TextMorph.createLabel(reflect(m).name())]).enableEvents();
+            summary.grabsShouldFallThrough = true;
+            summary.contextMenu = m.morphMenu.bind(m);
+            morphSummaries.push(summary);
+          }
+        }.bind(this));
+        if (morphSummaries.size() > 0) {
+          this.setRows(morphSummaries);
+        } else {
+          this.setRows([this._placeholderForWhenEmpty]);
         }
-      }.bind(this));
-      if (morphSummaries.size() > 0) {
-        this.setRows(morphSummaries);
       } else {
         this.setRows([this._placeholderForWhenEmpty]);
       }

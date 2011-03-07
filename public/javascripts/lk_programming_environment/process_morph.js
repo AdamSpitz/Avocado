@@ -74,11 +74,11 @@ thisModule.addSlots(avocado.process.context.Morph, function(add) {
 
   add.data('superclass', avocado.slots['abstract'].Morph);
 
-  add.creator('prototype', Object.create(avocado.slots['abstract'].Morph.prototype));
-
   add.data('type', 'avocado.process.context.Morph');
-  
+
   add.data('pointer', avocado.slots['abstract'].Morph.pointer);
+
+  add.creator('prototype', Object.create(avocado.slots['abstract'].Morph.prototype));
 
 });
 
@@ -106,14 +106,14 @@ thisModule.addSlots(avocado.process.context.Morph.prototype, function(add) {
 
 });
 
-  
+
 thisModule.addSlots(avocado.process.defaultMorphStyle, function(add) {
 
-  add.data('fill', lively.paint.defaultFillWithColor(Color.green.lighter()));
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.4980392156862745, 0.9019607843137255, 0.4980392156862745)), new lively.paint.Stop(1, new Color(0.7490196078431373, 0.9529411764705882, 0.7490196078431373))], lively.paint.LinearGradient.SouthNorth));
 
 });
 
-  
+
 thisModule.addSlots(avocado.process.context.defaultMorphStyle, function(add) {
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);

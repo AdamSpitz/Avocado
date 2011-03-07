@@ -34,13 +34,17 @@ Object.subclass('lively.data.Wrapper', {
 
 	deserialize: function(importer, rawNode) {
 		this.rawNode = rawNode;
+		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 		dbgOn(!rawNode);
 		var id = rawNode.getAttribute("id");
 		if (id) importer.addMapping(id, this); 
 	},
 
 	copyFrom: function(copier, other) {
-		if (other.rawNode) this.rawNode = other.rawNode.cloneNode(true);
+		if (other.rawNode) {
+		  this.rawNode = other.rawNode.cloneNode(true);
+  		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
+	  }
 	},
 
 	copy: function(copier) {
@@ -749,6 +753,7 @@ this.Node.addMethods({
 		if (!this.cachedTransforms) {
 			var list = this.rawNode.transform.baseVal;
 			var array = this.cachedTransforms = new Array(list.numberOfItems);
+  		reflect(this).slotAt('cachedTransforms').setInitializationExpression('undefined'); // aaa hack? -- Adam
 			for (var i = 0; i < list.numberOfItems; i++) {
 				// FIXME: create specialized classes (Rotate/Translate etc)
 				array[i] = new lively.scene.Transform(list.getItem(i), this);
@@ -764,6 +769,7 @@ this.Node.addMethods({
 			list.clear();
 		}
 		this.cachedTransforms = array;
+		reflect(this).slotAt('cachedTransforms').setInitializationExpression('undefined'); // aaa hack? -- Adam
 		for (var i = 0; i < array.length; i++) {
 			var existingTargetNode = array[i].targetNode;
 			if (existingTargetNode && existingTargetNode !== this) 
@@ -889,6 +895,7 @@ this.Shape.subclass('lively.scene.Rectangle', {
 	initialize: function($super, rect) {
 		$super();
 		this.rawNode = NodeFactory.create("rect");
+		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 		this.setBounds(rect || new Rectangle(0, 0, 0, 0));
 		return this;
 	},
@@ -992,6 +999,7 @@ this.Shape.subclass('lively.scene.Ellipse', {
 	initialize: function($super /*,rest*/) {
 		$super();
 		this.rawNode = NodeFactory.create("ellipse");
+		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 		switch (arguments.length) {
 			case 2:
 				this.setBounds(arguments[1]);
@@ -1086,6 +1094,7 @@ this.Shape.subclass('lively.scene.Polygon', {
 
 	initialize: function($super, vertlist) {
 		this.rawNode = NodeFactory.create("polygon");
+		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 		this.setVertices(vertlist);
 		$super();
 		return this;
@@ -1273,6 +1282,7 @@ lively.scene.Shape.subclass('lively.scene.Polyline', {
 
 	initialize: function($super, vertlist) {
 		this.rawNode = NodeFactory.create("polyline");
+		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 		this.setVertices(vertlist);
 		$super();
 	},
@@ -1871,6 +1881,9 @@ this.Shape.subclass('lively.scene.Path', {
 	copyFrom: function($super, copier, other) {
 		$super(copier, other);		
 		this.setElements(other.elements);
+		
+		// aaa hack for morph-saving - don't want copies sharing elements -- Adam
+		this.setElementsFromSVGData(this.createSVGDataFromElements());
 
 		// WebCards Changes:
 		// var res = $super(copier, other);
@@ -1897,6 +1910,12 @@ this.Shape.subclass('lively.scene.Path', {
 	setElements: function(elts) {
 		this.cachedVertices = null;
 		this.elements = elts;
+		
+		// aaa hack for morph-saving -- Adam
+		elts.makeAllCreatorSlots();
+		reflect(this).slotAt('elements').beCreator();
+		reflect(this).slotAt('cachedVertices').setInitializationExpression('undefined');
+		
 		this.rawNode.setAttributeNS(null, "d", this.createSVGDataFromElements());
 	},
 
@@ -2137,7 +2156,9 @@ this.Shape.subclass('lively.scene.Group', {
 
 	initialize: function() {
 		this.rawNode = NodeFactory.create("g");
+		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 		this.content = [];
+		reflect(this).slotAt('content').setInitializationExpression('[]'); // aaa hack, or broken? -- Adam
 	},
 
 	copyFrom: function($super, copier, other) {
@@ -2638,6 +2659,7 @@ Wrapper.subclass('lively.scene.Transform', {
 	initialize: function(rawNode, targetNode) {
 		if (!rawNode) rawNode = locateCanvas().createSVGTransform();
 		this.rawNode = rawNode;
+		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 		// we remember the target node so that we can inform it that we changed
 		this.targetNode = targetNode; 
 	},
@@ -2846,6 +2868,7 @@ lively.scene.Node.subclass('lively.scene.Text', {
 	documentation: "wrapper around SVG Text elements",
 	initialize: function() {
 		this.rawNode = NodeFactory.create("text", { "kerning": 0 });
+		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 	},
 
 	getFontSize: function() {

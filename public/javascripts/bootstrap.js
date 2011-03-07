@@ -678,6 +678,21 @@ transporter.module.cache = {};
 
 transporter.module.onLoadCallbacks = {};
 
+transporter.slotCollection = {};
+annotator.annotationOf(transporter.slotCollection).setCreatorSlot('slotCollection', transporter);
+
+transporter.slotCollection.initialize = function() {
+  this._possibleHolders = [];
+};
+
+transporter.slotCollection.possibleHolders = function() {
+  return this._possibleHolders;
+};
+
+transporter.slotCollection.addPossibleHolder = function(h) {
+  this._possibleHolders.push(h);
+};
+
 transporter.module.named = function(n) {
   var m = modules[n];
   if (m) {return m;}
@@ -685,7 +700,7 @@ transporter.module.named = function(n) {
   m = modules[n] = Object.create(this);
   m._name = n;
   annotator.annotationOf(m).setCreatorSlot(n, modules);
-  transporter.module.cache[n] = [];
+  transporter.module.cache[n] = Object.newChildOf(transporter.slotCollection);
   return m;
 };
 
@@ -763,8 +778,16 @@ transporter.module.doneLoadingModuleNamed = function(n) {
   }
 };
 
-transporter.module.objectsThatMightContainSlotsInMe = function() {
+transporter.module.slotCollection = function() {
   return transporter.module.cache[this._name];
+};
+
+transporter.hackToMakeSureArrayIndexablesGetFiledOut = function (contents, module) {
+  // aaa see hackToMakeSureArrayIndexablesGetFiledOut in the slot object
+  if (! module) { return; }
+  if (typeof contents === 'object' && ((contents instanceof Array) || (contents instanceof Node))) {
+    module.slotCollection().addPossibleHolder(contents);
+  }
 };
 
 transporter.module.slotAdder = {
@@ -777,11 +800,8 @@ transporter.module.slotAdder = {
     if (contentsAnnotation) { // used for creator slots
       annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);
     }
-
-    // aaa see hackToMakeSureArrayIndexablesGetFiledOut
-    if (typeof contents === 'object' && contents instanceof Array) {
-      this.module.objectsThatMightContainSlotsInMe().push(contents);
-    }
+    
+    transporter.hackToMakeSureArrayIndexablesGetFiledOut(contents, this.module);
 
     if (name === 'postFileIn') {
       this.module.objectsWithAPostFileInMethod = this.module.objectsWithAPostFileInMethod || [];
@@ -810,11 +830,15 @@ transporter.module.slotAdder = {
     contents.displayName = name; // this'll show up in the Safari debugger
     contents._creatorSlotHolder = this.holder; // to allow implicit creator slots
     this.creator(name, avocado.hackToMakeSuperWork(this.holder, name, contents), slotAnnotation);
+  },
+  
+  domChildNode: function(name, contents, slotAnnotation, contentsAnnotation) {
+    this.holder.appendChild(contents);
   }
 };
 
 transporter.module.addSlots = function(holder, block) {
-  this.objectsThatMightContainSlotsInMe().push(holder);
+  this.slotCollection().addPossibleHolder(holder);
   var slotAdder = Object.create(this.slotAdder);
   slotAdder.module = this;
   slotAdder.holder = holder;
@@ -830,7 +854,9 @@ bootstrapTheModuleSystem();
 
 
 
-transporter.module.create('bootstrap', function(requires) {}, function(thisModule) {
+transporter.module.create('bootstrap', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules.bootstrap, function(add) {
@@ -909,7 +935,7 @@ thisModule.addSlots(transporter, function(add) {
     // place where we really know where the emailing script is? -- Adam
     transporter.emailingScriptURL = "http://" + document.domain + "/cgi-bin/emailSource.cgi";
   }, {category: ['bootstrapping']});
-  
+
   add.method('initializeCallbackWaiters', function () {
     avocado.callbackWaiter.on(function(callback) {
       transporter.callWhenWorldIsCreated = callback();
@@ -1124,7 +1150,7 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
       head.appendChild(script);
     }
   }, {category: ['loading']});
-  
+
   add.method('canFileOutIndividualModules', function () {
     return typeof(this.fileOutModuleVersion) === 'function';
   }, {category: ['saving']});

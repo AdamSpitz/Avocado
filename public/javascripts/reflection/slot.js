@@ -24,10 +24,18 @@ thisModule.addSlots(avocado.slots, function(add) {
 
   add.creator('hardWiredContents', Object.create(avocado.slots['abstract']));
 
+  add.creator('domChildNode', Object.create(avocado.slots.hardWiredContents));
+
 });
 
 
 thisModule.addSlots(avocado.slots['abstract'], function(add) {
+
+  add.method('create', function () {
+    var s = Object.create(this);
+    s.initialize.apply(s, arguments);
+    return s;
+  });
 
   add.method('initialize', function (m) {
     this._mirror = m;
@@ -52,6 +60,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   add.method('isFunctionBody', function () { return false; }, {category: ['testing']});
 
   add.method('isHardWired', function () { return false; }, {category: ['testing']});
+
+  add.method('isDOMChildNode', function () { return false; }, {category: ['testing']});
 
   add.method('isParent', function () { return false; }, {category: ['testing']});
 
@@ -125,11 +135,11 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     avocado.ui.justChanged(this.contents());
     avocado.ui.justChanged(this);
   }, {category: ['user interface', 'creator slots']});
-  
+
   add.method('likelyModules', function () {
     return this.holder().likelyModules();
   }, {category: ['user interface', 'modules']});
- 
+
   add.creator('filterizer', {}, {category: ['filtering']});
 
   add.method('commands', function () {
@@ -203,17 +213,17 @@ thisModule.addSlots(avocado.slots['abstract'].filterizer, function(add) {
 
   add.method('initialize', function () {
   }, {category: ['creating']});
-  
+
   add.method('excludeSlotsNotInModuleNamed', function (moduleName) {
     this._moduleName = moduleName;
     return this;
   }, {category: ['filtering']});
-  
+
   add.method('excludeSlotsAlreadyAssignedToAModule', function () {
     this._wantOnlyUnowned = true;
     return this;
   }, {category: ['filtering']});
-  
+
   add.method('excludeCopyDowns', function () {
     this._shouldExcludeCopyDowns = true;
     return this;
@@ -228,7 +238,7 @@ thisModule.addSlots(avocado.slots['abstract'].filterizer, function(add) {
     
     return true;
   }, {category: ['matching']});
-  
+
 });
 
 
@@ -256,12 +266,30 @@ thisModule.addSlots(avocado.slots.hardWiredContents, function(add) {
   add.method('name', function () { return this._name; }, {category: ['accessing']});
 
   add.method('contents', function () { return this._contents; }, {category: ['accessing']});
-  
+
   add.method('initializationExpression', function () {
     return "";
   }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('isHardWired', function () { return true; }, {category: ['testing']});
+
+  add.method('equals', function (s) {
+    if (this === s) { return true; }
+    if (!s) { return false; }
+    if (typeof(s.name) !== 'function' || typeof(s.isHardWired) !== 'function') { return false; }
+    return s.isHardWired() && this.name() === s.name() && this.mirror().equals(s.mirror()) && this.contents().equals(s.contents());
+  }, {category: ['comparing']});
+
+  add.method('hashCode', function () {
+    return this.name().hashCode() + this.mirror().hashCode();
+  }, {category: ['comparing']});
+
+});
+
+
+thisModule.addSlots(avocado.slots.domChildNode, function(add) {
+
+  add.method('isDOMChildNode', function () { return true; }, {category: ['testing']});
 
 });
 
@@ -270,7 +298,7 @@ thisModule.addSlots(avocado.slots.parent, function(add) {
 
   add.method('name', function () { return "__proto__"; }, {category: ['accessing']});
 
-  add.method('sortOrder', function () { return ''; }, {comment: 'Should come first.', category: ['sorting']});
+  add.method('sortOrder', function () { return ''; }, {category: ['sorting'], comment: 'Should come first.'});
 
   add.method('isParent', function () { return true; }, {category: ['testing']});
 
@@ -428,7 +456,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     a.setModule(m);
     
     if (m)         {
-      m.objectsThatMightContainSlotsInMe().push(holder.reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
+      m.slotCollection().addPossibleHolder(holder.reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
       m.markAsChanged();
     }
     

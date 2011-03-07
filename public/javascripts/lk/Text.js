@@ -303,6 +303,7 @@ lively.data.Wrapper.subclass('lively.Text.TextWord', {
     
     allocRawNode: function() {
 	this.rawNode = NodeFactory.create("tspan");
+	reflect(this).slotAt('rawNode').beCreator(); // aaa hack for morph-saving -- Adam
     },
     
     compose: function(textLine, startLeftX, topLeftY, rightX) {
@@ -578,6 +579,8 @@ Object.subclass('lively.Text.TextLine', {
 	lastBounds = c.bounds;
 	}
 	this.overallStopIndex = runningStartIndex - 1;
+	this.chunks.makeAllCreatorSlots(); // aaa hack for morph-saving -- Adam
+	reflect(this).slotAt('chunks').beCreator(); // aaa hack for morph-saving -- Adam
     },
     
     adoptStyle: function(emph, charIx) {
@@ -918,7 +921,7 @@ chunkLengthForWord: function(str, index) {
 BoxMorph.subclass('TextMorph', {
 	
 	documentation: "Container for Text",
-	doNotSerialize: ['charsTyped', 'charsReplaced', 'delayedComposition', 'focusHalo', 'lastFindLoc', 'lines', 'priorSelection', 'previousSelection', 
+	doNotSerialize: ['charsTyped', 'charsReplaced', 'delayedComposition', 'focusHalo', 'lastFindLoc', /* 'lines', aaa removed by Adam, slightly confused */ 'priorSelection', 'previousSelection', 
 		'selectionRange', 'selectionPivot','typingHasBegun', 'undoSelectionRange', 'undoTextString', '_statusMorph'],
 
 	// these are prototype variables
@@ -957,6 +960,13 @@ BoxMorph.subclass('TextMorph', {
 		this.priorSelection = [0, -1];	// for double-clicks
 		// note selection is transient
 		this.lines = null;//: TextLine[]
+		
+		// aaa not sure whether this is a hack or not -- Adam
+		this.doNotSerialize.forEach(function(attrName) {
+  		reflect(this).slotAt(attrName).setInitializationExpression('undefined');
+		}.bind(this));
+		reflect(this).slotAt('selectionRange').setInitializationExpression('[0, -1]'); 
+		reflect(this).slotAt('priorSelection').setInitializationExpression('[0, -1]'); 
 	
 		if (this.isInputLine) {	 // for discussion, see beInputLine...
 			this.beInputLine(this.historySize)
@@ -967,6 +977,7 @@ BoxMorph.subclass('TextMorph', {
 	initializePersistentState: function($super, shape) {
 		$super(shape);
 		this.textContent = this.addWrapper(new lively.scene.Text());
+		reflect(this).slotAt('textContent').beCreator(); // added by Adam to make morph-saving work
 		this.resetRendering();
 		// KP: set attributes on the text elt, not on the morph, so that we can retrieve it
 		this.applyStyle({fill: this.backgroundColor, borderWidth: this.borderWidth, borderColor: this.borderColor});
@@ -983,6 +994,7 @@ BoxMorph.subclass('TextMorph', {
 		if ($super(importer, rawNode)) return true;
 		if (rawNode.localName == "text") {
 			this.textContent = new lively.scene.Text(importer, rawNode);   
+  		reflect(this).slotAt('textContent').beCreator(); // added by Adam to make morph-saving work
 			this.fontFamily = this.textContent.getFontFamily();
 			this.fontSize = this.textContent.getFontSize();
 			this.font = thisModule.Font.forFamily(this.fontFamily, this.fontSize);
@@ -1387,6 +1399,8 @@ BoxMorph.subclass('TextMorph', {
 		this.lines[i].adjustAfterEdits(this.textString, this.textStyle, 0, 0);
 
 		this.lines = this.lines.slice(0, lastLineNoOfA+1).concat(newLines);
+		this.lines.makeAllCreatorSlots(); // aaa hack for morph-saving -- Adam
+		reflect(this).slotAt('lines').beCreator(); // aaa hack for morph-saving -- Adam
 
 		if (test) for (var i=0; i < this.lines.length; i++) console.log("Line " + i + " = " + [this.lines[i].startIndex, this.lines[i].getStopIndex()]);
 		if (test) console.log("Last line y after = " + this.lines.last().topLeft.y);
@@ -1419,6 +1433,8 @@ BoxMorph.subclass('TextMorph', {
 		var defaultInterline = (lively.Text.TextLine.prototype.lineHeightFactor - 1) * this.font.getSize();
 
 		this.lines = this.composeLines(0, topLeft.addXY(0, defaultInterline/2), compositionWidth, this.font);
+		this.lines.makeAllCreatorSlots(); // aaa hack for morph-saving -- Adam
+		reflect(this).slotAt('lines').beCreator(); // aaa hack for morph-saving -- Adam
 		for (var i = 0; i < this.lines.length; i++) this.lines[i].render(this.textContent);
 	},
 

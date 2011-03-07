@@ -29,7 +29,7 @@ thisModule.addSlots(avocado.hashTable, function(add) {
   }, {category: ['creating']});
 
   add.creator('bucketHolder', {}, {category: ['prototypes']});
-  
+
   add.method('initialize', function (comparator) {
     this._buckets = Object.create(this.bucketHolder);
     this._size = 0;
@@ -194,7 +194,7 @@ thisModule.addSlots(avocado.dictionary, function(add) {
   }, {category: ['entries']});
 
   add.creator('entry', {}, {category: ['entries']});
-  
+
   add.method('newEntry', function (k, v) {
     return Object.newChildOf(this.entry, k, v);
   }, {category: ['entries']});
@@ -270,12 +270,12 @@ thisModule.addSlots(avocado.dictionary, function(add) {
 
 
 thisModule.addSlots(avocado.dictionary.entry, function(add) {
-  
+
   add.method('initialize', function (k, v) {
     this.key = k;
     this.value = v;
   });
-  
+
 });
 
 

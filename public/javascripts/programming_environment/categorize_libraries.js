@@ -1,4 +1,6 @@
-transporter.module.create('programming_environment/categorize_libraries', function(requires) {}, function(thisModule) {
+transporter.module.create('programming_environment/categorize_libraries', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {

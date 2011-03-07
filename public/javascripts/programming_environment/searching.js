@@ -1,4 +1,6 @@
-transporter.module.create('programming_environment/searching', function(requires) {}, function(thisModule) {
+transporter.module.create('programming_environment/searching', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {

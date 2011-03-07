@@ -28,9 +28,9 @@ thisModule.addSlots(avocado.mirror.Morph, function(add) {
 
   add.data('superclass', avocado.ColumnMorph);
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
-
   add.data('type', 'avocado.mirror.Morph');
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
 
 });
 
@@ -96,12 +96,12 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
-  
+
   add.method('toString', function () {
     return this.mirror().inspect();
   }, {category: ['printing']});
 
-  add.data('shouldUseZooming', function () {
+  add.method('shouldUseZooming', function () {
     return avocado.shouldMirrorsUseZooming;
   }, {category: ['zooming']});
 
@@ -119,7 +119,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.creator('annotationStyle', {}, {category: ['styles']});
 
   add.creator('commentStyle', {}, {category: ['styles']});
-  
+
   add.creator('copyDownParentsStyle', {}, {category: ['styles']});
 
   add.method('createRow', function (m) {
@@ -135,7 +135,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     if (this.shouldUseZooming()) { m.setScale(0.25); }
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
-    this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString')).applyStyle(this.copyDownParentsStyle);
+    this._copyDownParentsLabel = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString')).applyStyle(this.copyDownParentsStyle);
 
     var rows = [];
     if (this.shouldUseZooming()) { rows.push(avocado.RowMorph.createSpaceFilling([TextMorph.createLabel("Comment:"), this.commentMorph()])); }
@@ -145,7 +145,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['annotation']});
 
   add.method('commentMorph', function () {
-    return this._commentMorph || (this._commentMorph = new TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.mirror(), 'comment')).applyStyle(this.commentStyle));
+    return this._commentMorph || (this._commentMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.mirror(), 'comment')).applyStyle(this.commentStyle));
   }, {category: ['comment']});
 
   add.method('copyDownParentsString', function () {
@@ -424,23 +424,23 @@ thisModule.addSlots(avocado.mirror.Morph.prototype.defaultStyle, function(add) {
 
 
 thisModule.addSlots(avocado.mirror.Morph.prototype.annotationStyle, function(add) {
-    
+
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
-  
+
 });
 
 
 thisModule.addSlots(avocado.mirror.Morph.prototype.commentStyle, function(add) {
-  
+
   add.data('suppressHandles', true);
-  
+
 });
 
 
 thisModule.addSlots(avocado.mirror.Morph.prototype.copyDownParentsStyle, function(add) {
-  
+
   add.data('suppressHandles', true);
-  
+
 });
 
 

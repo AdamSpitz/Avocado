@@ -1,4 +1,6 @@
-transporter.module.create('lk_ext/applications', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/applications', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(WorldMorph.prototype, function(add) {

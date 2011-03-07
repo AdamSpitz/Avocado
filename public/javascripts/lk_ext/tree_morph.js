@@ -17,9 +17,9 @@ thisModule.addSlots(avocado.TreeNodeMorph, function(add) {
 
   add.data('superclass', avocado.TableMorph);
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
-
   add.data('type', 'avocado.TreeNodeMorph');
+
+  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
 
 });
 
@@ -44,7 +44,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['initializing']});
 
   add.method('treeNode', function () { return this._model; }, {category: ['accessing']});
-  
+
   add.method('toString', function () {
     if (this._titleLabel) { return this._titleLabel.getText(); }
     return "a tree node";
@@ -60,7 +60,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('expander', function () { return this._expander; }, {category: ['expanding and collapsing']});
-  
+
   add.method('expandMeAndAncestors', function () {
     if (this.expander()) {
       if (! this.treeNode().isRoot()) { this.supernodeMorph().expandMeAndAncestors(); }
@@ -87,7 +87,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       }
     };
   }, {category: ['UI state']});
-  
+
   add.method('headerRowContents', function () {
     if (this.shouldUseZooming()) {
       return [this._titleLabel, avocado.scaleBasedOptionalMorph.create(this, this.contentsPanel(), this, 2.0)];
@@ -108,7 +108,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       return avocado.tableContents.createWithColumns([rows]);
     }
   }, {category: ['updating']});
-  
+
   add.method('adjustScaleOfContentsPanel', function () {
     if (this.shouldUseZooming()) {
       var numContentMorphs = this.contentsCount() + 1; // + 1 for the summary, though I guess it shouldn't matter much
@@ -159,11 +159,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     });
     return avocado.tableContents.createWithColumns([allSubmorphs]);
   }, {category: ['contents panel']});
-  
+
   add.method('addToContentsPanel', function (m) {
     this.contentsPanel().addRow(m);
   }, {category: ['contents panel']});
-  
+
   add.method('nodeStyle', function () { return this.shouldUseZooming() ? this.zoomingNodeStyle : this.nonZoomingNodeStyle; }, {category: ['styles']});
 
   add.method('contentsPanelStyle', function () { return this.shouldUseZooming() ? this.zoomingContentsPanelStyle : this.nonZoomingContentsPanelStyle; }, {category: ['styles']});

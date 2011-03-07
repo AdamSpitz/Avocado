@@ -48,11 +48,11 @@ thisModule.addSlots(Morph.prototype, function(add) {
       m = m.owner;
     }
     return s;
-  }, {category: 'zooming interface'});
-  
+  }, {category: ['zooming interface']});
+
   add.method('adjustDetailBasedOnOverallScale', function () {
     // children can override
-  }, {category: 'zooming interface'});
+  }, {category: ['zooming interface']});
 
 });
 

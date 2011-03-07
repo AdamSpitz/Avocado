@@ -1,4 +1,6 @@
-transporter.module.create('lk_ext/highlighting', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/highlighting', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(Morph.prototype, function(add) {
@@ -15,7 +17,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
       };
     }
   }, {category: ['highlighting']});
-  
+
   add.method('beHighlighted', function () {
     if (!this._styleBeforeHighlighting) {
       this._styleBeforeHighlighting = this.makeStyleSpec();

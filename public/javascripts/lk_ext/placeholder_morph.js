@@ -1,4 +1,6 @@
-transporter.module.create('lk_ext/placeholder_morph', function(requires) {}, function(thisModule) {
+transporter.module.create('lk_ext/placeholder_morph', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -12,9 +14,9 @@ thisModule.addSlots(avocado.PlaceholderMorph, function(add) {
 
   add.data('superclass', Morph);
 
-  add.creator('prototype', Object.create(Morph.prototype));
-
   add.data('type', 'avocado.PlaceholderMorph');
+
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -32,17 +34,17 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
     this._labelMorph.setTextColor(this.defaultStyle.textColor);
     this.addMorphCentered(this._labelMorph);
   }, {category: ['creating']});
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
-  
+
   add.method('originalMorph', function () { return this._originalMorph; }, {category: ['accessing']});
-  
+
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
     cmdList.addItem(avocado.command.create('come back!', function(evt) { this.putOriginalMorphBack(); }));
     return cmdList;
   }, {category: ['commands']});
-  
+
   add.method('putOriginalMorphBack', function (callWhenDone) {
     if (this._puttingOriginalMorphBack) { return; }
 	  this._puttingOriginalMorphBack = true;
@@ -52,22 +54,22 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
       if (callWhenDone) { callWhenDone(this); }
     }.bind(this));
   }, {category: ['putting in place']});
-  
+
   add.method('putOriginalMorphBackWithoutAnimation', function () {
     this.owner.replaceMorph(this, this._originalMorph);
     this._originalMorph.updateAppearance();
   }, {category: ['putting in place']});
-  
+
   add.method('putInPlaceOfOriginalMorph', function () {
     this._originalMorph.owner.replaceMorph(this._originalMorph, this);
   }, {category: ['putting in place']});
 
-	add.method('onMouseDown', function($super, evt) {
+  add.method('onMouseDown', function ($super, evt) {
 	  this.putOriginalMorphBack();
 	  return $super(evt);
 	}, {category: ['event handling']});
 
-	add.method('handlesMouseDown', function(evt) {
+  add.method('handlesMouseDown', function (evt) {
 	  return true;
 	}, {category: ['event handling']});
 
@@ -75,38 +77,38 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
 
 
 thisModule.addSlots(avocado.PlaceholderMorph.prototype.defaultStyle, function(add) {
-  
-  add.data('fill', Color.black);
+
+  add.data('fill', new Color(0, 0, 0));
 
   add.data('fillOpacity', 0.1);
-  
+
   add.data('openForDragAndDrop', false);
-  
+
   add.data('suppressGrabbing', true);
-  
+
   add.data('grabsShouldFallThrough', false, {comment: 'Otherwise clicking on it doesn\'t work.'});
-  
+
   add.data('textColor', new Color(0.5, 0.5, 0.5));
-  
+
 });
 
 
 thisModule.addSlots(Morph.prototype, function(add) {
-  
+
   add.method('doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe', function () {
     return this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemoving(this);
   }, {category: ['placeholders']});
-  
+
   add.method('doIOrMyOwnersWantToLeaveAPlaceholderWhenRemoving', function (m) {
     if (this.doIWantToLeaveAPlaceholderWhenRemoving(m)) { return true; }
     return this.owner && this.owner.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemoving(m);
   }, {category: ['placeholders']});
-  
+
   add.method('doIWantToLeaveAPlaceholderWhenRemoving', function (m) {
     // can override in children
     return false;
   }, {category: ['placeholders']});
-  
+
 });
 
 

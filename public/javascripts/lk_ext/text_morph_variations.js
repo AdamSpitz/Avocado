@@ -1,5 +1,33 @@
-TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
-  initialize: function($super, accessors) {
+transporter.module.create('lk_ext/text_morph_variations', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.method('TextMorphRequiringExplicitAcceptance', function TextMorphRequiringExplicitAcceptance() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
+
+  add.method('TwoModeTextMorph', function TwoModeTextMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
+
+});
+
+
+thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance, function(add) {
+
+  add.data('superclass', TextMorph);
+
+  add.data('type', 'avocado.TextMorphRequiringExplicitAcceptance');
+
+  add.creator('prototype', Object.create(TextMorph.prototype));
+
+});
+
+
+thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, function(add) {
+
+  add.data('constructor', avocado.TextMorphRequiringExplicitAcceptance);
+
+  add.method('initialize', function($super, accessors) {
     $super();
     this.dontNotifyUntilTheActualModelChanges = true;
     this.connectModel({model: this, getText: "getSavedText", setText: "setSavedText"});
@@ -10,45 +38,45 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     this.justAcceptedOrCancelled();
     if (accessors) { this._accessors = accessors; }
     this.refreshText();
-  },
+  });
 
-  defaultBounds: pt(5, 10).extent(pt(140, 20)),
+  add.data('defaultBounds', pt(5, 10).extent(pt(140, 20)));
   
-  openForDragAndDrop: false,
+  add.data('openForDragAndDrop', false);
   
-  suppressGrabbing: true,
+  add.data('suppressGrabbing', true);
   
-  wrap: lively.Text.WrapStyle.Shrink,
+  add.data('wrap', lively.Text.WrapStyle.Shrink);
 
-  getSavedText: function( )  {
+  add.method('getSavedText', function( )  {
     if (this._accessors) {
       return this._accessors.get();
     } else {
       return this.savedTextString;
     }
-  },
+  });
 
-  setSavedText: function(t)  {
+  add.method('setSavedText', function(t)  {
     if (this._accessors) {
       this._accessors.set(t);
     } else {
       this.savedTextString = t;
       if (this.notifier) {this.notifier.notifyAllObservers();}
     }
-  },
+  });
 
-  setTextString: function($super, replacement, delayComposition, justMoreTyping) {
+  add.method('setTextString', function($super, replacement, delayComposition, justMoreTyping) {
     var x = $super(replacement, delayComposition, justMoreTyping);
     this.updateLayoutIfNecessary();
     return x;
-  },
+  });
 
-  updateLayoutIfNecessary: function() {
+  add.method('updateLayoutIfNecessary', function() {
     this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
     this.minimumExtentMayHaveChanged();
-  },
+  });
 
-  checkForAcceptOrCancel: function(evt) {
+  add.method('checkForAcceptOrCancel', function(evt) {
     if (this.hasChangedFromSavedText() && evt.getKeyCode() == Event.KEY_ESC) {
       this.cancelChanges();
       evt.stop();
@@ -62,44 +90,41 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     }
     
     return false;
-  },
+  });
 
-  onKeyDown: function($super, evt) {
+  add.method('onKeyDown', function($super, evt) {
     if (this.checkForAcceptOrCancel(evt)) { return true; }
     return $super(evt);
-  },
+  });
 
-  onKeyPress: function($super, evt) {
+  add.method('onKeyPress', function($super, evt) {
     if (this.checkForAcceptOrCancel(evt)) { return true; }
     return $super(evt);
-  },
+  });
 
-  beWritableAndSelectAll: function(evt) {
+  add.method('beWritableAndSelectAll', function(evt) {
     this.beWritable();
     this.requestKeyboardFocus(evt ? evt.hand : WorldMorph.current().firstHand());
     this.doSelectAll();
-  },
+  });
   
-  wasJustShown: function(evt) {
+  add.method('wasJustShown', function(evt) {
     this.beWritableAndSelectAll(evt);
-  },
+  });
   
-  beWritable: function() {
+  add.method('beWritable', function() {
     // nothing to do here, but children can override
-  },
+  });
 
-  hasChangedFromSavedText: function() {
+  add.method('hasChangedFromSavedText', function() {
     return this._hasChangedFromSavedText;
-  },
+  });
 
-  normalStyle: TextMorph.prototype.style,
+  add.data('normalStyle', TextMorph.prototype.style);
   
-  modifiedStyle: {
-    borderWidth: 2,
-    borderColor: Color.red
-  },
+  add.creator('modifiedStyle', {});
 
-  changed: function($super) {
+  add.method('changed', function($super) {
     // Avoid infinite recursion when setting the border stuff.
     if (this._isChangingRightNow) {return;}
     this._isChangingRightNow = true;
@@ -114,9 +139,9 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     this.minimumExtentMayHaveChanged();
     delete this._isChangingRightNow;
     $super();
-  },
+  });
 
-  refreshText: function() {
+  add.method('refreshText', function() {
     if (this.hasChangedFromSavedText()) {
       // Don't wanna lose the stuff that we've typed.
       this.changed();
@@ -138,50 +163,75 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
         */
       }
     }
-  },
+  });
 
-  justAcceptedOrCancelled: function() {
+  add.method('justAcceptedOrCancelled', function() {
     this.changed();
     this.updateLayoutIfNecessary();
-  },
+  });
 
-  acceptChanges: function() {
+  add.method('acceptChanges', function() {
     var newText = this.getText();
     if (newText !== this.getSavedText()) {
       this.setSavedText(newText);
     }
     this.justAcceptedOrCancelled();
-  },
+  });
 
-  cancelChanges: function() {
+  add.method('cancelChanges', function() {
     this.setText(this.getSavedText());
     this.justAcceptedOrCancelled();
-  },
+  });
 
-  handlesMouseDown: function(evt) { return true; },
+  add.method('handlesMouseDown', function(evt) { return true; });
 
-  returnKeyShouldAccept: function() { return false; },
+  add.method('returnKeyShouldAccept', function() { return false; });
 
-  morphMenu: function(evt) {
+  add.method('morphMenu', function(evt) {
     return this.editingCommands().createMenu(this);
-  },
+  });
 
-  editingCommands: function() {
+  add.method('editingCommands', function() {
     var cmdList = avocado.command.list.create(this);
     if (this.hasChangedFromSavedText()) {
       cmdList.addItem(["accept    [alt+enter]", this.acceptChanges]);
       cmdList.addItem(["cancel    [escape]"   , this.cancelChanges]);
     }
     return cmdList;
-  }
+  });
+  
 });
 
-TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
-  hasChangedFromSavedText: function() {
-    return this.isInWritableMode;
-  },
 
-  beUnwritable: function() {
+thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype.modifiedStyle, function(add) {
+
+  add.data('borderWidth', 2);
+  
+  add.data('borderColor', Color.red);
+  
+});
+
+
+thisModule.addSlots(avocado.TwoModeTextMorph, function(add) {
+
+  add.data('superclass', avocado.TextMorphRequiringExplicitAcceptance);
+
+  add.data('type', 'avocado.TwoModeTextMorph');
+
+  add.creator('prototype', Object.create(avocado.TextMorphRequiringExplicitAcceptance.prototype));
+
+});
+
+
+thisModule.addSlots(avocado.TwoModeTextMorph.prototype, function(add) {
+
+  add.data('constructor', avocado.TwoModeTextMorph);
+  
+  add.method('hasChangedFromSavedText', function() {
+    return this.isInWritableMode;
+  });
+
+  add.method('beUnwritable', function() {
     this.acceptInput = false;
     this.setFill(this.backgroundColorWhenUnwritable || null);
     this.setNullSelectionAt(0);
@@ -192,9 +242,9 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
     delete this.oldMouseHandler;
     this.isInWritableMode = false;
     return this;
-  },
+  });
 
-  beWritable: function() {
+  add.method('beWritable', function() {
     this.acceptInput = true;
     this.setFill(this.backgroundColorWhenWritable || null);
     this.changed();
@@ -202,50 +252,67 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
     this.enableEvents();
     this.isInWritableMode = true;
     return this;
-  },
+  });
 
-  switchEditModeOn:  function() { this.beWritable(); },
-  switchEditModeOff: function() { this.beUnwritable(); },
+  add.method('switchEditModeOn', function() { this.beWritable(); });
+  
+  add.method('switchEditModeOff', function() { this.beUnwritable(); });
 
-  normalStyle: Object.extend(Object.create(TextMorph.prototype.style), {borderWidth: 0}),
+  add.creator('normalStyle', Object.create(TextMorph.prototype.style));
 
-  justAcceptedOrCancelled: function() {
+  add.method('justAcceptedOrCancelled', function() {
     this.beUnwritable();
     this.updateLayoutIfNecessary();
-  },
+  });
 
-  onMouseDown: function($super, evt) {
+  add.method('onMouseDown', function($super, evt) {
     if (! this.isInWritableMode) {
       return this.checkForDoubleClick(evt);
     }
     return $super(evt);
-  },
+  });
 
-  canBecomeWritable: function() { return ! this.isReadOnly; },
+  add.method('canBecomeWritable', function() { return ! this.isReadOnly; });
 
-  returnKeyShouldAccept: function() { return true; },
+  add.method('returnKeyShouldAccept', function() { return true; });
 
-  onDoubleClick: function(evt) {
+  add.method('onDoubleClick', function(evt) {
     if (this.canBecomeWritable()) {
       this.beWritable();
       this.onMouseDown(evt);
     }
-  },
+  });
   
-  nameOfEditCommand: 'edit',
+  add.data('nameOfEditCommand', 'edit');
   
-  setNameOfEditCommand: function(n) {
+  add.method('setNameOfEditCommand', function(n) {
     this.nameOfEditCommand = n;
     return this;
-  },
+  });
 
-  editingCommands: function($super) {
+  add.method('editingCommands', function($super) {
     var cmdList = $super();
     if (!this.isInWritableMode && this.canBecomeWritable()) {
       cmdList.addItem(avocado.command.create(this.nameOfEditCommand, function(evt) {this.beWritableAndSelectAll(evt);}, this));
     }
     return cmdList;
-  }
+  });
+  
 });
 
-TextMorph.prototype.style. borderColor = new Color(0.6, 0.6, 0.6);
+
+thisModule.addSlots(avocado.TwoModeTextMorph.prototype.normalStyle, function(add) {
+  
+  add.data('borderWidth', 0);
+
+});
+
+
+thisModule.addSlots(TextMorph.prototype.style, function(add) {
+
+  add.data('borderColor', new Color(0.6, 0.6, 0.6));
+  
+});
+
+
+});

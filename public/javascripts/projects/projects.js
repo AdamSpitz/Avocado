@@ -1,21 +1,24 @@
-transporter.module.create('projects/projects', function(requires) {}, function(thisModule) {
-  
+transporter.module.create('projects/projects', function(requires) {
+
+}, function(thisModule) {
+
 
 thisModule.addSlots(avocado, function(add) {
-  
+
   add.creator('project', {}, {category: ['projects']});
-  
+
 });
-  
+
 
 thisModule.addSlots(avocado.project, function(add) {
   
   add.data('_shouldNotSaveCurrentWorld', true, {category: ['saving']});
   
+
   add.method('current', function () {
     return this._current || (this._current = this.create({ name: "This project" }));
   }, {category: ['current one']});
-  
+
   add.method('setCurrent', function (p) {
     this._current = p;
     
@@ -23,11 +26,11 @@ thisModule.addSlots(avocado.project, function(add) {
       avocado.justSetCurrentProject(p);
     }
   }, {category: ['current one']});
-  
+
   add.method('create', function (info) {
     return Object.newChildOf(this, info);
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (info) {
     this.setName(info.name);
     this.setIsPrivate(info.isPrivate);
@@ -36,62 +39,60 @@ thisModule.addSlots(avocado.project, function(add) {
     } else {
       transporter.idTracker.createTemporaryIDFor(this);
     }
-    this.markAsUnchanged();
   }, {category: ['creating']});
-  
+
   add.method('name', function () { return this._name; }, {category: ['accessing']});
-  
+
   add.method('setName', function (n) { this._name = n; this.markAsChanged(); }, {category: ['accessing']});
-  
+
   add.method('id', function () { return this._projectID; }, {category: ['accessing']});
-  
+
   add.method('setID', function (id) { this._projectID = id; }, {category: ['accessing']});
+
+  add.data('_modificationFlag', null, {category: ['accessing'], initializeTo: 'null'});
   
+  add.method('modificationFlag', function () {
+    return this._modificationFlag || (this._modificationFlag = avocado.modificationFlag.create(this, [this.module().modificationFlag()]));
+  }, {category: ['accessing']});
+
   add.method('isPrivate', function () { return this._isPrivate; }, {category: ['accessing']});
-  
+
   add.method('setIsPrivate', function (b) { this._isPrivate = b; this.markAsChanged(); }, {category: ['accessing']});
-  
+
   add.method('isInTrashCan', function () { return this._isInTrashCan; }, {category: ['accessing']});
-  
+
   add.method('putInTrashCan', function () { this._isInTrashCan = true; this.markAsChanged(); }, {category: ['accessing']});
 
   add.method('module', function () { return modules.thisProject; }, {category: ['accessing']});
-  
+
   add.method('inspect', function () { return this.name(); }, {category: ['printing']});
-  
+
   add.method('toString', function () { return this.name(); }, {category: ['printing']});
-  
-  add.method('hasChangedSinceLastFileOut', function () {
-    return this._hasChanged || this.module().haveIOrAnyOfMyRequirementsChangedSinceLastFileOut();
-  }, {category: ['keeping track of changes']});
-  
+
   add.method('markAsChanged', function () {
-    this._hasChanged = true;
-    if (this._changeNotifier) { this._changeNotifier.notifyAllObservers(); }
+    this.modificationFlag().markAsChanged();
   }, {category: ['keeping track of changes']});
-  
+
   add.method('markAsUnchanged', function () {
-    this._hasChanged = false;
-    if (this._changeNotifier) { this._changeNotifier.notifyAllObservers(); }
+    this.modificationFlag().markAsUnchanged();
   }, {category: ['keeping track of changes']});
 
   add.method('whenChangedNotify', function (observer) {
-    if (! this._changeNotifier) { this._changeNotifier = avocado.notifier.on(this); }
-    this._changeNotifier.addObserver(observer);
+    this.modificationFlag().notifier().addObserver(observer);
   }, {category: ['keeping track of changes']});
-  
+
   add.method('togglePrivacy', function (evt) {
     this.setIsPrivate(! this.isPrivate());
   }, {category: ['commands']});
-  
+
   add.method('grabRootModule', function (evt) {
     avocado.ui.grab(this.module(), evt);
   }, {category: ['commands']});
-  
+
   add.method('rename', function (evt) {
     avocado.ui.prompt("New name?", function(n) { if (n) { this.setName(n); }}.bind(this), this.name(), evt);
   }, {category: ['commands']});
-  
+
   add.method('determineVersionsToSave', function () {
     var versionsToSave = {};
     var rootModule = this.module();
@@ -103,7 +104,7 @@ thisModule.addSlots(avocado.project, function(add) {
         // aaa - Could make this algorithm faster if each module knew who required him - just check
         // if m itself has changed, and if so then walk up the requirements chain making sure that
         // they're included.
-        if (m === rootModule || m.haveIOrAnyOfMyRequirementsChangedSinceLastFileOut()) { // always save the root, just makes things simpler
+        if (m === rootModule || m.modificationFlag().hasThisOneOrChildrenChanged()) { // always save the root, just makes things simpler
           versionsToSave[m.name()] = m.createNewVersion();
           m.requirements().each(function(requiredModuleName) { modulesLeftToLookAt.push(modules[requiredModuleName])});
         } else {
@@ -125,6 +126,8 @@ thisModule.addSlots(avocado.project, function(add) {
     return sortedVersionsToSave;
   }, {category: ['saving']});
   
+  add.data('_shouldNotSaveCurrentWorld', true, {category: ['saving']});
+
   add.method('resetCurrentWorldStateModule', function () {
     if (!modules.currentWorldState) { return; }
     if (!modules.currentWorldState.morphs) { return; }
@@ -137,7 +140,7 @@ thisModule.addSlots(avocado.project, function(add) {
 	  modules.currentWorldState.morphs = [];
   	reflect(modules.currentWorldState).slotAt('morphs').beCreator();
   }, {category: ['saving']});
-  
+
   add.method('assignCurrentWorldStateToTheRightModule', function () {
   	var currentWorldStateModule = modules.currentWorldState || this.module().createNewOneRequiredByThisOne('currentWorldState');
   	
@@ -168,7 +171,7 @@ thisModule.addSlots(avocado.project, function(add) {
   	
     walker.shouldContinueRecursingIntoSlot = function (holder, slotName, howDidWeGetHere) {
       // aaa - hack; really these slots should be annotated with an initializeTo: 'undefined' or something like that
-      if (['pvtCachedTransform', 'fullBounds', '_currentVersion', '_requirements'].include(slotName)) { return false; }
+      if (['pvtCachedTransform', 'fullBounds', '_currentVersion', '_requirements', '_modificationFlag'].include(slotName)) { return false; }
       return true;
     };
 
@@ -176,13 +179,11 @@ thisModule.addSlots(avocado.project, function(add) {
     currentWorldStateModule.markAsChanged();
     
   });
-  
-  
-  
+
   add.method('autoSave', function (evt) {
   	this.save(evt, true);
   });
-  
+
   add.method('save', function (evt, isAutoSave) {
     if (!this._shouldNotSaveCurrentWorld) { this.assignCurrentWorldStateToTheRightModule(); }
     
@@ -199,7 +200,7 @@ thisModule.addSlots(avocado.project, function(add) {
     
     var mockRepo = avocado.project.repository.create(this, isAutoSave);
     mockRepo.setRoot(versionsToSave[this.module().name()]);
-    var errors = transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, transporter.module.justBodyFilerOuter);
+    var errors = transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, transporter.module.filerOuters.justBody);
     if (errors.length === 0) {
       mockRepo.save(function() {
     	  if (!this._shouldNotSaveCurrentWorld) { avocado.project.resetCurrentWorldStateModule(); }
@@ -216,13 +217,13 @@ thisModule.addSlots(avocado.project, function(add) {
   }, {category: ['saving']});
 
   add.creator('repository', {}, {category: ['saving']});
-  
+
   add.method('buttonCommands', function () {
     return avocado.command.list.create(this, [
       avocado.command.create('Save', this.save)
     ]);
   }, {category: ['user interface', 'commands']});
-  
+
   add.method('commands', function () {
     return avocado.command.list.create(this, [
       avocado.command.create('save', this.save),
@@ -231,16 +232,16 @@ thisModule.addSlots(avocado.project, function(add) {
       avocado.command.create(this.isPrivate() ? 'be public' : 'be private', this.togglePrivacy)
     ]);
   }, {category: ['user interface', 'commands']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.project.repository, function(add) {
-  
+
   add.method('create', function (project, isAutoSave) {
     return Object.newChildOf(this, project, isAutoSave);
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (project, isAutoSave) {
     this._project = project;
     this._projectData = {
@@ -256,7 +257,7 @@ thisModule.addSlots(avocado.project.repository, function(add) {
   add.method('setRoot', function (rootModuleVersion) {
     this._projectData.root = rootModuleVersion.versionID();
   }, {category: ['saving']});
-  
+
   add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
     this._projectData.modules.push({
       module: moduleVersion.module().name(),
@@ -266,7 +267,7 @@ thisModule.addSlots(avocado.project.repository, function(add) {
       code: codeToFileOut
     });
   }, {category: ['saving']});
-  
+
   add.method('save', function (successBlock, failBlock) {
     var json = Object.toJSON(this._projectData);
     // aaa - I imagine it's possible to send the JSON without encoding it as a POST parameter, but let's not worry about it yet.
@@ -286,7 +287,7 @@ thisModule.addSlots(avocado.project.repository, function(add) {
       onException: function(r,      e) { failBlock("Failed to file out project " + this._project + " to repository " + this + "; exception was " + e); }.bind(this)
     });
   }, {category: ['saving']});
-  
+
   add.method('onSuccessfulPost', function (responseJSON, successBlock, failBlock) {
     if (responseJSON.error) {
       failBlock("Server responded with error: " + responseJSON.error);
@@ -298,7 +299,7 @@ thisModule.addSlots(avocado.project.repository, function(add) {
       successBlock();
     }
   }, {category: ['saving']});
-  
+
 });
 
 

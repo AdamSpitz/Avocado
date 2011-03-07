@@ -1,4 +1,6 @@
-transporter.module.create('core/dependencies', function(requires) {}, function(thisModule) {
+transporter.module.create('core/dependencies', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -69,6 +71,12 @@ thisModule.addSlots(avocado.dependencies, function(add) {
   }, {category: ['removing']});
 
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+  
+  add.method('printToConsole', function () {
+    this.eachDependency(function(depender, dependee) {
+      console.log("" + depender + " -> " + dependee);
+    });
+  }, {category: ['printing']});
 
 });
 

@@ -1,4 +1,6 @@
-transporter.module.create('core/enumerator', function(requires) {}, function(thisModule) {
+transporter.module.create('core/enumerator', function(requires) {
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
@@ -9,6 +11,20 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.enumerator, function(add) {
+
+  add.method('map', function (transformer) {
+    return avocado.enumerator.create(this, 'eachMappedBy', transformer);
+  }, {category: ['transforming']});
+
+  add.method('select', function (condition) {
+    return avocado.enumerator.create(this, 'eachFilteredBy', condition);
+  }, {category: ['transforming']});
+
+  add.method('toArray', function () {
+    var a = [];
+    this.each(function(x) { a.push(x); });
+    return a;
+  }, {category: ['transforming']});
 
   add.method('create', function () {
     var e = Object.create(this);
@@ -22,7 +38,7 @@ thisModule.addSlots(avocado.enumerator, function(add) {
     this._methodName = args.shift();
     this._methodArgs = args;
   }, {category: ['creating']});
-  
+
   add.method('toString', function () {
     var s = [this._object.toString(), ".", this._methodName, "("];
     this._methodArgs.each(function(arg) { s.push("" + arg); });
@@ -38,29 +54,15 @@ thisModule.addSlots(avocado.enumerator, function(add) {
       return method.apply(this._object, this._methodArgs.concat([f]));
     }
   }, {category: ['iterating']});
-  
-  add.method('toArray', function () {
-    var a = [];
-    this.each(function(x) { a.push(x); });
-    return a;
-  }, {category: ['transforming']});
-  
+
   add.method('sort', function (f) {
     return this.toArray().sort(f)
   }, {category: ['sorting']});
-  
-  add.method('select', function (condition) {
-    return avocado.enumerator.create(this, 'eachFilteredBy', condition);
-  }, {category: ['transforming']});
-  
+
   add.method('eachFilteredBy', function (condition, f) {
     this.each(function(x) { if (condition(x)) { f(x); }; });
   }, {category: ['transforming']});
-  
-  add.method('map', function (transformer) {
-    return avocado.enumerator.create(this, 'eachMappedBy', transformer);
-  }, {category: ['transforming']});
-  
+
   add.method('eachMappedBy', function (transformer, f) {
     this.each(function(x) { f(transformer(x)); });
   }, {category: ['transforming']});
