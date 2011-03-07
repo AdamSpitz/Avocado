@@ -48,7 +48,11 @@ thisModule.addSlots(transporter, function(add) {
       }],
       
       ["changed modules", function(evt) {
-        avocado.ui.showObjects(transporter.module.changedOnes(), "changed modules", evt);
+        if(transporter.module.changedOnes().size() > 0){
+          avocado.ui.showObjects(transporter.module.changedOnes(), "changed modules", evt);
+        }else{
+         WorldMorph.current().showMessage("No changed modules to display");
+        }
       }],
 
       ["all modules", function(evt) {

@@ -10,6 +10,8 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.project, function(add) {
   
+  add.data('_shouldNotSaveCurrentWorld', true, {category: ['saving']});
+  
   add.method('current', function () {
     return this._current || (this._current = this.create({ name: "This project" }));
   }, {category: ['current one']});
