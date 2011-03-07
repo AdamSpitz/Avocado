@@ -1881,6 +1881,9 @@ this.Shape.subclass('lively.scene.Path', {
 	copyFrom: function($super, copier, other) {
 		$super(copier, other);		
 		this.setElements(other.elements);
+		
+		// aaa hack for morph-saving - don't want copies sharing elements -- Adam
+		this.setElementsFromSVGData(this.createSVGDataFromElements());
 
 		// WebCards Changes:
 		// var res = $super(copier, other);
@@ -1907,6 +1910,12 @@ this.Shape.subclass('lively.scene.Path', {
 	setElements: function(elts) {
 		this.cachedVertices = null;
 		this.elements = elts;
+		
+		// aaa hack for morph-saving -- Adam
+		elts.makeAllCreatorSlots();
+		reflect(this).slotAt('elements').beCreator();
+		reflect(this).slotAt('cachedVertices').setInitializationExpression('undefined');
+		
 		this.rawNode.setAttributeNS(null, "d", this.createSVGDataFromElements());
 	},
 

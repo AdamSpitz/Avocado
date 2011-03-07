@@ -48,7 +48,9 @@ thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
     buttonLabel.suppressHandles = true;
     buttonLabel.ignoreEvents();
     buttonLabel.backgroundColorWhenWritable = Color.white;
-    var button  = ButtonMorph.createButton(buttonLabel, function(event) {this.world().showMessage('Hello!');}).closeDnD();
+    var button  = ButtonMorph.createButton(buttonLabel, function(event) {
+  this.world().showMessage("Inspect the button and edit its 'run' method.");
+}).closeDnD();
 
     ellipse.setFill(new Color(0.8, 0.5, 0.5)); // make it a different color than the rectangle
 
