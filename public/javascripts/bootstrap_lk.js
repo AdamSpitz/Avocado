@@ -21,7 +21,9 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
       this.createCanvasIfNone();
       this.loadLivelyKernelCode(callWhenDone);
     } else {
-      console.log("document.body doesn't exist yet; setting window.onload. I have a feeling that this doesn't work, though, at least in some browsers. -- Adam, Nov. 2010");
+      if(this._debugmode){
+        console.log("document.body doesn't exist yet; setting window.onload. I have a feeling that this doesn't work, though, at least in some browsers. -- Adam, Nov. 2010");
+      }
       var that = this;
       window.onload = function() { that.createCanvasIfNone(); };
       this.loadLivelyKernelCode(callWhenDone);
@@ -29,9 +31,6 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
   }, {category: ['bootstrapping']});
   
   add.method('loadTopLevelEnvironment', function (callWhenDone) {
-    // This is a total hack, not meant to be secure; I'm just putting it
-    // in here to show how it's possible to avoid loading in the
-    // programming environment. -- Adam
     
     var whichOne;
     if (window.isInCodeOrganizingMode) { whichOne = "lk_programming_environment/code_organizer";          }
@@ -73,9 +72,7 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('loadLivelyKernelCode', function (callWhenDone) {
-    // Later on could do something nicer with dependencies and stuff. For now,
-    // let's just try dynamically loading the LK files in the same order we
-    // loaded them when we were doing it statically in the .xhtml file.
+    // Loading LK modules dynamically, in the same order that they are loaded in the xhtml file.   
     transporter.loadExternal(
       ["prototype/prototype",
        "lk/JSON",
@@ -94,11 +91,6 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
        "lk/TestFramework",
        "lk/TouchSupport",
        "lk/cop/Layers",
-       /*
-       "moousture/mootools-1.2.4-core-nc",
-       "moousture/Moousture",
-       "moousture/iPhoneProbe",
-       */
        "jslint"
       ], function() {
         if (callWhenDone) { callWhenDone(); }
@@ -107,8 +99,8 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('createAvocadoWorld', function () {
-    Morph.prototype.suppressBalloonHelp = true; // I love the idea of balloon help, but it's just broken - balloons keep staying up when they shouldn't
-    //Morph.suppressAllHandlesForever(); // those things are annoying // but useful for direct UI construction
+    Morph.prototype.suppressBalloonHelp = true; // balloons keep staying up when they shouldn't. Suppress until fixed.
+    //Morph.suppressAllHandlesForever();  //disable handles if not doing much UI construction; probably annoying.
     
     var canvas = document.getElementById("canvas");
     
@@ -120,12 +112,12 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
     modules.init.markAsUnchanged(); // because displayOnCanvas sets the creator slot of the world
     if (navigator.appName == 'Opera') { window.onresize(); }
     if (transporter.shouldLog) { console.log("The world should be visible now."); }
-    // this.initializeGestures(world); // aaa I don't like loading in all of MooTools, especially since we're not even using Moousture right now -- Adam
+    // this.initializeGestures(world); // aaa disable loading of mootools for now, since we're not using moosture
     return world;
   }, {category: ['bootstrapping']});
 
   add.method('initializeGestures', function (world) {
-    // aaa - big mess, just trying to see if it works
+    //Moosture gesture experiments
     var gstr = new Moousture.ReducedLevenMatcher({reduceConsistency: 1});
     var probe = new (UserAgent.isTouch ? Moousture.iPhoneProbe : Moousture.MouseProbe)(world); //$(document));
     var recorder = new Moousture.Recorder({maxSteps: 20, minSteps: 8, matcher: gstr});
