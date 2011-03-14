@@ -81,6 +81,14 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     return ! isNaN(i);
   }, {category: ['testing']});
 
+  add.method('isIncludedInModule', function (m) {
+    if (m) {
+      return this.module() === m;
+    } else {
+      return !this.module();
+    }
+  }, {category: ['accessing annotation', 'module']});
+
   add.method('markModuleAsChanged', function () {
     var module = this.module();
     if (module) { module.markAsChanged(); }

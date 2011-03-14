@@ -87,7 +87,7 @@ thisModule.addSlots(avocado.snapshotter, function(add) {
 
     var mir = reflect(o);
     var cs = mir.theCreatorSlot();
-    if (cs && cs.module() === modules.init /* && cs.contents().equals(mir) */) { return mir.creatorSlotChainExpression(); }
+    if (cs && cs.isIncludedInModule(modules.init) /* && cs.contents().equals(mir) */) { return mir.creatorSlotChainExpression(); }
 
     var t = typeof(o);
     if (t === 'function') {

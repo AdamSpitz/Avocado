@@ -351,14 +351,14 @@ thisModule.addSlots(transporter.module, function(add) {
     if (! mir.isWellKnown('probableCreatorSlot')) { return; }
     
     mir.normalSlots().each(function(s) {
-      if (s.module() === this) {
+      if (s.isIncludedInModule(this)) {
         f(s);
       }
     }.bind(this));
     
     if (mir.canHaveIndexableSlots()) {
       var cs = mir.theCreatorSlot();
-      if (cs && cs.module() === this && cs.contents().equals(mir)) {
+      if (cs && cs.isIncludedInModule(this) && cs.contents().equals(mir)) {
         mir.eachIndexableSlot(f);
       }
     }
@@ -1002,7 +1002,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
         var parentSlot = contents.parentSlot();
         this.addSlotDependenciesFor(parentSlot);
         var parentCreatorSlot = parentSlot.contents().theCreatorSlot();
-        if (parentCreatorSlot && parentCreatorSlot.module() === this) {
+        if (parentCreatorSlot && parentCreatorSlot.isIncludedInModule(this._module)) {
           this._slotDeps.contentDeps.addDependency(s, parentSlot);
         }
         
@@ -1011,7 +1011,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
           var copyDownParent = reflect(cdp.parent);
           var slotsToOmit = avocado.annotator.adjustSlotsToOmit(cdp.slotsToOmit);
           var copyDownParentCreatorSlot = copyDownParent.theCreatorSlot();
-          if (copyDownParentCreatorSlot && copyDownParentCreatorSlot.module() === this._module) {
+          if (copyDownParentCreatorSlot && copyDownParentCreatorSlot.isIncludedInModule(this._module)) {
             this._slotDeps.contentDeps.addDependency(s, copyDownParentCreatorSlot);
           }
 
@@ -1030,7 +1030,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
           this._slotDeps.holderDeps.addDependency(slotInContents, s);
         }.bind(this));
       } else if (! s.initializationExpression()) {
-        if (contentsCreatorSlot && contentsCreatorSlot.module() === this._module) {
+        if (contentsCreatorSlot && contentsCreatorSlot.isIncludedInModule(this._module)) {
           this._slotDeps.contentDeps.addDependency(s, contentsCreatorSlot);
         }
       }
@@ -1327,13 +1327,13 @@ thisModule.addSlots(transporter.tests, function(add) {
     var s2 = this.addSlot(m, this.someObject.qwerty, 'uiop', 4);
 
     this.assertEqual("test_blah", m.name());
-    this.assertEqual(m, s1.module());
-    this.assertEqual(m, s2.module());
+    this.assert(s1.isIncludedInModule(m));
+    this.assert(s2.isIncludedInModule(m));
     this.assertEqual(2, m.slots().size());
     m.rename("test_argleBargle");
     this.assertEqual("test_argleBargle", m.name());
-    this.assertEqual(m, s1.module());
-    this.assertEqual(m, s2.module());
+    this.assert(s1.isIncludedInModule(m));
+    this.assert(s2.isIncludedInModule(m));
     this.assertEqual(2, m.slots().size());
     this.assertEqual(m, transporter.module.existingOneNamed('test_argleBargle'));
     this.assert(! transporter.module.existingOneNamed('test_blah'));
