@@ -223,7 +223,8 @@ function $mixin(mix){
 		if ($type(object) != 'object') continue;
 		for (var key in object){
 			var op = object[key], mp = mix[key];
-			// aaa - OK, screw this infinite-recursion bullshit. -- Adam        mix[key] = (mp && $type(op) == 'object' && $type(mp) == 'object') ? $mixin(mp, op) : $unlink(op);
+			// aaa - This caused infinite-recursion problems. -- Adam
+			// mix[key] = (mp && $type(op) == 'object' && $type(mp) == 'object') ? $mixin(mp, op) : $unlink(op);
 			mix[key] = op;
 		}
 	}
@@ -319,7 +320,7 @@ provides: [Browser, Window, Document, $exec]
 ...
 */
 
-var Browser = { // aaaaaaaaaaa I hate $merge, stupid recursion without allowing for loop structures. -- Adam     $merge({
+var Browser = { // aaa - $merge causes infinite recursion because it doesn't keep track of what it's already seen. -- Adam     $merge({
 
 	Engine: {name: 'unknown', version: 0},
 

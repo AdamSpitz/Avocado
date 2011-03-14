@@ -324,7 +324,7 @@ var annotator = {
   _nextOID: 0,
 
   oidOf: function(o) {
-    // aaa - Um, we're not gonna be able to transport identityDictionaries (because we're not
+    // aaa - We're not gonna be able to transport identityDictionaries (because we're not
     // actually saving the OID, we're recreating it each time we load the object into the image).
     // Not a problem for now, but keep it in mind.
     var a = this.annotationOf(o);
@@ -359,7 +359,7 @@ var annotator = {
   actualExistingAnnotationOf: function(o) {
     if (typeof(o.hasOwnProperty) === 'function' && o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
     
-    // HACK: Damned JavaScript. Adding attributes to Object.prototype and stuff like that
+    // HACK: In JavaScript, adding attributes to Object.prototype and stuff like that
     // is a bad idea, because people use for..in loops to enumerate their attributes.
     // So we'll keep a special array to hold their annotations.
     if (o === Object.prototype || o === Array.prototype) { return this.specialAnnotationOf(o); }
@@ -627,7 +627,7 @@ avocado.callbackWaiter = {
   
   checkWhetherDone: function() {
     if (this._alreadyDone) {
-      throw "Whoa, called a callback again after we're already done.";
+      throw "Called a callback again after we're already done.";
     }
 
     if (! this._doneYieldingCallbacks) { return; }
@@ -758,7 +758,7 @@ transporter.module.callWhenDoneLoadingModuleNamed = function(n, callback) {
     callback();
     return true;
   } else {
-    throw "Whoa, what's wrong with the on-load callback? " + typeof(existingOnLoadCallback);
+    throw "What's wrong with the on-load callback? " + typeof(existingOnLoadCallback);
   }
   return false;
 };
@@ -774,7 +774,7 @@ transporter.module.doneLoadingModuleNamed = function(n) {
     // aaa - I think this is OK too. Really, this whole callback system is a mess - needs to be cleaned up. -- Adam, Feb. 2011
     transporter.module.onLoadCallbacks[n] = 'done';
   } else {
-    throw "Whoa, what's wrong with the on-load callback for " + n + "? " + typeof(onLoadCallback);
+    throw "What's wrong with the on-load callback for " + n + "? " + typeof(onLoadCallback);
   }
 };
 

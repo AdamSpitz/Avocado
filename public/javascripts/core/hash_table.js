@@ -255,15 +255,15 @@ thisModule.addSlots(avocado.dictionary, function(add) {
   }, {category: ['accessing']});
 
   add.method('eachKeyAndValue', function (f) {
-    return this.each(function(pair) {return f(pair.key, pair.value);});
+    return this._each(function(pair) {return f(pair.key, pair.value);});
   }, {category: ['iterating']});
 
   add.method('eachValue', function (f) {
-    return this.each(function(pair) {return f(pair.value);});
+    return this._each(function(pair) {return f(pair.value);});
   }, {category: ['iterating']});
 
   add.method('eachKey', function (f) {
-    return this.each(function(pair) {return f(pair.key);});
+    return this._each(function(pair) {return f(pair.key);});
   }, {category: ['iterating']});
 
 });

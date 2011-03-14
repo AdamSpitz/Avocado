@@ -230,7 +230,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     if (this.shouldUseZooming()) {
       this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3);
 
-      // aaa - Um, I need a better understanding of what exactly needs to happen
+      // aaa - I need a better understanding of what exactly needs to happen
       // when I change the scale of a morph. -- Adam
       this.sourcePane()._cachedMinimumExtent = false;
       this.sourcePane().forceLayoutRejiggering(true);

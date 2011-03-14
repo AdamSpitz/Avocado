@@ -5066,7 +5066,7 @@ loop:   for (;;) {
         var a, i;
         JSLINT.errors = [];
         
-        // aaa - stupid hack because I don't want to use Object.create because the 'standard'
+        // aaa - Hack: I don't want to use Object.create because the 'standard'
         // object overrides hasOwnProperty which screws up our Object.create. -- Adam
         // predefined = Object.create(standard);
         predefined = {};

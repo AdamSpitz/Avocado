@@ -21,7 +21,7 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
       this.createCanvasIfNone();
       this.loadLivelyKernelCode(callWhenDone);
     } else {
-      console.log("document.body doesn't exist yet; setting window.onload. I have a feeling that this doesn't work, though, at least in some browsers. -- Adam, Nov. 2010");
+      console.log("document.body doesn't exist yet; setting window.onload."); // aaa - I have a feeling that this doesn't work, though, at least in some browsers. -- Adam, Nov. 2010
       var that = this;
       window.onload = function() { that.createCanvasIfNone(); };
       this.loadLivelyKernelCode(callWhenDone);

@@ -283,7 +283,7 @@ thisModule.addSlots(transporter.module, function(add) {
     reflect(transporter.module.cache).slotAt(oldName).rename(newName);
     this._name = newName;
     this.markAsChanged();
-    // aaa - crap, should fix up the modules that depend on this one;
+    // aaa - should fix up the modules that depend on this one;
   }, {category: ['accessing']});
 
   add.method('eachRequiredModule', function (f) {
@@ -687,11 +687,11 @@ thisModule.addSlots(transporter.module.filerOuters.general, function(add) {
 
     this.writeSlot(info, optionalArgs);
 
-    // aaa - Stupid hack because some browsers won't let you set __proto__ so we have to treat it specially.
+    // aaa - hack: some browsers won't let you set __proto__ so we have to treat it specially.
     if (info.isCreator) {
       var contentsParentSlot = contents.parentSlot();
       if (contentsParentSlot.equals(contentsParentSlot.contents().theCreatorSlot())) {
-        this.writeStupidParentSlotCreatorHack(contentsParentSlot);
+        this.writeParentSlotCreatorHack(contentsParentSlot);
       }
     }
   }, {category: ['transporting']});
@@ -767,7 +767,7 @@ thisModule.addSlots(transporter.module.filerOuters.normal, function(add) {
     this._buffer.append(");\n\n");
   }, {category: ['writing']});
 
-  add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
+  add.method('writeParentSlotCreatorHack', function (parentSlot) {
     var parent = parentSlot.contents();
     var objectAnnoExpr = parent.annotationForReading() ? parent.annotationForReading().asExpressionForTransporter() : 'null';
     
@@ -831,7 +831,7 @@ thisModule.addSlots(transporter.module.filerOuters.annotationless, function(add)
     this._buffer.append(this._currentHolder.creatorSlotChainExpression()).append(".").append(info.name).append(" = ").append(info.contentsExpr).append(";\n\n");
   }, {category: ['writing']});
 
-  add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
+  add.method('writeParentSlotCreatorHack', function (parentSlot) {
     // nothing to do here, I think;
   }, {category: ['writing']});
 
@@ -926,7 +926,7 @@ thisModule.addSlots(transporter.module.filerOuters.json, function(add) {
     this._slotSeparator = ",";
   }, {category: ['writing']});
 
-  add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
+  add.method('writeParentSlotCreatorHack', function (parentSlot) {
     // nothing to do here, I think;
   }, {category: ['writing']});
 
@@ -952,7 +952,7 @@ thisModule.addSlots(transporter.module.filerOuters.mock, function(add) {
     this._buffer.append("    slot ").append(info.name).append(": ").append(info.contentsExpr).append("\n");
   }, {category: ['writing']});
 
-  add.method('writeStupidParentSlotCreatorHack', function (parentSlot) {
+  add.method('writeParentSlotCreatorHack', function (parentSlot) {
     this._buffer.append("    parent slot ").append(parentSlot.contents().creatorSlotChainExpression()).append("\n");
   }, {category: ['writing']});
 

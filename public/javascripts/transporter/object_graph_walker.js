@@ -174,7 +174,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
   add.method('walkSpecialUnreachableObjects', function () {
     var walker = this;
     
-    // WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
+    // 'for' loops don't see String and Number and Array and their 'prototype' slots.
     ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function', 'Error'].forEach(function(typeName) {
         var type = window[typeName];
         var pathToType          = {                       slotHolder: window, slotName:  typeName   };
@@ -237,7 +237,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     // Would use an identity dictionary here, if JavaScript could do one. As it is, we'll
     // have to mark the annotation and then come by again and unmark it.
     var objectAnno;
-    try { objectAnno = avocado.annotator.annotationOf(object); } catch (ex) { return false; } // stupid FireFox bug
+    try { objectAnno = avocado.annotator.annotationOf(object); } catch (ex) { return false; } // FireFox bug
     
     if (! this.shouldContinueRecursingIntoObject(object, objectAnno, howDidWeGetHere)) { return false; }
     
@@ -306,9 +306,9 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
 
   add.method('walkAttribute', function (currentObj, name, howDidWeGetHere) {
     var contents;
-    var encounteredStupidFirefoxBug = false;
-    try { contents = currentObj[name]; } catch (ex) { encounteredStupidFirefoxBug = true; }
-    if (! encounteredStupidFirefoxBug) {
+    var encounteredFirefoxBug = false;
+    try { contents = currentObj[name]; } catch (ex) { encounteredFirefoxBug = true; }
+    if (! encounteredFirefoxBug) {
       this.reachedSlot(currentObj, name, contents);
       if (this.canHaveSlots(contents)) {
         var shouldWalkContents;
@@ -371,7 +371,7 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
     if (implicitCS && implicitCS.holder === slotHolder && implicitCS.name === slotName) {
       // no need to do anything
     } else {
-      try { contentsAnno = avocado.annotator.annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
+      try { contentsAnno = avocado.annotator.annotationOf(contents); } catch (ex) { return false; } // FireFox bug
       
       if (shouldExplicitlySetIt) {
         contentsAnno.setCreatorSlot(slotName, slotHolder);

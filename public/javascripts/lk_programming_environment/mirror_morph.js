@@ -193,8 +193,8 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['categories']});
 
   add.method('justRenamedCategoryMorphFor', function (oldCat, newCat, isEmpty) {
-    // aaa - Um, I don't think this code could ever have really worked right. When we
-    // rename a category, it's going to screw with all the subcategories - they *all*
+    // aaa - I don't think this code could ever have really worked right. When we
+    // rename a category, it's going to break all the subcategories - they *all*
     // have different names now. What can we do about this?
     var oldCatMorph = this.existingCategoryMorphFor(oldCat);
     if (oldCatMorph) {

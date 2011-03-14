@@ -10,4 +10,4 @@ Config.disableNoConsoleWarning = true;
 Config.showTesterRunnerForDevelopment = true;
 Config.usePieMenus = false; // LK default says UserAgent.isTouch, but I'm not sure I like it -- Adam
 Config.fatFingers = UserAgent.isTouch;
-Config.defaultFontSize = UserAgent.isTouch ? 12 : 12; // Um, why does this crash mobile Safari if I make it 16 instead of 12 on touch devices?
+Config.defaultFontSize = UserAgent.isTouch ? 12 : 12; // aaa - Why does this crash mobile Safari if I make it 16 instead of 12 on touch devices?

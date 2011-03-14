@@ -331,7 +331,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['iterating']});
 
   add.method('category', function (parts) {
-    // aaa shouldn't need this test after I'm done refactoring to eliminate the stupid raw category objects
+    // aaa shouldn't need this test after I'm done refactoring to eliminate the raw category objects
     return avocado.category.ofAParticularMirror.create(this, parts.parts ? parts.parts() : parts);
   }, {category: ['categories']});
 
@@ -855,7 +855,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['annotations']});
 
   add.method('functionFromCodeString', function (__codeToRun__) {
-    // Damned JS doesn't return the result of the last statement in a function,
+    // JavaScript doesn't return the result of the last statement in a function,
     // so gotta try this a couple of ways. First see if the code is an expression,
     // then see if it's a sequence of statements. (Could do this more elegantly if
     // we had a JS parser handy, but for now we don't.)

@@ -268,7 +268,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
     if (reflect(c).isReflecteeArray()) {
       c = avocado.command.create(c[0], c[1]);
     } else if (c && !c.isCommand) {
-      // aaa - maybe just create the commands in the caller, don't do this stupid translation thing
+      // aaa - maybe just create the commands in the caller, don't do this translation thing
       var newC = avocado.command.create(c.label, c.go);
       if (c.hasOwnProperty("id")) { newC.setID(c.id); }
       if (c.hasOwnProperty("isApplicable")) { newC.onlyApplicableIf(c.isApplicable); }
