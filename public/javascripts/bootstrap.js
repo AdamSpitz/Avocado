@@ -903,6 +903,17 @@ thisModule.addSlots(transporter, function(add) {
       transporter.loadExternal(names, callWhenDone);
     });
   }, {category: ['bootstrapping']});
+  
+  add.method('loadJSFileFromURL', function(url, callWhenDone) {
+    var i = url.lastIndexOf("/");
+    var repoURL = url.substring(0, i) + '/';
+    var fileName = url.substring(i + 1);
+    var repo = Object.newChildOf(transporter.repositories.http, repoURL);
+    repo.fileIn(fileName, function () {
+      console.log("Loaded " + url);
+      if (callWhenDone) { callWhenDone(); }
+    });
+  }, {category: ['bootstrapping']});
 
   add.method('initializeRepositories', function () {
     var baseURL = transporter.avocadoBaseURL;
@@ -1092,7 +1103,9 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
   }, {category: ['printing']});
 
   add.method('urlForModuleName', function (name) {
-    return this.url() + name + ".js";
+    var url = this.url() + name;
+    if (name.substring(name.length - 3) !== '.js') { url += ".js"; }
+    return url;
   }, {category: ['saving to WebDAV']});
 
   add.method('loadModuleNamed', function (name, callWhenDone) {
