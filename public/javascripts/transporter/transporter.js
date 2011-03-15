@@ -550,43 +550,52 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
         info.contentsExpr = info.contents.expressionEvaluatingToMe();
       } else {
         var cs = info.contents.theCreatorSlot();
-        if (!cs) {
-          if (info.contents.isReflecteeRemoteReference()) {
-            info.isReferenceToRemoteObject = true;
-          } else {
+        if (!cs && info.contents.isReflecteeRemoteReference()) {
+          info.isReferenceToRemoteObject = true;
+        } else {
+          if (!cs) {
+            console.log("Marking " + this.name() + " as a possible creator slot.");
+            info.contents.addPossibleCreatorSlot(this); // aaa - not sure this is a good idea, but maybe
+            cs = info.contents.theCreatorSlot();
+            if (!cs) { debugger; throw new Error("Why is there no creator? Something is wrong."); }
+            
+            /* Old code, remove it if the new automatically-make-it-a-possible-creator mechanism seems to be working. -- Adam, Mar. 2011
             var err = new Error("Cannot file out a reference to an object without a creator slot: " + info.contents.name());
             err.mirrorWithoutCreatorPath = info.contents;
             err.objectsToShow = [info.contents];
             err.reasonForNeedingCreatorPath = "it is referenced from " + this.holder().name() + "." + this.name();
             throw err;
+            */
           }
-        } else if (! cs.equals(this)) {
-          info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = true;
-          transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
-            info.contentsExpr = info.contents.creatorSlotChainExpression();
-            if (this.isDOMChildNode()) { info.creationMethod = 'domChildNode'; } // hack to let us transport morphs
-          }.bind(this), transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
-        } else {
-          info.isCreator = true;
-          if (info.contents.isReflecteeFunction()) {
-            info.creationMethod = "method";
-            info.contentsExpr = info.contents.reflecteeToString();
-            //info.contentsExpr = info.contents.prettyPrint({indentationLevel: 2});
+          
+          if (! cs.equals(this)) {
+            info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = true;
+            transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
+              info.contentsExpr = info.contents.creatorSlotChainExpression();
+              if (this.isDOMChildNode()) { info.creationMethod = 'domChildNode'; } // hack to let us transport morphs
+            }.bind(this), transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
           } else {
-            info.creationMethod = "creator";
-            if (info.contents.isReflecteeArray()) {
-              info.contentsExpr = "[]";
-            } else if (info.contents.isReflecteeDOMNode()) {
-              info.contentsExpr = info.contents.reflectee().storeStringWithoutChildren(); // let the children be recreated as "slots"
+            info.isCreator = true;
+            if (info.contents.isReflecteeFunction()) {
+              info.creationMethod = "method";
+              info.contentsExpr = info.contents.reflecteeToString();
+              //info.contentsExpr = info.contents.prettyPrint({indentationLevel: 2});
             } else {
-              var contentsParent = info.contents.parent();
-              if (contentsParent.equals(reflect(Object.prototype))) {
-                info.contentsExpr = "{}";
+              info.creationMethod = "creator";
+              if (info.contents.isReflecteeArray()) {
+                info.contentsExpr = "[]";
+              } else if (info.contents.isReflecteeDOMNode()) {
+                info.contentsExpr = info.contents.reflectee().storeStringWithoutChildren(); // let the children be recreated as "slots"
               } else {
-                transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
-                  var parentInfo = info.contents.parentSlot().transportableInfo();
-                  info.contentsExpr = "Object.create(" + parentInfo.contentsExpr + ")";
-                }, transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(info.contents));
+                var contentsParent = info.contents.parent();
+                if (contentsParent.equals(reflect(Object.prototype))) {
+                  info.contentsExpr = "{}";
+                } else {
+                  transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
+                    var parentInfo = info.contents.parentSlot().transportableInfo();
+                    info.contentsExpr = "Object.create(" + parentInfo.contentsExpr + ")";
+                  }, transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(info.contents));
+                }
               }
             }
           }

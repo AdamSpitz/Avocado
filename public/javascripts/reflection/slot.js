@@ -132,7 +132,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('bePossibleCreatorSlotIfNoneAlreadySpecified', function () {
     var c = this.contents();
-    if (!c.explicitlySpecifiedCreatorSlot() && c.canHaveCreatorSlot()) {
+    if ((!c.explicitlySpecifiedCreatorSlot()) && c.canHaveCreatorSlot()) {
       c.addPossibleCreatorSlot(this);
     }
   }, {category: ['user interface', 'creator slots']});
@@ -481,7 +481,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     if (this.isFromACopyDownParent()) { return; }
     this.setModule(m);
     var c = this.contents();
-    if (!c.reflecteeStoreString() && !c.isReflecteeSimpleMethod() && !this.initializationExpression()) { // no need if we're not going to be filing in the object slot-by-slot anyway
+    if (!c.reflecteeStoreString() && !c.isReflecteeSimpleMethod() && !c.isReflecteeDOMNode() && !this.initializationExpression()) { // no need if we're not going to be filing in the object slot-by-slot anyway
       if (this.equals(c.theCreatorSlot())) {
         c.setModuleRecursively(m);
       }

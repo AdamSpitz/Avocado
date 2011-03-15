@@ -59,7 +59,7 @@ thisModule.addSlots(Node.prototype, function(add) {
   }, {category: ['copying']});
 
   add.method('storeStringWithoutChildren', function () {
-    return this.storeStringIncludingChildren(this.copy().removeAllChildren());
+    return this.copy().removeAllChildren().storeStringIncludingChildren();
   }, {category: ['printing']});
 
   add.method('storeStringIncludingChildren', function () {
