@@ -280,17 +280,17 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('eachNormalSlotName', function (f) {
     if (! this.canHaveSlots()) {return;}
     var o = this.reflectee();
-    for (var name in o) {
-      if (o.hasOwnProperty(name)) {
-        if (name !== '__annotation__') { // shh! pretend it's not there.
-          f(name);
+    if (typeof(o.hasOwnProperty) === 'function') {
+      for (var name in o) {
+        if (o.hasOwnProperty(name)) {
+          if (name !== '__annotation__') { // shh! pretend it's not there.
+            f(name);
+          }
         }
       }
-    }
 
-    // Workaround for Chrome bug. -- Adam
-    if (! avocado.javascript.prototypeAttributeIsEnumerable) {
-      if (typeof(o.hasOwnProperty) === 'function') { // another bizarre bug
+      // Workaround for Chrome bug. -- Adam
+      if (! avocado.javascript.prototypeAttributeIsEnumerable) {
         if (o.hasOwnProperty("prototype")) {
           f("prototype");
         }
@@ -414,7 +414,8 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['accessing reflectee']});
 
   add.method('reflecteeObjectHasOwnProperty', function (n) {
-    return this.reflectee().hasOwnProperty(n);
+    var o = this.reflectee();
+    return typeof(o.hasOwnProperty) === 'function' && o.hasOwnProperty(n);
   }, {category: ['accessing reflectee']});
 
   add.method('parent', function () {

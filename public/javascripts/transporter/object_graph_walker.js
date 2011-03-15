@@ -57,7 +57,7 @@ thisModule.addSlots(avocado.annotationWalker, function(add) {
   });
 
   add.method('reachedObject', function (o) {
-    if (o && o.hasOwnProperty && avocado.annotator.actualExistingAnnotationOf(o)) {
+    if (o && typeof(o.hasOwnProperty) === 'function' && avocado.annotator.actualExistingAnnotationOf(o)) {
       var mir = reflect(o);
       if (mir.isReflecteeSimpleMethod()) {
         this._simpleFunctionCount += 1;

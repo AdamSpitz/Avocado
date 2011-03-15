@@ -37,6 +37,7 @@ if (typeof Object.newChildOf !== 'function') {
 if (typeof Object.shallowCopy !== 'function') {
   Object.shallowCopy = function(o) {
     var c = Object.create(o['__proto__']);
+    if (typeof(o.hasOwnProperty) !== 'function') { throw new Error("Cannot shallowCopy this object because it has no hasOwnProperty function."); }
     for (var property in o) {
       if (o.hasOwnProperty(property) && property !== '__annotation__') {
         c[property] = o[property];
@@ -59,6 +60,7 @@ Object.extend = function extend(destination, source) {
 
 
 Object.extendWithJustDirectPropertiesOf = function extendWithJustDirectPropertiesOf(destination, source) {
+  if (typeof(source.hasOwnProperty) !== 'function') { throw new Error("extendWithJustDirectPropertiesOf: source has no hasOwnProperty function"); }
   for (var property in source) {
     if (source.hasOwnProperty(property) && property !== '__annotation__') {
       destination[property] = source[property];
@@ -452,11 +454,12 @@ var annotator = {
   
   isEmptyObject: function(o) {
     if (typeof(o) !== 'object') { return false; }
-    try { // workaround for ridiculous Firefox problem
+    try { // workaround for Firefox problem
       if (o['__proto__'] !== Object.prototype) { return false; }
     } catch (ex) {
       return false;
     }
+    if (typeof(o.hasOwnProperty) !== 'function') { return false; }
     for (var n in o) {
       if (o.hasOwnProperty(n)) {
         return false;
@@ -473,6 +476,7 @@ var annotator = {
 
     var hasSuper = o.argumentNames && o.argumentNames().first() === '$super';
 
+    if (typeof(o.hasOwnProperty) !== 'function') { return false; }
     for (var n in o) {
       if (o.hasOwnProperty(n) && n !== '__annotation__') {
         if (            this.aaa_LK_slotNamesAttachedToMethods.include(n)) { continue; }
