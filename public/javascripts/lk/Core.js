@@ -1438,7 +1438,15 @@ lively.data.Wrapper.subclass('Morph', {
 	initializePersistentState: function(shape) {
 		// a rect shape by default, will change later
 		this.shape = shape;
-		if (Global.reflect) { reflect(this).slotAt('shape').beCreator(); } // aaa - kind of a hack, added by Adam so that we can file out morphs
+		
+		// aaa - kind of a hack, added by Adam so that we can file out morphs
+		if (Global.reflect) {
+		  var mir = reflect(this);
+		  mir.slotAt('shape').beCreator();
+		  mir.slotAt('fullBounds').setInitializationExpression('null');
+		  mir.slotAt('pvtCachedTransform').setInitializationExpression('null');
+		}
+		
 		this.rawNode.appendChild(this.shape.rawNode);
 		if (this.styleClass) { // inherited from prototype
 			var attr = this.styleClass.join(' ');
