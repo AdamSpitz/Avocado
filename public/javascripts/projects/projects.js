@@ -148,8 +148,10 @@ thisModule.addSlots(avocado.project, function(add) {
   	reflect(currentWorldStateModule).slotAt('morphs').beCreator().setInitializationExpression('[]');
   	var morphsArrayMir = reflect(currentWorldStateModule.morphs);
   	WorldMorph.current().submorphs.forEach(function(m, i) {
-  	  currentWorldStateModule.morphs.push(m);
-      morphsArrayMir.slotAt(currentWorldStateModule.morphs.length - 1).beCreator();
+  	  if (! m.shouldIgnorePoses()) {
+    	  currentWorldStateModule.morphs.push(m);
+    	  morphsArrayMir.slotAt(currentWorldStateModule.morphs.length - 1).beCreator();
+  	  }
   	});
   	
   	currentWorldStateModule.postFileIn = function() {

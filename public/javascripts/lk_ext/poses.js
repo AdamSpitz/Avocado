@@ -48,7 +48,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
 thisModule.addSlots(Morph.prototype, function(add) {
 
-  add.method('shouldIgnorePoses', function (uiState) {
+  add.method('shouldIgnorePoses', function () {
     return false;
   }, {category: ['poses']});
 
@@ -109,7 +109,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
 thisModule.addSlots(MenuMorph.prototype, function(add) {
 
-  add.method('shouldIgnorePoses', function (uiState) {
+  add.method('shouldIgnorePoses', function () {
     return ! this.stayUp;
   }, {category: ['poses']});
 

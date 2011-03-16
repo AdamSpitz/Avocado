@@ -114,6 +114,28 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     f(this.mirror());
   }, {category: ['associated objects']});
 
+  add.method('storeString', function () {
+    // aaa - This is not the right long-term solution for saving mirror morphs.
+    //       The transporter should be able to handle them. But for now it's
+    //       choking for some reason, so let's do this for now. -- Adam, Mar. 2011
+    return [
+      "(function() {var m = (",
+      this.mirror().storeString(),
+      ").morph(); m.setPosition(",
+      this.getPosition().storeString(),
+      /* aaa - not working because the UI state contains references to the actual reflectee of the mirror,
+               which means it needs to respect object identity
+      "); m.assumeUIState(",
+      reflect(this.constructUIStateMemento()).expressionEvaluatingToMe(),
+      */
+      "); return m; })()"
+    ].join("");
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return avocado.mirror;
+  }, {category: ['transporting']});
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.creator('annotationStyle', {}, {category: ['styles']});

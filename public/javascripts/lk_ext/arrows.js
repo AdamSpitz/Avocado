@@ -218,7 +218,7 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
 
   add.method('grabEndpoint2', function (evt) {this.grabEndpoint(evt, this.endpoint2);}, {category: ['vertices']});
 
-  add.method('shouldIgnorePoses', function (uiState) { return true; }, {category: ['poses']});
+  add.method('shouldIgnorePoses', function () { return true; }, {category: ['poses']});
 
 });
 

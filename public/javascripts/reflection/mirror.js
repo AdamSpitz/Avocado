@@ -77,6 +77,15 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return "on " + this.inspect();
   }, {category: ['naming']});
 
+  add.method('storeString', function () {
+    // aaa - This is not a good long-term solution. The transporter should be able to handle mirrors.
+    return ["reflect(", this.expressionEvaluatingToMe(), ")"].join("");
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return avocado.mirror;
+  }, {category: ['transporting']});
+
   add.method('isRootOfGlobalNamespace', function () {
     return this.reflectee() === window;
   }, {category: ['naming']});
