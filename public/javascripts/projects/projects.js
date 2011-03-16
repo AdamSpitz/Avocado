@@ -148,7 +148,7 @@ thisModule.addSlots(avocado.project, function(add) {
   	reflect(currentWorldStateModule).slotAt('morphs').beCreator().setInitializationExpression('[]');
   	var morphsArrayMir = reflect(currentWorldStateModule.morphs);
   	WorldMorph.current().submorphs.forEach(function(m, i) {
-  	  if (! m.shouldIgnorePoses()) {
+  	  if (! m.shouldNotBeTransported() && ! m.shouldIgnorePoses()) {
     	  currentWorldStateModule.morphs.push(m);
     	  morphsArrayMir.slotAt(currentWorldStateModule.morphs.length - 1).beCreator();
   	  }

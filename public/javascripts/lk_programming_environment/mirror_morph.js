@@ -136,6 +136,12 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     return avocado.mirror;
   }, {category: ['transporting']});
 
+  add.method('shouldNotBeTransported', function () {
+    // aaa - Actually, for now, let's just not have mirrors get saved at all, because they
+    // don't really come back right (what with the object identity problems).
+    return true;
+  }, {category: ['poses']});
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.creator('annotationStyle', {}, {category: ['styles']});

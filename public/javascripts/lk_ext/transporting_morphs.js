@@ -42,6 +42,11 @@ thisModule.addSlots(Morph.prototype, function(add) {
       }.bind(this));
     }
   }, {category: ['transporting']});
+  
+  add.method('shouldNotBeTransported', function () {
+    // Children can override.
+    return false;
+  }, {category: ['transporting']});
 
 });
 
