@@ -12,11 +12,11 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.project, function(add) {
   
-  add.data('_shouldNotSaveCurrentWorld', true, {category: ['saving']});
-  
-
   add.method('current', function () {
-    return this._current || (this._current = this.create({ name: "This project" }));
+    if (this._current) { return this._current; }
+    if (! modules.thisProject) { return null; }
+    this._current = this.create({ moduleName: "thisProject", name: "This project" });
+    return this._current;
   }, {category: ['current one']});
 
   add.method('setCurrent', function (p) {
@@ -32,6 +32,7 @@ thisModule.addSlots(avocado.project, function(add) {
   }, {category: ['creating']});
 
   add.method('initialize', function (info) {
+    this._module = modules[info.moduleName];
     this.setName(info.name);
     this.setIsPrivate(info.isPrivate);
     if (info._id) {
@@ -63,7 +64,7 @@ thisModule.addSlots(avocado.project, function(add) {
 
   add.method('putInTrashCan', function () { this._isInTrashCan = true; this.markAsChanged(); }, {category: ['accessing']});
 
-  add.method('module', function () { return modules.thisProject; }, {category: ['accessing']});
+  add.method('module', function () { return this._module; }, {category: ['accessing']});
 
   add.method('inspect', function () { return this.name(); }, {category: ['printing']});
 

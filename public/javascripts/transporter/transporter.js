@@ -9,11 +9,6 @@ requires('reflection/reflection');
 
 thisModule.addSlots(transporter, function(add) {
 
-  add.method('prepareToFileStuffOut', function () {
-    // aaa - Not sure yet whether this is more confusing than it's worth.
-    // avocado.objectGraphAnnotator.create(true, true).go();
-  }, {category: ['filing out']});
-
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
   add.creator('reasonsForNeedingCreatorPath', {}, {category: ['filing out']});
@@ -22,21 +17,21 @@ thisModule.addSlots(transporter, function(add) {
     cmdList.addLine();
 
     cmdList.addItem(["show modules...", [
-      // this doesn't really belong here; how should this stuff be organized?
-      ["current project", function(evt) {
-        avocado.ui.grab(avocado.project.current(), evt);
+      ["unowned attributes", function(evt) {
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.unownedSlotFinder.create(), evt)).redo();
       }],
       
       ["changed modules", function(evt) {
-        if(transporter.module.changedOnes().size() > 0){
-          avocado.ui.showObjects(transporter.module.changedOnes(), "changed modules", evt);
-        }else{
+        var changedOnes = transporter.module.changedOnes();
+        if (changedOnes.size() > 0) {
+          avocado.ui.showObjects(changedOnes, "changed modules", evt);
+        } else {
          WorldMorph.current().showMessage("No changed modules to display");
         }
       }],
 
       ["all modules", function(evt) {
-        avocado.ui.showObjects(avocado.enumerator.create(transporter.module, 'eachModule'), "all modules", evt);
+        avocado.ui.showObjects(transporter.module.allModules(), "all modules", evt);
       }]
     ]]);
 
@@ -49,7 +44,6 @@ thisModule.addSlots(transporter, function(add) {
 
   add.method('fileOutPlural', function (specs, evt, repo, filerOuterProto) {
     return avocado.ui.showErrorsThatOccurDuring(function(failBlock) {
-      this.prepareToFileStuffOut();
       specs.each(function(spec) {
         spec.moduleVersion.fileOut(spec.filerOuter || filerOuterProto ? Object.newChildOf(filerOuterProto) : null, repo, function() {}, function(msg, errors) {
           if (errors) {
@@ -57,7 +51,7 @@ thisModule.addSlots(transporter, function(add) {
               var mir = err.mirrorWithoutCreatorPath;
               if (mir) {
                 var module = spec.moduleVersion.module();
-                var reason = err.reasonForNeedingCreatorPath || "I said so, that's why.";
+                var reason = err.reasonForNeedingCreatorPath || "of an unknown reason";
                 err.objectsToShow = err.objectsToShow || [];
                 err.objectsToShow.push(module + " needs " + mir.inspect() + " to have a creator path because " + reason);
               }
@@ -69,66 +63,12 @@ thisModule.addSlots(transporter, function(add) {
     }.bind(this));
   }, {category: ['user interface', 'commands', 'filing out']});
 
-  add.method('chooseARepository', function (evt, target, menuCaption, callback) {
-    if (transporter.availableRepositories.length === 1) { callback(transporter.availableRepositories[0], evt); return; }
-
-    var repoCmdList = transporter.commandListForRepositories(function(repo) { return function() { callback(repo, evt); }});
-    
-    avocado.ui.showMenu(repoCmdList, target, menuCaption, evt);
-  }, {category: ['user interface', 'commands']});
-
-  add.method('createAModule', function (evt, target, callback) {
-    this.chooseARepository(evt, target, 'Which server should the new module live on?', function(repo, evt) {
-      avocado.ui.prompt("Module name?", function(name) {
-        callback(transporter.module.createNewOne(name, repo), evt);
-      }, null, evt);
-    });
-  }, {category: ['user interface', 'commands']});
-
-  add.method('chooseOrCreateAModule', function (evt, likelyModules, target, menuCaption, callback) {
-    var modulesCmdList = transporter.module.commandListForChoosingOrCreatingAModule(evt, likelyModules, target, callback);
-    avocado.ui.showMenu(modulesCmdList, target, menuCaption, evt);
-  }, {category: ['user interface', 'commands']});
-
   add.method('commandListForLoadingJSFiles', function () {
-    return this.commandListForRepositories(function(repo) { return repo.menuItemsForLoadMenu(); });
+    return transporter.repositories.prompter.commandListForRepositories(function(repo) { return repo.menuItemsForLoadMenu(); });
   }, {category: ['user interface', 'commands']});
 
-  add.method('commandListForRepositories', function (f) {
-    var cmdList = avocado.command.list.create();
-    transporter.availableRepositories.each(function(repo) {
-      var c = f(repo);
-      if (c) {
-        cmdList.addItem([repo.toString(), c]);
-      }
-    });
-    return cmdList;
-  }, {category: ['user interface', 'commands']});
-
-  add.method('modulePathDictionary', function () {
-    var d = avocado.dictionary.copyRemoveAll();
-    transporter.module.eachModule(function(m) {
-      var nameParts = m.name().split('/');
-      var currentDictionary = d;
-      while (nameParts.length > 1) {
-        var part = nameParts.shift();
-        currentDictionary = currentDictionary.getOrIfAbsentPut(part, function() {return avocado.dictionary.copyRemoveAll();});
-      }
-      currentDictionary.put(nameParts.shift(), m);
-    });
-    return d;
-  }, {category: ['module tree']});
-
-  add.method('menuItemsForModulePathDictionary', function (modulePathDict, evt, callback) {
-    if (modulePathDict.keys) { // aaa is there a better way to do a type test?
-      return modulePathDict.keys().sort().map(function(dirName) {
-          return [dirName, this.menuItemsForModulePathDictionary(modulePathDict.get(dirName), evt, callback)];
-      }.bind(this));
-    } else {
-      // the leaves of the tree are the modules
-      var module = modulePathDict;
-      return function(evt) { callback(module, evt); };
-    }
+  add.method('modulePathTree', function () {
+    return avocado.dictionary.createPathTree(transporter.module.allModules().map(function(m) { return { object: m, path: m.name().split('/') }; }));
   }, {category: ['module tree']});
 
   add.creator('idTracker', {}, {category: ['version IDs']});
@@ -241,24 +181,10 @@ thisModule.addSlots(transporter.module, function(add) {
     if (modules[name]) { throw new Error("There is already a module named " + name); }
     var module = transporter.module.named(name);
     module._repository = repo;
-    parentModule = parentModule || modules.thisProject;
+    if (!parentModule && avocado.project.current()) { parentModule = avocado.project.current().module(); }
     if (parentModule) { parentModule.addRequirement(name); }
     return module;
   }, {category: ['creating']});
-
-  add.method('commandListForChoosingOrCreatingAModule', function (evt, likelyModules, target, callback) {
-    var cmdList = avocado.command.list.create();
-    cmdList.addItem(["new module...", function(evt) { transporter.createAModule(evt, target, callback); }]);
-    cmdList.addLine();
-    if (likelyModules.length > 0 && likelyModules.length < 8) {
-      likelyModules.each(function(m) {
-        if (m) { cmdList.addItem([m.name(), function(evt) { callback(m, evt); }]); }
-      });
-      cmdList.addLine();
-    }
-    cmdList.addItems(transporter.menuItemsForModulePathDictionary(transporter.modulePathDictionary(), evt, callback));
-    return cmdList;
-  }, {category: ['menu']});
 
   add.method('name', function () { return this._name; }, {category: ['accessing']});
 
@@ -373,13 +299,8 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['accessing']});
 
   add.method('eachSlot', function (f) {
-    var alreadySeen = avocado.set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
-    this.slotCollection().possibleHolders().each(function(obj) {
-      var mir = reflect(obj);
-      if (! alreadySeen.includes(mir)) {
-        alreadySeen.add(mir);
-        this.slotsInMirror(mir).each(f);
-      }
+    this.slotCollection().eachPossibleHolderMirror(function(mir) {
+      this.slotsInMirror(mir).each(f);
     }.bind(this));
   }, {category: ['iterating']});
 
@@ -433,7 +354,7 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.method('showAllObjects', function (evt) {
     var objectsToShow = [this];
-    this.slotCollection().possibleHolders().each(function(o) { objectsToShow.push(reflect(o)); });
+    this.slotCollection().eachPossibleHolderMirror(function(mir) { objectsToShow.push(mir); });
     avocado.ui.showObjects(objectsToShow, "objects in module " + this.name(), evt);
   }, {category: ['user interface', 'commands']});
 
@@ -466,18 +387,65 @@ thisModule.addSlots(transporter.module, function(add) {
     reflect(modules).normalSlots().each(function(s) { f(s.contents().reflectee()); });
   }, {category: ['iterating']});
 
+  add.method('allModules', function () {
+    return avocado.enumerator.create(this, 'eachModule');
+  }, {category: ['iterating']});
+
   add.method('changedOnes', function () {
-    return Object.newChildOf(avocado.enumerator, this, 'eachModule').select(function(m) { return m.modificationFlag().hasJustThisOneChanged(); });
+    return this.allModules().select(function(m) { return m.modificationFlag().hasJustThisOneChanged(); });
   }, {category: ['keeping track of changes']});
 
+});
+
+
+thisModule.addSlots(transporter.slotCollection, function(add) {
+  
+  add.method('eachPossibleHolderMirror', function (f) {
+    var alreadySeen = avocado.set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
+    this.possibleHolders().each(function(obj) {
+      var mir = reflect(obj);
+      if (! alreadySeen.includes(mir)) {
+        alreadySeen.add(mir);
+        f(mir);
+      }
+    });
+  }, {category: ['iterating']});
+  
 });
 
 
 thisModule.addSlots(transporter.module.prompter, function(add) {
 
   add.method('prompt', function (caption, context, evt, callback) {
-    transporter.chooseOrCreateAModule(evt, context.likelyModules(), context, caption, function(m, evt) { callback(m); });
-  }, {category: ['prompting']});
+    this.chooseOrCreateAModule(evt, context.likelyModules(), context, caption, function(m, evt) { callback(m); });
+  });
+
+  add.method('chooseOrCreateAModule', function (evt, likelyModules, target, menuCaption, callback) {
+    var modulesCmdList = this.commandListForChoosingOrCreatingAModule(evt, likelyModules, target, callback);
+    avocado.ui.showMenu(modulesCmdList, target, menuCaption, evt);
+  });
+
+  add.method('commandListForChoosingOrCreatingAModule', function (evt, likelyModules, target, callback) {
+    var cmdList = avocado.command.list.create();
+    cmdList.addItem(["new module...", function(evt) { this.createAModule(evt, target, callback); }.bind(this)]);
+    cmdList.addLine();
+    if (likelyModules.length > 0 && likelyModules.length < 8) {
+      likelyModules.each(function(m) {
+        if (m) { cmdList.addItem([m.name(), function(evt) { callback(m, evt); }]); }
+      });
+      cmdList.addLine();
+    }
+    cmdList.addItems(avocado.dictionary.menuItemsForPathTree(transporter.modulePathTree(), evt, callback));
+    return cmdList;
+  });
+
+  add.method('createAModule', function (evt, target, callback) {
+    avocado.repositories.prompter.prompt('Which server should the new module live on?', target, evt, function(repo, evt) {
+      avocado.ui.prompt("Module name?", function(name) {
+        callback(transporter.module.createNewOne(name, repo), evt);
+      }, null, evt);
+    });
+  });
 
 });
 
@@ -518,22 +486,19 @@ thisModule.addSlots(transporter.module.version, function(add) {
     transporter.fileOut(this, repo, codeToFileOut, function() {this.module().markAsUnchanged(); if (successBlock) { successBlock(); }}.bind(this), failBlock);
   }, {category: ['transporting']});
 
-  add.method('constructBody', function () {
-    aaawaowjgtowag;
-  }, {category: ['body']});
-
 });
 
 
 thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('transportableInfo', function () {
+    var contents = this.contents();
     var info = {
       name: this.name(),
       creationMethod: "data",
-      contents: this.contents(),
       contentsExpr: undefined,
-      annotation: this.annotationForReading && this.annotationForReading(),
+      rawAnnotation: this.annotationForReading && this.annotationForReading() && this.annotationForReading().asRawDataObject(),
+      contentsRawAnnotation: contents.annotationForReading() && contents.annotationForReading().asRawDataObject(),
       isCreator: false,
       isReferenceToWellKnownObjectThatIsCreatedElsewhere: false,
       isHardWired: this.isHardWired()
@@ -543,58 +508,69 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     if (initializer) {
       info.contentsExpr = initializer;
     } else {
-      var storeString = info.contents.reflecteeStoreString();
+      var storeString = contents.reflecteeStoreString();
       if (storeString) {
         info.contentsExpr = storeString;
-      } else if (! info.contents.canHaveCreatorSlot()) {
-        info.contentsExpr = info.contents.expressionEvaluatingToMe();
+      } else if (! contents.canHaveCreatorSlot()) {
+        info.contentsExpr = contents.expressionEvaluatingToMe();
       } else {
-        var cs = info.contents.theCreatorSlot();
-        if (!cs && info.contents.isReflecteeRemoteReference()) {
+        var cs = contents.theCreatorSlot();
+        if (!cs && contents.isReflecteeRemoteReference()) {
           info.isReferenceToRemoteObject = true;
+          info.remoteReference = contents.reflectee();
         } else {
           if (!cs) {
             console.log("Marking " + this.name() + " as a possible creator slot.");
-            info.contents.addPossibleCreatorSlot(this); // aaa - not sure this is a good idea, but maybe
-            cs = info.contents.theCreatorSlot();
+            contents.addPossibleCreatorSlot(this); // aaa - not sure this is a good idea, but maybe
+            cs = contents.theCreatorSlot();
             if (!cs) { debugger; throw new Error("Why is there no creator? Something is wrong."); }
             
             /* Old code, remove it if the new automatically-make-it-a-possible-creator mechanism seems to be working. -- Adam, Mar. 2011
-            var err = new Error("Cannot file out a reference to an object without a creator slot: " + info.contents.name());
-            err.mirrorWithoutCreatorPath = info.contents;
-            err.objectsToShow = [info.contents];
+            var err = new Error("Cannot file out a reference to an object without a creator slot: " + contents.name());
+            err.mirrorWithoutCreatorPath = contents;
+            err.objectsToShow = [contents];
             err.reasonForNeedingCreatorPath = "it is referenced from " + this.holder().name() + "." + this.name();
             throw err;
             */
           }
           
           if (! cs.equals(this)) {
-            info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = true;
+            info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = contents.creatorSlotChain().reverse().map(function(s) { return s.name(); });
             transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
-              info.contentsExpr = info.contents.creatorSlotChainExpression();
+              info.contentsExpr = contents.creatorSlotChainExpression();
               if (this.isDOMChildNode()) { info.creationMethod = 'domChildNode'; } // hack to let us transport morphs
             }.bind(this), transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
           } else {
             info.isCreator = true;
-            if (info.contents.isReflecteeFunction()) {
+            
+            var contentsParentSlot = contents.parentSlot();
+            var contentsParent = contentsParentSlot.contents();
+            if (contentsParentSlot.equals(contentsParent.theCreatorSlot())) {
+              info.parentCreatorSlotChainExpression = contentsParent.creatorSlotChainExpression();
+              info.parentSlotName = contentsParentSlot.name();
+              info.parentHolderCreatorSlotChainExpression = contentsParentSlot.holder().creatorSlotChainExpression();
+              info.parentRawAnnotation = contentsParent.annotationForReading().asRawDataObject();
+            }
+            
+            if (contents.isReflecteeFunction()) {
               info.creationMethod = "method";
-              info.contentsExpr = info.contents.reflecteeToString();
-              //info.contentsExpr = info.contents.prettyPrint({indentationLevel: 2});
+              info.contentsExpr = contents.reflecteeToString();
+              //info.contentsExpr = contents.prettyPrint({indentationLevel: 2});
             } else {
               info.creationMethod = "creator";
-              if (info.contents.isReflecteeArray()) {
+              if (contents.isReflecteeArray()) {
                 info.contentsExpr = "[]";
-              } else if (info.contents.isReflecteeDOMNode()) {
-                info.contentsExpr = info.contents.reflectee().storeStringWithoutChildren(); // let the children be recreated as "slots"
+              } else if (contents.isReflecteeDOMNode()) {
+                info.contentsExpr = contents.reflectee().storeStringWithoutChildren(); // let the children be recreated as "slots"
               } else {
-                var contentsParent = info.contents.parent();
+                var contentsParent = contents.parent();
                 if (contentsParent.equals(reflect(Object.prototype))) {
                   info.contentsExpr = "{}";
                 } else {
                   transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
-                    var parentInfo = info.contents.parentSlot().transportableInfo();
+                    var parentInfo = contents.parentSlot().transportableInfo();
                     info.contentsExpr = "Object.create(" + parentInfo.contentsExpr + ")";
-                  }, transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(info.contents));
+                  }, transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(contents));
                 }
               }
             }
@@ -610,11 +586,11 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
 thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
 
-  add.method('asExpressionForTransporter', function () {
+  add.method('asRawDataObject', function () {
     var objectAnnoToStringify = {};
     if (this.comment        ) { objectAnnoToStringify.comment         = this.comment;         }
     if (this.copyDownParents) { objectAnnoToStringify.copyDownParents = this.copyDownParents; }
-    return reflect(objectAnnoToStringify).expressionEvaluatingToMe();
+    return objectAnnoToStringify;
   }, {category: ['transporting']});
 
 });
@@ -622,13 +598,13 @@ thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
 
 thisModule.addSlots(avocado.annotator.slotAnnotationPrototype, function(add) {
 
-  add.method('asExpressionForTransporter', function () {
+  add.method('asRawDataObject', function () {
     var slotAnnoToStringify = {};
     var catParts = this.categoryParts();
     if (catParts          && catParts.length > 0) { slotAnnoToStringify.category     = catParts;                        }
     if (this.comment                            ) { slotAnnoToStringify.comment      = this.getComment();               }
     if (this.initializeTo                       ) { slotAnnoToStringify.initializeTo = this.initializationExpression(); }
-    return reflect(slotAnnoToStringify).expressionEvaluatingToMe();
+    return slotAnnoToStringify;
   }, {category: ['transporting']});
 
 });
@@ -675,7 +651,9 @@ thisModule.addSlots(transporter.module.filerOuters.general, function(add) {
       try {
         var h = s.holder();
         this.nextSlotIsIn(h, s);
-        this.fileOutSlotWithInfo(s.transportableInfo());
+        var info = s.transportableInfo();
+        this.rememberNestedObjectInfoIfNecessary(s, info); // aaa HACK
+        this.fileOutSlotWithInfo(info);
       } catch (ex) {
         this.errors().push(ex);
       }
@@ -683,11 +661,14 @@ thisModule.addSlots(transporter.module.filerOuters.general, function(add) {
     this.doneWithThisObject();
   }, {category: ['writing']});
 
+  add.method('rememberNestedObjectInfoIfNecessary', function (slot, info) {
+    // children can override
+  }, {category: ['writing']});
+  
   add.method('fileOutSlotWithInfo', function (info) {
-    var contents = info.contents;
-    var slotAnno = info.annotation;
-    var slotAnnoExpr = slotAnno ? slotAnno.asExpressionForTransporter() : '{}';
-    var objectAnnoExpr = info.isCreator && contents.annotationForReading() ? contents.annotationForReading().asExpressionForTransporter() : null;
+    var slotAnno = info.RawAnnotation;
+    var slotAnnoExpr = slotAnno ? reflect(slotAnno).expressionEvaluatingToMe() : '{}';
+    var objectAnnoExpr = info.isCreator && info.contentsRawAnnotation ? reflect(info.contentsRawAnnotation).expressionEvaluatingToMe() : null;
     
     // The fileout looks a bit prettier if we don't bother showing ", {}, {}" all over the place.
     var optionalArgs = "";
@@ -701,11 +682,8 @@ thisModule.addSlots(transporter.module.filerOuters.general, function(add) {
     this.writeSlot(info, optionalArgs);
 
     // aaa - hack: some browsers won't let you set __proto__ so we have to treat it specially.
-    if (info.isCreator) {
-      var contentsParentSlot = contents.parentSlot();
-      if (contentsParentSlot.equals(contentsParentSlot.contents().theCreatorSlot())) {
-        this.writeParentSlotCreatorHack(contentsParentSlot);
-      }
+    if (info.parentCreatorSlotChainExpression) {
+      this.writeParentAnnotation(info);
     }
   }, {category: ['transporting']});
 
@@ -780,23 +758,22 @@ thisModule.addSlots(transporter.module.filerOuters.normal, function(add) {
     this._buffer.append(");\n\n");
   }, {category: ['writing']});
 
-  add.method('writeParentSlotCreatorHack', function (parentSlot) {
-    var parent = parentSlot.contents();
-    var objectAnnoExpr = parent.annotationForReading() ? parent.annotationForReading().asExpressionForTransporter() : 'null';
+  add.method('writeParentAnnotation', function (info) {
+    var objectAnnoExpr = info.parentRawAnnotation ? reflect(info.parentRawAnnotation).expressionEvaluatingToMe() : 'null';
     
     this._buffer.append("  avocado.annotator.loadObjectAnnotation(");
-    this._buffer.append(parent.creatorSlotChainExpression());
+    this._buffer.append(info.parentCreatorSlotChainExpression);
     this._buffer.append(", ").append(objectAnnoExpr);
-    this._buffer.append(", ").append(parentSlot.name().inspect());
-    this._buffer.append(", ").append(parentSlot.holder().creatorSlotChainExpression());
+    this._buffer.append(", ").append(info.parentSlotName.inspect());
+    this._buffer.append(", ").append(info.parentHolderCreatorSlotChainExpression);
     this._buffer.append(");\n\n");
     
     /* aaa - Hmm, maybe it's OK for parent slots to have annotations, now that I have this hack?
-    var slotAnnoExpr = parentSlot.annotationForReading() ? parentSlot.annotationForReading().asExpressionForTransporter() : null;
+    var slotAnnoExpr = info.parentRawSlotAnnotation ? reflect(info.parentRawSlotAnnotation).expressionEvaluatingToMe() : null;
     if (slotAnnoExpr) {
       this._buffer.append("  Object.extend(avocado.annotator.annotationOf(");
-      this._buffer.append(parentSlot.holder().creatorSlotChainExpression());
-      this._buffer.append(").slotAnnotation(").append(parentSlot.name().inspect());
+      this._buffer.append(info.parentHolderCreatorSlotChainExpression);
+      this._buffer.append(").slotAnnotation(").append(info.parentSlotName.inspect());
       this._buffer.append("), ").append(slotAnnoExpr).append(");\n");
     }
     */
@@ -841,10 +818,10 @@ thisModule.addSlots(transporter.module.filerOuters.annotationless, function(add)
   }, {category: ['writing']});
 
   add.method('writeSlot', function (info, optionalArgs) {
-    this._buffer.append(this._currentHolder.creatorSlotChainExpression()).append(".").append(info.name).append(" = ").append(info.contentsExpr).append(";\n\n");
+    this._buffer.append(this._currentHolderExpr).append(".").append(info.name).append(" = ").append(info.contentsExpr).append(";\n\n");
   }, {category: ['writing']});
 
-  add.method('writeParentSlotCreatorHack', function (parentSlot) {
+  add.method('writeParentAnnotation', function (info) {
     // nothing to do here, I think;
   }, {category: ['writing']});
 
@@ -865,6 +842,14 @@ thisModule.addSlots(transporter.module.filerOuters.json, function(add) {
 
   add.method('indent', function () {
     for (var i = 0; i < this._indention; ++i) { this._buffer.append("  "); }
+  }, {category: ['writing']});
+
+  add.method('rememberNestedObjectInfoIfNecessary', function (slot, info) {
+    // aaa - hack for nested objects, since JSON isn't flexible about the order - gotta
+    // do sub-objects right there in the middle of the container object.
+    if (info.isCreator) {
+      info.slotsOfNestedObject = slot.contents().normalSlots();
+    }
   }, {category: ['writing']});
 
   add.method('writeObjectStarter', function () {
@@ -914,14 +899,14 @@ thisModule.addSlots(transporter.module.filerOuters.json, function(add) {
     
     if (info.isCreator) {
       this.temporarilySwitchHolder(function() {
-        this.fileOutSlots(info.contents.normalSlots());
+        this.fileOutSlots(info.slotsOfNestedObject);
       }.bind(this));
     } else if (info.isReferenceToWellKnownObjectThatIsCreatedElsewhere) {
       this.temporarilySwitchHolder(function() {
-        this.fileOutSlots(reflect(info.contents.creatorSlotChain().reverse().map(function(s) { return s.name(); })).normalSlots());
+        this.fileOutSlots(reflect(info.isReferenceToWellKnownObjectThatIsCreatedElsewhere).normalSlots());
       }.bind(this));
     } else if (info.isReferenceToRemoteObject) {
-      var ref = info.contents.reflectee();
+      var ref = info.remoteReference;
       if (! (ref.db() && typeof(ref.id()) !== 'undefined')) { throw new Error("Trying to file out a remote reference, but not sure where it lives. The object is " + ref.object()); }
       if (ref.db() === this._db) {
         this._buffer.append(("" + ref.id()).inspect(true));
@@ -929,9 +914,10 @@ thisModule.addSlots(transporter.module.filerOuters.json, function(add) {
         throw new Error("Not implemented yet: how do we file out a remote ref to an object in a whole nother DB?");
       }
     } else {
-      // aaa - Hack because JSON only accepts double-quotes.
-      if (info.contents.isReflecteeString()) {
-        info.contentsExpr = info.contents.primitiveReflectee().inspect(true);
+      // JSON only accepts double-quotes.
+      // aaa - Should probably do something to avoid the "eval".
+      if (info.contentsExpr[0] === "'" && info.contentsExpr[info.contentsExpr.length - 1] === "'") {
+        info.contentsExpr = eval(info.contentsExpr).inspect(true);
       }
       
       this._buffer.append(info.contentsExpr);
@@ -939,7 +925,7 @@ thisModule.addSlots(transporter.module.filerOuters.json, function(add) {
     this._slotSeparator = ",";
   }, {category: ['writing']});
 
-  add.method('writeParentSlotCreatorHack', function (parentSlot) {
+  add.method('writeParentAnnotation', function (info) {
     // nothing to do here, I think;
   }, {category: ['writing']});
 
@@ -965,8 +951,8 @@ thisModule.addSlots(transporter.module.filerOuters.mock, function(add) {
     this._buffer.append("    slot ").append(info.name).append(": ").append(info.contentsExpr).append("\n");
   }, {category: ['writing']});
 
-  add.method('writeParentSlotCreatorHack', function (parentSlot) {
-    this._buffer.append("    parent slot ").append(parentSlot.contents().creatorSlotChainExpression()).append("\n");
+  add.method('writeParentAnnotation', function (info) {
+    this._buffer.append("    parent slot ").append(info.parentCreatorSlotChainExpression).append("\n");
   }, {category: ['writing']});
 
 });
@@ -1193,6 +1179,38 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     if (shouldUpdateObjDeps) { this.recalculateObjectDependencies(); }
   }, {category: ['transporting']});
 
+});
+
+
+thisModule.addSlots(transporter.repositories, function(add) {
+  
+  add.creator('prompter', {}, {category: ['user interface']});
+  
+});
+
+
+thisModule.addSlots(transporter.repositories.prompter, function(add) {
+  
+  add.method('prompt', function (caption, context, evt, callback) {
+    if (transporter.availableRepositories.length === 1) {
+      callback(transporter.availableRepositories[0], evt);
+    } else {
+      var repoCmdList = this.commandListForRepositories(function(repo) { return function() { callback(repo, evt); }});
+      avocado.ui.showMenu(repoCmdList, context, caption, evt);
+    }
+  });
+
+  add.method('commandListForRepositories', function (f) {
+    var cmdList = avocado.command.list.create();
+    transporter.availableRepositories.each(function(repo) {
+      var c = f(repo);
+      if (c) {
+        cmdList.addItem([repo.toString(), c]);
+      }
+    });
+    return cmdList;
+  });
+  
 });
 
 
@@ -1440,7 +1458,9 @@ thisModule.addSlots(transporter.tests, function(add) {
     m.uninstall();
   });
 
-  add.method('testObjectsThatHaveParentsWithNoCreatorPath', function () {
+  add.method('aaa_obsolete_testObjectsThatHaveParentsWithNoCreatorPath', function () {
+    // This test is obsolete too.
+    
     var m = transporter.module.named('test_non_well_known_parents');
 
     var p = {};

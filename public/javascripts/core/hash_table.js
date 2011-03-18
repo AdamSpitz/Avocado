@@ -266,6 +266,33 @@ thisModule.addSlots(avocado.dictionary, function(add) {
     return this._each(function(pair) {return f(pair.key);});
   }, {category: ['iterating']});
 
+  add.method('createPathTree', function (pathsAndObjects) {
+    var dictProto = this;
+    var createNewDict = function() { return dictProto.copyRemoveAll(); };
+    var d = createNewDict();
+    pathsAndObjects.each(function(pathAndObject) {
+      var currentDictionary = d;
+      var path = pathAndObject.path;
+      var object = pathAndObject.object;
+      for (var i = 0; i < path.length - 1; ++i) {
+        currentDictionary = currentDictionary.getOrIfAbsentPut(path[i], createNewDict);
+      }
+      currentDictionary.put(path[path.length - 1], object);
+    });
+    return d;
+  }, {category: ['path dictionaries']});
+
+  add.method('menuItemsForPathTree', function (pathDict, evt, callback) {
+    if (pathDict.keys) { // aaa is there a better way to do a type test?
+      return pathDict.keys().sort().map(function(k) {
+        return [k, this.menuItemsForPathTree(pathDict.get(k), evt, callback)];
+      }.bind(this));
+    } else {
+      // the leaves of the tree are the objects we want
+      return function(evt) { callback(pathDict, evt); };
+    }
+  }, {category: ['path dictionaries']});
+
 });
 
 

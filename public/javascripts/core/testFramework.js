@@ -48,6 +48,10 @@ thisModule.addSlots(avocado.testCase, function(add) {
 		this.assert(false, (msg ? msg : '') + ' (' + firstValue +' !== ' + secondValue +')');
 	});
 
+  add.method('assertEqualJSON', function (firstValue, secondValue, msg) {
+    this.assertEqual(JSON.stringify(firstValue), JSON.stringify(secondValue), msg);
+  });
+
   add.method('allTestSelectors', function () {
     var functionNames = [];
     for (var name in this) {

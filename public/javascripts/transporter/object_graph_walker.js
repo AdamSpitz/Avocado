@@ -14,6 +14,8 @@ thisModule.addSlots(avocado, function(add) {
 
   add.creator('implementorsFinder', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
+  add.creator('unownedSlotFinder', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
+
   add.creator('referenceFinder', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
   add.creator('childFinder', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
@@ -23,108 +25,6 @@ thisModule.addSlots(avocado, function(add) {
   add.creator('testingObjectGraphWalker', Object.create(avocado.objectGraphWalker), {category: ['object graph']});
 
   add.creator('senders', {}, {category: ['object graph']});
-
-});
-
-
-thisModule.addSlots(avocado.childFinder, function(add) {
-
-  add.method('initialize', function ($super, o) {
-    $super();
-    this.objectToSearchFor = o;
-  });
-
-  add.method('reachedObject', function (o) {
-    var mir = reflect(o);
-    if (mir.parent().reflectee() === this.objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
-      this._results.push(o);
-    }
-  });
-
-});
-
-
-thisModule.addSlots(avocado.annotationWalker, function(add) {
-
-  add.method('initialize', function ($super, o) {
-    $super();
-    this._simpleFunctionCount = 0;
-    this._simpleFunctionPrototypeCount = 0;
-    this._emptyObjectCount = 0;
-    this._otherObjectCount = 0;
-    this._otherObjects = [];
-    this._emptyObjects = [];
-  });
-
-  add.method('reachedObject', function (o) {
-    if (o && typeof(o.hasOwnProperty) === 'function' && avocado.annotator.actualExistingAnnotationOf(o)) {
-      var mir = reflect(o);
-      if (mir.isReflecteeSimpleMethod()) {
-        this._simpleFunctionCount += 1;
-      } else {
-        var cs = mir.theCreatorSlot();
-        if (cs && cs.name() === 'prototype' && cs.holder().isReflecteeSimpleMethod()) {
-          this._simpleFunctionPrototypeCount += 1;
-        } else if (mir.size() === 0 && mir.reflectee().__proto__ === Object.prototype) {
-          this._emptyObjectCount += 1;
-          this._emptyObjects.push(mir.reflectee());
-        } else {
-          this._otherObjectCount += 1;
-          this._otherObjects.push(mir.reflectee());
-        }
-      }
-    }
-  });
-
-});
-
-
-thisModule.addSlots(avocado.implementorsFinder, function(add) {
-
-  add.method('initialize', function ($super, slotName) {
-    $super();
-    this.slotNameToSearchFor = slotName;
-  });
-
-  add.method('inspect', function () { return "Well-known implementors of '" + this.slotNameToSearchFor + "'"; });
-
-  add.method('reachedSlot', function (holder, slotName, contents) {
-    if (slotName === this.slotNameToSearchFor && holder !== avocado.senders.byID && reflect(holder).isWellKnown('probableCreatorSlot')) {
-      this._results.push(reflect(holder).slotAt(slotName));
-    }
-  });
-
-  add.data('resultsAreSlots', true);
-
-});
-
-
-thisModule.addSlots(avocado.referenceFinder, function(add) {
-
-  add.method('initialize', function ($super, o) {
-    $super();
-    this.objectToSearchFor = o;
-  });
-
-  add.method('inspect', function () { return "Well-known references to " + reflect(this.objectToSearchFor).inspect(); });
-
-  add.method('reachedSlot', function (holder, slotName, contents) {
-    if (contents === this.objectToSearchFor) {
-      var holderMir = reflect(holder);
-      if (holderMir.isWellKnown('probableCreatorSlot')) {
-        this._results.push(holderMir.slotAt(slotName));
-      }
-    }
-  });
-
-  add.method('reachedObject', function (o) {
-    var mir = reflect(o);
-    if (mir.parent().reflectee() === this.objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
-      this._results.push(mir.parentSlot());
-    }
-  });
-
-  add.data('resultsAreSlots', true);
 
 });
 
@@ -321,6 +221,142 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
       }
     }
   });
+
+});
+
+
+thisModule.addSlots(avocado.childFinder, function(add) {
+
+  add.method('initialize', function ($super, o) {
+    $super();
+    this.objectToSearchFor = o;
+  });
+
+  add.method('reachedObject', function (o) {
+    var mir = reflect(o);
+    if (mir.parent().reflectee() === this.objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
+      this._results.push(o);
+    }
+  });
+
+});
+
+
+thisModule.addSlots(avocado.annotationWalker, function(add) {
+
+  add.method('initialize', function ($super, o) {
+    $super();
+    this._simpleFunctionCount = 0;
+    this._simpleFunctionPrototypeCount = 0;
+    this._emptyObjectCount = 0;
+    this._otherObjectCount = 0;
+    this._otherObjects = [];
+    this._emptyObjects = [];
+  });
+
+  add.method('reachedObject', function (o) {
+    if (o && typeof(o.hasOwnProperty) === 'function' && avocado.annotator.actualExistingAnnotationOf(o)) {
+      var mir = reflect(o);
+      if (mir.isReflecteeSimpleMethod()) {
+        this._simpleFunctionCount += 1;
+      } else {
+        var cs = mir.theCreatorSlot();
+        if (cs && cs.name() === 'prototype' && cs.holder().isReflecteeSimpleMethod()) {
+          this._simpleFunctionPrototypeCount += 1;
+        } else if (mir.size() === 0 && mir.reflectee().__proto__ === Object.prototype) {
+          this._emptyObjectCount += 1;
+          this._emptyObjects.push(mir.reflectee());
+        } else {
+          this._otherObjectCount += 1;
+          this._otherObjects.push(mir.reflectee());
+        }
+      }
+    }
+  });
+
+});
+
+
+thisModule.addSlots(avocado.implementorsFinder, function(add) {
+
+  add.method('initialize', function ($super, slotName) {
+    $super();
+    this.slotNameToSearchFor = slotName;
+  });
+
+  add.method('inspect', function () { return "Well-known implementors of '" + this.slotNameToSearchFor + "'"; });
+
+  add.method('reachedSlot', function (holder, slotName, contents) {
+    if (slotName === this.slotNameToSearchFor && holder !== avocado.senders.byID && reflect(holder).isWellKnown('probableCreatorSlot')) {
+      this._results.push(reflect(holder).slotAt(slotName));
+    }
+  });
+
+  add.data('resultsAreSlots', true);
+
+});
+
+
+thisModule.addSlots(avocado.unownedSlotFinder, function(add) {
+
+  add.method('inspect', function () { return "Unowned attributes"; });
+
+  add.method('shouldContinueRecursingIntoObject', function (object, objectAnno, howDidWeGetHere) {
+    // Factor the system better, so that this object-graph-walker
+    // can do exactly what the transporter does.
+    if (avocado.annotator.isSimpleMethod(object)) { return false; }
+    
+    if (typeof(object.storeString) === 'function' && (typeof(object.storeStringNeeds) !== 'function' || object !== object.storeStringNeeds())) { return false; }
+    
+    return true;
+  });
+
+  add.method('shouldContinueRecursingIntoSlot', function (holder, slotName, howDidWeGetHere) {
+    var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
+    if (slotAnno.initializationExpression()) { return false; }
+    return true;
+  });
+
+  add.method('reachedSlot', function (holder, slotName, contents) {
+    var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
+    if (! slotAnno.getModule()) {
+      var slot = reflect(holder).slotAt(slotName);
+      console.log("Found unowned slot: " + slot.holder().name() + "." + slot.name());
+      this._results.push(slot);
+    }
+  });
+
+  add.data('resultsAreSlots', true);
+
+});
+
+
+thisModule.addSlots(avocado.referenceFinder, function(add) {
+
+  add.method('initialize', function ($super, o) {
+    $super();
+    this.objectToSearchFor = o;
+  });
+
+  add.method('inspect', function () { return "Well-known references to " + reflect(this.objectToSearchFor).inspect(); });
+
+  add.method('reachedSlot', function (holder, slotName, contents) {
+    if (contents === this.objectToSearchFor) {
+      var holderMir = reflect(holder);
+      if (holderMir.isWellKnown('probableCreatorSlot')) {
+        this._results.push(holderMir.slotAt(slotName));
+      }
+    }
+  });
+
+  add.method('reachedObject', function (o) {
+    var mir = reflect(o);
+    if (mir.parent().reflectee() === this.objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
+      this._results.push(mir.parentSlot());
+    }
+  });
+
+  add.data('resultsAreSlots', true);
 
 });
 
