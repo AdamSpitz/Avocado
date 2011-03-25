@@ -37,7 +37,8 @@ thisModule.addSlots(transporter, function(add) {
 
     if (transporter.availableRepositories.any(function(repo) { return repo.canListDirectoryContents; })) {
       cmdList.addItem(["load JS file...", function(evt) {
-        avocado.ui.showMenu(transporter.commandListForLoadingJSFiles(), evt.hand.world(), "From where?", evt);
+        var cmdList = transporter.repositories.prompter.commandListForRepositories(function(repo) { return repo.menuItemsForLoadMenu(); });
+        avocado.ui.showMenu(cmdList, evt.hand.world(), "From where?", evt);
       }]);
     }
   }, {category: ['user interface', 'commands']});
@@ -62,14 +63,6 @@ thisModule.addSlots(transporter, function(add) {
       });
     }.bind(this));
   }, {category: ['user interface', 'commands', 'filing out']});
-
-  add.method('commandListForLoadingJSFiles', function () {
-    return transporter.repositories.prompter.commandListForRepositories(function(repo) { return repo.menuItemsForLoadMenu(); });
-  }, {category: ['user interface', 'commands']});
-
-  add.method('modulePathTree', function () {
-    return avocado.dictionary.createPathTree(transporter.module.allModules().map(function(m) { return { object: m, path: m.name().split('/') }; }));
-  }, {category: ['module tree']});
 
   add.creator('idTracker', {}, {category: ['version IDs']});
 
@@ -435,9 +428,13 @@ thisModule.addSlots(transporter.module.prompter, function(add) {
       });
       cmdList.addLine();
     }
-    cmdList.addItems(avocado.dictionary.menuItemsForPathTree(transporter.modulePathTree(), evt, callback));
+    cmdList.addItems(avocado.dictionary.menuItemsForPathTree(this.modulePathTree(), evt, callback));
     return cmdList;
   });
+
+  add.method('modulePathTree', function () {
+    return avocado.dictionary.createPathTree(transporter.module.allModules().map(function(m) { return { object: m, path: m.name().split('/') }; }));
+  }, {category: ['module tree']});
 
   add.method('createAModule', function (evt, target, callback) {
     avocado.repositories.prompter.prompt('Which server should the new module live on?', target, evt, function(repo, evt) {
@@ -520,10 +517,10 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
           info.remoteReference = contents.reflectee();
         } else {
           if (!cs) {
-            console.log("Marking " + this.name() + " as a possible creator slot.");
+            // console.log("Marking " + this.name() + " as a possible creator slot.");
             contents.addPossibleCreatorSlot(this); // aaa - not sure this is a good idea, but maybe
             cs = contents.theCreatorSlot();
-            if (!cs) { debugger; throw new Error("Why is there no creator? Something is wrong."); }
+            if (!cs) { throw new Error("Why is there no creator? Something is wrong."); }
             
             /* Old code, remove it if the new automatically-make-it-a-possible-creator mechanism seems to be working. -- Adam, Mar. 2011
             var err = new Error("Cannot file out a reference to an object without a creator slot: " + contents.name());
@@ -535,9 +532,10 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
           }
           
           if (! cs.equals(this)) {
-            info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = contents.creatorSlotChain().reverse().map(function(s) { return s.name(); });
             transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
-              info.contentsExpr = contents.creatorSlotChainExpression();
+              var chain = contents.creatorSlotChain('probableCreatorSlot');
+              info.contentsExpr = contents.expressionForCreatorSlotChain(chain);
+              info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = chain.reverse().map(function(s) { return s.name(); });
               if (this.isDOMChildNode()) { info.creationMethod = 'domChildNode'; } // hack to let us transport morphs
             }.bind(this), transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
           } else {
@@ -649,6 +647,8 @@ thisModule.addSlots(transporter.module.filerOuters.general, function(add) {
   add.method('fileOutSlots', function (slots) {
     slots.each(function(s) {
       try {
+        if (s.isCycleBreaker) { throw new Error("Haven't finished implementing cycle-breaking yet. Need to file out a cycle-breaker."); }
+        if (s.wasReplacedByCycleBreakers) { throw new Error("Haven't finished implementing cycle-breaking yet. Need to file out a slot that was replaced by a cycle-breaker."); }
         var h = s.holder();
         this.nextSlotIsIn(h, s);
         var info = s.transportableInfo();
@@ -962,31 +962,29 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
 
   add.method('initialize', function (m) {
     this._module = m;
-    this._slotsInOrder = [];
   }, {category: ['creating']});
 
   add.method('calculateDependencies', function () {
     this.calculateSlotDependencies();
+    this._remainingSlotsByMirror = this.buildDictionaryOfRemainingSlotsByMirror();
+    this.recalculateObjectDependencies();
+    return this;
+  }, {category: ['dependencies']});
 
-    this._cycleBreakersMir = reflect({});
-    this._cycleBreakersByOriginalSlot = avocado.dictionary.copyRemoveAll();
-
-    this._remainingSlotsByMirror = avocado.dictionary.copyRemoveAll();
-    this._module.slotCollection().possibleHolders().each(function(obj) {
-      var mir = reflect(obj);
+  add.method('buildDictionaryOfRemainingSlotsByMirror', function () {
+    var d = avocado.dictionary.copyRemoveAll();
+    this._module.slotCollection().eachPossibleHolderMirror(function(mir) {
       var slots = avocado.set.copyRemoveAll();
       this._module.slotsInMirror(mir).each(function(s) {
         slots.add(s);
         if (s.equals(s.contents().theCreatorSlot())) { slots.add(s.contents().parentSlot()); }
-      }.bind(this));
+        // aaa what about the parent's parent?
+      });
       if (! slots.isEmpty()) {
-        this._remainingSlotsByMirror.put(mir, slots);
+        d.put(mir, slots);
       }
     }.bind(this));
-
-    this.recalculateObjectDependencies();
-    
-    return this;
+    return d;
   }, {category: ['dependencies']});
 
   add.method('beInDebugMode', function () {
@@ -1004,6 +1002,7 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
         if (parentCreatorSlot && parentCreatorSlot.isIncludedInModule(this._module)) {
           this._slotDeps.contentDeps.addDependency(s, parentSlot);
         }
+        // aaa what about the parent's parent?
         
         var cdps = contents.copyDownParents();
         cdps.each(function(cdp) {
@@ -1063,11 +1062,11 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     }.bind(this));
   }, {category: ['dependencies']});
 
-  add.method('chooseAMirrorWithNoDependees', function () {
+  add.method('chooseAMirrorWithThisManyDependees', function (n) {
     return exitValueOf(function(exit) {
       this._remainingSlotsByMirror.eachKeyAndValue(function(mir, slots) {
-        if (slots.size() === 0) { throw "oops, we were supposed to remove the mirror from the dictionary if it had no slots left"; }
-        if (this._objDeps.dependeesOf(mir).size() === 0) { exit(mir); }
+        if (slots.size() === 0) { throw new Error("Assertion failure: we were supposed to remove the mirror from the dictionary if it had no slots left"); }
+        if (this._objDeps.dependeesOf(mir).size() === n) { exit(mir); }
       }.bind(this));
       return null;
     }.bind(this));
@@ -1095,11 +1094,12 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
       this._remainingSlotsByMirror.eachKeyAndValue(function(mir, slots) {
         var s = slots.find(function(s) {
           var dependees = this._slotDeps.contentDeps.dependeesOf(s);
-          console.log(s + " depends on " + dependees);
+          if (this._debugMode) { console.log(s + " depends on " + dependees.toArray().map(function(d) { return d.fullName(); }).join(" and ")); }
           return dependees.size() === 0;
         }.bind(this));
         if (s) { exit(s); }
       }.bind(this));
+      return null;
     }.bind(this));
   }, {category: ['dependencies']});
 
@@ -1110,27 +1110,71 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
   }, {category: ['dependencies']});
 
   add.method('insertCycleBreakerSlot', function () {
-    throw "there is a cycle in the slot dependency graph; breaking the cycle is not implemented yet";
     // aaa - This code hasn't been properly tested; I don't trust it yet.
     var slot = this.chooseSlotToTryToBreakCycle();
-    dbgOn(!slot);
-    if (!slot) { throw new Error("Could not find a slot to use as a cycle-breaker."); }
+    if (!slot) { throw new Error("there is a cycle in the slot dependency graph; could not find a slot to use as a cycle-breaker"); }
     var cycleBreakerSlot = slot.copyTo(this._cycleBreakersMir.rootCategory()).rename(this._cycleBreakersMir.findUnusedSlotName('breaker'));
     var initExpr = slot.initializationExpression();
     if (initExpr) { cycleBreakerSlot.setInitializationExpression(initExpr); }
-    this._slotDeps. holderDeps.removeDependency(slot, slot.holder().theCreatorSlot());
     this._slotDeps.contentDeps.   addDependency(slot, cycleBreakerSlot);
     this._slotDeps.contentDeps.dependersOf(slot).each(function(depender) {
       this._slotDeps.contentDeps.removeDependency(depender, slot);
       this._slotDeps.contentDeps.   addDependency(depender, cycleBreakerSlot);
-      console.log(depender + " no longer depends on " + slot + ", but on " + cycleBreakerSlot + " instead");
+      if (this._debugMode) { console.log(depender + " no longer depends on " + slot + ", but on " + cycleBreakerSlot + " instead"); }
     }.bind(this));
     this.rememberCycleBreakerSlot(cycleBreakerSlot, slot);
+    this.recalculateObjectDependencies();
   }, {category: ['dependencies']});
 
+  add.method('allRemainingSlots', function () {
+    var ss = avocado.set.copyRemoveAll();
+    this._remainingSlotsByMirror.eachKeyAndValue(function(mir, slots) {
+      slots.each(function(s) { ss.add(s); });
+    });
+    return ss;
+  }, {category: ['accessing']});
+
+  add.method('allSlotsInDependencyLists', function () {
+    var ss = avocado.set.copyRemoveAll();
+    [this._slotDeps.contentDeps, this._slotDeps.holderDeps].forEach(function(deps) {
+      deps.eachDependency(function(depender, dependee) {
+        ss.add(depender);
+        ss.add(dependee);
+      });
+    });
+    return ss;
+  }, {category: ['accessing']});
+
   add.method('determineOrder', function () {
+    if (this._debugMode) {
+      this._remainingSlotsByMirror.eachKeyAndValue(function(mir, slots) {
+        console.log(mir.name() + " contains slots: " + slots);
+      });
+      
+      var remaining = this.allRemainingSlots();
+      var inDepLists = this.allSlotsInDependencyLists();
+      inDepLists.each(function(s) {
+        if (! remaining.include(s)) {
+          s.holder().morph().grabMe();
+
+          var reason = "I have no idea why";
+          if (! s.holder().isWellKnown('probableCreatorSlot')) {
+            reason = "its holder is not well-known";
+          } else if (! s.isIncludedInModule(this._module)) {
+            reason = "it's not included in the " + this._module.name() + " module";
+          }
+
+          throw new Error("Found a slot in the dependency lists that isn't in the list of slots to file out, because " + reason + ": " + s.fullName());
+        }
+      }.bind(this));
+    }
+    
+    this._slotsInOrder = [];
+    this._cycleBreakersMir = reflect({});
+    this._cycleBreakersByOriginalSlot = avocado.dictionary.copyRemoveAll();
+
     while (! this._remainingSlotsByMirror.isEmpty()) {
-      var nextMirrorToFileOut = this.chooseAMirrorWithNoDependees();
+      var nextMirrorToFileOut = this.chooseAMirrorWithThisManyDependees(0);
       if (nextMirrorToFileOut) {
         if (this._debugMode) { console.log("Choosing mirror " + nextMirrorToFileOut + " because it has no dependees."); }
         this.nextObjectIs(nextMirrorToFileOut);
@@ -1161,22 +1205,34 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
   }, {category: ['transporting']});
 
   add.method('nextSlotIs', function (s, shouldUpdateObjDeps) {
-    //console.log("Next slot is " + s);
+    if (this._debugMode) { console.log("Next slot is " + s.fullName()); }
+    var holder;
     if (s.isParent()) {
       // __proto__ slots need to be in there to make the dependency graph come out right, but shouldn't
       // actually be included in the final ordering; an object's __proto__ is actually done with the
-      // object's creator slot. (Don't blame me, blame the browsers that don't allow __proto__ to be
+      // object's creator slot. (Necessary in order to support browsers that don't allow __proto__ to be
       // set directly.)
+      holder = s.holder().theCreatorSlot().holder();
     } else {
       this._slotsInOrder.push(s);
+      holder = s.holder();
     }
-    var holder = s.isParent() ? s.holder().theCreatorSlot().holder() : s.holder(); // aaa aaaaaaaaaa
     var slots = this._remainingSlotsByMirror.get(holder);
     slots.remove(s);
     if (slots.isEmpty()) { this._remainingSlotsByMirror.removeKey(holder); }
     this._slotDeps. holderDeps.removeDependee(s);
     this._slotDeps.contentDeps.removeDependee(s);
     if (shouldUpdateObjDeps) { this.recalculateObjectDependencies(); }
+    
+    // aaa - hack: mark the slot as being a cycle-breaker so that the filer-outer
+    // can do the right thing.
+    if (holder.equals(this._cycleBreakersMir)) {
+      s.isCycleBreaker = true;
+    }
+    var cbs = this._cycleBreakersByOriginalSlot.get(s);
+    if (cbs) {
+      s.wasReplacedByCycleBreakers = cbs;
+    }
   }, {category: ['transporting']});
 
 });

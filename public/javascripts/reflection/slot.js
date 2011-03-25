@@ -55,6 +55,11 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     return this.name();
   }, {category: ['printing']});
 
+  add.method('fullName', function () {
+    if (this.name() === undefined) { return ""; }
+    return this.holder().name() + "." + this.name();
+  }, {category: ['printing']});
+
   add.method('sortOrder', function () { return this.name().toUpperCase(); }, {category: ['sorting']});
 
   add.method('isFunctionBody', function () { return false; }, {category: ['testing']});

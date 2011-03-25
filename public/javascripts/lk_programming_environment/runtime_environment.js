@@ -31,6 +31,8 @@ thisModule.addSlots(avocado.runtime, function(add) {
 
   add.data('isReflectionEnabled', false, {category: ['enabling reflection']});
 
+  add.data('shouldOnlyShowDeploymentArea', true, {category: ['deployment area']});
+
   add.data('debugMode', false, {category: ['debug mode']});
 
   add.creator('menuItemContributors', [], {category: ['menu']});

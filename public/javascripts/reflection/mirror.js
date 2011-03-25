@@ -191,8 +191,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('creatorSlotChainExpression', function (kindOfCreatorSlot) {
     if (! this.canHaveCreatorSlot()) {throw this.inspect() + " cannot have a creator slot chain.";}
+    return this.expressionForCreatorSlotChain(this.creatorSlotChain(kindOfCreatorSlot || 'probableCreatorSlot'));
+  }, {category: ['annotations', 'creator slot']});
 
-    var chain = this.creatorSlotChain(kindOfCreatorSlot || 'probableCreatorSlot');
+  add.method('expressionForCreatorSlotChain', function (chain) {
     if (! chain) {
       var err = new Error(this.name() + " does not have a creator slot chain");
       err.mirrorWithoutCreatorPath = this;
@@ -942,11 +944,10 @@ thisModule.addSlots(Array.prototype, function(add) {
     var thisMir = reflect(this);
     for (var i = start; i < end; ++i) {
       // Only make the indexable slot be the creator if the object
-      // doesn't already have a creator. (Not sure this is what we
+      // isn't already well-known. (Not sure this is what we
       // want in all cases, but for now it is.)
       var mir = reflect(this[i]);
-      var cs = mir.theCreatorSlot();
-      if (! cs || ! cs.contents().equals(mir)) {
+      if (! mir.isWellKnown('probableCreatorSlot')) {
         thisMir.slotAt(i).beCreator();
       }
     }

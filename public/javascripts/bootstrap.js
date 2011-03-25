@@ -452,6 +452,20 @@ var annotator = {
     return anno.existingSlotAnnotation(name);
   },
   
+  moduleOfAnyCreatorInChainFor: function(o) {
+    var p = o;
+    while (true) {
+      var cs = this.theCreatorSlotOf(p);
+      if (!cs) { return null; }
+      var slotAnno = this.existingSlotAnnotation(cs.holder, cs.name);
+      if (slotAnno) {
+        var m = slotAnno.getModule();
+        if (m) { return m; }
+      }
+      p = cs.holder;
+    }
+  },
+  
   isEmptyObject: function(o) {
     if (typeof(o) !== 'object') { return false; }
     try { // workaround for Firefox problem
@@ -506,6 +520,14 @@ var annotator = {
     }
     
     return null;
+  },
+
+  theCreatorSlotOf: function(o) {
+    var cs = this.creatorSlotDeterminableFromTheObjectItself(o);
+    if (cs) { return cs; }
+    var a = this.existingAnnotationOf(o);
+    if (!a) { return null; }
+    return a.explicitlySpecifiedCreatorSlot() || a.onlyPossibleCreatorSlot();
   },
   
   canonicalCategoryParts: [],
@@ -966,7 +988,7 @@ thisModule.addSlots(transporter, function(add) {
     // The right solution in the long run, I think, is to have some clear way of specifying
     // whether the programming-environment stuff should be loaded. -- Adam
     if (!UserAgent.isIPhone) {
-      avocado.objectGraphAnnotator.create(true, true).alsoAssignUnownedSlotsToModule(initModule).go();
+      avocado.objectGraphAnnotator.create(true, true, true).alsoAssignUnownedSlotsToModule(initModule).go();
     }
   }, {category: ['bootstrapping']});
 

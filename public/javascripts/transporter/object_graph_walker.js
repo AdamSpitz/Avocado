@@ -363,27 +363,36 @@ thisModule.addSlots(avocado.referenceFinder, function(add) {
 
 thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
 
-  add.method('initialize', function ($super, shouldMakeCreatorSlots, shouldAlsoWalkSpecialUnreachableObjects) {
+  add.method('initialize', function ($super, shouldMakeCreatorSlots, shouldAlsoWalkSpecialUnreachableObjects, shouldBuildListsOfUsedIdentifiers) {
     $super();
     this.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
     this.shouldAlsoWalkSpecialUnreachableObjects = shouldAlsoWalkSpecialUnreachableObjects;
+    this.shouldBuildListsOfUsedIdentifiers = shouldBuildListsOfUsedIdentifiers;
   });
 
-  add.method('alsoAssignUnownedSlotsToModule', function (module) {
-    return this.alsoAssignSlotsToModule(module, function(holder, slotName, contents, slotAnno) {
-      return ! slotAnno.getModule();
+  add.method('alsoAssignUnownedSlotsToModule', function (moduleOrFn) {
+    return this.alsoAssignSlotsToModule(function(holder, slotName, contents, slotAnno) {
+      if (slotAnno.getModule()) {
+        return undefined;
+      } else {
+        if (typeof(moduleOrFn) === 'function') {
+          return moduleOrFn(holder, slotName, contents, slotAnno);
+        } else {
+          return moduleOrFn;
+        }
+      }
     });
   });
 
-  add.method('alsoAssignSlotsToModule', function (module, shouldSlotBeAssignedToModule) {
-    this.moduleToAssignSlotsTo = module;
-    this.shouldSlotBeAssignedToModule = shouldSlotBeAssignedToModule;
+  add.method('alsoAssignSlotsToModule', function (moduleOrFn) {
+    this.moduleToAssignSlotsTo = moduleOrFn;
     return this;
   });
 
   add.method('shouldIgnoreObject', function ($super, o) {
     if ($super(o)) { return true; }
     if (avocado.annotator.isSimpleMethod(o)) { return true; }
+    if (typeof(o.storeString) === 'function' && (typeof(o.storeStringNeeds) !== 'function' || o !== o.storeStringNeeds())) { return true; }
     return false;
   });
 
@@ -394,44 +403,54 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
   });
 
   add.method('reachedObject', function (contents, howDidWeGetHere, shouldExplicitlySetIt) {
-    if (! this.shouldMakeCreatorSlots) { return; }
-    if (! howDidWeGetHere) { return; }
-    if (contents === window) { return; }
-    var contentsAnno;
-    var slotHolder = howDidWeGetHere.slotHolder;
-    var slotName   = howDidWeGetHere.slotName;
-    
-    // Optimization: don't bother creating an annotation just to set its creator slot if that creator
-    // slot is already determinable from the object itself.
-    var implicitCS = avocado.annotator.creatorSlotDeterminableFromTheObjectItself(contents);
-    if (implicitCS && implicitCS.holder === slotHolder && implicitCS.name === slotName) {
-      // no need to do anything
-    } else {
-      try { contentsAnno = avocado.annotator.annotationOf(contents); } catch (ex) { return false; } // FireFox bug
-      
-      if (shouldExplicitlySetIt) {
-        contentsAnno.setCreatorSlot(slotName, slotHolder);
+    if (this.shouldMakeCreatorSlots) {
+      if (! howDidWeGetHere) { return; }
+      if (contents === window) { return; }
+      var contentsAnno;
+      var slotHolder = howDidWeGetHere.slotHolder;
+      var slotName   = howDidWeGetHere.slotName;
+
+      // Optimization: don't bother creating an annotation just to set its creator slot if that creator
+      // slot is already determinable from the object itself.
+      var implicitCS = avocado.annotator.creatorSlotDeterminableFromTheObjectItself(contents);
+      if (implicitCS && implicitCS.holder === slotHolder && implicitCS.name === slotName) {
+        // no need to do anything
       } else {
-        if (! contentsAnno.explicitlySpecifiedCreatorSlot()) {
-          contentsAnno.addPossibleCreatorSlot(slotName, slotHolder);
+        try { contentsAnno = avocado.annotator.annotationOf(contents); } catch (ex) { return false; } // FireFox bug
+
+        if (shouldExplicitlySetIt) {
+          contentsAnno.setCreatorSlot(slotName, slotHolder);
+        } else {
+          if (! contentsAnno.explicitlySpecifiedCreatorSlot()) {
+            contentsAnno.addPossibleCreatorSlot(slotName, slotHolder);
+          }
         }
       }
     }
     
-    // Remember identifiers so we can search for "senders".
-    avocado.senders.rememberIdentifiersUsedBy(contents);
+    if (this.shouldBuildListsOfUsedIdentifiers) {
+      // Remember identifiers so we can search for "senders".
+      avocado.senders.rememberIdentifiersUsedBy(contents);
+    }
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
     if (! this.moduleToAssignSlotsTo) { return; }
     var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
-    if (this.shouldSlotBeAssignedToModule(holder, slotName, contents, slotAnno)) {
-      if (this._debugMode) { console.log("Setting module of " + slotName + " to " + this.moduleToAssignSlotsTo.name()); }
-      slotAnno.setModule(this.moduleToAssignSlotsTo);
-      this.moduleToAssignSlotsTo.slotCollection().addPossibleHolder(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
-      transporter.hackToMakeSureArrayIndexablesGetFiledOut(contents, this.moduleToAssignSlotsTo);
+    var module;
+    if (typeof(this.moduleToAssignSlotsTo) === 'function') {
+      module = this.moduleToAssignSlotsTo(holder, slotName, contents, slotAnno);
     } else {
-      if (this._debugMode) { console.log("NOT setting module of " + slotName + " to " + this.moduleToAssignSlotsTo.name()); }
+      module = this.moduleToAssignSlotsTo;
+    }
+    
+    if (module) {
+      if (this._debugMode) { console.log("Setting module of " + slotName + " to " + module); }
+      slotAnno.setModule(module);
+      module.slotCollection().addPossibleHolder(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
+      transporter.hackToMakeSureArrayIndexablesGetFiledOut(contents, module);
+    } else {
+      if (this._debugMode) { console.log("NOT setting module of " + slotName); }
     }
   });
 

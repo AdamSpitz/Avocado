@@ -22,6 +22,11 @@ thisModule.addSlots(avocado.project, function(add) {
   add.method('setCurrent', function (p) {
     this._current = p;
     
+	  if (avocado.theApplication.shouldOnlyShowDeploymentArea) {
+	    var dm = p.deploymentMorphIfAny();
+	    if (dm) { WorldMorph.current().addMorph(dm); }
+    }
+    
     if (typeof(avocado.justSetCurrentProject) === 'function') {
       avocado.justSetCurrentProject(p);
     }
@@ -82,8 +87,53 @@ thisModule.addSlots(avocado.project, function(add) {
     this.modificationFlag().notifier().addObserver(observer);
   }, {category: ['keeping track of changes']});
 
+  add.method('deploymentMorph', function () {
+    var module = this.currentWorldStateModule();
+    var morph = module._deploymentMorph;
+    if (! morph) {
+      morph = module._deploymentMorph = new Morph(new lively.scene.Rectangle(pt(0,0).extent(pt(400,300))));
+      morph.setFill(Color.white);
+      morph.setBorderColor(Color.black);
+      morph.switchEditModeOn();
+      
+      var label = TextMorph.createLabel("Put things in this box to make them appear in the deployed project");
+      label.fitText();
+      morph.withoutAnimationAddMorphCentered(label);
+      
+      var slot = reflect(module).slotAt('_deploymentMorph');
+      slot.beCreator();
+      slot.setModule(module);
+    }
+    return morph;
+  }, {category: ['deploying']});
+  
+  add.method('deploymentMorphIfAny', function () {
+    return modules.currentWorldState && modules.currentWorldState._deploymentMorph;
+  }, {category: ['deploying']});
+  
+  add.method('addGlobalCommandsTo', function (cmdList, evt) {
+    var currentProject = avocado.project.current();
+    if (!currentProject) { return; }
+    
+    cmdList.addLine();
+
+    cmdList.addItem(["current project...", [
+      ["get info", function(evt) {
+        avocado.ui.grab(currentProject, evt);
+      }],
+      
+      ["show deployment area", function(evt) {
+        currentProject.grabDeploymentMorph(evt);
+      }]
+    ]]);
+  }, {category: ['commands']});
+
   add.method('togglePrivacy', function (evt) {
     this.setIsPrivate(! this.isPrivate());
+  }, {category: ['commands']});
+
+  add.method('grabDeploymentMorph', function (evt) {
+    this.deploymentMorph().grabMe(evt);
   }, {category: ['commands']});
 
   add.method('grabRootModule', function (evt) {
@@ -127,8 +177,12 @@ thisModule.addSlots(avocado.project, function(add) {
     return sortedVersionsToSave;
   }, {category: ['saving']});
   
-  add.data('_shouldNotSaveCurrentWorld', true, {category: ['saving']});
+  add.data('_shouldNotSaveCurrentWorld', false, {category: ['saving']});
 
+  add.method('currentWorldStateModule', function () {
+    return modules.currentWorldState || this.module().createNewOneRequiredByThisOne('currentWorldState');
+  }, {category: ['saving']});
+    
   add.method('resetCurrentWorldStateModule', function () {
     if (!modules.currentWorldState) { return; }
     if (!modules.currentWorldState.morphs) { return; }
@@ -143,26 +197,47 @@ thisModule.addSlots(avocado.project, function(add) {
   }, {category: ['saving']});
 
   add.method('assignCurrentWorldStateToTheRightModule', function () {
-  	var currentWorldStateModule = modules.currentWorldState || this.module().createNewOneRequiredByThisOne('currentWorldState');
+  	var currentWorldStateModule = this.currentWorldStateModule();
   	
   	currentWorldStateModule.morphs = [];
   	reflect(currentWorldStateModule).slotAt('morphs').beCreator().setInitializationExpression('[]');
   	var morphsArrayMir = reflect(currentWorldStateModule.morphs);
-  	WorldMorph.current().submorphs.forEach(function(m, i) {
-  	  if (! m.shouldNotBeTransported() && ! m.shouldIgnorePoses()) {
+  	
+    var currentWorldSubmorphs = WorldMorph.current().submorphs;
+    var currentWorldSubmorphsMir = reflect(currentWorldSubmorphs);
+    currentWorldSubmorphs.forEach(function(m, i) {
+      if (! m.shouldNotBeTransported() && ! m.shouldIgnorePoses()) {
     	  currentWorldStateModule.morphs.push(m);
-    	  morphsArrayMir.slotAt(currentWorldStateModule.morphs.length - 1).beCreator();
+    	  
+        // If the morph is already owned by some creator slot other than the world's submorphs array,
+        // don't steal it, just remember which module it's in, and make the currentWorldState module
+        // depend on it.
+        var mMir = reflect(m);
+        var cs = mMir.theCreatorSlot();
+        if (cs && cs.contents().equals(mMir) && cs.module() && !cs.holder().equals(currentWorldSubmorphsMir) && mMir.creatorSlotChain()) {
+          if (cs.module() !== currentWorldStateModule) {
+            currentWorldStateModule.addRequirement(cs.module().name());
+          }
+        } else {
+          morphsArrayMir.slotAt(currentWorldStateModule.morphs.length - 1).beCreator();
+        }
   	  }
   	});
   	
   	currentWorldStateModule.postFileIn = function() {
   	  var w = WorldMorph.current();
-  	  modules.currentWorldState.morphs.forEach(function(m) { w.addMorph(m); });
+  	  if (! avocado.theApplication.shouldOnlyShowDeploymentArea) {
+    	  this.morphs.forEach(function(m) { w.addMorph(m); });
+  	  }
   	  avocado.project.resetCurrentWorldStateModule();
   	};
   	reflect(currentWorldStateModule).slotAt('postFileIn').beCreator();
   	
-  	var walker = avocado.objectGraphAnnotator.create().setShouldWalkIndexables(true).beInDebugMode().alsoAssignUnownedSlotsToModule(currentWorldStateModule);
+  	var walker = avocado.objectGraphAnnotator.create().setShouldWalkIndexables(true);
+  	walker.alsoAssignUnownedSlotsToModule(function(holder, slotName, slotContents, slotAnno) {
+  	  if (holder === currentWorldStateModule) { return currentWorldStateModule; }
+  	  return avocado.annotator.moduleOfAnyCreatorInChainFor(holder);
+  	});
   	
     walker.shouldContinueRecursingIntoObject = function (object, objectAnno, howDidWeGetHere) {
       if (object === currentWorldStateModule) { return true; }
@@ -230,9 +305,10 @@ thisModule.addSlots(avocado.project, function(add) {
   add.method('commands', function () {
     return avocado.command.list.create(this, [
       avocado.command.create('save', this.save),
+      avocado.command.create('show deployment area', this.grabDeploymentMorph),
       avocado.command.create('rename', this.rename),
-      avocado.command.create('get root module', this.grabRootModule),
-      avocado.command.create(this.isPrivate() ? 'be public' : 'be private', this.togglePrivacy)
+      avocado.command.create(this.isPrivate() ? 'be public' : 'be private', this.togglePrivacy),
+      avocado.command.create('get root module', this.grabRootModule)
     ]);
   }, {category: ['user interface', 'commands']});
 
