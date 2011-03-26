@@ -367,15 +367,15 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     this.forceLayoutRejiggering();
   }, {category: ['adding and removing']});
 
-  add.method('eachThingy', function (f) {
+  add.method('eachCell', function (f) {
     for (var i = 0, n = this.submorphs.length; i < n; ++i) {
       var m = this.submorphs[i];
       if (! m.shouldNotBePartOfRowOrColumn) {f(m);}
     }
   }, {category: ['iterating']});
 
-  add.method('thingies', function (f) {
-    return avocado.enumerator.create(this, 'eachThingy');
+  add.method('cells', function (f) {
+    return avocado.enumerator.create(this, 'eachCell');
   }, {category: ['iterating']});
 
   add.method('replaceContentWith', function (newContent) {
@@ -388,9 +388,9 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('setSubmorphsFromTableContent', function () {
-    var nonThingies = [];
-    for (var i = 0, n = this.submorphs.length; i < n; ++i) { var m = this.submorphs[i]; if (! m.shouldNotBePartOfRowOrColumn) { nonThingies.push(m); }}
-    for (var i = 0, n =    nonThingies.length; i < n; ++i) { this.removeMorph(nonThingies[i], true); }
+    var nonCells = [];
+    for (var i = 0, n = this.submorphs.length; i < n; ++i) { var m = this.submorphs[i]; if (! m.shouldNotBePartOfRowOrColumn) { nonCells.push(m); }}
+    for (var i = 0, n =    nonCells.length; i < n; ++i) { this.removeMorph(nonCells[i], true); }
     this._tableContent.eachElement(function(m) { this.addMorph(m, true); }.bind(this));
   }, {category: ['adding and removing']});
 

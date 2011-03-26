@@ -122,7 +122,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
     if (! this.insertionIndexMatters()) { return this._collection.size(); }
     
     var p = this.localize(evt.point());
-    var morphs = avocado.enumerator.create(this, 'eachThingy').toArray();
+    var morphs = avocado.enumerator.create(this, 'eachCell').toArray();
     var numCols = this._columnsToShow.size();
     for (var i = 1; i * numCols < morphs.length; i += 1) {
       var m = morphs[i * numCols];

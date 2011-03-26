@@ -83,7 +83,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('getAllMirrors', function () {
-    this._mirrorsPanel.eachThingy(function(m) {
+    this._mirrorsPanel.eachCell(function(m) {
       if (m.putOriginalMorphBack) {
         m.putOriginalMorphBack();
       }
@@ -118,7 +118,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   }, {category: ['placeholders']});
 
   add.method('placeholderMorphs', function () {
-    return this._mirrorsPanel.thingies().select(function(m) { return m instanceof avocado.PlaceholderMorph; });
+    return this._mirrorsPanel.cells().select(function(m) { return m instanceof avocado.PlaceholderMorph; });
   }, {category: ['placeholders']});
 
 });

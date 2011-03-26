@@ -121,7 +121,7 @@ var annotator = {
       this.comment = c;
     },
 
-    constructorTemplate: "(function() { return function CONSTRUCTOR_THINGY() {}; })()",
+    constructorTemplate: "(function() { return function CONSTRUCTOR_FUNCTION() {}; })()",
 
     constructorForMakingChildrenOf: function(parent, explicitlySpecifiedName) {
       return this.constructorForMakingChildrenOfMyObject || this.createConstructorForMakingChildrenOf(parent, explicitlySpecifiedName);
@@ -136,7 +136,7 @@ var annotator = {
         if (cs) { name = cs.name; }
         name = name || 'something';
       }
-      var constr = eval(this.constructorTemplate.replace(/CONSTRUCTOR_THINGY/g, name));
+      var constr = eval(this.constructorTemplate.replace(/CONSTRUCTOR_FUNCTION/g, name));
       constr.prototype = parent;
       this.constructorForMakingChildrenOfMyObject = constr;
       return constr;
@@ -907,13 +907,6 @@ thisModule.addSlots(transporter, function(add) {
     this.repositoryContainingModuleNamed(name).fileIn(name, moduleLoadedCallback);
   }, {category: ['loading']});
 
-  add.method('fileOut', function (moduleVersion, repo, codeToFileOut, successBlock, failBlock) {
-    var m = moduleVersion.module();
-    var r = repo || m._repository;
-    if (!r) { throw new Error("Don't have a repository for: " + m); }
-    r.fileOutModuleVersion(moduleVersion, codeToFileOut.replace(/[\r]/g, "\n"), successBlock, failBlock);
-  }, {category: ['saving']});
-
   add.method('fileInIfWanted', function (name, callWhenDone) {
     if (this.shouldLoadModule(name)) {
       this.repositoryContainingModuleNamed(name).fileIn(name, callWhenDone);
@@ -1197,79 +1190,12 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
 });
 
 
-thisModule.addSlots(transporter.repositories.httpWithWebDAV, function(add) {
-
-  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
-    var m = moduleVersion.module();
-    var url = this.urlForModuleName(m.name());
-    var isAsync = true;
-    var req = new XMLHttpRequest();
-    req.open("PUT", url, isAsync);
-    req.onreadystatechange = function() {
-      if (req.readyState === 4) {
-        if (req.status >= 200 && req.status < 300) {
-          console.log("Saved " + url);
-          successBlock();
-        } else {
-          failBlock("Failed to file out " + m + ", status is " + req.status + ", statusText is " + req.statusText);
-        }
-      }
-    };
-    req.send(codeToFileOut);
-  }, {category: ['saving']});
-
-});
-
-
 thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add) {
 
   add.method('initialize', function (url, savingScriptURL) {
     this._url = url;
     this._savingScriptURL = savingScriptURL;
   }, {category: ['creating']});
-
-  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
-    var m = moduleVersion.module();
-    var repoURL = this.url();
-    if (repoURL.endsWith("/")) { repoURL = repoURL.substring(0, repoURL.length - 1); }
-    var url = this._savingScriptURL;
-    var postBody = "repoURL=" + encodeURIComponent(repoURL) + "&module=" + encodeURIComponent(m.name()) + "&code=" + encodeURIComponent(codeToFileOut);
-    //console.log("About to fileOutModuleVersion " + moduleVersion + " using saving script URL " + url + " and POST body:\n" + postBody);
-    var req = new Ajax.Request(url, {
-      method: 'post',
-      postBody: postBody,
-      contentType: 'application/x-www-form-urlencoded',
-          
-      asynchronous: true,
-      onSuccess:   function(transport) { this.onSuccess(m, transport, successBlock); }.bind(this),
-      onFailure:   function(t        ) { failBlock("Failed to file out module " + m + " to repository " + this + "; HTTP status code was " + req.getStatus()); }.bind(this),
-      onException: function(r,      e) { failBlock("Failed to file out module " + m + " to repository " + this + "; exception was " + e); }.bind(this)
-    });
-  }, {category: ['saving']});
-
-  add.data('shouldShowNewFileContentsInNewWindow', false, {category: ['downloading']});
-
-  add.method('onSuccess', function (m, transport, callWhenDone) {
-    var statusCodeIfAny = parseInt(transport.responseText);
-    if (!isNaN(statusCodeIfAny)) {
-      avocado.ui.showError("Failed to file out " + m + " module; status code " + statusCodeIfAny);
-    } else {
-      if (this.shouldShowNewFileContentsInNewWindow) {
-        var urlToDownload = transport.responseText;
-        window.open(urlToDownload);
-      }
-      callWhenDone();
-    }
-  }, {category: ['downloading']});
-
-});
-
-
-thisModule.addSlots(transporter.repositories.console, function(add) {
-
-  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
-    console.log(codeToFileOut);
-  });
 
 });
 
