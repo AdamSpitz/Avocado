@@ -104,7 +104,7 @@ thisModule.addSlots(Morph, function(add) {
     var t1 = avocado.toggler.create(null, m1);
     var t2 = avocado.toggler.create(null, m2);
     r.setPotentialColumns([t1, t2]);
-    r.refreshContent = avocado.hackToMakeSuperWork(r, "refreshContent", function($super) {
+    r.refreshContent = avocado.makeSuperWork(r, "refreshContent", function($super) {
       var c = condition();
       var evt = Event.createFake();
       t1.setValue(!!c, evt);

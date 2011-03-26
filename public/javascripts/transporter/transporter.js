@@ -733,8 +733,8 @@ thisModule.addSlots(transporter.tests, function(add) {
     m.uninstall();
   });
 
-  add.method('aaa_obsolete_testObjectsWithNoCreatorPath', function () {
-    // This test is obsolete, but we should do something similar to test the trash-can warning, once we've implemented that. -- Adam, Mar. 2011
+  add.method('obsolete_testObjectsWithNoCreatorPath', function () {
+    // aaa - This test is obsolete, but we should do something similar to test the trash-can warning, once we've implemented that. -- Adam, Mar. 2011
     var m = transporter.module.named('test_non_well_known_objects');
 
     var o = {};
@@ -751,8 +751,8 @@ thisModule.addSlots(transporter.tests, function(add) {
     m.uninstall();
   });
 
-  add.method('aaa_obsolete_testObjectsThatHaveParentsWithNoCreatorPath', function () {
-    // This test is obsolete too.
+  add.method('obsolete_testObjectsThatHaveParentsWithNoCreatorPath', function () {
+    // aaa - This test is obsolete too.
     
     var m = transporter.module.named('test_non_well_known_parents');
 

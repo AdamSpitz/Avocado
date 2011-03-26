@@ -41,7 +41,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     this._objectCount = 0; // just for fun;
   });
 
-  add.data('namesToIgnore', ["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "_creatorSlotHolder", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "_creatorSlotHolder", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
+  add.data('namesToIgnore', ["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "_creatorSlotHolder", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just for now - the right solution is to figure out what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "_creatorSlotHolder", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
 
   add.method('go', function (root) {
     this.reset();
@@ -448,7 +448,7 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
       if (this._debugMode) { console.log("Setting module of " + slotName + " to " + module); }
       slotAnno.setModule(module);
       module.slotCollection().addPossibleHolder(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
-      transporter.hackToMakeSureArrayIndexablesGetFiledOut(contents, module);
+      transporter.makeSureArrayIndexablesGetFiledOut(contents, module);
     } else {
       if (this._debugMode) { console.log("NOT setting module of " + slotName); }
     }

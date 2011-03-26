@@ -477,7 +477,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
       oldModule.markAsChanged();
     }
 
-    this.contents().hackToMakeSureArrayIndexablesGetFiledOut(this);
+    this.contents().makeSureArrayIndexablesGetFiledOut(this);
     
     avocado.ui.justChanged(this);
   }, {category: ['accessing annotation', 'module']});

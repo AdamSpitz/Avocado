@@ -482,8 +482,8 @@ var annotator = {
     return true;
   },
 
-  aaa_LK_slotNamesAttachedToMethods: ['declaredClass', 'methodName', 'displayName', '_creatorSlotHolder'],
-  aaa_LK_slotNamesUsedForSuperHack: ['valueOf', 'toString', 'originalFunction'],
+  LK_slotNamesAttachedToMethods: ['declaredClass', 'methodName', 'displayName', '_creatorSlotHolder'],
+  LK_slotNamesUsedForMakingSuperWork: ['valueOf', 'toString', 'originalFunction'],
   
   isSimpleMethod: function(o) {
     if (typeof(o) !== 'function') { return false; }
@@ -493,8 +493,8 @@ var annotator = {
     if (typeof(o.hasOwnProperty) !== 'function') { return false; }
     for (var n in o) {
       if (o.hasOwnProperty(n) && n !== '__annotation__') {
-        if (            this.aaa_LK_slotNamesAttachedToMethods.include(n)) { continue; }
-        if (hasSuper && this.aaa_LK_slotNamesUsedForSuperHack .include(n)) { continue; }
+        if (            this.LK_slotNamesAttachedToMethods.include(n)) { continue; }
+        if (hasSuper && this.LK_slotNamesUsedForMakingSuperWork .include(n)) { continue; }
         if (n === 'prototype' && this.isEmptyObject(o[n])) { continue; }
         return false;
       }
@@ -588,7 +588,7 @@ avocado.javascript.reservedWords = {'abstract': true, 'boolean': true, 'break': 
 // aaa - Copied from Base.js. Just a hack to make $super work. Not really sure
 // what the right solution is in the long run - how do we make this work with
 // both prototype-style inheritance and class-style inheritance?
-avocado.hackToMakeSuperWork = function(holder, property, contents) {
+avocado.makeSuperWork = function(holder, property, contents) {
   var value = contents;
   var superclass = holder.constructor && this === holder.constructor.prototype && holder.constructor.superclass;
   var ancestor = superclass ? superclass.prototype : holder['__proto__']; // using [] to fool JSLint
@@ -610,8 +610,8 @@ avocado.hackToMakeSuperWork = function(holder, property, contents) {
   }
   return value;
 };
-annotator.annotationOf(avocado.hackToMakeSuperWork).setCreatorSlot('hackToMakeSuperWork', avocado);
-annotator.annotationOf(avocado).setSlotAnnotation('hackToMakeSuperWork', {category: ['inheritance']});
+annotator.annotationOf(avocado.makeSuperWork).setCreatorSlot('makeSuperWork', avocado);
+annotator.annotationOf(avocado).setSlotAnnotation('makeSuperWork', {category: ['inheritance']});
 
 // Seems like Chrome doesn't actually enumerate the "prototype" slot.
 // This is just a simple test to see.
@@ -740,7 +740,7 @@ transporter.module.create = function(n, reqBlock, contentsBlock, versionInfo) {
   
   avocado.callbackWaiter.on(function(finalCallback) {
     reqBlock(function(reqName) {
-      newModule.requires(reqName, Object.extend(finalCallback(), {aaa_name: reqName}));
+      newModule.requires(reqName, finalCallback());
     });
   }, function() {
     transporter.loadOrder.push({module: n});
@@ -808,8 +808,8 @@ transporter.module.slotCollection = function() {
   return transporter.module.cache[this._name];
 };
 
-transporter.hackToMakeSureArrayIndexablesGetFiledOut = function (contents, module) {
-  // aaa see hackToMakeSureArrayIndexablesGetFiledOut in the slot object
+transporter.makeSureArrayIndexablesGetFiledOut = function (contents, module) {
+  // aaa see makeSureArrayIndexablesGetFiledOut in the slot object
   if (! module) { return; }
   if (typeof contents === 'object' && ((contents instanceof Array) || (contents instanceof Node))) {
     module.slotCollection().addPossibleHolder(contents);
@@ -827,7 +827,7 @@ transporter.module.slotAdder = {
       annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);
     }
     
-    transporter.hackToMakeSureArrayIndexablesGetFiledOut(contents, this.module);
+    transporter.makeSureArrayIndexablesGetFiledOut(contents, this.module);
 
     if (name === 'postFileIn') {
       this.module.objectsWithAPostFileInMethod = this.module.objectsWithAPostFileInMethod || [];
@@ -855,7 +855,7 @@ transporter.module.slotAdder = {
   method: function(name, contents, slotAnnotation) {
     contents.displayName = name; // this'll show up in the Safari debugger
     contents._creatorSlotHolder = this.holder; // to allow implicit creator slots
-    this.creator(name, avocado.hackToMakeSuperWork(this.holder, name, contents), slotAnnotation);
+    this.creator(name, avocado.makeSuperWork(this.holder, name, contents), slotAnnotation);
   },
   
   domChildNode: function(name, contents, slotAnnotation, contentsAnnotation) {

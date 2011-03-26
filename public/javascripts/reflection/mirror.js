@@ -584,14 +584,14 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('isReflecteeSimpleMethod', function () {
     if (! this.isReflecteeFunction()) {return false;}
 
-    var aaa_LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName', 'displayName', '_creatorSlotHolder'];
-    var aaa_LK_slotNamesUsedForSuperHack = ['valueOf', 'toString', 'originalFunction'];
+    var LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName', 'displayName', '_creatorSlotHolder'];
+    var LK_slotNamesUsedForMakingSuperWork = ['valueOf', 'toString', 'originalFunction'];
 
     var hasSuper = this.reflectee().argumentNames && this.reflectee().argumentNames().first() === '$super';
 
     var nonTrivialSlot = this.normalSlots().find(function(s) {
-      if (            aaa_LK_slotNamesAttachedToMethods.include(s.name())) {return false;}
-      if (hasSuper && aaa_LK_slotNamesUsedForSuperHack .include(s.name())) {return false;}
+      if (            LK_slotNamesAttachedToMethods.include(s.name())) {return false;}
+      if (hasSuper && LK_slotNamesUsedForMakingSuperWork .include(s.name())) {return false;}
         
       // Firefox seems to have a 'prototype' slot on every function (whereas Safari is lazier about it). I think.
       if (s.name() === 'prototype') {
@@ -682,7 +682,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('setCreatorSlot', function (s) {
     if (s) {
-      this.hackToMakeSureArrayIndexablesGetFiledOut(s);
+      this.makeSureArrayIndexablesGetFiledOut(s);
       this.annotationForWriting().setCreatorSlot(s.name(), s.holder().reflectee());
     } else {
       this.annotationForWriting().setCreatorSlot(undefined, undefined);
@@ -690,11 +690,11 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['annotations', 'creator slot']});
 
   add.method('addPossibleCreatorSlot', function (s) {
-    this.hackToMakeSureArrayIndexablesGetFiledOut(s);
+    this.makeSureArrayIndexablesGetFiledOut(s);
     this.annotationForWriting().addPossibleCreatorSlot(s.name(), s.holder().reflectee());
   }, {category: ['annotations', 'creator slot']});
 
-  add.method('hackToMakeSureArrayIndexablesGetFiledOut', function (s) {
+  add.method('makeSureArrayIndexablesGetFiledOut', function (s) {
     if (this.canHaveIndexableSlots()) {
       var module = s.module();
       if (module) { module.slotCollection().addPossibleHolder(this.reflectee()); }
@@ -958,7 +958,8 @@ thisModule.addSlots(Array.prototype, function(add) {
     var thisMir = reflect(this);
     for (var i = start; i < end; ++i) {
       var o = this[i];
-      if (o && !o.aaa_doesNotNeedACreatorSlot) {
+      // aaa this doesNotNeedACreatorSlot thing is a HACK
+      if (o && !o.doesNotNeedACreatorSlot) {
         var s = thisMir.slotAt(i);
         var contents = s.contents();
         if (s.equals(contents.theCreatorSlot())) {
@@ -983,7 +984,7 @@ thisModule.addSlots(Array.prototype, function(add) {
 
   add.method('unshiftAndAdjustCreatorSlots', function (newElem) {
     this.unshift(newElem);
-    if (newElem && !newElem.aaa_doesNotNeedACreatorSlot) {
+    if (newElem && !newElem.doesNotNeedACreatorSlot) {
       this.makeCreatorSlots(0, 1);
       this.adjustCreatorSlots(1, this.length);
     }
@@ -991,7 +992,7 @@ thisModule.addSlots(Array.prototype, function(add) {
 
   add.method('pushAndAdjustCreatorSlots', function (newElem) {
     this.push(newElem);
-    if (newElem && !newElem.aaa_doesNotNeedACreatorSlot) {
+    if (newElem && !newElem.doesNotNeedACreatorSlot) {
       this.makeCreatorSlots(this.length - 1, this.length);
     }
   }, {category: ['reflection', 'creator slots']});

@@ -256,15 +256,15 @@ thisModule.addSlots(avocado.couch.db, function(add) {
       ref.setObject(obj);
     }
     
-    var underscoreHackLength = 'underscoreHack'.length;
+    var underscoreReplacementLength = 'underscoreReplacement'.length;
     var names = reflect(dumbDataObj).normalSlotNames();
     names.each(function(name) {
       var contents = dumbDataObj[name];
       var realName = name;
       var realContents = contents;
       
-      if (realName.substr(0, underscoreHackLength) === 'underscoreHack') {
-        realName = realName.substr(underscoreHackLength);
+      if (realName.substr(0, underscoreReplacementLength) === 'underscoreReplacement') {
+        realName = realName.substr(underscoreReplacementLength);
       }
       
       if (realName.endsWith('__creatorPath')) {
@@ -440,7 +440,7 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
   add.method('stringForMapFunction', function () {
     var containerCreatorSlotChain = reflect(this._containerType).creatorSlotChain();
     var   elementCreatorSlotChain = reflect(this._elementType  ).creatorSlotChain();
-    var s = ["function(doc) { var p = doc.underscoreHack__proto____creatorPath; if (!p) { return; }"];
+    var s = ["function(doc) { var p = doc.underscoreReplacement__proto____creatorPath; if (!p) { return; }"];
     
     s.push(" if (p.length === ", containerCreatorSlotChain.length);
     for (var i = 0, n = containerCreatorSlotChain.length; i < n; ++i) {

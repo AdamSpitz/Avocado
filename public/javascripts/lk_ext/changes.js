@@ -104,7 +104,6 @@ HandMorph.addMethods({
     },
 
     grabMorph: function(grabbedMorph, evt) {
-      if (!evt) {logStack(); alert("no evt! aaa");}
         if (evt.isShiftDown() || (grabbedMorph.owner && grabbedMorph.owner.copySubmorphsOnGrab == true)) {
             if (!grabbedMorph.okToDuplicate()) return;
             grabbedMorph.copyToHand(this);

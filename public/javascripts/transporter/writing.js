@@ -325,7 +325,7 @@ thisModule.addSlots(transporter.module.filerOuters.json, function(add) {
       }
     } else {
       var slotNameToWrite = slotName;
-      if (slotNameToWrite[0] === '_' && !info.isHardWired) { slotNameToWrite = 'underscoreHack' + slotNameToWrite; }
+      if (slotNameToWrite[0] === '_' && !info.isHardWired) { slotNameToWrite = 'underscoreReplacement' + slotNameToWrite; }
       if (info.isReferenceToWellKnownObjectThatIsCreatedElsewhere) { slotNameToWrite = slotNameToWrite + "__creatorPath"; }
       if (info.isReferenceToRemoteObject) { slotNameToWrite = slotNameToWrite + "__id"; }
       this._buffer.append(slotNameToWrite.inspect(true)).append(": ");

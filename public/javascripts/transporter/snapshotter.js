@@ -25,7 +25,7 @@ thisModule.addSlots(avocado.snapshotter, function(add) {
     this._buffer = avocado.stringBuffer.create();
   });
 
-  add.data('namesToIgnore', ["__snapshotNumberOfOID__", "__snapshotNumber__", "__snapoid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__snapshotNumberOfOID__", "__snapshotNumber__", "__snapoid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
+  add.data('namesToIgnore', ["__snapshotNumberOfOID__", "__snapshotNumber__", "__snapoid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just for now - the right solution is to figure out what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__snapshotNumberOfOID__", "__snapshotNumber__", "__snapoid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
 
   add.data('shouldWalkIndexables', true);
 

@@ -124,9 +124,9 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this.prettyPrint(node[1]);
       break;
     case nodeTypes.GROUP:
-      if (node.value !== '(') { throw new Error("aaa, group but not open-paren?"); }
+      if (node.value !== '(') { throw new Error("Unknown type of group: not open-paren"); }
       this._buffer.append("(");
-      if (node.length !== 1) { throw new Error("aaa, group but not just one member?"); }
+      if (node.length !== 1) { throw new Error("Unknown type of group: not just one member"); }
       this.prettyPrint(node[0]);
       this._buffer.append(")");
       break;

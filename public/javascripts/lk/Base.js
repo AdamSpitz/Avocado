@@ -50,7 +50,8 @@ Object.defineProperties = function(object, descriptorSet) {
 	 
 Object.defineProperties(Object, {
   // I like mine better. -- Adam
-	createAAA: { 
+  /*
+	create: { 
 		value: function(proto, descriptorSet) { //descriptor can be undefined
 			var object = {};
 			object.__proto__ = proto;
@@ -58,6 +59,7 @@ Object.defineProperties(Object, {
 			return object;
 		}
 	},
+	*/
 
 	keys: { 
 		value: function(object, optFast) {

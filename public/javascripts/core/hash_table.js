@@ -55,7 +55,7 @@ thisModule.addSlots(avocado.hashTable, function(add) {
     else {
       if (! this._buckets.hasOwnProperty(bucketName)) {
         // console.log("Bad bucket name: " + bucketName);
-        return this.bucketForKey("bucketKeyHack");
+        return this.bucketForKey("replacementForInvalidBucketName");
       }
     }
     return b;
