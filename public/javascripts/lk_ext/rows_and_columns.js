@@ -220,8 +220,10 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['layout']});
 
   add.method('rejiggerTheLayout', function (availableSpace) {
+    if (this._debugMyLayout) { console.log("About to rejigger the layout, availableSpace is " + availableSpace); }
     var thisExtent = this.getExtent();
     var availableSpaceToUse = this.calculateSpaceToUseOutOf(availableSpace, thisExtent);
+    if (this._debugMyLayout) { console.log("availableSpaceToUse is " + availableSpaceToUse); }
     if (this.isAlreadyLaidOutInSpace(availableSpaceToUse)) {
       availableSpaceToUse = thisExtent;
     } else {
