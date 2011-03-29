@@ -18,8 +18,6 @@ thisModule.addSlots(avocado.poses, function(add) {
 
   add.creator('list', Object.create(avocado.poses['abstract']));
 
-  add.creator('clean', Object.create(avocado.poses.list));
-
   add.creator('snapshot', Object.create(avocado.poses['abstract']));
 
   add.creator('manager', {});
@@ -41,28 +39,49 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this.name();
   });
 
-  add.method('recreateInContainer', function (w) {
-    this.eachElement(function(e) {
-      e.poser.isPartOfCurrentPose = true;
-      if (e.uiState) { e.poser.assumeUIState(e.uiState); }
-      e.poser.ensureIsInWorld(w, e.position, true, true, true, function() {
-        // do bad things happen if I make the uiState thing happen before moving the poser?
-      });
-    });
+  add.method('recreateInContainer', function (container) {
+    var originalScale = container.getScale();
+    var originalSpace = container.getExtent().scaleBy(originalScale);
     
-    w.allPotentialPosers().each(function(m) {
-      if (m.isPartOfCurrentPose) {
-        delete m.isPartOfCurrentPose;
-      } else if (! m.shouldIgnorePoses()) {
-        // I am undecided on whether this is a good idea or not. It's annoying if
-        // stuff I want zooms away, but it's also annoying if stuff zooms onto
-        // other stuff and the screen gets all cluttered.
-        var shouldUninvolvedPosersZoomAway = false;
-        if (shouldUninvolvedPosersZoomAway) {
-          m.startZoomingOuttaHere();
+    avocado.callbackWaiter.on(function(finalCallback) {
+    
+      this.eachElement(function(e) {
+        e.poser.isPartOfCurrentPose = true;
+        // do bad things happen if I make the uiState thing happen before moving the poser?
+        if (e.uiState) { e.poser.assumeUIState(e.uiState); }
+        e.poser.ensureIsInWorld(container, e.position, true, true, true, finalCallback());
+      });
+
+      container.allPotentialPosers().each(function(m) {
+        if (m.isPartOfCurrentPose) {
+          delete m.isPartOfCurrentPose;
+        } else if (! m.shouldIgnorePoses()) {
+          // I am undecided on whether this is a good idea or not. It's annoying if
+          // stuff I want zooms away, but it's also annoying if stuff zooms onto
+          // other stuff and the screen gets all cluttered.
+          var shouldUninvolvedPosersZoomAway = false;
+          if (shouldUninvolvedPosersZoomAway) {
+            m.startZoomingOuttaHere(finalCallback());
+          }
         }
+      });
+    
+    }.bind(this), function() {
+    
+      if (this._shouldScaleToFitWithinCurrentSpace) {
+        var currentExtent = container.bounds().extent();
+        var hs = originalSpace.x / currentExtent.x;
+        var vs = originalSpace.y / currentExtent.y;
+        container.scaleBy(Math.min(hs, vs));
+        console.log("Doing the scale thing, originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
       }
-    });
+    
+    }.bind(this));
+  });
+  
+  add.method('whenDoneScaleToFitWithinCurrentSpace', function () {
+    this._shouldScaleToFitWithinCurrentSpace = true;
+    return this;
   });
 
 });
@@ -116,9 +135,9 @@ thisModule.addSlots(avocado.poses.tree, function(add) {
 
 thisModule.addSlots(avocado.poses.list, function(add) {
 
-  add.method('initialize', function ($super, name, world, posers) {
+  add.method('initialize', function ($super, name, container, posers) {
     $super(name);
-    this._world = world;
+    this._container = container;
     this._posers = posers;
   });
 
@@ -129,9 +148,11 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;
     });
 
-    var pos = pt(20,20);
+    var padding = pt(20,20);
+    var pos = padding;
     var widest = 0;
-    for (var i = 0; i < sortedPosersToMove.length; ++i) {
+    var maxY = this._shouldBeSquarish ? null : this._container.getExtent().y - 30;
+    for (var i = 0, n = sortedPosersToMove.length; i < n; ++i) {
       var poser = sortedPosersToMove[i];
       var uiState = this.destinationUIStateFor(poser);
       if (uiState) { poser.assumeUIState(uiState); }
@@ -139,24 +160,40 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       var extent = poser.getExtent().scaleBy(poser.getScale());
       pos = pos.withY(pos.y + extent.y);
       widest = Math.max(widest, extent.x);
-      if (pos.y >= this._world.getExtent().y - 30) { pos = pt(pos.x + widest + 20, 20); }
+      
+      if (this._shouldBeSquarish && !maxY) {
+        // If it seems like the current y is far down enough to make the whole
+        // thing come out squarish (assuming that all columns will be about as
+        // wide as this one), then set this as the maxY.
+        var estimatedNumberOfColumns = Math.ceil(n / (i + 1));
+        var estimatedTotalWidth = estimatedNumberOfColumns * (widest + padding.x);
+        // aaa - not sure why it keeps coming out too tall; quick hack for now: compensate by multiplying by 1.2
+        if (pos.y * 1.2 >= estimatedTotalWidth) { maxY = pos.y; }
+      }
+      
+      if (maxY && pos.y >= maxY) { pos = pt(pos.x + widest + padding.x, padding.y); }
     }
   });
-
-  add.method('destinationUIStateFor', function (poser) {
-    // just use whatever state it's in now
-    return null;
+  
+  add.method('beCollapsing', function () {
+    this._shouldBeCollapsing = true;
+    return this;
+  });
+  
+  add.method('beSquarish', function () {
+    this._shouldBeSquarish = true;
+    return this;
   });
 
-});
-
-
-thisModule.addSlots(avocado.poses.clean, function(add) {
-
   add.method('destinationUIStateFor', function (poser) {
-    var uiState = poser.constructUIStateMemento();
-    if (uiState) { uiState.isExpanded = false; }
-    return uiState;
+    if (this._shouldBeCollapsing) {
+      var uiState = poser.constructUIStateMemento();
+      if (uiState) { uiState.isExpanded = false; }
+      return uiState;
+    } else {
+      // just use whatever state it's in now
+      return null;
+    }
   });
 
 });
@@ -267,7 +304,11 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
   }, {category: ['taking snapshots']});
 
   add.method('cleanUp', function (evt) {
-    this.assumePose(Object.newChildOf(avocado.poses.clean, "clean up", this.container(), this.container().posers()));
+    this.assumePose(Object.newChildOf(avocado.poses.list, "clean up", this.container(), this.container().posers()).beCollapsing());
+  }, {category: ['cleaning up']});
+
+  add.method('cleanUpAndPreserveScale', function (evt) {
+    this.assumePose(Object.newChildOf(avocado.poses.list, "clean up", this.container(), this.container().posers()).beCollapsing().beSquarish().whenDoneScaleToFitWithinCurrentSpace());
   }, {category: ['cleaning up']});
 
   add.method('listPoseOfMorphsFor', function (objects, name) {

@@ -20,13 +20,16 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return intersects;
     }, {category: ['testing']});
 
-  add.method('startZoomingOuttaHere', function () {
+  add.method('startZoomingOuttaHere', function (functionToCallWhenDone) {
       var w = this.world();
       if (w) {
         this.becomeDirectSubmorphOfWorld(w);
-        return this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {this.remove();}.bind(this));
+        this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {
+          this.remove();
+          if (functionToCallWhenDone) { functionToCallWhenDone(); }
+        }.bind(this));
       } else {
-        return null;
+        if (functionToCallWhenDone) { functionToCallWhenDone(); }
       }
     }, {category: ['zooming around']});
 

@@ -146,7 +146,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
       cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(evt); } }]);
       
       if (this.shouldUseZooming()) {
-        cmdList.addSection([{ label: "clean up",  go: function(evt) { this.contentsPanel().poseManager().cleanUp(evt); } }]);
+        cmdList.addSection([{ label: "clean up",  go: function(evt) { this.contentsPanel().poseManager().cleanUpAndPreserveScale(evt); } }]);
       }
 
       if (!this.category().isRoot()) {
