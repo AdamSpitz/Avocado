@@ -71,9 +71,9 @@ thisModule.addSlots(avocado.ui, function(add) {
     return this.worldFor(evtOrMorph).confirm(message, callback);
   });
 
-  add.method('grab', function (obj, evt) {
+  add.method('grab', function (obj, evt, callback) {
     var m = this.worldFor(evt).morphFor(obj);
-    m.grabMe(evt);
+    m.grabMe(evt, callback);
     return m;
   });
 

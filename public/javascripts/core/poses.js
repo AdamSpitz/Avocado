@@ -41,7 +41,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this.name();
   });
 
-  add.method('recreateInWorld', function (w) {
+  add.method('recreateInContainer', function (w) {
     this.eachElement(function(e) {
       e.poser.isPartOfCurrentPose = true;
       if (e.uiState) { e.poser.assumeUIState(e.uiState); }
@@ -197,6 +197,14 @@ thisModule.addSlots(avocado.poses.snapshot, function(add) {
 
 thisModule.addSlots(avocado.poses.manager, function(add) {
 
+  add.method('initialize', function (container) {
+    this._container = container;
+  }, {category: ['creating']});
+
+  add.method('container', function () {
+    return this._container;
+  }, {category: ['accessing']});
+
   add.method('explicitlyRememberedPoses', function () {
     return avocado.organization.current.poses();
   }, {category: ['explicitly remembering']});
@@ -234,22 +242,22 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     }
 
     var pose = this.undoPoseStack()[this._undoPoseStackIndex -= 1];
-    pose.recreateInWorld(this.world());
+    pose.recreateInContainer(this.container());
   });
 
   add.method('goForwardToNextPose', function () {
     if (! this.canGoForwardToNextPose()) { throw "there is nothing to go forward to"; }
     var pose = this.undoPoseStack()[this._undoPoseStackIndex += 1];
-    pose.recreateInWorld(this.world());
+    pose.recreateInContainer(this.container());
   });
 
   add.method('assumePose', function (pose) {
     this.addToUndoPoseStack(this.createSnapshotOfCurrentPose(avocado.organization.current.findUnusedPoseName()));
-    pose.recreateInWorld(this.world());
+    pose.recreateInContainer(this.container());
   }, {category: ['poses']});
 
   add.method('createSnapshotOfCurrentPose', function (poseName) {
-    return Object.newChildOf(avocado.poses.snapshot, poseName, this.world().posers());
+    return Object.newChildOf(avocado.poses.snapshot, poseName, this.container().posers());
   }, {category: ['taking snapshots']});
 
   add.method('rememberThisPose', function () {
@@ -259,13 +267,13 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
   }, {category: ['taking snapshots']});
 
   add.method('cleanUp', function (evt) {
-    this.assumePose(Object.newChildOf(avocado.poses.clean, "clean up", this.world(), this.world().posers()));
+    this.assumePose(Object.newChildOf(avocado.poses.clean, "clean up", this.container(), this.container().posers()));
   }, {category: ['cleaning up']});
 
   add.method('listPoseOfMorphsFor', function (objects, name) {
     // aaa LK-dependent
-    var posersToMove = objects.map(function(m) { return this.world().morphFor(m); }.bind(this));
-    return Object.newChildOf(avocado.poses.list, name, this.world(), posersToMove);
+    var posersToMove = objects.map(function(m) { return this.container().morphFor(m); }.bind(this));
+    return Object.newChildOf(avocado.poses.list, name, this.container(), posersToMove);
   }, {category: ['cleaning up']});
 
   add.method('poseChooser', function () {
@@ -291,7 +299,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
 
     if (this.explicitlyRememberedPoses().size() > 0) {
       poseCommands.push(["assume a pose...", function(evt) {
-        avocado.ui.showMenu(this.poseChooser(), this.world(), null, evt);
+        avocado.ui.showMenu(this.poseChooser(), this.container(), null, evt);
       }.bind(this)]);
     }
 

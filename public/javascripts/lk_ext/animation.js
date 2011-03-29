@@ -79,8 +79,13 @@ thisModule.addSlots(Morph.prototype, function(add) {
         var difference = newPos.subPt(oldPos);
         var ratio = Math.max(Math.abs(difference.x) / extent.x, Math.abs(difference.y) / extent.y);
         if (ratio > 0.5) {
-          var bounds = this.bounds();
-          var allVertices = bounds.vertices().concat(bounds.translatedBy(difference).vertices());
+          // aaa - I am sure that there's a more elegant way to get the globalBounds.
+          // aaa - And I don't even think this works right.
+    			var topLeft = this.owner.worldPoint(this.getPosition());
+    			var scaledExtent = this.getExtent().scaleBy(this.overallScale() / world.getScale());
+    			var globalBounds = topLeft.extent(scaledExtent);
+    			
+          var allVertices = globalBounds.vertices().concat(globalBounds.translatedBy(difference).vertices());
           var convexVertices = avocado.quickhull.getConvexHull(allVertices).map(function(a) {return a.pointA;});
           var motionBlurMorph = Morph.makePolygon(convexVertices, 0, Color.black, this.getFill());
           motionBlurMorph.doesNotNeedACreatorSlot = true; // aaa HACK to fix performance bug
