@@ -400,7 +400,7 @@ thisModule.addSlots(transporter.module.prompter, function(add) {
   }, {category: ['module tree']});
 
   add.method('createAModule', function (evt, target, callback) {
-    avocado.repositories.prompter.prompt('Which server should the new module live on?', target, evt, function(repo, evt) {
+    transporter.repositories.prompter.prompt('Which server should the new module live on?', target, evt, function(repo, evt) {
       avocado.ui.prompt("Module name?", function(name) {
         callback(transporter.module.createNewOne(name, repo), evt);
       }, null, evt);
