@@ -73,7 +73,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
         var hs = originalSpace.x / currentExtent.x;
         var vs = originalSpace.y / currentExtent.y;
         container.scaleBy(Math.min(hs, vs));
-        console.log("Doing the scale thing, originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
+        // console.log("Scaling to fit within originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
       }
     
     }.bind(this));

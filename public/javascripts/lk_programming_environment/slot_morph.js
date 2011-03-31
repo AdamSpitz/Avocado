@@ -364,13 +364,13 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.defaultStyle, func
 
   add.data('borderWidth', 1);
 
-  add.data('fill', null);
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
 
   add.data('padding', 0);
 
-  add.data('suppressGrabbing', true);
+  add.data('suppressGrabbing', false);
 
-  add.data('grabsShouldFallThrough', true);
+  add.data('grabsShouldFallThrough', false);
 
   add.data('openForDragAndDrop', false);
 

@@ -143,6 +143,10 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
                             { label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); } }]);
       }
       
+      if (avocado.debugMode) {
+        cmdList.addSection([{ label: "add 50 functions",  go: function(evt) { for (var i = 0; i < 50; ++i) { this.addSlot    (function() {}, evt); } } }]);
+      }
+      
       cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(evt); } }]);
       
       if (this.shouldUseZooming()) {

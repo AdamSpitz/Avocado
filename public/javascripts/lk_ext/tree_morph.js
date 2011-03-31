@@ -139,6 +139,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
             cp.addMorph(cm);
           }
         });
+        
+        if (!cp._hasAlreadyBeenLaidOutAtLeastOnce) {
+          cp._hasAlreadyBeenLaidOutAtLeastOnce = true;
+          cp.poseManager().cleanUpAndPreserveScale(Event.createFake());
+        }
       }.bind(this);
     } else {
       cp = this._contentsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.contentsPanelStyle());

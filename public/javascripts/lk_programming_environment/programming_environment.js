@@ -45,9 +45,9 @@ thisModule.addSlots(avocado, function(add) {
 
   add.data('isReflectionEnabled', true, {category: ['enabling reflection']});
 
-  add.data('shouldMirrorsUseZooming', false, {category: ['debug mode']});
+  add.data('shouldMirrorsUseZooming', true, {category: ['debug mode']});
 
-  add.data('debugMode', false, {category: ['debug mode']});
+  add.data('debugMode', true, {category: ['debug mode']});
 
   add.creator('menuItemContributors', [], {category: ['menu']});
 
@@ -65,6 +65,8 @@ thisModule.addSlots(avocado, function(add) {
       console.log("Time to get to timeout: " + (t4 - t3));
     }.bind(this), 0);
   });
+  
+  add.creator('argleBargle', {});
 
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
@@ -79,6 +81,17 @@ thisModule.addSlots(avocado, function(add) {
 
     if (this.debugMode) {
       cmdList.addLine();
+
+      cmdList.addItem({label: "get argleBargle", go: function(evt) {
+        var mir = reflect(this.argleBargle);
+        avocado.ui.grab(mir, evt)
+      }.bind(this)});
+
+      cmdList.addItem({label: "scatter 1-100", go: function(evt) {
+        var morphs = [];
+        for (var i = 1; i <= 100; ++i) { morphs.push(reflect(i).morph()); }
+        WorldMorph.current().scatter(morphs);
+      }.bind(this)});
 
       cmdList.addItem({label: "walk annotations", go: function(evt) {
         var walker = avocado.annotationWalker.create();
@@ -130,6 +143,21 @@ thisModule.addSlots(avocado, function(add) {
 
   }, {category: ['menu']});
 
+});
+
+
+thisModule.addSlots(avocado.argleBargle, function(add) {
+  
+  add.data('a', 1);
+  
+  add.data('b', 'two');
+  
+  add.data('c', 333);
+  
+  add.method('d', function(x) {
+    return x + 4;
+  });
+  
 });
 
 
