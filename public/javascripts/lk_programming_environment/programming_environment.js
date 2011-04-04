@@ -158,6 +158,54 @@ thisModule.addSlots(avocado.argleBargle, function(add) {
     return x + 4;
   });
   
+  add.method('e', function(x) {
+    return x + 5;
+  }, {category: ['argle']});
+  
+  add.method('f', function(x) {
+    return x + 6;
+  }, {category: ['argle']});
+  
+  add.method('g', function(x) {
+    return x + 7;
+  }, {category: ['argle']});
+  
+  add.method('h', function(x) {
+    return x + 8;
+  }, {category: ['noodle']});
+  
+  add.method('i', function(x) {
+    return x + 9;
+  }, {category: ['noodle']});
+  
+  add.method('j', function(x) {
+    return x + 10;
+  }, {category: ['noodle']});
+  
+  add.method('k', function(x) {
+    return x + 11;
+  }, {category: ['noodle']});
+  
+  add.method('l', function(x) {
+    return x + 12;
+  });
+  
+  add.method('m', function(x) {
+    return x + 13;
+  });
+  
+  add.method('n', function(x) {
+    return x + 14;
+  });
+  
+  add.method('o', function(x) {
+    return x + 15;
+  });
+  
+  add.method('p', function(x) {
+    return x + 16;
+  });
+  
 });
 
 

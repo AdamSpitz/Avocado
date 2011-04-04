@@ -157,18 +157,19 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       var uiState = this.destinationUIStateFor(poser);
       if (uiState) { poser.assumeUIState(uiState); }
       f({poser: poser, position: pos, uiState: uiState});
-      var extent = poser.getExtent().scaleBy(poser.getScale());
-      pos = pos.withY(pos.y + extent.y);
-      widest = Math.max(widest, extent.x);
+      var poserSpace = poser.getExtent().scaleBy(poser.getScale());
+      pos = pos.withY(pos.y + poserSpace.y);
+      widest = Math.max(widest, poserSpace.x);
       
       if (this._shouldBeSquarish && !maxY) {
         // If it seems like the current y is far down enough to make the whole
         // thing come out squarish (assuming that all columns will be about as
         // wide as this one), then set this as the maxY.
+        var desiredAspectRatio = 1;
         var estimatedNumberOfColumns = Math.ceil(n / (i + 1));
         var estimatedTotalWidth = estimatedNumberOfColumns * (widest + padding.x);
         // aaa - not sure why it keeps coming out too tall; quick hack for now: compensate by multiplying by 1.2
-        if (pos.y * 1.2 >= estimatedTotalWidth) { maxY = pos.y; }
+        if (pos.y * desiredAspectRatio * 1.2 >= estimatedTotalWidth) { maxY = pos.y; }
       }
       
       if (maxY && pos.y >= maxY) { pos = pt(pos.x + widest + padding.x, padding.y); }

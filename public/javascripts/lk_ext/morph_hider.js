@@ -1,35 +1,40 @@
-transporter.module.create('lk_ext/optional_morph', function(requires) {
+transporter.module.create('lk_ext/morph_hider', function(requires) {
 
 }, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('optionalMorph', {}, {category: ['ui']});
+  add.creator('morphHider', {}, {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(avocado.optionalMorph, function(add) {
+thisModule.addSlots(avocado.morphHider, function(add) {
 
-  add.method('create', function (updateFunction, morphToShowOrHide, criterionForShowing) {
-    return Object.newChildOf(this, updateFunction, morphToShowOrHide, criterionForShowing);
-  });
+  add.method('create', function () {
+    var c = Object.create(this);
+    c.initialize.apply(c, arguments);
+    return c;
+  }, {category: ['creating']});
 
-  add.method('initialize', function (morphToUpdate, morphToShowOrHide, criterionForShowing) {
+  add.method('initialize', function (morphToUpdate, morph1, morph2, criterionForShowing) {
     this._morphToUpdate = morphToUpdate;
-    this._morphToShowOrHide = morphToShowOrHide;
-    if (criterionForShowing) { this.shouldBeShown = criterionForShowing; }
+    this._morph1 = morph1;
+    this._morph2 = morph2;
+    if (criterionForShowing) { this.shouldMorph1BeShown = criterionForShowing; }
   });
-
-  add.method('shouldNotBeShown', function () { return ! this.shouldBeShown(); });
 
   add.method('update', function (evt) {
     if (this._morphToUpdate) { this._morphToUpdate.updateAppearance(); }
   });
 
+  add.method('morphOrFunctionToShow', function () {
+    return this.shouldMorph1BeShown() ? this._morph1 : this._morph2;
+  });
+
   add.method('actualMorphToShow', function () {
-    var m = this._morphToShowOrHide;
+    var m = this.morphOrFunctionToShow();
     return typeof(m) === 'function' ? m() : m;
   });
 

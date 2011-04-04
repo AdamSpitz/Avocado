@@ -51,7 +51,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     $super(catOfMir);
     this._shouldOmitHeaderRow = shouldOmitHeaderRow;
 
-    this.applyStyle(this.defaultStyle);
+    this.applyStyle(this.desiredCurrentStyle());
 
     this._highlighter = avocado.booleanHolder.containing(true).addObserver(function() {this.updateHighlighting();}.bind(this));
     this._highlighter.setChecked(false);
@@ -69,9 +69,15 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     return avocado.shouldMirrorsUseZooming;
   }, {category: ['zooming']});
 
-  add.creator('defaultStyle', {}, {category: ['styles']});
+  add.creator('nonZoomingStyle', {}, {category: ['styles']});
 
-  add.creator('grabbedStyle', Object.create(avocado.category.Morph.prototype.defaultStyle), {category: ['styles']});
+  add.creator('zoomingStyle', {}, {category: ['styles']});
+
+  add.creator('grabbedStyle', Object.create(avocado.category.Morph.prototype.nonZoomingStyle), {category: ['styles']});
+
+  add.method('desiredCurrentStyle', function () {
+    return this.shouldUseZooming() ? this.zoomingStyle : this.nonZoomingStyle;
+  }, {category: ['styles']});
 
   add.method('createTitleLabel', function () {
     var lbl = new avocado.TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
@@ -91,7 +97,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     // summaryLabel.setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     // return summaryLabel;
     
-    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
+    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.desiredCurrentStyle().contentsSummaryPadding).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
   }, {category: ['creating']});
 
   add.method('partsOfUIState', function ($super) {
@@ -179,8 +185,8 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     var mirMorph = this.mirrorMorph();
     
     cmdList.itemWith("label", "add slot or category").wrapFunction(function(oldFunctionToRun, evt, slotOrCatMorph) {
-      var result = oldFunctionToRun(evt, slotOrCatMorph);
-      mirMorph.expandCategory(result.category());
+      var resultCat = oldFunctionToRun(evt, slotOrCatMorph);
+      mirMorph.expandCategory(resultCat);
     });
     
     return cmdList;
@@ -244,7 +250,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(avocado.category.Morph.prototype.defaultStyle, function(add) {
+thisModule.addSlots(avocado.category.Morph.prototype.nonZoomingStyle, function(add) {
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 
@@ -255,6 +261,25 @@ thisModule.addSlots(avocado.category.Morph.prototype.defaultStyle, function(add)
   add.data('grabsShouldFallThrough', true);
 
   add.data('fill', null);
+
+  add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
+
+});
+
+
+thisModule.addSlots(avocado.category.Morph.prototype.zoomingStyle, function(add) {
+
+  add.data('openForDragAndDrop', false);
+
+  add.data('suppressGrabbing', false);
+
+  add.data('grabsShouldFallThrough', false);
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
+
+  add.data('borderWidth', 1);
+
+  add.data('borderColor', new Color(0.6, 0.6, 0.6));
 
   add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
 

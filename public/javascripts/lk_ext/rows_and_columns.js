@@ -401,7 +401,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     if (typeof(this.potentialContent) === 'function') {
       var potentialContent = this.potentialContent();
       var actualContent = potentialContent.selectThenMap(function(morphOrToggler) {
-        return ! morphOrToggler.shouldNotBeShown();
+        return !!morphOrToggler.actualMorphToShow();
       }, function(morphOrToggler) {
         return morphOrToggler.actualMorphToShow();
       });
@@ -748,8 +748,6 @@ thisModule.addSlots(avocado.RowMorph.prototype, function(add) {
 
 
 thisModule.addSlots(Morph.prototype, function(add) {
-
-  add.method('shouldNotBeShown', function () { return false; });
 
   add.method('actualMorphToShow', function () { return this; });
 
