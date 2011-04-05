@@ -151,6 +151,7 @@ TextMorph.addMethods({
     txt.emphasize(emph, 0, this.textString.length);
     this.textStyle = txt.style;
     this.composeAfterEdits();
+    return this;
   }
 });
     

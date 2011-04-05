@@ -43,13 +43,18 @@ thisModule.addSlots(avocado.MessageNotifierMorph.prototype, function(add) {
 
   add.data('constructor', avocado.MessageNotifierMorph);
 
-  add.method('initialize', function ($super, err, color) {
+  add.method('initialize', function ($super, err, color, heading) {
     $super();
     this.shape.roundEdgesBy(10);
     this._originalError = err;
     this._message = this._originalError.toString();
     this.setFill(lively.paint.defaultFillWithColor(color || Color.red));
-    this.setRows([TextMorph.createLabel(this._message)]);
+    var rows = [TextMorph.createLabel(this._message)];
+    if (heading) {
+      var headingMorph = TextMorph.createLabel(heading).setEmphasis({style: 'bold'});
+      rows.unshift(headingMorph);
+    }
+    this.setRows(rows);
     this.closeDnD();
   });
 
@@ -66,9 +71,9 @@ thisModule.addSlots(avocado.MessageNotifierMorph.prototype, function(add) {
 
 thisModule.addSlots(WorldMorph.prototype, function(add) {
 
-  add.method('showMessage', function (msg, color) {
+  add.method('showMessage', function (msg, color, heading) {
     // By default, zoom away after a short while, unless the user touches it.
-    new avocado.MessageNotifierMorph(msg, color || Color.green).showTemporarilyInCenterOfWorld(this);
+    new avocado.MessageNotifierMorph(msg, color || Color.green, heading).showTemporarilyInCenterOfWorld(this);
   }, {category: ['showing messages']});
 
 });
