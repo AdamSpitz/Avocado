@@ -56305,6 +56305,8 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
 
   add.method('mirrorMorph', function () { return this._mirrorMorph;  }, {category: ['accessing']});
 
+  add.method('textMorph', function () { return this._textMorph;  }, {category: ['accessing']});
+
   add.method('wasJustShown', function (evt) { this._textMorph.wasJustShown(evt); }, {category: ['events']});
 
   add.method('buttonCommands', function () {

@@ -13,7 +13,18 @@ avocado.doneLoadingWindow = function() {
 if (! window.hasOwnProperty('transporter')) { window.transporter = {}; }
 transporter.callWhenDoneLoadingAvocado = function(world) {
   world.setFill(Color.white);
-  new avocado.MessageNotifierMorph("Right-click the background to start", Color.green).ignoreEvents().showTemporarilyInCenterOfWorld(world);
+  var mir = reflect({});
+  mir.addData('x', 3);
+  mir.addMethod('xSquared', function () { return this.x * this.x; });
+  var mirMorph = mir.morph();
+  mirMorph.ensureIsInWorld(world, pt(200,200), false, false, false, function() {
+    mirMorph.expand();
+    mirMorph.slotMorphFor(mir.slotAt('x')).showContentsArrow();
+    var evaluator1 = mirMorph.openEvaluator(Event.createFake());
+    var evaluator2 = mirMorph.openEvaluator(Event.createFake());
+    evaluator1.textMorph().setText('this.x + 4');
+    evaluator2.textMorph().setText('this.xSquared()');
+  });
 };
 </script>
 
