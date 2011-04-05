@@ -22,7 +22,7 @@ Morph.addMethods({
   	  var c = this.applicableCommandForDropping(morph);
   	  if (c) {
   	    c.go(Event.createFake(), morph); // aaa - can't we get a real event?
-  	    if (morph.owner === this && ! this.openForDragAndDrop && hand.grabInfo) {
+  	    if (morph.owner === this && ! this.openForDragAndDrop && hand.grabInfo) { // aaa - not sure this.openForDragAndDrop makes sense here
 					var previousOwner    = hand.grabInfo[0];
 					var previousPosition = hand.grabInfo[1];
 					var world = previousOwner.world();
@@ -32,15 +32,16 @@ Morph.addMethods({
   					});
 					}
 	      }
-  	  } else {
-  	    if (! this.openForDragAndDrop) {
-          throw new Error("for drag-and-drop, children should implement either dragAndDropCommands or justReceivedDrop");
-        }
+  	  } else if (this.openForDragAndDrop) {
+  	    // fine
+	    } else {
+        throw new Error("for drag-and-drop, children should implement either dragAndDropCommands or justReceivedDrop");
       }
     },
 
     onMouseMove: function(evt, hasFocus) { //default behavior
-        if (evt.mouseButtonPressed && this==evt.hand.mouseFocus && this.owner && this.owner.openForDragAndDrop && this.okToBeGrabbedBy(evt)) { // why does LK not by default check okToBeGrabbedBy(evt)? -- Adam
+       // why does LK not by default check okToBeGrabbedBy(evt)? -- Adam
+        if (evt.mouseButtonPressed && this==evt.hand.mouseFocus && ((this.owner && this.owner.openForDragAndDrop) || this.okToBeGrabbedBy(evt))) {
             this.moveBy(evt.mousePoint.subPt(evt.priorPoint));
         } // else this.checkForControlPointNear(evt);
         if (!evt.mouseButtonPressed) this.checkForControlPointNear(evt);

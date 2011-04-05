@@ -121,7 +121,11 @@ HandMorph.addMethods({
         grabbedMorph = grabbedMorph.okToBeGrabbedBy(evt);
         if (!grabbedMorph) return;
 
-        if (grabbedMorph.owner && !grabbedMorph.owner.openForDragAndDrop) return;
+        // aaa - I think this is not what we want. openForDragAndDrop should mean
+        // that the morph is open for arbitrary embedding, but even if it's not,
+        // we may want to grab a morph for some other reason. Use suppressGrabbing
+        // if you want to disable grabbing a morph altogether. I think. -- Adam, Apr. 2011
+        // if (grabbedMorph.owner && !grabbedMorph.owner.openForDragAndDrop) return;
 
         if (this.keyboardFocus && grabbedMorph !== this.keyboardFocus) {
             this.keyboardFocus.relinquishKeyboardFocus(this);
