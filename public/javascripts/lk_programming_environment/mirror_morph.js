@@ -236,6 +236,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['categories']});
 
   add.method('openEvaluator', function (evt) {
+    evt = evt || Event.createFake();
     
     // Experimenting with using vocabulary morphs for evaluators, instead of putting the evaluators
     // directly inside the mirror.
