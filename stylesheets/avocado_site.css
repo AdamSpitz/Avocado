@@ -12,15 +12,15 @@
 }
 
 #navigation {
-  
+}
+
+#main {
+  margin-left: 250px; // set left margin to sidebar width
 }
 
 #footer {
   clear: both;
   text-align: center;
-}
-
-#main {
 }
 
 #header h1 {

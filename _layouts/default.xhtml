@@ -4,9 +4,16 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Avocado</title>
 <link rel="stylesheet" href="stylesheets/avocado_site.css" type="text/css" media="screen"/>
+<script>
+function bodyLoaded() {
+  if (avocado.doneLoadingWindow) {
+    avocado.doneLoadingWindow();
+  }
+}
+</script>
 </head>
 
-<body>
+<body onload="bodyLoaded()">
 
 <div id="everything">
 

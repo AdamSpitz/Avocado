@@ -3,6 +3,32 @@ layout: default
 title: Avocado
 ---
 
+<script>
+if (! window.hasOwnProperty('avocado')) { window.avocado = {}; }
+avocado.doneLoadingWindow = function() {
+  transporter.isDoneLoadingWindow = true;
+  transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
+};
+
+if (! window.hasOwnProperty('transporter')) { window.transporter = {}; }
+transporter.callWhenDoneLoadingAvocado = function(world) {
+  world.setFill(Color.white);
+  new avocado.MessageNotifierMorph("Right-click the background to start", Color.green).ignoreEvents().showTemporarilyInCenterOfWorld(world);
+};
+</script>
+
+<script type="text/ecmascript" src="javascripts/auto_generated/avocado_static.with_dev.js"></script>
+
+<svg id="canvas"
+     width="600px" height="500px"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:lively="http://www.experimentalstuff.com/Lively"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:xhtml="http://www.w3.org/1999/xhtml"
+     xml:space="preserve"
+     zoomAndPan="disable">
+</svg>
+
 <table>
   <tr>
     <td class="front_page_big_cell">
@@ -19,3 +45,4 @@ title: Avocado
     </td>
   </tr>
 </table>
+
