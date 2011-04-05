@@ -13,6 +13,21 @@ avocado.doneLoadingWindow = function() {
 if (! window.hasOwnProperty('transporter')) { window.transporter = {}; }
 transporter.callWhenDoneLoadingAvocado = function(world) {
   world.setFill(Color.white);
+  world.setBorderWidth(1);
+  world.setBorderColor(Color.black);
+  
+  var messageMorphColor = Color.yellow.lighter();
+  var messageMorphs = [
+    new avocado.MessageNotifierMorph("Build your JavaScript objects\nin a live, interactive world. No\nedit/reload cycle; in the\ntradition of Smalltalk, all\nAvocado programming is done\nlive, while your program is\nrunning, so you get immediate\nfeedback.", messageMorphColor, "Liveness"),
+    new avocado.MessageNotifierMorph("Forget \"tools\" like class\nbrowsers or object hierarchy\ntrees. Avocado gives you all\nthat functionality, but in a way\nthat feels like you're getting\nyour hands directly on your\nobjects.", messageMorphColor, "Directness"),
+    new avocado.MessageNotifierMorph("No need to install anything on\nyour computer; the Avocado\nenvironment runs in a standard\nweb browser.", messageMorphColor, "No installation")
+  ];
+  var prev = null;
+  messageMorphs.forEach(function(m, i) {
+    world.addMorphAt(m, prev ? prev.bounds().topRight().addXY(10,0) : pt(20,20));
+    prev = m;
+  });
+  
   var mir = reflect({});
   mir.addData('x', 3);
   mir.addMethod('xSquared', function () { return this.x * this.x; });
@@ -31,7 +46,7 @@ transporter.callWhenDoneLoadingAvocado = function(world) {
 <script type="text/ecmascript" src="javascripts/auto_generated/avocado_static.with_dev.js"></script>
 
 <svg id="canvas"
-     width="600px" height="500px"
+     width="650px" height="500px"
      xmlns="http://www.w3.org/2000/svg"
      xmlns:lively="http://www.experimentalstuff.com/Lively"
      xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -39,6 +54,8 @@ transporter.callWhenDoneLoadingAvocado = function(world) {
      xml:space="preserve"
      zoomAndPan="disable">
 </svg>
+
+<div id="unusedDescriptionUsingNormalHTML" style="display:none">
 
 <table>
   <tr>
@@ -57,3 +74,4 @@ transporter.callWhenDoneLoadingAvocado = function(world) {
   </tr>
 </table>
 
+</div>

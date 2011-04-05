@@ -1348,7 +1348,6 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
     var baseColor = Color.rgb(0x53, 0x82, 0xC1);
   	DisplayThemes['lively'].world.fill = new lively.paint.LinearGradient([new lively.paint.Stop(0, baseColor.lighter()), new lively.paint.Stop(1, baseColor)]);
   	
-  	console.log("Creating world.");
     var world = new WorldMorph(canvas);
     world.displayOnCanvas(canvas);
     modules.init.markAsUnchanged(); // because displayOnCanvas sets the creator slot of the world
@@ -41315,6 +41314,88 @@ thisModule.addSlots(avocado.objectGraphWalker.tests, function(add) {
 });
 
 transporter.putUnownedSlotsInInitModule();
+transporter.module.onLoadCallbacks["core/accessors"] = function() {};
+transporter.module.create('core/accessors', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('accessors', {}, {category: ['core']});
+
+  add.creator('methodAccessors', Object.create(avocado.accessors), {category: ['core']});
+
+  add.creator('attributeAccessors', Object.create(avocado.accessors), {category: ['core']});
+
+});
+
+
+thisModule.addSlots(avocado.accessors, function(add) {
+
+  add.method('forAttribute', function (obj, n) {
+    return avocado.attributeAccessors.create(obj, n);
+  }, {category: ['creating']});
+
+  add.method('forMethods', function (obj, getterName, setterName) {
+    return avocado.methodAccessors.create(obj, getterName, setterName);
+  }, {category: ['creating']});
+
+  add.method('create', function () {
+    var c = Object.create(this);
+    c.initialize.apply(c, arguments);
+    return c;
+  }, {category: ['creating']});
+
+  add.method('initialize', function (getter, setter) {
+    this.get = getter;
+    this.set = setter;
+  }, {category: ['creating']});
+
+});
+
+
+thisModule.addSlots(avocado.methodAccessors, function(add) {
+
+  add.method('initialize', function (obj, getterName, setterName) {
+    this._object = obj;
+    this._getterName = getterName;
+    this._setterName = setterName || "set" + getterName.capitalize();
+  }, {category: ['creating']});
+
+  add.method('get', function () {
+    var obj = this._object;
+    return obj[this._getterName].call(obj);
+  }, {category: ['accessing']});
+
+  add.method('set', function (v) {
+    var obj = this._object;
+    obj[this._setterName].call(obj, v);
+  }, {category: ['accessing']});
+
+});
+
+
+thisModule.addSlots(avocado.attributeAccessors, function(add) {
+
+  add.method('initialize', function (obj, attrName) {
+    this._object = obj;
+    this._attrName = attrName;
+  }, {category: ['creating']});
+
+  add.method('get', function () {
+    return this._object[this._attrName];
+  }, {category: ['accessing']});
+
+  add.method('set', function (v) {
+    this._object[this._attrName] = v;
+  }, {category: ['accessing']});
+
+});
+
+
+});
+
 transporter.module.onLoadCallbacks["projects/projects"] = function() {};
 transporter.module.create('projects/projects', function(requires) {
 
@@ -41696,713 +41777,6 @@ thisModule.addSlots(avocado.project.repository, function(add) {
       successBlock();
     }
   }, {category: ['saving']});
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["core/accessors"] = function() {};
-transporter.module.create('core/accessors', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('accessors', {}, {category: ['core']});
-
-  add.creator('methodAccessors', Object.create(avocado.accessors), {category: ['core']});
-
-  add.creator('attributeAccessors', Object.create(avocado.accessors), {category: ['core']});
-
-});
-
-
-thisModule.addSlots(avocado.accessors, function(add) {
-
-  add.method('forAttribute', function (obj, n) {
-    return avocado.attributeAccessors.create(obj, n);
-  }, {category: ['creating']});
-
-  add.method('forMethods', function (obj, getterName, setterName) {
-    return avocado.methodAccessors.create(obj, getterName, setterName);
-  }, {category: ['creating']});
-
-  add.method('create', function () {
-    var c = Object.create(this);
-    c.initialize.apply(c, arguments);
-    return c;
-  }, {category: ['creating']});
-
-  add.method('initialize', function (getter, setter) {
-    this.get = getter;
-    this.set = setter;
-  }, {category: ['creating']});
-
-});
-
-
-thisModule.addSlots(avocado.methodAccessors, function(add) {
-
-  add.method('initialize', function (obj, getterName, setterName) {
-    this._object = obj;
-    this._getterName = getterName;
-    this._setterName = setterName || "set" + getterName.capitalize();
-  }, {category: ['creating']});
-
-  add.method('get', function () {
-    var obj = this._object;
-    return obj[this._getterName].call(obj);
-  }, {category: ['accessing']});
-
-  add.method('set', function (v) {
-    var obj = this._object;
-    obj[this._setterName].call(obj, v);
-  }, {category: ['accessing']});
-
-});
-
-
-thisModule.addSlots(avocado.attributeAccessors, function(add) {
-
-  add.method('initialize', function (obj, attrName) {
-    this._object = obj;
-    this._attrName = attrName;
-  }, {category: ['creating']});
-
-  add.method('get', function () {
-    return this._object[this._attrName];
-  }, {category: ['accessing']});
-
-  add.method('set', function (v) {
-    this._object[this._attrName] = v;
-  }, {category: ['accessing']});
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["core/exit"] = function() {};
-transporter.module.create('core/exit', function(requires) {
-
-requires('core/testFramework');
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(window, function(add) {
-
-  add.method('exitValueOf', function (f) {
-    var exitToken = {};
-    var exiter = function(v) {
-      exitToken.value = v;
-      throw exitToken;
-    };
-    try {
-      return f(exiter);
-    } catch (exc) {
-      if (exc === exitToken) {
-        return exc.value;
-      } else {
-        // must be some other exception
-        throw exc;
-      }
-    }
-  }, {category: ['avocado', 'control flow']});
-
-});
-
-
-thisModule.addSlots(exitValueOf, function(add) {
-
-  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-
-});
-
-
-thisModule.addSlots(exitValueOf.tests, function(add) {
-
-  add.method('testNotExiting', function () {
-    this.assertEqual(7, exitValueOf(function(exit) { return 7; }));
-  });
-
-  add.method('testExiting', function () {
-    this.assertEqual(6, exitValueOf(function(exit) { exit(6); return 7; }));
-  });
-
-  add.method('testExitingFromInsideAFunction', function () {
-    this.assertEqual('good', exitValueOf(function(exit) {
-      [1, 2, 3, 4, 5, 6, 7, 8, 9].each(function(n) { if (n === 4) { exit('good'); } });
-      return 'no good';
-    }));
-  });
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["core/range"] = function() {};
-transporter.module.create('core/range', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('range', {}, {category: ['collections']}, {comment: 'A range of numbers.', copyDownParents: [{parent: Enumerable}]});
-
-});
-
-
-thisModule.addSlots(avocado.range, function(add) {
-
-  add.method('create', function () {
-    var r = Object.create(this);
-    r.initialize.apply(r, arguments);
-    return r;
-  }, {category: ['creating']});
-
-  add.method('initialize', function (start, end, step) {
-    this._start = start;
-    this._end   = end;
-    this._step  = step || 1;
-    this._shouldIncludeStart = true;
-    this._shouldIncludeEnd   = false;
-  }, {category: ['creating']});
-
-  add.method('start', function () { return this._start;    }, {category: ['accessing']});
-
-  add.method('setStart', function (s) {        this._start = s;}, {category: ['accessing']});
-
-  add.method('end', function () { return this._end;    }, {category: ['accessing']});
-
-  add.method('setEnd', function (e) {        this._end = e;}, {category: ['accessing']});
-
-  add.method('step', function () { return this._step;    }, {category: ['accessing']});
-
-  add.method('setStep', function (s) {        this._step = s;}, {category: ['accessing']});
-
-  add.method('includeStart', function () {
-    this._shouldIncludeStart = true;
-    return this;
-  }, {category: ['including or excluding endpoints']});
-
-  add.method('doNotIncludeStart', function () {
-    this._shouldIncludeStart = false;
-    return this;
-  }, {category: ['including or excluding endpoints']});
-
-  add.method('includeEnd', function () {
-    this._shouldIncludeEnd = true;
-    return this;
-  }, {category: ['including or excluding endpoints']});
-
-  add.method('doNotIncludeEnd', function () {
-    this._shouldIncludeEnd = false;
-    return this;
-  }, {category: ['including or excluding endpoints']});
-
-  add.method('_each', function (f) {
-    var step  = this._step;
-    var end   = this._end;
-    var start = this._shouldIncludeStart ? this._start : this._start + step;
-    if (this._shouldIncludeEnd) {
-      for (var i = start; i <= end; i += step) { f(i); }
-    } else {
-      for (var i = start; i <  end; i += step) { f(i); }
-    }
-  }, {category: ['iterating']});
-
-  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-
-});
-
-
-thisModule.addSlots(avocado.range.tests, function(add) {
-
-  add.method('testStuff', function () {
-    var r = avocado.range.create(3, 10);
-    this.assertEqual([3, 4, 5, 6, 7, 8, 9], r.toArray());
-    r.includeEnd();
-    this.assertEqual([3, 4, 5, 6, 7, 8, 9, 10], r.toArray());
-    r.doNotIncludeStart();
-    this.assertEqual([4, 5, 6, 7, 8, 9, 10], r.toArray());
-    r.doNotIncludeEnd();
-    this.assertEqual([4, 5, 6, 7, 8, 9], r.toArray());
-    r.includeStart();
-    this.assertEqual([3, 4, 5, 6, 7, 8, 9], r.toArray());
-
-    r.setStep(2);
-    this.assertEqual([3, 5, 7, 9], r.toArray());
-  });
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["core/enumerator"] = function() {};
-transporter.module.create('core/enumerator', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('enumerator', {}, {category: ['collections']}, {comment: 'An Enumerable whose contents are whatever is yielded by calling the specified method.', copyDownParents: [{parent: Enumerable}]});
-
-});
-
-
-thisModule.addSlots(avocado.enumerator, function(add) {
-
-  add.method('map', function (transformer) {
-    return avocado.enumerator.create(this, 'eachMappedBy', transformer);
-  }, {category: ['transforming']});
-
-  add.method('select', function (condition) {
-    return avocado.enumerator.create(this, 'eachFilteredBy', condition);
-  }, {category: ['transforming']});
-
-  add.method('toArray', function () {
-    var a = [];
-    this.each(function(x) { a.push(x); });
-    return a;
-  }, {category: ['transforming']});
-
-  add.method('create', function () {
-    var e = Object.create(this);
-    e.initialize.apply(e, arguments);
-    return e;
-  }, {category: ['creating']});
-
-  add.method('initialize', function () {
-    var args = $A(arguments);
-    this._object = args.shift();
-    this._methodName = args.shift();
-    this._methodArgs = args;
-  }, {category: ['creating']});
-
-  add.method('toString', function () {
-    var s = [this._object.toString(), ".", this._methodName, "("];
-    this._methodArgs.each(function(arg) { s.push("" + arg); });
-    s.push(")");
-    return s.join("");
-  }, {category: ['printing']});
-
-  add.method('_each', function (f) {
-    var method = this._object[this._methodName];
-    if (this._methodArgs.length === 0) { // just an optimization to avoid creating unnecessary arrays
-      return method.call(this._object, f);
-    } else {
-      return method.apply(this._object, this._methodArgs.concat([f]));
-    }
-  }, {category: ['iterating']});
-
-  add.method('sort', function (f) {
-    return this.toArray().sort(f)
-  }, {category: ['sorting']});
-
-  add.method('eachFilteredBy', function (condition, f) {
-    this.each(function(x) { if (condition(x)) { f(x); }; });
-  }, {category: ['transforming']});
-
-  add.method('eachMappedBy', function (transformer, f) {
-    this.each(function(x) { f(transformer(x)); });
-  }, {category: ['transforming']});
-
-  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-
-});
-
-
-thisModule.addSlots(avocado.enumerator.tests, function(add) {
-
-  add.method('eachInteger', function (start, end, f) {
-    this._startedIterating = true;
-    for (var i = start; i < end; ++i) { f(i); }
-  });
-
-  add.method('testToArray', function () {
-    var e = avocado.enumerator.create(this, 'eachInteger', 3, 10);
-    this.assertEqual([3, 4, 5, 6, 7, 8, 9].join(','), e.toArray().join(','));
-  });
-
-  add.method('testSelectAndMap', function () {
-    var ints = avocado.enumerator.create(this, 'eachInteger', 1, 10);
-    
-    var odds = ints.select(function(i) { return i % 2 === 1; });
-    this.assert(! this._startedIterating, "select() should return another enumerator; don't actually iterate until we have to");
-    this.assertEqual([1, 3, 5, 7, 9].join(','), odds.toArray().join(','));
-    this.assert(this._startedIterating);
-    this._startedIterating = false;
-    
-    var squares = ints.map(function(i) { return i * i; });
-    this.assert(! this._startedIterating, "map() should return another enumerator; don't actually iterate until we have to");
-    this.assertEqual([1, 4, 9, 16, 25, 36, 49, 64, 81].join(','), squares.toArray().join(','));
-    this.assert(this._startedIterating);
-    this._startedIterating = false;
-  });
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["core/string_buffer"] = function() {};
-transporter.module.create('core/string_buffer', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('stringBuffer', {}, {category: ['core']}, {comment: 'Lets you append a whole bunch of strings and then join them all at once, so you don\'t get quadratic behavior.'});
-
-});
-
-
-thisModule.addSlots(avocado.stringBuffer, function(add) {
-
-  add.method('create', function (initialString) {
-    return Object.newChildOf(this, initialString);
-  }, {category: ['creating']});
-
-  add.method('initialize', function (initialString) {
-    this.buffer = [];
-    if (initialString !== undefined && initialString !== null) {this.append(initialString);}
-  }, {category: ['creating']});
-
-  add.method('append', function (string) {
-    this.buffer.push(string);
-    return this;
-  }, {category: ['adding']});
-
-  add.method('prepend', function (string) {
-    this.buffer.unshift(string);
-    return this;
-  }, {category: ['adding']});
-
-  add.method('toString', function () {
-    return this.buffer.join("");
-  }, {category: ['converting']});
-
-  add.method('concat', function (other1, other2) {
-    var newOne = this.create();
-    newOne.buffer = this.buffer.concat(other1.buffer, other2 ? other2.buffer : undefined);
-    return newOne;
-  }, {category: ['concatenating']});
-
-  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-
-});
-
-
-thisModule.addSlots(avocado.stringBuffer.tests, function(add) {
-
-  add.method('testStuff', function (initialString) {
-    var s = avocado.stringBuffer.create('The');
-    this.assertEqual('The', s.toString());
-    s.append(' quick').append(' brown fox');
-    this.assertEqual('The quick brown fox', s.toString());
-  });
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["core/string_extensions"] = function() {};
-transporter.module.create('core/string_extensions', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(String.prototype, function(add) {
-
-  add.method('capitalize', function () {
-     return this.replace( /(^|\s)([a-z])/g , function(m, p1, p2) { return p1+p2.toUpperCase(); } );
-  });
-
-  add.method('startsWithVowel', function () {
-    return (/^[AEIOUaeiou]/).exec(this);
-  });
-
-  add.method('prependAOrAn', function () {
-    return this.startsWithVowel() ? "an " + this : "a " + this;
-  });
-
-  add.method('withoutSuffix', function (suffix) {
-    return this.endsWith(suffix) ? this.substr(0, this.length - suffix.length) : this;
-  });
-
-  add.method('replaceAt', function (i, n, s) {
-    return this.substr(0, i).concat(s, this.substr(i + n));
-  });
-
-  add.method('attemptToInsertALineBreak', function () {
-    // Hack. Really not sure this is gonna work, or be worth it. :) But try it and see.
-    var middle = this.length / 2;
-    var i1 = this.indexOf(' ', middle);
-    var i2 = this.lastIndexOf(' ', middle);
-    var i = (Math.abs(middle - i1) > Math.abs(middle - i2)) ? i2 : i1;
-    if (i < 0) { return this; }
-    return this.replaceAt(i, 1, '\n');
-  });
-
-  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-
-});
-
-
-thisModule.addSlots(String.prototype.tests, function(add) {
-
-  add.method('testPrependAOrAn', function () {
-    this.assertEqual('an aardvark',      'aardvark'     .prependAOrAn());
-    this.assertEqual('a potato',         'potato'       .prependAOrAn());
-    this.assertEqual('an Ugly Aardvark', 'Ugly Aardvark'.prependAOrAn());
-    this.assertEqual('a Kumquat',        'Kumquat'      .prependAOrAn());
-  });
-
-  add.method('testWithoutSuffix', function () {
-    this.assertEqual('argle', 'arglebargle'.withoutSuffix('bargle'));
-    this.assertEqual('argleb', 'arglebargle'.withoutSuffix('argle'));
-    this.assertEqual('arglebargle', 'arglebargle'.withoutSuffix('cargle'));
-  });
-
-  add.method('testCapitalize', function () {
-    this.assertEqual('Argle', 'argle'.capitalize());
-    this.assertEqual('Argle', 'Argle'.capitalize());
-    this.assertEqual('ArgleBargle', 'argleBargle'.capitalize());
-    this.assertEqual('Argle Bargle', 'argle bargle'.capitalize());
-    this.assertEqual('  \t\n ', '  \t\n '.capitalize());
-  });
-
-  add.method('testReplaceAt', function () {
-    this.assertEqual('arxle', 'argle'.replaceAt(2, 1, 'x'));
-    this.assertEqual('xngle', 'argle'.replaceAt(0, 2, 'xn'));
-  });
-
-  add.method('testInsertingLineBreaks', function () {
-    this.assertEqual('abcdef', 'abcdef'.attemptToInsertALineBreak());
-    this.assertEqual('abc\ndef', 'abc def'.attemptToInsertALineBreak());
-    this.assertEqual('ab\ncdef', 'ab cdef'.attemptToInsertALineBreak());
-    this.assertEqual('ab cd\nef', 'ab cd ef'.attemptToInsertALineBreak());
-  });
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["core/dependencies"] = function() {};
-transporter.module.create('core/dependencies', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('dependencies', {}, {category: ['collections']});
-
-});
-
-
-thisModule.addSlots(avocado.dependencies, function(add) {
-
-  add.method('copyRemoveAll', function () {
-    return Object.newChildOf(this);
-  }, {category: ['creating']});
-
-  add.method('initialize', function () {
-    this._dependeesByDepender = avocado.dictionary.copyRemoveAll();
-    this._dependersByDependee = avocado.dictionary.copyRemoveAll();
-  }, {category: ['creating']});
-
-  add.method('dependeesByDepender', function () {
-    return this._dependeesByDepender;
-  }, {category: ['accessing']});
-
-  add.method('dependersByDependee', function () {
-    return this._dependersByDependee;
-  }, {category: ['accessing']});
-
-  add.method('dependeesOf', function (depender) {
-    return this.dependeesByDepender().get(depender) || [];
-  }, {category: ['accessing']});
-
-  add.method('dependersOf', function (dependee) {
-    return this.dependersByDependee().get(dependee) || [];
-  }, {category: ['accessing']});
-
-  add.method('addDependency', function (depender, dependee) {
-    if (depender.equals(dependee)) { return; }
-    this.dependeesByDepender().getOrIfAbsentPut(depender, function() { return avocado.set.copyRemoveAll(); }).add(dependee);
-    this.dependersByDependee().getOrIfAbsentPut(dependee, function() { return avocado.set.copyRemoveAll(); }).add(depender);
-  }, {category: ['adding']});
-
-  add.method('removeDependency', function (depender, dependee, isOKIfItDoesntExist) {
-    if (depender.equals(dependee)) { return; }
-    var dependees = this.dependeesByDepender().get(depender);
-    var dependers = this.dependersByDependee().get(dependee);
-    if (! isOKIfItDoesntExist) {
-      if (! dependees.includes(dependee) || ! dependers.includes(depender)) {
-        throw new Error("Trying to remove a dependency that doesn't exist");
-      }
-    }
-    dependees.remove(dependee);
-    dependers.remove(depender);
-  }, {category: ['removing']});
-
-  add.method('eachDependency', function (f) {
-    this.dependeesByDepender().eachKeyAndValue(function(depender, dependees) {
-      dependees.each(function(dependee) {
-        f(depender, dependee);
-      });
-    });
-  }, {category: ['iterating']});
-
-  add.method('removeDependee', function (dependee) {
-    var dependers = this.dependersByDependee().removeKey(dependee);
-    if (! dependers) { return; }
-    dependers.each(function(depender) { this.dependeesByDepender().get(depender).remove(dependee); }.bind(this));
-  }, {category: ['removing']});
-
-  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-  
-  add.method('printToConsole', function () {
-    this.eachDependency(function(depender, dependee) {
-      console.log("" + depender + " -> " + dependee);
-    });
-  }, {category: ['printing']});
-
-});
-
-
-thisModule.addSlots(avocado.dependencies.tests, function(add) {
-
-  add.method('testStuff', function () {
-    var deps = avocado.dependencies.copyRemoveAll();
-    deps.addDependency(4, 2);
-    deps.addDependency(6, 2);
-    deps.addDependency(6, 3);
-    deps.addDependency(8, 4);
-    // aaa - should really move the ordering stuff to the dependencies object itself;
-  });
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["core/little_profiler"] = function() {};
-transporter.module.create('core/little_profiler', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('littleProfiler', {}, {category: ['profiling']}, {comment: 'Nothing clever, just a little object for helping to see where the time is going in a method.'});
-
-});
-
-
-thisModule.addSlots(avocado.littleProfiler, function(add) {
-
-  add.method('named', function (name) {
-    return Object.newChildOf(this, name);
-  });
-
-  add.method('initialize', function (name) {
-    this._name = name;
-    this._times = [];
-    this.recordTime();
-  });
-
-  add.method('recordTime', function () {
-    this._times.push(new Date().getTime());
-  });
-
-  add.method('totalTime', function () {
-    return this._times.last() - this._times.first();
-  });
-
-  add.method('printTimes', function () {
-    this.recordTime();
-    var s = avocado.stringBuffer.create("Profile of ").append(this._name).append(": total time ").append(this.totalTime());
-    s.append(", in-between times: ");
-    sep = "";
-    for (var i = 0; i < this._times.length - 1; ++i) {
-      s.append(sep).append(this._times[i+1] - this._times[i]);
-      sep = ", ";
-    }
-    console.log(s.toString());
-  });
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["core/value_holder"] = function() {};
-transporter.module.create('core/value_holder', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('valueHolder', {}, {category: ['core']}, {comment: 'Stores a value and notifies you when someone changes it.'});
-
-  add.creator('booleanHolder', Object.create(avocado.valueHolder), {category: ['core']}, {comment: 'A valueHolder for booleans.'});
-
-});
-
-
-thisModule.addSlots(avocado.booleanHolder, function(add) {
-
-  add.method('isChecked', function () { return this.getValue();     });
-
-  add.method('setChecked', function (b, evt) { return this.setValue(b, evt);    });
-
-  add.method('toggle', function (evt) { return this.setValue(! this.getValue(), evt); });
-
-  add.method('areValuesDifferent', function (v1, v2) { return (!!v1) !== (!!v2); });
-
-});
-
-
-thisModule.addSlots(avocado.valueHolder, function(add) {
-
-  add.method('containing', function (v) {
-    var c = Object.create(this);
-    c.notifier = Object.newChildOf(avocado.notifier, this);
-    c.setValue(v);
-    return c;
-  });
-
-  add.method('getValue', function () { return this.value; });
-
-  add.method('setValue', function (v, evt) {
-    var oldValue = this.value;
-    var changed = this.areValuesDifferent(oldValue, v);
-    this.value = v;
-    if (changed) {this.notifier.notifyAllObservers(evt);}
-    return v;
-  });
-
-  add.method('areValuesDifferent', function (v1, v2) {
-    return v1 !== v2;
-  });
-
-  add.method('addObserver', function (o) {
-      this.notifier.addObserver(o);
-      return this;
-  });
 
 });
 
@@ -42797,6 +42171,385 @@ thisModule.addSlots(avocado.command.list, function(add) {
 
 });
 
+transporter.module.onLoadCallbacks["core/exit"] = function() {};
+transporter.module.create('core/exit', function(requires) {
+
+requires('core/testFramework');
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(window, function(add) {
+
+  add.method('exitValueOf', function (f) {
+    var exitToken = {};
+    var exiter = function(v) {
+      exitToken.value = v;
+      throw exitToken;
+    };
+    try {
+      return f(exiter);
+    } catch (exc) {
+      if (exc === exitToken) {
+        return exc.value;
+      } else {
+        // must be some other exception
+        throw exc;
+      }
+    }
+  }, {category: ['avocado', 'control flow']});
+
+});
+
+
+thisModule.addSlots(exitValueOf, function(add) {
+
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+
+});
+
+
+thisModule.addSlots(exitValueOf.tests, function(add) {
+
+  add.method('testNotExiting', function () {
+    this.assertEqual(7, exitValueOf(function(exit) { return 7; }));
+  });
+
+  add.method('testExiting', function () {
+    this.assertEqual(6, exitValueOf(function(exit) { exit(6); return 7; }));
+  });
+
+  add.method('testExitingFromInsideAFunction', function () {
+    this.assertEqual('good', exitValueOf(function(exit) {
+      [1, 2, 3, 4, 5, 6, 7, 8, 9].each(function(n) { if (n === 4) { exit('good'); } });
+      return 'no good';
+    }));
+  });
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["core/range"] = function() {};
+transporter.module.create('core/range', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('range', {}, {category: ['collections']}, {comment: 'A range of numbers.', copyDownParents: [{parent: Enumerable}]});
+
+});
+
+
+thisModule.addSlots(avocado.range, function(add) {
+
+  add.method('create', function () {
+    var r = Object.create(this);
+    r.initialize.apply(r, arguments);
+    return r;
+  }, {category: ['creating']});
+
+  add.method('initialize', function (start, end, step) {
+    this._start = start;
+    this._end   = end;
+    this._step  = step || 1;
+    this._shouldIncludeStart = true;
+    this._shouldIncludeEnd   = false;
+  }, {category: ['creating']});
+
+  add.method('start', function () { return this._start;    }, {category: ['accessing']});
+
+  add.method('setStart', function (s) {        this._start = s;}, {category: ['accessing']});
+
+  add.method('end', function () { return this._end;    }, {category: ['accessing']});
+
+  add.method('setEnd', function (e) {        this._end = e;}, {category: ['accessing']});
+
+  add.method('step', function () { return this._step;    }, {category: ['accessing']});
+
+  add.method('setStep', function (s) {        this._step = s;}, {category: ['accessing']});
+
+  add.method('includeStart', function () {
+    this._shouldIncludeStart = true;
+    return this;
+  }, {category: ['including or excluding endpoints']});
+
+  add.method('doNotIncludeStart', function () {
+    this._shouldIncludeStart = false;
+    return this;
+  }, {category: ['including or excluding endpoints']});
+
+  add.method('includeEnd', function () {
+    this._shouldIncludeEnd = true;
+    return this;
+  }, {category: ['including or excluding endpoints']});
+
+  add.method('doNotIncludeEnd', function () {
+    this._shouldIncludeEnd = false;
+    return this;
+  }, {category: ['including or excluding endpoints']});
+
+  add.method('_each', function (f) {
+    var step  = this._step;
+    var end   = this._end;
+    var start = this._shouldIncludeStart ? this._start : this._start + step;
+    if (this._shouldIncludeEnd) {
+      for (var i = start; i <= end; i += step) { f(i); }
+    } else {
+      for (var i = start; i <  end; i += step) { f(i); }
+    }
+  }, {category: ['iterating']});
+
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+
+});
+
+
+thisModule.addSlots(avocado.range.tests, function(add) {
+
+  add.method('testStuff', function () {
+    var r = avocado.range.create(3, 10);
+    this.assertEqual([3, 4, 5, 6, 7, 8, 9], r.toArray());
+    r.includeEnd();
+    this.assertEqual([3, 4, 5, 6, 7, 8, 9, 10], r.toArray());
+    r.doNotIncludeStart();
+    this.assertEqual([4, 5, 6, 7, 8, 9, 10], r.toArray());
+    r.doNotIncludeEnd();
+    this.assertEqual([4, 5, 6, 7, 8, 9], r.toArray());
+    r.includeStart();
+    this.assertEqual([3, 4, 5, 6, 7, 8, 9], r.toArray());
+
+    r.setStep(2);
+    this.assertEqual([3, 5, 7, 9], r.toArray());
+  });
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["core/enumerator"] = function() {};
+transporter.module.create('core/enumerator', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('enumerator', {}, {category: ['collections']}, {comment: 'An Enumerable whose contents are whatever is yielded by calling the specified method.', copyDownParents: [{parent: Enumerable}]});
+
+});
+
+
+thisModule.addSlots(avocado.enumerator, function(add) {
+
+  add.method('map', function (transformer) {
+    return avocado.enumerator.create(this, 'eachMappedBy', transformer);
+  }, {category: ['transforming']});
+
+  add.method('select', function (condition) {
+    return avocado.enumerator.create(this, 'eachFilteredBy', condition);
+  }, {category: ['transforming']});
+
+  add.method('toArray', function () {
+    var a = [];
+    this.each(function(x) { a.push(x); });
+    return a;
+  }, {category: ['transforming']});
+
+  add.method('create', function () {
+    var e = Object.create(this);
+    e.initialize.apply(e, arguments);
+    return e;
+  }, {category: ['creating']});
+
+  add.method('initialize', function () {
+    var args = $A(arguments);
+    this._object = args.shift();
+    this._methodName = args.shift();
+    this._methodArgs = args;
+  }, {category: ['creating']});
+
+  add.method('toString', function () {
+    var s = [this._object.toString(), ".", this._methodName, "("];
+    this._methodArgs.each(function(arg) { s.push("" + arg); });
+    s.push(")");
+    return s.join("");
+  }, {category: ['printing']});
+
+  add.method('_each', function (f) {
+    var method = this._object[this._methodName];
+    if (this._methodArgs.length === 0) { // just an optimization to avoid creating unnecessary arrays
+      return method.call(this._object, f);
+    } else {
+      return method.apply(this._object, this._methodArgs.concat([f]));
+    }
+  }, {category: ['iterating']});
+
+  add.method('sort', function (f) {
+    return this.toArray().sort(f)
+  }, {category: ['sorting']});
+
+  add.method('eachFilteredBy', function (condition, f) {
+    this.each(function(x) { if (condition(x)) { f(x); }; });
+  }, {category: ['transforming']});
+
+  add.method('eachMappedBy', function (transformer, f) {
+    this.each(function(x) { f(transformer(x)); });
+  }, {category: ['transforming']});
+
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+
+});
+
+
+thisModule.addSlots(avocado.enumerator.tests, function(add) {
+
+  add.method('eachInteger', function (start, end, f) {
+    this._startedIterating = true;
+    for (var i = start; i < end; ++i) { f(i); }
+  });
+
+  add.method('testToArray', function () {
+    var e = avocado.enumerator.create(this, 'eachInteger', 3, 10);
+    this.assertEqual([3, 4, 5, 6, 7, 8, 9].join(','), e.toArray().join(','));
+  });
+
+  add.method('testSelectAndMap', function () {
+    var ints = avocado.enumerator.create(this, 'eachInteger', 1, 10);
+    
+    var odds = ints.select(function(i) { return i % 2 === 1; });
+    this.assert(! this._startedIterating, "select() should return another enumerator; don't actually iterate until we have to");
+    this.assertEqual([1, 3, 5, 7, 9].join(','), odds.toArray().join(','));
+    this.assert(this._startedIterating);
+    this._startedIterating = false;
+    
+    var squares = ints.map(function(i) { return i * i; });
+    this.assert(! this._startedIterating, "map() should return another enumerator; don't actually iterate until we have to");
+    this.assertEqual([1, 4, 9, 16, 25, 36, 49, 64, 81].join(','), squares.toArray().join(','));
+    this.assert(this._startedIterating);
+    this._startedIterating = false;
+  });
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["core/value_holder"] = function() {};
+transporter.module.create('core/value_holder', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('valueHolder', {}, {category: ['core']}, {comment: 'Stores a value and notifies you when someone changes it.'});
+
+  add.creator('booleanHolder', Object.create(avocado.valueHolder), {category: ['core']}, {comment: 'A valueHolder for booleans.'});
+
+});
+
+
+thisModule.addSlots(avocado.booleanHolder, function(add) {
+
+  add.method('isChecked', function () { return this.getValue();     });
+
+  add.method('setChecked', function (b, evt) { return this.setValue(b, evt);    });
+
+  add.method('toggle', function (evt) { return this.setValue(! this.getValue(), evt); });
+
+  add.method('areValuesDifferent', function (v1, v2) { return (!!v1) !== (!!v2); });
+
+});
+
+
+thisModule.addSlots(avocado.valueHolder, function(add) {
+
+  add.method('containing', function (v) {
+    var c = Object.create(this);
+    c.notifier = Object.newChildOf(avocado.notifier, this);
+    c.setValue(v);
+    return c;
+  });
+
+  add.method('getValue', function () { return this.value; });
+
+  add.method('setValue', function (v, evt) {
+    var oldValue = this.value;
+    var changed = this.areValuesDifferent(oldValue, v);
+    this.value = v;
+    if (changed) {this.notifier.notifyAllObservers(evt);}
+    return v;
+  });
+
+  add.method('areValuesDifferent', function (v1, v2) {
+    return v1 !== v2;
+  });
+
+  add.method('addObserver', function (o) {
+      this.notifier.addObserver(o);
+      return this;
+  });
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["core/little_profiler"] = function() {};
+transporter.module.create('core/little_profiler', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('littleProfiler', {}, {category: ['profiling']}, {comment: 'Nothing clever, just a little object for helping to see where the time is going in a method.'});
+
+});
+
+
+thisModule.addSlots(avocado.littleProfiler, function(add) {
+
+  add.method('named', function (name) {
+    return Object.newChildOf(this, name);
+  });
+
+  add.method('initialize', function (name) {
+    this._name = name;
+    this._times = [];
+    this.recordTime();
+  });
+
+  add.method('recordTime', function () {
+    this._times.push(new Date().getTime());
+  });
+
+  add.method('totalTime', function () {
+    return this._times.last() - this._times.first();
+  });
+
+  add.method('printTimes', function () {
+    this.recordTime();
+    var s = avocado.stringBuffer.create("Profile of ").append(this._name).append(": total time ").append(this.totalTime());
+    s.append(", in-between times: ");
+    sep = "";
+    for (var i = 0; i < this._times.length - 1; ++i) {
+      s.append(sep).append(this._times[i+1] - this._times[i]);
+      sep = ", ";
+    }
+    console.log(s.toString());
+  });
+
+});
+
+
+});
+
 transporter.module.onLoadCallbacks["core/math"] = function() {};
 transporter.module.create('core/math', function(requires) {
 
@@ -42931,6 +42684,106 @@ thisModule.addSlots(Rectangle.prototype, function(add) {
   add.method('storeStringNeeds', function () {
     return Rectangle.prototype;
   }, {category: ['transporting']});
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["core/dependencies"] = function() {};
+transporter.module.create('core/dependencies', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('dependencies', {}, {category: ['collections']});
+
+});
+
+
+thisModule.addSlots(avocado.dependencies, function(add) {
+
+  add.method('copyRemoveAll', function () {
+    return Object.newChildOf(this);
+  }, {category: ['creating']});
+
+  add.method('initialize', function () {
+    this._dependeesByDepender = avocado.dictionary.copyRemoveAll();
+    this._dependersByDependee = avocado.dictionary.copyRemoveAll();
+  }, {category: ['creating']});
+
+  add.method('dependeesByDepender', function () {
+    return this._dependeesByDepender;
+  }, {category: ['accessing']});
+
+  add.method('dependersByDependee', function () {
+    return this._dependersByDependee;
+  }, {category: ['accessing']});
+
+  add.method('dependeesOf', function (depender) {
+    return this.dependeesByDepender().get(depender) || [];
+  }, {category: ['accessing']});
+
+  add.method('dependersOf', function (dependee) {
+    return this.dependersByDependee().get(dependee) || [];
+  }, {category: ['accessing']});
+
+  add.method('addDependency', function (depender, dependee) {
+    if (depender.equals(dependee)) { return; }
+    this.dependeesByDepender().getOrIfAbsentPut(depender, function() { return avocado.set.copyRemoveAll(); }).add(dependee);
+    this.dependersByDependee().getOrIfAbsentPut(dependee, function() { return avocado.set.copyRemoveAll(); }).add(depender);
+  }, {category: ['adding']});
+
+  add.method('removeDependency', function (depender, dependee, isOKIfItDoesntExist) {
+    if (depender.equals(dependee)) { return; }
+    var dependees = this.dependeesByDepender().get(depender);
+    var dependers = this.dependersByDependee().get(dependee);
+    if (! isOKIfItDoesntExist) {
+      if (! dependees.includes(dependee) || ! dependers.includes(depender)) {
+        throw new Error("Trying to remove a dependency that doesn't exist");
+      }
+    }
+    dependees.remove(dependee);
+    dependers.remove(depender);
+  }, {category: ['removing']});
+
+  add.method('eachDependency', function (f) {
+    this.dependeesByDepender().eachKeyAndValue(function(depender, dependees) {
+      dependees.each(function(dependee) {
+        f(depender, dependee);
+      });
+    });
+  }, {category: ['iterating']});
+
+  add.method('removeDependee', function (dependee) {
+    var dependers = this.dependersByDependee().removeKey(dependee);
+    if (! dependers) { return; }
+    dependers.each(function(depender) { this.dependeesByDepender().get(depender).remove(dependee); }.bind(this));
+  }, {category: ['removing']});
+
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+  
+  add.method('printToConsole', function () {
+    this.eachDependency(function(depender, dependee) {
+      console.log("" + depender + " -> " + dependee);
+    });
+  }, {category: ['printing']});
+
+});
+
+
+thisModule.addSlots(avocado.dependencies.tests, function(add) {
+
+  add.method('testStuff', function () {
+    var deps = avocado.dependencies.copyRemoveAll();
+    deps.addDependency(4, 2);
+    deps.addDependency(6, 2);
+    deps.addDependency(6, 3);
+    deps.addDependency(8, 4);
+    // aaa - should really move the ordering stuff to the dependencies object itself;
+  });
 
 });
 
@@ -43387,6 +43240,152 @@ thisModule.addSlots(avocado.sound, function(add) {
 
 });
 
+transporter.module.onLoadCallbacks["core/string_buffer"] = function() {};
+transporter.module.create('core/string_buffer', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('stringBuffer', {}, {category: ['core']}, {comment: 'Lets you append a whole bunch of strings and then join them all at once, so you don\'t get quadratic behavior.'});
+
+});
+
+
+thisModule.addSlots(avocado.stringBuffer, function(add) {
+
+  add.method('create', function (initialString) {
+    return Object.newChildOf(this, initialString);
+  }, {category: ['creating']});
+
+  add.method('initialize', function (initialString) {
+    this.buffer = [];
+    if (initialString !== undefined && initialString !== null) {this.append(initialString);}
+  }, {category: ['creating']});
+
+  add.method('append', function (string) {
+    this.buffer.push(string);
+    return this;
+  }, {category: ['adding']});
+
+  add.method('prepend', function (string) {
+    this.buffer.unshift(string);
+    return this;
+  }, {category: ['adding']});
+
+  add.method('toString', function () {
+    return this.buffer.join("");
+  }, {category: ['converting']});
+
+  add.method('concat', function (other1, other2) {
+    var newOne = this.create();
+    newOne.buffer = this.buffer.concat(other1.buffer, other2 ? other2.buffer : undefined);
+    return newOne;
+  }, {category: ['concatenating']});
+
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+
+});
+
+
+thisModule.addSlots(avocado.stringBuffer.tests, function(add) {
+
+  add.method('testStuff', function (initialString) {
+    var s = avocado.stringBuffer.create('The');
+    this.assertEqual('The', s.toString());
+    s.append(' quick').append(' brown fox');
+    this.assertEqual('The quick brown fox', s.toString());
+  });
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["core/string_extensions"] = function() {};
+transporter.module.create('core/string_extensions', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(String.prototype, function(add) {
+
+  add.method('capitalize', function () {
+     return this.replace( /(^|\s)([a-z])/g , function(m, p1, p2) { return p1+p2.toUpperCase(); } );
+  });
+
+  add.method('startsWithVowel', function () {
+    return (/^[AEIOUaeiou]/).exec(this);
+  });
+
+  add.method('prependAOrAn', function () {
+    return this.startsWithVowel() ? "an " + this : "a " + this;
+  });
+
+  add.method('withoutSuffix', function (suffix) {
+    return this.endsWith(suffix) ? this.substr(0, this.length - suffix.length) : this;
+  });
+
+  add.method('replaceAt', function (i, n, s) {
+    return this.substr(0, i).concat(s, this.substr(i + n));
+  });
+
+  add.method('attemptToInsertALineBreak', function () {
+    // Hack. Really not sure this is gonna work, or be worth it. :) But try it and see.
+    var middle = this.length / 2;
+    var i1 = this.indexOf(' ', middle);
+    var i2 = this.lastIndexOf(' ', middle);
+    var i = (Math.abs(middle - i1) > Math.abs(middle - i2)) ? i2 : i1;
+    if (i < 0) { return this; }
+    return this.replaceAt(i, 1, '\n');
+  });
+
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+
+});
+
+
+thisModule.addSlots(String.prototype.tests, function(add) {
+
+  add.method('testPrependAOrAn', function () {
+    this.assertEqual('an aardvark',      'aardvark'     .prependAOrAn());
+    this.assertEqual('a potato',         'potato'       .prependAOrAn());
+    this.assertEqual('an Ugly Aardvark', 'Ugly Aardvark'.prependAOrAn());
+    this.assertEqual('a Kumquat',        'Kumquat'      .prependAOrAn());
+  });
+
+  add.method('testWithoutSuffix', function () {
+    this.assertEqual('argle', 'arglebargle'.withoutSuffix('bargle'));
+    this.assertEqual('argleb', 'arglebargle'.withoutSuffix('argle'));
+    this.assertEqual('arglebargle', 'arglebargle'.withoutSuffix('cargle'));
+  });
+
+  add.method('testCapitalize', function () {
+    this.assertEqual('Argle', 'argle'.capitalize());
+    this.assertEqual('Argle', 'Argle'.capitalize());
+    this.assertEqual('ArgleBargle', 'argleBargle'.capitalize());
+    this.assertEqual('Argle Bargle', 'argle bargle'.capitalize());
+    this.assertEqual('  \t\n ', '  \t\n '.capitalize());
+  });
+
+  add.method('testReplaceAt', function () {
+    this.assertEqual('arxle', 'argle'.replaceAt(2, 1, 'x'));
+    this.assertEqual('xngle', 'argle'.replaceAt(0, 2, 'xn'));
+  });
+
+  add.method('testInsertingLineBreaks', function () {
+    this.assertEqual('abcdef', 'abcdef'.attemptToInsertALineBreak());
+    this.assertEqual('abc\ndef', 'abc def'.attemptToInsertALineBreak());
+    this.assertEqual('ab\ncdef', 'ab cdef'.attemptToInsertALineBreak());
+    this.assertEqual('ab cd\nef', 'ab cd ef'.attemptToInsertALineBreak());
+  });
+
+});
+
+
+});
+
 transporter.module.onLoadCallbacks["lk_ext/fixes"] = function() {};
 Event.addMethods({
   preventDefault: function() {
@@ -43475,24 +43474,6 @@ thisModule.addSlots(avocado.modificationFlag, function(add) {
 
 });
 
-transporter.module.onLoadCallbacks["lk_ext/change_notification"] = function() {};
-// aaa - A hack to allow someone to ask to be notified when a particular morph
-// changes. Useful for arrows - we can make sure to update the arrow the instant
-// its endpoint moves.
-
-Morph.addMethods({
-    changed: function() {
-        // Note most morphs don't need this in SVG, but text needs the
-        // call on bounds() to trigger layout on new bounds
-        if(this.owner) this.owner.invalidRect(this.bounds());
-        
-        if (this._changeNotifier) { this._changeNotifier.notifyAllObservers(); } // Added by Adam
-    },
-
-    changeNotifier: function() { return this._changeNotifier || (this._changeNotifier = avocado.notifier.on(this)); },
-});
-transporter.module.onLoadCallbacks["lk_ext/change_notification"] = 'done';
-
 transporter.module.onLoadCallbacks["lk_ext/menus"] = function() {};
 Morph.addMethods({
   showMorphMenu: function(evt) {
@@ -43580,6 +43561,445 @@ PieMenuMorph.addMethods({
   }
 });
 transporter.module.onLoadCallbacks["lk_ext/menus"] = 'done';
+
+transporter.module.onLoadCallbacks["lk_ext/change_notification"] = function() {};
+// aaa - A hack to allow someone to ask to be notified when a particular morph
+// changes. Useful for arrows - we can make sure to update the arrow the instant
+// its endpoint moves.
+
+Morph.addMethods({
+    changed: function() {
+        // Note most morphs don't need this in SVG, but text needs the
+        // call on bounds() to trigger layout on new bounds
+        if(this.owner) this.owner.invalidRect(this.bounds());
+        
+        if (this._changeNotifier) { this._changeNotifier.notifyAllObservers(); } // Added by Adam
+    },
+
+    changeNotifier: function() { return this._changeNotifier || (this._changeNotifier = avocado.notifier.on(this)); },
+});
+transporter.module.onLoadCallbacks["lk_ext/change_notification"] = 'done';
+
+transporter.module.onLoadCallbacks["lk_ext/changes"] = function() {};
+WorldMorph.addMethods({
+  onMouseDown: function($super, evt) {
+    // Added by Adam, Feb. 2008, because sometimes it's useful
+    // to have no keyboard focus (so that, for example, I can
+    // hit Cmd-t to open a new tab).
+    //
+    // NOTE: I once tried making this line say setKeyboardFocus(this),
+    // and for some reason Style Editors broke. (They're probably
+    // not the only thing that broke, but that was the thing I
+    // noticed.) I have no idea why, but it's not important right
+    // now, so I'm letting it go. -- Adam, Nov. 2010
+    evt.hand.setKeyboardFocus(null);
+
+    if (this.shouldSlideIfClickedAtEdge) { this.slideIfClickedAtEdge(evt); }
+
+    return $super(evt);
+  }
+});
+
+Object.extend(Morph, {
+  suppressAllHandlesForever: function() {
+    Object.extend(Morph.prototype, {checkForControlPointNear: function(evt) {return false;}});
+  }
+});
+
+PasteUpMorph.addMethods({
+    onMouseDown: function PasteUpMorph$onMouseDown($super, evt) {  //default behavior is to grab a submorph
+        $super(evt);
+        var m = this.morphToReceiveEvent(evt, null, true); // Modified to checkForDnD -- Adam, August 2008
+        if (Config.usePieMenus) {
+                if (m.handlesMouseDown(evt)) return false;
+                m.showPieMenu(evt, m);
+                return true;
+        }
+        if (m == null) {
+          if (evt.isLeftMouseButtonDown()) { // Added the isLeftMouseButtonDown check, 'cause I like it better that way. -- Adam, Jan. 2009
+	    if (! UserAgent.isTouch) { // don't want SelectionMorphs on touch-screens -- Adam
+	      this.makeSelection(evt);
+	    }
+            return true;
+          } else {
+            return false;
+          }
+        } else if (!evt.isForContextMenu() && !evt.isForMorphMenu()) { // Changed from a simple isCommandKey check. -- Adam, Jan. 2009
+            if (m === this.world()) {
+	      if (! UserAgent.isTouch) { // don't want SelectionMorphs on touch-screens -- Adam
+                this.makeSelection(evt);
+	      }
+	      return true;
+            } else if (m.handlesMouseDown(evt)) return false;
+        }
+        evt.hand.grabMorph(m, evt);
+        return true;
+    },
+});
+
+Morph.addMethods({
+    checkForDoubleClick: function(evt) {
+      var currentTime = new Date().getTime(); // Use evt.timeStamp? I just tried that and it didn't seem to work.
+      if (this.timeOfMostRecentDoubleClickCheck != null && currentTime - this.timeOfMostRecentDoubleClickCheck < 400) { // aaa magic number
+        this.timeOfMostRecentDoubleClickCheck = null;
+        this.onDoubleClick(evt);
+        return true;
+      } else {
+        this.timeOfMostRecentDoubleClickCheck = currentTime;
+        return false;
+      }
+    },
+
+    onDoubleClick: function(evt) {
+      if (UserAgent.isTouch) {
+        this.showContextMenu(evt);
+      }
+    }
+});
+
+HandMorph.addMethods({
+    dropMorphsOn: function(receiver) {
+        if (receiver !== this.world()) this.unbundleCarriedSelection();
+        if (this.logDnD) console.log("%s dropping %s on %s", this, this.topSubmorph(), receiver);
+        this.carriedMorphsDo( function(m) {
+            m.dropMeOnMorph(receiver);
+            this.showAsUngrabbed(m);
+            receiver.justReceivedDrop(m, this); // Added by Adam
+        });
+        this.removeAllMorphs(); // remove any shadows or halos
+    },
+
+    // Copied-and-pasted the bottom half of grabMorph. Needed for
+    // stuff that should be able to be explicitly grabbed, but
+    // not through the default "just click to pick it up" mechanism. -- Adam
+    grabMorphWithoutAskingPermission: function(grabbedMorph, evt) {
+        if (this.keyboardFocus && grabbedMorph !== this.keyboardFocus) {
+            this.keyboardFocus.relinquishKeyboardFocus(this);
+        }
+        // console.log('grabbing %s', grabbedMorph);
+        // Save info for cancelling grab or drop [also need indexInOwner?]
+        // But for now we simply drop on world, so this isn't needed
+        this.grabInfo = [grabbedMorph.owner, grabbedMorph.position()];
+        if (this.logDnD) console.log('%s grabbing %s', this, grabbedMorph);
+        this.addMorphAsGrabbed(grabbedMorph);
+        // grabbedMorph.updateOwner();
+        this.changed(); //for drop shadow
+    },
+
+    grabMorph: function(grabbedMorph, evt) {
+        if (evt.isShiftDown() || (grabbedMorph.owner && grabbedMorph.owner.copySubmorphsOnGrab == true)) {
+            if (!grabbedMorph.okToDuplicate()) return;
+            grabbedMorph.copyToHand(this);
+            return;
+        }
+        if (evt.isForMorphMenu()) {
+            grabbedMorph.showMorphMenu(evt);
+            return;
+        }
+        if (evt.isForContextMenu()) { // Changed from a simple isCommandKey check. -- Adam, Jan. 2009
+            grabbedMorph.showContextMenu(evt);
+            return;
+        }
+        // Give grabbed morph a chance to, eg, spawn a copy or other referent
+        grabbedMorph = grabbedMorph.okToBeGrabbedBy(evt);
+        if (!grabbedMorph) return;
+
+        // aaa - I think this is not what we want. openForDragAndDrop should mean
+        // that the morph is open for arbitrary embedding, but even if it's not,
+        // we may want to grab a morph for some other reason. Use suppressGrabbing
+        // if you want to disable grabbing a morph altogether. I think. -- Adam, Apr. 2011
+        // if (grabbedMorph.owner && !grabbedMorph.owner.openForDragAndDrop) return;
+
+        if (this.keyboardFocus && grabbedMorph !== this.keyboardFocus) {
+            this.keyboardFocus.relinquishKeyboardFocus(this);
+        }
+        // console.log('grabbing %s', grabbedMorph);
+        // Save info for cancelling grab or drop [also need indexInOwner?]
+        // But for now we simply drop on world, so this isn't needed
+        this.grabInfo = [grabbedMorph.owner, grabbedMorph.position()];
+        if (this.logDnD) console.log('%s grabbing %s', this, grabbedMorph);
+        this.addMorphAsGrabbed(grabbedMorph);
+        // grabbedMorph.updateOwner();
+        this.changed(); //for drop shadow
+    }
+});
+
+TextMorph.addMethods({
+  getText: function()  {return this.textString;},
+  setText: function(t) {if (this.textString !== t) {this.updateTextString(t); this.layoutChanged(); this.changed();}},
+
+  // Just wondering whether I can set a TextMorph to be bold/italic and have it stay that way no matter what text I give it.
+  setEmphasis: function(emph) {
+    var txt = new lively.Text.Text(this.textString, this.textStyle);
+    txt.emphasize(emph, 0, this.textString.length);
+    this.textStyle = txt.style;
+    this.composeAfterEdits();
+    return this;
+  }
+});
+    
+Class.newInitializer = function(name) {
+  // this hack ensures that class instances have a name
+  var c = eval(Class.initializerTemplate.replace(/CLASS/g, name) + ";" + name);
+  
+  // Put it in a category so that it doesn't clutter up the window object. -- Adam
+  if (window.avocado && avocado.annotator && name.startsWith('anonymous_')) {
+    avocado.annotator.annotationOf(window).setSlotAnnotation(name, {category: ['anonymous classes']});
+  }
+
+  return c;
+};
+
+Morph.addMethods({
+	  pickMeUpLeavingPlaceholderIfNecessary: function(evt) {
+	    this.becomeDirectSubmorphOfWorld(evt.hand.world());
+  	  this.pickMeUp(evt);
+	  },
+	  
+    morphMenu: function(evt) {
+        var carryingHand = avocado.CarryingHandMorph.forWorld(this.world());
+        var dropCmd = carryingHand.applicableCommandForDroppingOn(this);
+        var handEmpty = !carryingHand.carriedMorph();
+        var disablePickUpAndDropExperiment = true;
+        var items = [
+            disablePickUpAndDropExperiment ?
+              ["grab", this.pickMeUpLeavingPlaceholderIfNecessary.curry(evt)] // need the placeholders -- Adam  // not needed now that we have "pick up"
+              : dropCmd ? ["drop",    function() { carryingHand.dropOn(this, evt); }.bind(this)]
+                        : handEmpty ? ["pick up", function() { carryingHand.pickUp(this, evt); }.bind(this)]
+                                    : null, // aaa - Shoot, leaving a null currently doesn't leave a hole in the menu; I want it to, so that the layout doesn't change around.
+            ["remove", this.startZoomingOuttaHere], // so much cooler this way -- Adam
+            this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
+            // ["drill", this.showOwnerChain.curry(evt)], // not needed now that we have core samplers. -- Adam
+            // ["drag", this.dragMe.curry(evt)], // This menu has too much stuff in it. -- Adam
+            this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
+                                : ["turn on edit mode" , function() { this.switchEditModeOn (); }.bind(this)],
+            ["edit style", function() { new StylePanel(this).open()}],
+            ["inspect", function(evt) { this.world().morphFor(reflect(this)).grabMe(evt); }], // OK, I just couldn't resist. -- Adam
+            ["script me", function(evt) {
+              var mir = reflect(avocado.morphScripter.create(this));
+              var mirMorph = this.world().morphFor(mir);
+              mirMorph.openEvaluator(evt);
+            }], // simple scripting interface -- Adam
+            /* No browser, mirrors are enough, plus this menu has too much stuff in it. -- Adam
+            ["show class in browser", function(evt) { var browser = new SimpleBrowser(this);
+                                              browser.openIn(this.world(), evt.point());
+                                              browser.getModel().setClassName(this.getType());
+            }]
+            */
+        ];
+
+        if (this.getModel() instanceof SyntheticModel)
+            items.push( ["show Model dump", this.addModelInspector.curry(this)]);
+
+        var cmdList = avocado.command.list.create(this, items);
+        cmdList.addLine();
+        cmdList.addItems(this.subMenuItems(evt));
+        var menu = cmdList.createMenu(this);
+    		menu.commandStyle = menu.morphCommandStyle;
+        return menu;
+    },
+    
+    setModel: function(m) {
+      this._model = m;
+      return this;
+    },
+
+  	inspect: function() {
+  		try {
+        if (this._model && typeof(this._model.inspect) === 'function') { return this._model.inspect(); } // added by Adam
+  			return this.toString();
+  		} catch (err) {
+  			return "#<inspect error: " + err + ">";
+  		}
+  	},
+  	
+  	debugInspect: function() {
+  	  var tos = this.toString();
+  	  return "a " + this.constructor.type + (tos ? "(" + tos + ")" : "");
+  	},
+
+    toString: function() {
+      return ""; // the default behaviour is annoying - makes morph mirrors very wide
+    }
+});
+
+Morph.addMethods({
+  setHelpText: function(t) {
+    this.getHelpText = function() { return t; };
+    return this;
+  }
+});
+
+
+Morph.addMethods({
+  isSameTypeAs: function(m) {
+    return m && m['__proto__'] === this['__proto__'];
+  },
+  
+  ownerSatisfying: function(condition) {
+    if (!this.owner) { return null; }
+    if (condition(this.owner)) { return this.owner; }
+    return this.owner.ownerSatisfying(condition);
+  }
+});
+
+
+Morph.addMethods({
+  addMorphCentered: function(m, callWhenDone) {
+    this.animatedAddMorphAt(m, this.getExtent().subPt(m.getExtent()).scaleBy(0.5), callWhenDone);
+  },
+  
+  // really should fix the names of these two functions; without animation should be the default -- Adam
+  withoutAnimationAddMorphCentered: function(m, callWhenDone) {
+    var p = this.getExtent().subPt(m.getExtent()).scaleBy(0.5);
+    // console.log("this.getExtent(): " + this.getExtent() + ", m.getExtent(): " + m.getExtent() + ", p: " + p);
+    this.addMorphAt(m, p);
+  },
+});
+
+
+Morph.addMethods({
+  ownerLocalize: function(pt) {
+		if (! this.owner) { return pt; }
+    return this.owner.localize(pt);
+  },
+  
+  handIsOverMe: function (hand) {
+    return this.shape.containsPoint(this.localize(hand.getPosition()));
+  }
+});
+
+
+WorldMorph.addMethods({
+  ownerLocalize: function(pt) {
+		if (pt == null) console.log('null pt in ownerLocalize');   
+		return pt.matrixTransform(this.getTransform());
+  }
+});
+
+
+Morph.addMethods({
+  replaceMorph: function(m, newSubmorph) {
+    // This method is kind of a combination of addMorphFrontOrBack and removeMorph. -- Adam
+    
+		var index = this.submorphs.indexOf(m);
+		if (index < 0) {
+			m.owner !== this && console.log("%s has owner %s that is not %s?", m, m.owner, this);
+			return null;
+		}
+
+		if (newSubmorph.owner) {
+			var tfm = newSubmorph.transformForNewOwner(this);
+			newSubmorph.owner.removeMorph(newSubmorph); // KP: note not m.remove(), we don't want to stop stepping behavior
+			newSubmorph.setTransform(tfm); 
+			// FIXME transform is out of date
+			// morph.setTransform(tfm); 
+			// m.layoutChanged(); 
+		} 
+		
+		var position = m.getPosition();
+		m.replaceRawNode(newSubmorph.rawNode);
+		var spliced = this.submorphs.spliceAndAdjustCreatorSlots(index, 1, newSubmorph); // aaa fileout hack -- Adam
+		if (spliced instanceof Array) spliced = spliced[0];
+		if (m !== spliced) {
+			console.log("invariant violated removing %s, spliced %s", m, spliced);
+		}
+		
+		// cleanup, move to ?
+		m.owner = null;
+		m.setHasKeyboardFocus(false);
+		this.layoutManager.removeMorph(this, m);
+
+		newSubmorph.owner = this;
+		newSubmorph.changed();
+		newSubmorph.layoutChanged();
+		
+		this.layoutChanged();
+		
+		newSubmorph.setPosition(position);
+  },
+});
+
+
+ButtonMorph.addMethods({
+  pushMe: function() {
+    this.getModel().setValue(false);
+  }
+});
+
+
+ImageMorph.addMethods({
+  beLabel: function() {
+    this.applyStyle(this.labelStyle);
+    return this;
+  },
+  
+  labelStyle: {
+    fill: null,
+    suppressGrabbing: true,
+    shouldIgnoreEvents: true,
+    openForDragAndDrop: false
+  }
+});
+
+SelectionMorph.addMethods({
+  inspect: function () {
+    return avocado.command.list.descriptionOfGroup(this.selectedMorphs);
+  },
+
+  commands: function () {
+    var cmdList = avocado.command.list.create();
+    cmdList.addItemsFromGroup(this.selectedMorphs);
+    return cmdList;
+  }
+});
+
+Object.extend(lively.scene.Rectangle.prototype, {
+  area: function() { return this.bounds().area(); }
+});
+
+Object.extend(lively.paint.Gradient.prototype, {
+  // Copied over from Color.
+  
+	darker: function(recursion) { 
+		if (recursion == 0) 
+			return this;
+		var result = this.mixedWith(Color.black, 0.5);
+		return recursion > 1  ? result.darker(recursion - 1) : result;
+	},
+
+	lighter: function(recursion) { 
+		if (recursion == 0) 
+			return this;
+		var result = this.mixedWith(Color.white, 0.5);
+		return recursion > 1 ? result.lighter(recursion - 1) : result;
+	},
+
+	mixedWith: function(color, proportion) {
+		var result = this.copyRemoveAll();
+		for (var i = 0; i < this.stops.length; ++i) {
+			result.addStop(this.stops[i].offset(), this.stops[i].color().mixedWith(color, proportion));
+		}
+		return result;
+	}
+});
+
+Object.extend(lively.paint.LinearGradient.prototype, {
+    copyRemoveAll: function() {
+        return new this.constructor([], this.vector);
+    }
+});
+
+Object.extend(lively.paint.RadialGradient.prototype, {
+    copyRemoveAll: function() {
+        return new this.constructor([], this.focus());
+    },
+    
+    focus: function() {
+        return pt(this.getTrait('fx'), this.getTrait('fy'));
+    }
+});
+transporter.module.onLoadCallbacks["lk_ext/changes"] = 'done';
 
 transporter.module.onLoadCallbacks["lk_ext/wheel_menus"] = function() {};
 transporter.module.create('lk_ext/wheel_menus', function(requires) {
@@ -43948,422 +44368,6 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.CommandMorph.prototype.defa
 
 });
 
-transporter.module.onLoadCallbacks["lk_ext/changes"] = function() {};
-WorldMorph.addMethods({
-  onMouseDown: function($super, evt) {
-    // Added by Adam, Feb. 2008, because sometimes it's useful
-    // to have no keyboard focus (so that, for example, I can
-    // hit Cmd-t to open a new tab).
-    //
-    // NOTE: I once tried making this line say setKeyboardFocus(this),
-    // and for some reason Style Editors broke. (They're probably
-    // not the only thing that broke, but that was the thing I
-    // noticed.) I have no idea why, but it's not important right
-    // now, so I'm letting it go. -- Adam, Nov. 2010
-    evt.hand.setKeyboardFocus(null);
-
-    if (this.shouldSlideIfClickedAtEdge) { this.slideIfClickedAtEdge(evt); }
-
-    return $super(evt);
-  }
-});
-
-Object.extend(Morph, {
-  suppressAllHandlesForever: function() {
-    Object.extend(Morph.prototype, {checkForControlPointNear: function(evt) {return false;}});
-  }
-});
-
-PasteUpMorph.addMethods({
-    onMouseDown: function PasteUpMorph$onMouseDown($super, evt) {  //default behavior is to grab a submorph
-        $super(evt);
-        var m = this.morphToReceiveEvent(evt, null, true); // Modified to checkForDnD -- Adam, August 2008
-        if (Config.usePieMenus) {
-                if (m.handlesMouseDown(evt)) return false;
-                m.showPieMenu(evt, m);
-                return true;
-        }
-        if (m == null) {
-          if (evt.isLeftMouseButtonDown()) { // Added the isLeftMouseButtonDown check, 'cause I like it better that way. -- Adam, Jan. 2009
-	    if (! UserAgent.isTouch) { // don't want SelectionMorphs on touch-screens -- Adam
-	      this.makeSelection(evt);
-	    }
-            return true;
-          } else {
-            return false;
-          }
-        } else if (!evt.isForContextMenu() && !evt.isForMorphMenu()) { // Changed from a simple isCommandKey check. -- Adam, Jan. 2009
-            if (m === this.world()) {
-	      if (! UserAgent.isTouch) { // don't want SelectionMorphs on touch-screens -- Adam
-                this.makeSelection(evt);
-	      }
-	      return true;
-            } else if (m.handlesMouseDown(evt)) return false;
-        }
-        evt.hand.grabMorph(m, evt);
-        return true;
-    },
-});
-
-Morph.addMethods({
-    checkForDoubleClick: function(evt) {
-      var currentTime = new Date().getTime(); // Use evt.timeStamp? I just tried that and it didn't seem to work.
-      if (this.timeOfMostRecentDoubleClickCheck != null && currentTime - this.timeOfMostRecentDoubleClickCheck < 400) { // aaa magic number
-        this.timeOfMostRecentDoubleClickCheck = null;
-        this.onDoubleClick(evt);
-        return true;
-      } else {
-        this.timeOfMostRecentDoubleClickCheck = currentTime;
-        return false;
-      }
-    },
-
-    onDoubleClick: function(evt) {
-      if (UserAgent.isTouch) {
-        this.showContextMenu(evt);
-      }
-    }
-});
-
-HandMorph.addMethods({
-    dropMorphsOn: function(receiver) {
-        if (receiver !== this.world()) this.unbundleCarriedSelection();
-        if (this.logDnD) console.log("%s dropping %s on %s", this, this.topSubmorph(), receiver);
-        this.carriedMorphsDo( function(m) {
-            m.dropMeOnMorph(receiver);
-            this.showAsUngrabbed(m);
-            receiver.justReceivedDrop(m, this); // Added by Adam
-        });
-        this.removeAllMorphs(); // remove any shadows or halos
-    },
-
-    // Copied-and-pasted the bottom half of grabMorph. Needed for
-    // stuff that should be able to be explicitly grabbed, but
-    // not through the default "just click to pick it up" mechanism. -- Adam
-    grabMorphWithoutAskingPermission: function(grabbedMorph, evt) {
-        if (this.keyboardFocus && grabbedMorph !== this.keyboardFocus) {
-            this.keyboardFocus.relinquishKeyboardFocus(this);
-        }
-        // console.log('grabbing %s', grabbedMorph);
-        // Save info for cancelling grab or drop [also need indexInOwner?]
-        // But for now we simply drop on world, so this isn't needed
-        this.grabInfo = [grabbedMorph.owner, grabbedMorph.position()];
-        if (this.logDnD) console.log('%s grabbing %s', this, grabbedMorph);
-        this.addMorphAsGrabbed(grabbedMorph);
-        // grabbedMorph.updateOwner();
-        this.changed(); //for drop shadow
-    },
-
-    grabMorph: function(grabbedMorph, evt) {
-        if (evt.isShiftDown() || (grabbedMorph.owner && grabbedMorph.owner.copySubmorphsOnGrab == true)) {
-            if (!grabbedMorph.okToDuplicate()) return;
-            grabbedMorph.copyToHand(this);
-            return;
-        }
-        if (evt.isForMorphMenu()) {
-            grabbedMorph.showMorphMenu(evt);
-            return;
-        }
-        if (evt.isForContextMenu()) { // Changed from a simple isCommandKey check. -- Adam, Jan. 2009
-            grabbedMorph.showContextMenu(evt);
-            return;
-        }
-        // Give grabbed morph a chance to, eg, spawn a copy or other referent
-        grabbedMorph = grabbedMorph.okToBeGrabbedBy(evt);
-        if (!grabbedMorph) return;
-
-        if (grabbedMorph.owner && !grabbedMorph.owner.openForDragAndDrop) return;
-
-        if (this.keyboardFocus && grabbedMorph !== this.keyboardFocus) {
-            this.keyboardFocus.relinquishKeyboardFocus(this);
-        }
-        // console.log('grabbing %s', grabbedMorph);
-        // Save info for cancelling grab or drop [also need indexInOwner?]
-        // But for now we simply drop on world, so this isn't needed
-        this.grabInfo = [grabbedMorph.owner, grabbedMorph.position()];
-        if (this.logDnD) console.log('%s grabbing %s', this, grabbedMorph);
-        this.addMorphAsGrabbed(grabbedMorph);
-        // grabbedMorph.updateOwner();
-        this.changed(); //for drop shadow
-    }
-});
-
-TextMorph.addMethods({
-  getText: function()  {return this.textString;},
-  setText: function(t) {if (this.textString !== t) {this.updateTextString(t); this.layoutChanged(); this.changed();}},
-
-  // Just wondering whether I can set a TextMorph to be bold/italic and have it stay that way no matter what text I give it.
-  setEmphasis: function(emph) {
-    var txt = new lively.Text.Text(this.textString, this.textStyle);
-    txt.emphasize(emph, 0, this.textString.length);
-    this.textStyle = txt.style;
-    this.composeAfterEdits();
-  }
-});
-    
-Class.newInitializer = function(name) {
-  // this hack ensures that class instances have a name
-  var c = eval(Class.initializerTemplate.replace(/CLASS/g, name) + ";" + name);
-  
-  // Put it in a category so that it doesn't clutter up the window object. -- Adam
-  if (window.avocado && avocado.annotator && name.startsWith('anonymous_')) {
-    avocado.annotator.annotationOf(window).setSlotAnnotation(name, {category: ['anonymous classes']});
-  }
-
-  return c;
-};
-
-Morph.addMethods({
-	  pickMeUpLeavingPlaceholderIfNecessary: function(evt) {
-	    this.becomeDirectSubmorphOfWorld(evt.hand.world());
-  	  this.pickMeUp(evt);
-	  },
-	  
-    morphMenu: function(evt) {
-        var carryingHand = avocado.CarryingHandMorph.forWorld(this.world());
-        var dropCmd = carryingHand.applicableCommandForDroppingOn(this);
-        var handEmpty = !carryingHand.carriedMorph();
-        var disablePickUpAndDropExperiment = true;
-        var items = [
-            disablePickUpAndDropExperiment ?
-              ["grab", this.pickMeUpLeavingPlaceholderIfNecessary.curry(evt)] // need the placeholders -- Adam  // not needed now that we have "pick up"
-              : dropCmd ? ["drop",    function() { carryingHand.dropOn(this, evt); }.bind(this)]
-                        : handEmpty ? ["pick up", function() { carryingHand.pickUp(this, evt); }.bind(this)]
-                                    : null, // aaa - Shoot, leaving a null currently doesn't leave a hole in the menu; I want it to, so that the layout doesn't change around.
-            ["remove", this.startZoomingOuttaHere], // so much cooler this way -- Adam
-            this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
-            // ["drill", this.showOwnerChain.curry(evt)], // not needed now that we have core samplers. -- Adam
-            // ["drag", this.dragMe.curry(evt)], // This menu has too much stuff in it. -- Adam
-            this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
-                                : ["turn on edit mode" , function() { this.switchEditModeOn (); }.bind(this)],
-            ["edit style", function() { new StylePanel(this).open()}],
-            ["inspect", function(evt) { this.world().morphFor(reflect(this)).grabMe(evt); }], // OK, I just couldn't resist. -- Adam
-            ["script me", function(evt) {
-              var mir = reflect(avocado.morphScripter.create(this));
-              var mirMorph = this.world().morphFor(mir);
-              mirMorph.openEvaluator(evt);
-            }], // simple scripting interface -- Adam
-            /* No browser, mirrors are enough, plus this menu has too much stuff in it. -- Adam
-            ["show class in browser", function(evt) { var browser = new SimpleBrowser(this);
-                                              browser.openIn(this.world(), evt.point());
-                                              browser.getModel().setClassName(this.getType());
-            }]
-            */
-        ];
-
-        if (this.getModel() instanceof SyntheticModel)
-            items.push( ["show Model dump", this.addModelInspector.curry(this)]);
-
-        var cmdList = avocado.command.list.create(this, items);
-        cmdList.addLine();
-        cmdList.addItems(this.subMenuItems(evt));
-        var menu = cmdList.createMenu(this);
-    		menu.commandStyle = menu.morphCommandStyle;
-        return menu;
-    },
-    
-    setModel: function(m) {
-      this._model = m;
-      return this;
-    },
-
-  	inspect: function() {
-  		try {
-        if (this._model && typeof(this._model.inspect) === 'function') { return this._model.inspect(); } // added by Adam
-  			return this.toString();
-  		} catch (err) {
-  			return "#<inspect error: " + err + ">";
-  		}
-  	},
-  	
-  	debugInspect: function() {
-  	  var tos = this.toString();
-  	  return "a " + this.constructor.type + (tos ? "(" + tos + ")" : "");
-  	},
-
-    toString: function() {
-      return ""; // the default behaviour is annoying - makes morph mirrors very wide
-    }
-});
-
-Morph.addMethods({
-  setHelpText: function(t) {
-    this.getHelpText = function() { return t; };
-    return this;
-  }
-});
-
-
-Morph.addMethods({
-  isSameTypeAs: function(m) {
-    return m && m['__proto__'] === this['__proto__'];
-  },
-  
-  ownerSatisfying: function(condition) {
-    if (!this.owner) { return null; }
-    if (condition(this.owner)) { return this.owner; }
-    return this.owner.ownerSatisfying(condition);
-  }
-});
-
-
-Morph.addMethods({
-  addMorphCentered: function(m, callWhenDone) {
-    this.animatedAddMorphAt(m, this.getExtent().subPt(m.getExtent()).scaleBy(0.5), callWhenDone);
-  },
-  
-  // really should fix the names of these two functions; without animation should be the default -- Adam
-  withoutAnimationAddMorphCentered: function(m, callWhenDone) {
-    var p = this.getExtent().subPt(m.getExtent()).scaleBy(0.5);
-    // console.log("this.getExtent(): " + this.getExtent() + ", m.getExtent(): " + m.getExtent() + ", p: " + p);
-    this.addMorphAt(m, p);
-  },
-});
-
-
-Morph.addMethods({
-  ownerLocalize: function(pt) {
-		if (! this.owner) { return pt; }
-    return this.owner.localize(pt);
-  },
-  
-  handIsOverMe: function (hand) {
-    return this.shape.containsPoint(this.localize(hand.getPosition()));
-  }
-});
-
-
-WorldMorph.addMethods({
-  ownerLocalize: function(pt) {
-		if (pt == null) console.log('null pt in ownerLocalize');   
-		return pt.matrixTransform(this.getTransform());
-  }
-});
-
-
-Morph.addMethods({
-  replaceMorph: function(m, newSubmorph) {
-    // This method is kind of a combination of addMorphFrontOrBack and removeMorph. -- Adam
-    
-		var index = this.submorphs.indexOf(m);
-		if (index < 0) {
-			m.owner !== this && console.log("%s has owner %s that is not %s?", m, m.owner, this);
-			return null;
-		}
-
-		if (newSubmorph.owner) {
-			var tfm = newSubmorph.transformForNewOwner(this);
-			newSubmorph.owner.removeMorph(newSubmorph); // KP: note not m.remove(), we don't want to stop stepping behavior
-			newSubmorph.setTransform(tfm); 
-			// FIXME transform is out of date
-			// morph.setTransform(tfm); 
-			// m.layoutChanged(); 
-		} 
-		
-		var position = m.getPosition();
-		m.replaceRawNode(newSubmorph.rawNode);
-		var spliced = this.submorphs.spliceAndAdjustCreatorSlots(index, 1, newSubmorph); // aaa fileout hack -- Adam
-		if (spliced instanceof Array) spliced = spliced[0];
-		if (m !== spliced) {
-			console.log("invariant violated removing %s, spliced %s", m, spliced);
-		}
-		
-		// cleanup, move to ?
-		m.owner = null;
-		m.setHasKeyboardFocus(false);
-		this.layoutManager.removeMorph(this, m);
-
-		newSubmorph.owner = this;
-		newSubmorph.changed();
-		newSubmorph.layoutChanged();
-		
-		this.layoutChanged();
-		
-		newSubmorph.setPosition(position);
-  },
-});
-
-
-ButtonMorph.addMethods({
-  pushMe: function() {
-    this.getModel().setValue(false);
-  }
-});
-
-
-ImageMorph.addMethods({
-  beLabel: function() {
-    this.applyStyle(this.labelStyle);
-    return this;
-  },
-  
-  labelStyle: {
-    fill: null,
-    suppressGrabbing: true,
-    shouldIgnoreEvents: true,
-    openForDragAndDrop: false
-  }
-});
-
-SelectionMorph.addMethods({
-  inspect: function () {
-    return avocado.command.list.descriptionOfGroup(this.selectedMorphs);
-  },
-
-  commands: function () {
-    var cmdList = avocado.command.list.create();
-    cmdList.addItemsFromGroup(this.selectedMorphs);
-    return cmdList;
-  }
-});
-
-Object.extend(lively.scene.Rectangle.prototype, {
-  area: function() { return this.bounds().area(); }
-});
-
-Object.extend(lively.paint.Gradient.prototype, {
-  // Copied over from Color.
-  
-	darker: function(recursion) { 
-		if (recursion == 0) 
-			return this;
-		var result = this.mixedWith(Color.black, 0.5);
-		return recursion > 1  ? result.darker(recursion - 1) : result;
-	},
-
-	lighter: function(recursion) { 
-		if (recursion == 0) 
-			return this;
-		var result = this.mixedWith(Color.white, 0.5);
-		return recursion > 1 ? result.lighter(recursion - 1) : result;
-	},
-
-	mixedWith: function(color, proportion) {
-		var result = this.copyRemoveAll();
-		for (var i = 0; i < this.stops.length; ++i) {
-			result.addStop(this.stops[i].offset(), this.stops[i].color().mixedWith(color, proportion));
-		}
-		return result;
-	}
-});
-
-Object.extend(lively.paint.LinearGradient.prototype, {
-    copyRemoveAll: function() {
-        return new this.constructor([], this.vector);
-    }
-});
-
-Object.extend(lively.paint.RadialGradient.prototype, {
-    copyRemoveAll: function() {
-        return new this.constructor([], this.focus());
-    },
-    
-    focus: function() {
-        return pt(this.getTrait('fx'), this.getTrait('fy'));
-    }
-});
-transporter.module.onLoadCallbacks["lk_ext/changes"] = 'done';
-
 transporter.module.onLoadCallbacks["lk_ext/highlighting"] = function() {};
 transporter.module.create('lk_ext/highlighting', function(requires) {
 
@@ -44425,6 +44429,42 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
 });
 
+transporter.module.onLoadCallbacks["lk_ext/refreshing_content"] = function() {};
+Morph.addMethods({
+  refreshContentOfMeAndSubmorphs: function() {
+    this.refreshContent();
+    this.submorphs.each(function(m) { m.refreshContentOfMeAndSubmorphs(); });
+  },
+  
+  refreshContent: function() {
+    // children can override
+    this.updateFill();
+  },
+
+  updateFill: function() {
+    // children can override
+  },
+
+  updateAppearance: function () {
+    if (! this.world()) { return; }
+    this.refreshContentOfMeAndSubmorphs();
+  },
+
+  startPeriodicallyUpdating: function (frequency) {
+    this._updater = new PeriodicalExecuter(function(pe) {
+      if (window.shouldNotDoAnyPeriodicalMorphUpdating) { pe.stop(); return; }
+      this.updateAppearance();
+    }.bind(this), frequency || 8);
+  }
+});
+
+TextMorph.addMethods({
+  refreshContent: function() {
+    if (this.refreshText) { this.refreshText(); }
+  }
+});
+transporter.module.onLoadCallbacks["lk_ext/refreshing_content"] = 'done';
+
 transporter.module.onLoadCallbacks["lk_ext/applications"] = function() {};
 transporter.module.create('lk_ext/applications', function(requires) {
 
@@ -44475,42 +44515,6 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
 
 });
-
-transporter.module.onLoadCallbacks["lk_ext/refreshing_content"] = function() {};
-Morph.addMethods({
-  refreshContentOfMeAndSubmorphs: function() {
-    this.refreshContent();
-    this.submorphs.each(function(m) { m.refreshContentOfMeAndSubmorphs(); });
-  },
-  
-  refreshContent: function() {
-    // children can override
-    this.updateFill();
-  },
-
-  updateFill: function() {
-    // children can override
-  },
-
-  updateAppearance: function () {
-    if (! this.world()) { return; }
-    this.refreshContentOfMeAndSubmorphs();
-  },
-
-  startPeriodicallyUpdating: function (frequency) {
-    this._updater = new PeriodicalExecuter(function(pe) {
-      if (window.shouldNotDoAnyPeriodicalMorphUpdating) { pe.stop(); return; }
-      this.updateAppearance();
-    }.bind(this), frequency || 8);
-  }
-});
-
-TextMorph.addMethods({
-  refreshContent: function() {
-    if (this.refreshText) { this.refreshText(); }
-  }
-});
-transporter.module.onLoadCallbacks["lk_ext/refreshing_content"] = 'done';
 
 transporter.module.onLoadCallbacks["lk_ext/commands"] = function() {};
 transporter.module.create('lk_ext/commands', function(requires) {
@@ -44686,6 +44690,63 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
 });
 
+transporter.module.onLoadCallbacks["lk_ext/one_morph_per_object"] = function() {};
+transporter.module.create('lk_ext/one_morph_per_object', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(WorldMorph.prototype, function(add) {
+
+  add.creator('morphIdentityComparator', {}, {category: ['one morph per object']});
+
+  add.method('morphsByObject', function () {
+    return this._morphsByObject || (this._morphsByObject = avocado.dictionary.copyRemoveAll(this.morphIdentityComparator));
+  }, {category: ['one morph per object']});
+
+  add.method('existingMorphFor', function (obj) {
+    return this.morphsByObject().get(obj);
+  }, {category: ['one morph per object']});
+
+  add.method('forgetAboutExistingMorphFor', function (obj, expectedOne) {
+    var existingOne = this.morphsByObject().get(obj);
+    if (existingOne === expectedOne) { this.morphsByObject().removeKey(obj); }
+  }, {category: ['one morph per object']});
+
+  add.method('morphFor', function (obj) {
+    return this.morphsByObject().getOrIfAbsentPut(obj, function() {
+      return this.newMorphFor(obj);
+    }.bind(this));
+  }, {category: ['one morph per object']});
+
+  add.method('newMorphFor', function (obj) {
+    if (typeof(obj.newMorph) === 'function') {
+      return obj.newMorph();
+    } else {
+      return new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
+    }
+  }, {category: ['one morph per object']});
+
+});
+
+
+thisModule.addSlots(WorldMorph.prototype.morphIdentityComparator, function(add) {
+
+  add.method('keysAreEqual', function (k1, k2) {
+    var c = k1.isImmutableForMorphIdentity ? avocado.hashTable.equalityComparator : avocado.hashTable.identityComparator;
+    return c.keysAreEqual(k1, k2);
+  }, {category: ['hashing']});
+
+  add.method('hashCodeForKey', function (k) {
+    var c = k.isImmutableForMorphIdentity ? avocado.hashTable.equalityComparator : avocado.hashTable.identityComparator;
+    return c.hashCodeForKey(k);
+  }, {category: ['hashing']});
+
+});
+
+
+});
+
 transporter.module.onLoadCallbacks["lk_ext/grabbing"] = function() {};
 Morph.addMethods({
 	
@@ -44711,7 +44772,7 @@ Morph.addMethods({
   	  var c = this.applicableCommandForDropping(morph);
   	  if (c) {
   	    c.go(Event.createFake(), morph); // aaa - can't we get a real event?
-  	    if (morph.owner === this && ! this.openForDragAndDrop && hand.grabInfo) {
+  	    if (morph.owner === this && ! this.openForDragAndDrop && hand.grabInfo) { // aaa - not sure this.openForDragAndDrop makes sense here
 					var previousOwner    = hand.grabInfo[0];
 					var previousPosition = hand.grabInfo[1];
 					var world = previousOwner.world();
@@ -44721,15 +44782,16 @@ Morph.addMethods({
   					});
 					}
 	      }
-  	  } else {
-  	    if (! this.openForDragAndDrop) {
-          throw new Error("for drag-and-drop, children should implement either dragAndDropCommands or justReceivedDrop");
-        }
+  	  } else if (this.openForDragAndDrop) {
+  	    // fine
+	    } else {
+        throw new Error("for drag-and-drop, children should implement either dragAndDropCommands or justReceivedDrop");
       }
     },
 
     onMouseMove: function(evt, hasFocus) { //default behavior
-        if (evt.mouseButtonPressed && this==evt.hand.mouseFocus && this.owner && this.owner.openForDragAndDrop && this.okToBeGrabbedBy(evt)) { // why does LK not by default check okToBeGrabbedBy(evt)? -- Adam
+       // why does LK not by default check okToBeGrabbedBy(evt)? -- Adam
+        if (evt.mouseButtonPressed && this==evt.hand.mouseFocus && ((this.owner && this.owner.openForDragAndDrop) || this.okToBeGrabbedBy(evt))) {
             this.moveBy(evt.mousePoint.subPt(evt.priorPoint));
         } // else this.checkForControlPointNear(evt);
         if (!evt.mouseButtonPressed) this.checkForControlPointNear(evt);
@@ -45023,63 +45085,6 @@ thisModule.addSlots(lively.Text.Font.prototype, function(add) {
   add.method('storeStringNeeds', function () {
     return lively.Text.Font.prototype;
   }, {category: ['transporting']});
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["lk_ext/one_morph_per_object"] = function() {};
-transporter.module.create('lk_ext/one_morph_per_object', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(WorldMorph.prototype, function(add) {
-
-  add.creator('morphIdentityComparator', {}, {category: ['one morph per object']});
-
-  add.method('morphsByObject', function () {
-    return this._morphsByObject || (this._morphsByObject = avocado.dictionary.copyRemoveAll(this.morphIdentityComparator));
-  }, {category: ['one morph per object']});
-
-  add.method('existingMorphFor', function (obj) {
-    return this.morphsByObject().get(obj);
-  }, {category: ['one morph per object']});
-
-  add.method('forgetAboutExistingMorphFor', function (obj, expectedOne) {
-    var existingOne = this.morphsByObject().get(obj);
-    if (existingOne === expectedOne) { this.morphsByObject().removeKey(obj); }
-  }, {category: ['one morph per object']});
-
-  add.method('morphFor', function (obj) {
-    return this.morphsByObject().getOrIfAbsentPut(obj, function() {
-      return this.newMorphFor(obj);
-    }.bind(this));
-  }, {category: ['one morph per object']});
-
-  add.method('newMorphFor', function (obj) {
-    if (typeof(obj.newMorph) === 'function') {
-      return obj.newMorph();
-    } else {
-      return new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
-    }
-  }, {category: ['one morph per object']});
-
-});
-
-
-thisModule.addSlots(WorldMorph.prototype.morphIdentityComparator, function(add) {
-
-  add.method('keysAreEqual', function (k1, k2) {
-    var c = k1.isImmutableForMorphIdentity ? avocado.hashTable.equalityComparator : avocado.hashTable.identityComparator;
-    return c.keysAreEqual(k1, k2);
-  }, {category: ['hashing']});
-
-  add.method('hashCodeForKey', function (k) {
-    var c = k.isImmutableForMorphIdentity ? avocado.hashTable.equalityComparator : avocado.hashTable.identityComparator;
-    return c.hashCodeForKey(k);
-  }, {category: ['hashing']});
 
 });
 
@@ -47291,13 +47296,18 @@ thisModule.addSlots(avocado.MessageNotifierMorph.prototype, function(add) {
 
   add.data('constructor', avocado.MessageNotifierMorph);
 
-  add.method('initialize', function ($super, err, color) {
+  add.method('initialize', function ($super, err, color, heading) {
     $super();
     this.shape.roundEdgesBy(10);
     this._originalError = err;
     this._message = this._originalError.toString();
     this.setFill(lively.paint.defaultFillWithColor(color || Color.red));
-    this.setRows([TextMorph.createLabel(this._message)]);
+    var rows = [TextMorph.createLabel(this._message)];
+    if (heading) {
+      var headingMorph = TextMorph.createLabel(heading).setEmphasis({style: 'bold'});
+      rows.unshift(headingMorph);
+    }
+    this.setRows(rows);
     this.closeDnD();
   });
 
@@ -47314,9 +47324,9 @@ thisModule.addSlots(avocado.MessageNotifierMorph.prototype, function(add) {
 
 thisModule.addSlots(WorldMorph.prototype, function(add) {
 
-  add.method('showMessage', function (msg, color) {
+  add.method('showMessage', function (msg, color, heading) {
     // By default, zoom away after a short while, unless the user touches it.
-    new avocado.MessageNotifierMorph(msg, color || Color.green).showTemporarilyInCenterOfWorld(this);
+    new avocado.MessageNotifierMorph(msg, color || Color.green, heading).showTemporarilyInCenterOfWorld(this);
   }, {category: ['showing messages']});
 
 });
@@ -47327,98 +47337,6 @@ thisModule.addSlots(Error.prototype, function(add) {
   add.method('newMorph', function () {
     return new avocado.MessageNotifierMorph(this, Color.red);
   }, {category: ['user interface']});
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["lk_ext/morph_factories"] = function() {};
-transporter.module.create('lk_ext/morph_factories', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('morphFactories', {}, {category: ['ui']});
-
-});
-
-
-thisModule.addSlots(avocado.morphFactories, function(add) {
-
-  add.creator('simpleMorphs', {}, {category: ['simple morphs']});
-
-  add.data('globalFactories', [], {category: ['registering'], initializeTo: '[]'});
-
-  add.method('addGlobalCommandsTo', function (menu) {
-    menu.addLine();
-    
-    menu.addItem(["morph factory", avocado.morphFactories.globalFactories.map(function(factory) {
-      return [factory.factoryName() + " morphs", function(evt) { factory.createFactoryMorph().grabMe(evt); }]
-    })]);
-  }, {category: ['menu']});
-
-  add.creator('defaultStyle', {}, {category: ['styles']});
-
-});
-
-
-thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
-
-  add.method('factoryName', function () { return 'simple'; });
-
-  add.method('createFactoryMorph', function () {
-    var line     = Morph.makeLine([pt(0,0), pt(60, 30)], 2, Color.black).closeDnD();
-    var rect     = Morph.makeRectangle(pt(0,0), pt(60, 30)).closeDnD();
-    var ellipse  = Morph.makeCircle(pt(0,0), 25).closeDnD();
-    var text     = new TextMorph(pt(0,0).extent(pt(120, 10)), "This is a TextMorph").closeDnD();
-    var star     = Morph.makeStar(pt(0,0)).closeDnD();
-    var heart    = Morph.makeHeart(pt(0,0)).closeDnD();
-    var triangle = Morph.makePolygon([pt(-30,0), pt(30,0), pt(0,-50)], 1, Color.black, Color.green.darker());
-    
-    var buttonLabel = new avocado.TwoModeTextMorph();
-    buttonLabel.setText("Button");
-    buttonLabel.acceptChanges();
-    buttonLabel.suppressHandles = true;
-    buttonLabel.ignoreEvents();
-    buttonLabel.backgroundColorWhenWritable = Color.white;
-    var button  = ButtonMorph.createButton(buttonLabel, function(event) {
-  this.world().showMessage("Inspect the button and edit its 'run' method.");
-}).closeDnD();
-
-    ellipse.setFill(new Color(0.8, 0.5, 0.5)); // make it a different color than the rectangle
-
-    var factory = Morph.makeRectangle(pt(0,0), pt(300, 400));
-    factory.applyStyle(avocado.morphFactories.defaultStyle);
-    factory.addMorphAt(line,     pt( 20,  20));
-    factory.addMorphAt(rect,     pt(120,  20));
-    factory.addMorphAt(ellipse,  pt( 20, 120));
-    factory.addMorphAt(text,     pt(120, 120));
-    factory.addMorphAt(star,     pt( 20, 220));
-    factory.addMorphAt(heart,    pt(200, 300));
-    factory.addMorphAt(button,   pt( 20, 340));
-    factory.addMorphAt(triangle, pt(150, 340));
-    return factory;
-  });
-
-  add.method('postFileIn', function () {
-    avocado.morphFactories.globalFactories.push(this);
-  });
-
-});
-
-
-thisModule.addSlots(avocado.morphFactories.defaultStyle, function(add) {
-
-  add.data('fill', new Color(0.1, 0.6, 0.7));
-
-  add.data('borderWidth', 1);
-
-  add.data('borderColor', new Color(0, 0, 0));
-
-  add.data('openForDragAndDrop', false);
 
 });
 
@@ -47931,6 +47849,98 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
 });
 
+transporter.module.onLoadCallbacks["lk_ext/morph_factories"] = function() {};
+transporter.module.create('lk_ext/morph_factories', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('morphFactories', {}, {category: ['ui']});
+
+});
+
+
+thisModule.addSlots(avocado.morphFactories, function(add) {
+
+  add.creator('simpleMorphs', {}, {category: ['simple morphs']});
+
+  add.data('globalFactories', [], {category: ['registering'], initializeTo: '[]'});
+
+  add.method('addGlobalCommandsTo', function (menu) {
+    menu.addLine();
+    
+    menu.addItem(["morph factory", avocado.morphFactories.globalFactories.map(function(factory) {
+      return [factory.factoryName() + " morphs", function(evt) { factory.createFactoryMorph().grabMe(evt); }]
+    })]);
+  }, {category: ['menu']});
+
+  add.creator('defaultStyle', {}, {category: ['styles']});
+
+});
+
+
+thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
+
+  add.method('factoryName', function () { return 'simple'; });
+
+  add.method('createFactoryMorph', function () {
+    var line     = Morph.makeLine([pt(0,0), pt(60, 30)], 2, Color.black).closeDnD();
+    var rect     = Morph.makeRectangle(pt(0,0), pt(60, 30)).closeDnD();
+    var ellipse  = Morph.makeCircle(pt(0,0), 25).closeDnD();
+    var text     = new TextMorph(pt(0,0).extent(pt(120, 10)), "This is a TextMorph").closeDnD();
+    var star     = Morph.makeStar(pt(0,0)).closeDnD();
+    var heart    = Morph.makeHeart(pt(0,0)).closeDnD();
+    var triangle = Morph.makePolygon([pt(-30,0), pt(30,0), pt(0,-50)], 1, Color.black, Color.green.darker());
+    
+    var buttonLabel = new avocado.TwoModeTextMorph();
+    buttonLabel.setText("Button");
+    buttonLabel.acceptChanges();
+    buttonLabel.suppressHandles = true;
+    buttonLabel.ignoreEvents();
+    buttonLabel.backgroundColorWhenWritable = Color.white;
+    var button  = ButtonMorph.createButton(buttonLabel, function(event) {
+  this.world().showMessage("Inspect the button and edit its 'run' method.");
+}).closeDnD();
+
+    ellipse.setFill(new Color(0.8, 0.5, 0.5)); // make it a different color than the rectangle
+
+    var factory = Morph.makeRectangle(pt(0,0), pt(300, 400));
+    factory.applyStyle(avocado.morphFactories.defaultStyle);
+    factory.addMorphAt(line,     pt( 20,  20));
+    factory.addMorphAt(rect,     pt(120,  20));
+    factory.addMorphAt(ellipse,  pt( 20, 120));
+    factory.addMorphAt(text,     pt(120, 120));
+    factory.addMorphAt(star,     pt( 20, 220));
+    factory.addMorphAt(heart,    pt(200, 300));
+    factory.addMorphAt(button,   pt( 20, 340));
+    factory.addMorphAt(triangle, pt(150, 340));
+    return factory;
+  });
+
+  add.method('postFileIn', function () {
+    avocado.morphFactories.globalFactories.push(this);
+  });
+
+});
+
+
+thisModule.addSlots(avocado.morphFactories.defaultStyle, function(add) {
+
+  add.data('fill', new Color(0.1, 0.6, 0.7));
+
+  add.data('borderWidth', 1);
+
+  add.data('borderColor', new Color(0, 0, 0));
+
+  add.data('openForDragAndDrop', false);
+
+});
+
+
+});
+
 transporter.module.onLoadCallbacks["lk_ext/edit_mode"] = function() {};
 transporter.module.create('lk_ext/edit_mode', function(requires) {
 
@@ -47982,137 +47992,6 @@ thisModule.addSlots(Morph.prototype.editModeLayoutManagerTraits, function(add) {
   add.method('beforeAddMorph', function (supermorph, submorph, isFront) {
     submorph.setPosition(submorph.getPosition().roundTo(10));
   });
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["lk_ext/core_sampler"] = function() {};
-transporter.module.create('lk_ext/core_sampler', function(requires) {
-
-requires('lk_ext/rows_and_columns');
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.method('CoreSamplerMorph', function CoreSamplerMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
-
-});
-
-
-thisModule.addSlots(avocado.CoreSamplerMorph, function(add) {
-
-  add.data('superclass', avocado.ColumnMorph);
-
-  add.data('type', 'avocado.CoreSamplerMorph');
-
-  add.method('addGlobalCommandsTo', function (cmdList) {
-    cmdList.addItem({label: 'core sampler', go: function(evt) {new avocado.CoreSamplerMorph().grabMe(evt);}});
-  });
-
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
-
-});
-
-
-thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
-
-  add.data('constructor', avocado.CoreSamplerMorph);
-
-  add.method('initialize', function ($super) {
-    $super();
-    this.setFill(lively.paint.defaultFillWithColor(Color.gray.darker()));
-    this.setPadding(10);
-    this.closeDnD();
-
-    var crosshairCenter = pt(-40,-40);
-    var radius = 10;
-    var connectorLength = 40 - (radius / Math.sqrt(2));
-    this._connector = Morph.makeLine([pt(0,0), pt(-connectorLength, -connectorLength)], 4, Color.black).ignoreEvents();
-    this._connector.shouldNotBePartOfRowOrColumn = true;
-    this.addMorph(this._connector);
-
-    this._circle = Morph.makeCircle(crosshairCenter.copy(), 10, 1, Color.black).ignoreEvents();
-    this._circle.setFill(null);
-    this._circle.shouldNotBePartOfRowOrColumn = true;
-    this.addMorph(this._circle);
-
-    this._crosshairLine1 = Morph.makeLine([pt(-radius, 0), pt(radius, 0)], 1, Color.black).ignoreEvents();
-    this._crosshairLine2 = Morph.makeLine([pt(0, -radius), pt(0, radius)], 1, Color.black).ignoreEvents();
-    this._crosshairLine1.shouldNotBePartOfRowOrColumn = true;
-    this._crosshairLine2.shouldNotBePartOfRowOrColumn = true;
-    this.addMorphAt(this._crosshairLine1, crosshairCenter.addXY(-radius, 0));
-    this.addMorphAt(this._crosshairLine2, crosshairCenter.addXY(0, -radius));
-
-    this._crosshairMorphs = [this._circle, this._crosshairLine1, this._crosshairLine2];
-
-    this._placeholderForWhenEmpty = new Morph(new lively.scene.Rectangle(pt(0,0).extent(pt(40,30))));
-    this._placeholderForWhenEmpty.setFill(null);
-    this._placeholderForWhenEmpty.ignoreEvents();
-
-    this.refreshContent();
-    this.startPeriodicallyUpdating();
-  }, {category: ['creating']});
-
-  add.method('refreshContent', function () {
-    var w = this.world();
-    if (w) {
-      var p = this.worldPoint(this._circle.bounds().center());
-      var evt = Event.createFake();
-      evt.mousePoint = p;
-      var topmostMorph = w.morphToReceiveEvent(evt);
-      if (topmostMorph) {
-        //console.log("Core sampler found morph " + reflect(topmostMorph).name());
-        var morphs = topmostMorph.ownerChain().reverse(); // topmostMorph should be first
-        var morphSummaries = [];
-        w.eachMorphAt(p, function(m) {
-          if (! this._crosshairMorphs.include(m)) {
-            var summary = avocado.RowMorph.createSpaceFilling([TextMorph.createLabel(reflect(m).name())]).enableEvents();
-            summary.grabsShouldFallThrough = true;
-            summary.contextMenu = m.morphMenu.bind(m);
-            morphSummaries.push(summary);
-          }
-        }.bind(this));
-        if (morphSummaries.size() > 0) {
-          this.setRows(morphSummaries);
-        } else {
-          this.setRows([this._placeholderForWhenEmpty]);
-        }
-      } else {
-        this.setRows([this._placeholderForWhenEmpty]);
-      }
-    } else {
-      this.setRows([this._placeholderForWhenEmpty]);
-    }
-  }, {category: ['updating']});
-
-  add.method('dropMeOnMorph', function ($super, receiver) {
-    $super(receiver);
-    this.updateAppearance(); // because I'm impatient;
-  }, {category: ['drag and drop']});
-
-  add.data('suppressHandles', true, {category: ['handles']});
-
-});
-
-
-thisModule.addSlots(Morph.prototype, function(add) {
-
-  add.method('eachMorphAt', function (p, iterator) {
-    if (!this.fullContainsWorldPoint(p)) return;
-    
-    for (var i = this.submorphs.length - 1; i >= 0; --i) {
-      this.submorphs[i].eachMorphAt(p, iterator);
-    }
-    
-    // Check if it's really in this morph (not just fullBounds)
-    if (this.containsWorldPoint(p)) {
-      iterator(this);
-    }
-  }, {category: ['drilling']});
 
 });
 
@@ -48310,6 +48189,137 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
 
 });
 
+transporter.module.onLoadCallbacks["lk_ext/core_sampler"] = function() {};
+transporter.module.create('lk_ext/core_sampler', function(requires) {
+
+requires('lk_ext/rows_and_columns');
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.method('CoreSamplerMorph', function CoreSamplerMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
+
+});
+
+
+thisModule.addSlots(avocado.CoreSamplerMorph, function(add) {
+
+  add.data('superclass', avocado.ColumnMorph);
+
+  add.data('type', 'avocado.CoreSamplerMorph');
+
+  add.method('addGlobalCommandsTo', function (cmdList) {
+    cmdList.addItem({label: 'core sampler', go: function(evt) {new avocado.CoreSamplerMorph().grabMe(evt);}});
+  });
+
+  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
+
+});
+
+
+thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
+
+  add.data('constructor', avocado.CoreSamplerMorph);
+
+  add.method('initialize', function ($super) {
+    $super();
+    this.setFill(lively.paint.defaultFillWithColor(Color.gray.darker()));
+    this.setPadding(10);
+    this.closeDnD();
+
+    var crosshairCenter = pt(-40,-40);
+    var radius = 10;
+    var connectorLength = 40 - (radius / Math.sqrt(2));
+    this._connector = Morph.makeLine([pt(0,0), pt(-connectorLength, -connectorLength)], 4, Color.black).ignoreEvents();
+    this._connector.shouldNotBePartOfRowOrColumn = true;
+    this.addMorph(this._connector);
+
+    this._circle = Morph.makeCircle(crosshairCenter.copy(), 10, 1, Color.black).ignoreEvents();
+    this._circle.setFill(null);
+    this._circle.shouldNotBePartOfRowOrColumn = true;
+    this.addMorph(this._circle);
+
+    this._crosshairLine1 = Morph.makeLine([pt(-radius, 0), pt(radius, 0)], 1, Color.black).ignoreEvents();
+    this._crosshairLine2 = Morph.makeLine([pt(0, -radius), pt(0, radius)], 1, Color.black).ignoreEvents();
+    this._crosshairLine1.shouldNotBePartOfRowOrColumn = true;
+    this._crosshairLine2.shouldNotBePartOfRowOrColumn = true;
+    this.addMorphAt(this._crosshairLine1, crosshairCenter.addXY(-radius, 0));
+    this.addMorphAt(this._crosshairLine2, crosshairCenter.addXY(0, -radius));
+
+    this._crosshairMorphs = [this._circle, this._crosshairLine1, this._crosshairLine2];
+
+    this._placeholderForWhenEmpty = new Morph(new lively.scene.Rectangle(pt(0,0).extent(pt(40,30))));
+    this._placeholderForWhenEmpty.setFill(null);
+    this._placeholderForWhenEmpty.ignoreEvents();
+
+    this.refreshContent();
+    this.startPeriodicallyUpdating();
+  }, {category: ['creating']});
+
+  add.method('refreshContent', function () {
+    var w = this.world();
+    if (w) {
+      var p = this.worldPoint(this._circle.bounds().center());
+      var evt = Event.createFake();
+      evt.mousePoint = p;
+      var topmostMorph = w.morphToReceiveEvent(evt);
+      if (topmostMorph) {
+        //console.log("Core sampler found morph " + reflect(topmostMorph).name());
+        var morphs = topmostMorph.ownerChain().reverse(); // topmostMorph should be first
+        var morphSummaries = [];
+        w.eachMorphAt(p, function(m) {
+          if (! this._crosshairMorphs.include(m)) {
+            var summary = avocado.RowMorph.createSpaceFilling([TextMorph.createLabel(reflect(m).name())]).enableEvents();
+            summary.grabsShouldFallThrough = true;
+            summary.contextMenu = m.morphMenu.bind(m);
+            morphSummaries.push(summary);
+          }
+        }.bind(this));
+        if (morphSummaries.size() > 0) {
+          this.setRows(morphSummaries);
+        } else {
+          this.setRows([this._placeholderForWhenEmpty]);
+        }
+      } else {
+        this.setRows([this._placeholderForWhenEmpty]);
+      }
+    } else {
+      this.setRows([this._placeholderForWhenEmpty]);
+    }
+  }, {category: ['updating']});
+
+  add.method('dropMeOnMorph', function ($super, receiver) {
+    $super(receiver);
+    this.updateAppearance(); // because I'm impatient;
+  }, {category: ['drag and drop']});
+
+  add.data('suppressHandles', true, {category: ['handles']});
+
+});
+
+
+thisModule.addSlots(Morph.prototype, function(add) {
+
+  add.method('eachMorphAt', function (p, iterator) {
+    if (!this.fullContainsWorldPoint(p)) return;
+    
+    for (var i = this.submorphs.length - 1; i >= 0; --i) {
+      this.submorphs[i].eachMorphAt(p, iterator);
+    }
+    
+    // Check if it's really in this morph (not just fullBounds)
+    if (this.containsWorldPoint(p)) {
+      iterator(this);
+    }
+  }, {category: ['drilling']});
+
+});
+
+
+});
+
 transporter.module.onLoadCallbacks["lk_ext/placeholder_morph"] = function() {};
 transporter.module.create('lk_ext/placeholder_morph', function(requires) {
 
@@ -48458,6 +48468,129 @@ thisModule.addSlots(avocado.morphScripter, function(add) {
   add.method('turnBy', function (degrees) {
     this._morph.rotateBy(degrees.toRadians());
   }, {category: ['moving']});
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["lk_ext/carrying_hand"] = function() {};
+transporter.module.create('lk_ext/carrying_hand', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.method('CarryingHandMorph', function CarryingHandMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
+
+});
+
+
+thisModule.addSlots(avocado.CarryingHandMorph, function(add) {
+
+  add.data('superclass', Morph);
+
+  add.data('type', 'avocado.CarryingHandMorph');
+
+  add.method('forWorld', function (w) {
+    if (w.carryingHand) { return w.carryingHand; }
+    w.carryingHand = new this(w);
+    return w.carryingHand;
+  });
+
+  add.creator('prototype', Object.create(Morph.prototype));
+
+});
+
+
+thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
+
+  add.data('constructor', avocado.CarryingHandMorph);
+
+  add.method('initialize', function ($super, w) {
+    $super(new lively.scene.Ellipse(pt(0,0), 70));
+    this._world = w;
+    this.applyStyle(this.defaultStyle);
+  }, {category: ['creating']});
+
+  add.creator('defaultStyle', {}, {category: ['styles']});
+
+  add.data('shouldStickToScreen', true, {category: ['showing']});
+
+  add.method('ensureVisible', function (callWhenDone) {
+    if (this.owner) {
+      if (callWhenDone) { callWhenDone(); }
+    } else {
+      this.setFillOpacity(0);
+      this._world.addMorphAt(this, pt(0,0));
+      this.smoothlyFadeTo(0.1);
+      if (callWhenDone) { callWhenDone(); }
+    }
+  }, {category: ['showing']});
+
+  add.method('hideIfEmpty', function (callWhenDone) {
+    if (this.submorphs.length > 0) {
+      if (callWhenDone) { callWhenDone(); }
+    } else {
+      this.smoothlyFadeTo(0, function() { this.remove(); }.bind(this));
+      if (callWhenDone) { callWhenDone(); }
+    }
+  }, {category: ['showing']});
+
+  add.method('carriedMorph', function () {
+    return this.submorphs[0];
+  }, {category: ['accessing']});
+
+  add.method('applicableCommandForDroppingOn', function (targetMorph) {
+    var carriedMorph = this.carriedMorph();
+    if (!carriedMorph) { return null; }
+    return targetMorph.applicableCommandForDropping(carriedMorph);
+  }, {category: ['accessing']});
+
+  add.method('pickUp', function (m, evt, callWhenDone) {
+    this.ensureVisible(function() {
+      var extent = m.getExtent();
+      var desiredSize = pt(80,80);
+      var scales = pt(desiredSize.x / extent.x, desiredSize.y / extent.y);
+      var desiredScale = Math.min(scales.x, scales.y);
+      var finalSize = extent.scaleBy(desiredScale);
+      m.smoothlyScaleTo(desiredScale);
+      m.ensureIsInWorld(this._world, this.origin.subPt(finalSize.scaleBy(0.5)), true, false, false, function() {
+        this.addMorphAt(m, finalSize.scaleBy(-0.5));
+        if (callWhenDone) { callWhenDone(); }
+      }.bind(this));
+    }.bind(this));
+  }, {category: ['picking up and dropping']});
+
+  add.method('dropOn', function (targetMorph, evt, callWhenDone) {
+    var carriedMorph = this.carriedMorph();
+    if (!carriedMorph) { throw new Error("No morph to drop"); }
+    var c = targetMorph.applicableCommandForDropping(carriedMorph);
+    if (!c) { throw new Error("Cannot drop " + carriedMorph + " on " + targetMorph); }
+    
+    carriedMorph.smoothlyScaleTo(1);
+    carriedMorph.ensureIsInWorld(this._world, evt.point().subPt(carriedMorph.getExtent().scaleBy(0.5)), true, false, false, function() {
+	    c.go(evt, carriedMorph);
+	    this.hideIfEmpty();
+      if (callWhenDone) { callWhenDone(); }
+    }.bind(this));
+  }, {category: ['picking up and dropping']});
+
+});
+
+
+thisModule.addSlots(avocado.CarryingHandMorph.prototype.defaultStyle, function(add) {
+
+  add.data('grabsShouldFallThrough', true);
+
+  add.data('openForDragAndDrop', false);
+
+  add.data('suppressGrabbing', true);
+
+  add.data('suppressHandles', true);
+
+  add.data('fill', new Color(0, 0, 0));
 
 });
 
@@ -48861,373 +48994,6 @@ thisModule.addSlots(transporter.module.filerOuters.mock, function(add) {
 
 });
 
-transporter.module.onLoadCallbacks["reflection/annotation"] = function() {};
-transporter.module.create('reflection/annotation', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado.annotator, function(add) {
-
-  add.method('creatorChainLength', function (o) {
-    var len = 0;
-    while (o !== window) {
-      var anno = this.existingAnnotationOf(o);
-      if (!anno) { return null; }
-      var cs = anno.theCreatorSlot(); // aaa wrong - should be probableCreatorSlot, I think, but gotta avoid infinite loop
-      if (!cs) { return null; }
-      len += 1;
-      o = cs.holder;
-    }
-    return len;
-  }, {category: ['creator slots']});
-
-});
-
-
-thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
-
-  add.method('categorize', function (catParts, slotNames) {
-    // Just a shortcut to let us categorize a bunch of slots at a time.
-    for (var i = 0, n = slotNames.length; i < n; ++i) {
-      var slotName = slotNames[i];
-	    this.slotAnnotation(slotName).setCategoryParts(catParts);
-    }
-  }, {category: ['categories']});
-
-  add.method('theCreatorSlot', function () {
-    return this.explicitlySpecifiedCreatorSlot() || this.onlyPossibleCreatorSlot();
-  }, {category: ['creator slots']});
-
-  add.method('probableCreatorSlot', function () {
-    var cs = this.explicitlySpecifiedCreatorSlot();
-    if (cs) { return cs; }
-    var count = this.numberOfPossibleCreatorSlots();
-    if (count === 0) { return null;     }
-    if (count === 1) { return this.onlyPossibleCreatorSlot(); }
-    var slots = this.arrayOfPossibleCreatorSlots();
-    var shortest = null;
-    var shortestLength;
-    for (var i = 0, n = slots.length; i < n; ++i) {
-      var s = slots[i];
-      var sLength = avocado.annotator.creatorChainLength(s.holder);
-      if (typeof(sLength) === 'number') {
-        if (!shortest || sLength < shortestLength) {
-          // This one's shorter, so probably better; use it instead.
-          shortest = s;
-          shortestLength = sLength;
-        }
-      }
-    }
-    return shortest;
-  }, {category: ['creator slots']});
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["transporter/loading_and_saving"] = function() {};
-transporter.module.create('transporter/loading_and_saving', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(transporter, function(add) {
-
-  add.method('fileOut', function (moduleVersion, repo, codeToFileOut, successBlock, failBlock) {
-    var m = moduleVersion.module();
-    var r = repo || m._repository;
-    if (!r) { throw new Error("Don't have a repository for: " + m); }
-    r.fileOutModuleVersion(moduleVersion, codeToFileOut.replace(/[\r]/g, "\n"), successBlock, failBlock);
-  }, {category: ['saving']});
-  
-});
-
-
-thisModule.addSlots(transporter.repositories, function(add) {
-  
-  add.creator('prompter', {}, {category: ['user interface']});
-  
-});
-
-
-thisModule.addSlots(transporter.repositories.prompter, function(add) {
-  
-  add.method('prompt', function (caption, context, evt, callback) {
-    if (transporter.availableRepositories.length === 1) {
-      callback(transporter.availableRepositories[0], evt);
-    } else {
-      var repoCmdList = this.commandListForRepositories(function(repo) { return function() { callback(repo, evt); }});
-      avocado.ui.showMenu(repoCmdList, context, caption, evt);
-    }
-  });
-
-  add.method('commandListForRepositories', function (f) {
-    var cmdList = avocado.command.list.create();
-    transporter.availableRepositories.each(function(repo) {
-      var c = f(repo);
-      if (c) {
-        cmdList.addItem([repo.toString(), c]);
-      }
-    });
-    return cmdList;
-  });
-  
-});
-
-
-thisModule.addSlots(transporter.repositories.http, function(add) {
-
-  add.method('menuItemsForLoadMenu', function () {
-    return this.menuItemsForLoadMenuForDir(new FileDirectory(new URL(this._url)), "");
-  }, {category: ['user interface', 'commands']});
-
-  add.method('menuItemsForLoadMenuForDir', function (dir, pathFromModuleSystemRootDir) {
-    var menuItems = [];
-
-    var subdirURLs = this.subdirectoriesIn(dir);
-    subdirURLs.each(function(subdirURL) {
-      var subdir = new FileDirectory(subdirURL);
-      var subdirName = subdirURL.filename().withoutSuffix('/');
-      menuItems.push([subdirName, this.menuItemsForLoadMenuForDir(subdir, pathFromModuleSystemRootDir ? pathFromModuleSystemRootDir + "/" + subdirName : subdirName)]);
-    }.bind(this));
-        
-    var jsFileNames = this.filenamesIn(dir).select(function(n) {return n.endsWith(".js");});
-    jsFileNames.each(function(n) {
-      menuItems.push([n, function(evt) {
-        var moduleName = n.substring(0, n.length - 3);
-        avocado.ui.showMessageIfErrorDuring(function() {
-          this.fileIn(pathFromModuleSystemRootDir ? (pathFromModuleSystemRootDir + '/' + moduleName) : moduleName);
-        }.bind(this), evt);
-      }.bind(this)]);
-    }.bind(this));
-
-    return menuItems;
-  }, {category: ['user interface', 'commands']});
-
-  add.method('copyWithSavingScript', function (savingScriptURL) {
-    return Object.newChildOf(transporter.repositories.httpWithSavingScript, this.url(), savingScriptURL);
-  }, {category: ['copying']});
-
-});
-
-
-thisModule.addSlots(transporter.repositories.httpWithWebDAV, function(add) {
-
-  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
-    var m = moduleVersion.module();
-    var url = this.urlForModuleName(m.name());
-    var isAsync = true;
-    var req = new XMLHttpRequest();
-    req.open("PUT", url, isAsync);
-    req.onreadystatechange = function() {
-      if (req.readyState === 4) {
-        if (req.status >= 200 && req.status < 300) {
-          console.log("Saved " + url);
-          successBlock();
-        } else {
-          failBlock("Failed to file out " + m + ", status is " + req.status + ", statusText is " + req.statusText);
-        }
-      }
-    };
-    req.send(codeToFileOut);
-  }, {category: ['saving']});
-
-  add.data('canListDirectoryContents', true, {category: ['directories']});
-
-  add.method('subdirectoriesIn', function (dir) {
-    return dir.subdirectories();
-  }, {category: ['directories']});
-
-  add.method('filenamesIn', function (dir) {
-    return dir.filenames();
-  }, {category: ['directories']});
-
-});
-
-
-thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add) {
-
-  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
-    var m = moduleVersion.module();
-    var repoURL = this.url();
-    if (repoURL.endsWith("/")) { repoURL = repoURL.substring(0, repoURL.length - 1); }
-    var url = this._savingScriptURL;
-    var postBody = "repoURL=" + encodeURIComponent(repoURL) + "&module=" + encodeURIComponent(m.name()) + "&code=" + encodeURIComponent(codeToFileOut);
-    //console.log("About to fileOutModuleVersion " + moduleVersion + " using saving script URL " + url + " and POST body:\n" + postBody);
-    var req = new Ajax.Request(url, {
-      method: 'post',
-      postBody: postBody,
-      contentType: 'application/x-www-form-urlencoded',
-          
-      asynchronous: true,
-      onSuccess:   function(transport) { this.onSuccess(m, transport, successBlock); }.bind(this),
-      onFailure:   function(t        ) { failBlock("Failed to file out module " + m + " to repository " + this + "; HTTP status code was " + req.getStatus()); }.bind(this),
-      onException: function(r,      e) { failBlock("Failed to file out module " + m + " to repository " + this + "; exception was " + e); }.bind(this)
-    });
-  }, {category: ['saving']});
-
-  add.data('shouldShowNewFileContentsInNewWindow', false, {category: ['downloading']});
-
-  add.method('onSuccess', function (m, transport, callWhenDone) {
-    var statusCodeIfAny = parseInt(transport.responseText);
-    if (!isNaN(statusCodeIfAny)) {
-      avocado.ui.showError("Failed to file out " + m + " module; status code " + statusCodeIfAny);
-    } else {
-      if (this.shouldShowNewFileContentsInNewWindow) {
-        var urlToDownload = transport.responseText;
-        window.open(urlToDownload);
-      }
-      callWhenDone();
-    }
-  }, {category: ['downloading']});
-
-  add.method('subdirectoriesIn', function (dir) {
-    return []; // aaa;
-  }, {category: ['directories']});
-
-  add.method('filenamesIn', function (dir) {
-    return []; // aaa;
-  }, {category: ['directories']});
-
-});
-
-
-thisModule.addSlots(transporter.repositories.console, function(add) {
-
-  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
-    console.log(codeToFileOut);
-  });
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["lk_ext/carrying_hand"] = function() {};
-transporter.module.create('lk_ext/carrying_hand', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.method('CarryingHandMorph', function CarryingHandMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
-
-});
-
-
-thisModule.addSlots(avocado.CarryingHandMorph, function(add) {
-
-  add.data('superclass', Morph);
-
-  add.data('type', 'avocado.CarryingHandMorph');
-
-  add.method('forWorld', function (w) {
-    if (w.carryingHand) { return w.carryingHand; }
-    w.carryingHand = new this(w);
-    return w.carryingHand;
-  });
-
-  add.creator('prototype', Object.create(Morph.prototype));
-
-});
-
-
-thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
-
-  add.data('constructor', avocado.CarryingHandMorph);
-
-  add.method('initialize', function ($super, w) {
-    $super(new lively.scene.Ellipse(pt(0,0), 70));
-    this._world = w;
-    this.applyStyle(this.defaultStyle);
-  }, {category: ['creating']});
-
-  add.creator('defaultStyle', {}, {category: ['styles']});
-
-  add.data('shouldStickToScreen', true, {category: ['showing']});
-
-  add.method('ensureVisible', function (callWhenDone) {
-    if (this.owner) {
-      if (callWhenDone) { callWhenDone(); }
-    } else {
-      this.setFillOpacity(0);
-      this._world.addMorphAt(this, pt(0,0));
-      this.smoothlyFadeTo(0.1);
-      if (callWhenDone) { callWhenDone(); }
-    }
-  }, {category: ['showing']});
-
-  add.method('hideIfEmpty', function (callWhenDone) {
-    if (this.submorphs.length > 0) {
-      if (callWhenDone) { callWhenDone(); }
-    } else {
-      this.smoothlyFadeTo(0, function() { this.remove(); }.bind(this));
-      if (callWhenDone) { callWhenDone(); }
-    }
-  }, {category: ['showing']});
-
-  add.method('carriedMorph', function () {
-    return this.submorphs[0];
-  }, {category: ['accessing']});
-
-  add.method('applicableCommandForDroppingOn', function (targetMorph) {
-    var carriedMorph = this.carriedMorph();
-    if (!carriedMorph) { return null; }
-    return targetMorph.applicableCommandForDropping(carriedMorph);
-  }, {category: ['accessing']});
-
-  add.method('pickUp', function (m, evt, callWhenDone) {
-    this.ensureVisible(function() {
-      var extent = m.getExtent();
-      var desiredSize = pt(80,80);
-      var scales = pt(desiredSize.x / extent.x, desiredSize.y / extent.y);
-      var desiredScale = Math.min(scales.x, scales.y);
-      var finalSize = extent.scaleBy(desiredScale);
-      m.smoothlyScaleTo(desiredScale);
-      m.ensureIsInWorld(this._world, this.origin.subPt(finalSize.scaleBy(0.5)), true, false, false, function() {
-        this.addMorphAt(m, finalSize.scaleBy(-0.5));
-        if (callWhenDone) { callWhenDone(); }
-      }.bind(this));
-    }.bind(this));
-  }, {category: ['picking up and dropping']});
-
-  add.method('dropOn', function (targetMorph, evt, callWhenDone) {
-    var carriedMorph = this.carriedMorph();
-    if (!carriedMorph) { throw new Error("No morph to drop"); }
-    var c = targetMorph.applicableCommandForDropping(carriedMorph);
-    if (!c) { throw new Error("Cannot drop " + carriedMorph + " on " + targetMorph); }
-    
-    carriedMorph.smoothlyScaleTo(1);
-    carriedMorph.ensureIsInWorld(this._world, evt.point().subPt(carriedMorph.getExtent().scaleBy(0.5)), true, false, false, function() {
-	    c.go(evt, carriedMorph);
-	    this.hideIfEmpty();
-      if (callWhenDone) { callWhenDone(); }
-    }.bind(this));
-  }, {category: ['picking up and dropping']});
-
-});
-
-
-thisModule.addSlots(avocado.CarryingHandMorph.prototype.defaultStyle, function(add) {
-
-  add.data('grabsShouldFallThrough', true);
-
-  add.data('openForDragAndDrop', false);
-
-  add.data('suppressGrabbing', true);
-
-  add.data('suppressHandles', true);
-
-  add.data('fill', new Color(0, 0, 0));
-
-});
-
-
-});
-
 transporter.module.onLoadCallbacks["transporter/ordering"] = function() {};
 transporter.module.create('transporter/ordering', function(requires) {
 
@@ -49521,6 +49287,250 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
       s.wasReplacedByCycleBreakers = cbs;
     }
   }, {category: ['transporting']});
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["transporter/loading_and_saving"] = function() {};
+transporter.module.create('transporter/loading_and_saving', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(transporter, function(add) {
+
+  add.method('fileOut', function (moduleVersion, repo, codeToFileOut, successBlock, failBlock) {
+    var m = moduleVersion.module();
+    var r = repo || m._repository;
+    if (!r) { throw new Error("Don't have a repository for: " + m); }
+    r.fileOutModuleVersion(moduleVersion, codeToFileOut.replace(/[\r]/g, "\n"), successBlock, failBlock);
+  }, {category: ['saving']});
+  
+});
+
+
+thisModule.addSlots(transporter.repositories, function(add) {
+  
+  add.creator('prompter', {}, {category: ['user interface']});
+  
+});
+
+
+thisModule.addSlots(transporter.repositories.prompter, function(add) {
+  
+  add.method('prompt', function (caption, context, evt, callback) {
+    if (transporter.availableRepositories.length === 1) {
+      callback(transporter.availableRepositories[0], evt);
+    } else {
+      var repoCmdList = this.commandListForRepositories(function(repo) { return function() { callback(repo, evt); }});
+      avocado.ui.showMenu(repoCmdList, context, caption, evt);
+    }
+  });
+
+  add.method('commandListForRepositories', function (f) {
+    var cmdList = avocado.command.list.create();
+    transporter.availableRepositories.each(function(repo) {
+      var c = f(repo);
+      if (c) {
+        cmdList.addItem([repo.toString(), c]);
+      }
+    });
+    return cmdList;
+  });
+  
+});
+
+
+thisModule.addSlots(transporter.repositories.http, function(add) {
+
+  add.method('menuItemsForLoadMenu', function () {
+    return this.menuItemsForLoadMenuForDir(new FileDirectory(new URL(this._url)), "");
+  }, {category: ['user interface', 'commands']});
+
+  add.method('menuItemsForLoadMenuForDir', function (dir, pathFromModuleSystemRootDir) {
+    var menuItems = [];
+
+    var subdirURLs = this.subdirectoriesIn(dir);
+    subdirURLs.each(function(subdirURL) {
+      var subdir = new FileDirectory(subdirURL);
+      var subdirName = subdirURL.filename().withoutSuffix('/');
+      menuItems.push([subdirName, this.menuItemsForLoadMenuForDir(subdir, pathFromModuleSystemRootDir ? pathFromModuleSystemRootDir + "/" + subdirName : subdirName)]);
+    }.bind(this));
+        
+    var jsFileNames = this.filenamesIn(dir).select(function(n) {return n.endsWith(".js");});
+    jsFileNames.each(function(n) {
+      menuItems.push([n, function(evt) {
+        var moduleName = n.substring(0, n.length - 3);
+        avocado.ui.showMessageIfErrorDuring(function() {
+          this.fileIn(pathFromModuleSystemRootDir ? (pathFromModuleSystemRootDir + '/' + moduleName) : moduleName);
+        }.bind(this), evt);
+      }.bind(this)]);
+    }.bind(this));
+
+    return menuItems;
+  }, {category: ['user interface', 'commands']});
+
+  add.method('copyWithSavingScript', function (savingScriptURL) {
+    return Object.newChildOf(transporter.repositories.httpWithSavingScript, this.url(), savingScriptURL);
+  }, {category: ['copying']});
+
+});
+
+
+thisModule.addSlots(transporter.repositories.httpWithWebDAV, function(add) {
+
+  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
+    var m = moduleVersion.module();
+    var url = this.urlForModuleName(m.name());
+    var isAsync = true;
+    var req = new XMLHttpRequest();
+    req.open("PUT", url, isAsync);
+    req.onreadystatechange = function() {
+      if (req.readyState === 4) {
+        if (req.status >= 200 && req.status < 300) {
+          console.log("Saved " + url);
+          successBlock();
+        } else {
+          failBlock("Failed to file out " + m + ", status is " + req.status + ", statusText is " + req.statusText);
+        }
+      }
+    };
+    req.send(codeToFileOut);
+  }, {category: ['saving']});
+
+  add.data('canListDirectoryContents', true, {category: ['directories']});
+
+  add.method('subdirectoriesIn', function (dir) {
+    return dir.subdirectories();
+  }, {category: ['directories']});
+
+  add.method('filenamesIn', function (dir) {
+    return dir.filenames();
+  }, {category: ['directories']});
+
+});
+
+
+thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add) {
+
+  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
+    var m = moduleVersion.module();
+    var repoURL = this.url();
+    if (repoURL.endsWith("/")) { repoURL = repoURL.substring(0, repoURL.length - 1); }
+    var url = this._savingScriptURL;
+    var postBody = "repoURL=" + encodeURIComponent(repoURL) + "&module=" + encodeURIComponent(m.name()) + "&code=" + encodeURIComponent(codeToFileOut);
+    //console.log("About to fileOutModuleVersion " + moduleVersion + " using saving script URL " + url + " and POST body:\n" + postBody);
+    var req = new Ajax.Request(url, {
+      method: 'post',
+      postBody: postBody,
+      contentType: 'application/x-www-form-urlencoded',
+          
+      asynchronous: true,
+      onSuccess:   function(transport) { this.onSuccess(m, transport, successBlock); }.bind(this),
+      onFailure:   function(t        ) { failBlock("Failed to file out module " + m + " to repository " + this + "; HTTP status code was " + req.getStatus()); }.bind(this),
+      onException: function(r,      e) { failBlock("Failed to file out module " + m + " to repository " + this + "; exception was " + e); }.bind(this)
+    });
+  }, {category: ['saving']});
+
+  add.data('shouldShowNewFileContentsInNewWindow', false, {category: ['downloading']});
+
+  add.method('onSuccess', function (m, transport, callWhenDone) {
+    var statusCodeIfAny = parseInt(transport.responseText);
+    if (!isNaN(statusCodeIfAny)) {
+      avocado.ui.showError("Failed to file out " + m + " module; status code " + statusCodeIfAny);
+    } else {
+      if (this.shouldShowNewFileContentsInNewWindow) {
+        var urlToDownload = transport.responseText;
+        window.open(urlToDownload);
+      }
+      callWhenDone();
+    }
+  }, {category: ['downloading']});
+
+  add.method('subdirectoriesIn', function (dir) {
+    return []; // aaa;
+  }, {category: ['directories']});
+
+  add.method('filenamesIn', function (dir) {
+    return []; // aaa;
+  }, {category: ['directories']});
+
+});
+
+
+thisModule.addSlots(transporter.repositories.console, function(add) {
+
+  add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
+    console.log(codeToFileOut);
+  });
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["reflection/annotation"] = function() {};
+transporter.module.create('reflection/annotation', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado.annotator, function(add) {
+
+  add.method('creatorChainLength', function (o) {
+    var len = 0;
+    while (o !== window) {
+      var anno = this.existingAnnotationOf(o);
+      if (!anno) { return null; }
+      var cs = anno.theCreatorSlot(); // aaa wrong - should be probableCreatorSlot, I think, but gotta avoid infinite loop
+      if (!cs) { return null; }
+      len += 1;
+      o = cs.holder;
+    }
+    return len;
+  }, {category: ['creator slots']});
+
+});
+
+
+thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
+
+  add.method('categorize', function (catParts, slotNames) {
+    // Just a shortcut to let us categorize a bunch of slots at a time.
+    for (var i = 0, n = slotNames.length; i < n; ++i) {
+      var slotName = slotNames[i];
+	    this.slotAnnotation(slotName).setCategoryParts(catParts);
+    }
+  }, {category: ['categories']});
+
+  add.method('theCreatorSlot', function () {
+    return this.explicitlySpecifiedCreatorSlot() || this.onlyPossibleCreatorSlot();
+  }, {category: ['creator slots']});
+
+  add.method('probableCreatorSlot', function () {
+    var cs = this.explicitlySpecifiedCreatorSlot();
+    if (cs) { return cs; }
+    var count = this.numberOfPossibleCreatorSlots();
+    if (count === 0) { return null;     }
+    if (count === 1) { return this.onlyPossibleCreatorSlot(); }
+    var slots = this.arrayOfPossibleCreatorSlots();
+    var shortest = null;
+    var shortestLength;
+    for (var i = 0, n = slots.length; i < n; ++i) {
+      var s = slots[i];
+      var sLength = avocado.annotator.creatorChainLength(s.holder);
+      if (typeof(sLength) === 'number') {
+        if (!shortest || sLength < shortestLength) {
+          // This one's shorter, so probably better; use it instead.
+          shortest = s;
+          shortestLength = sLength;
+        }
+      }
+    }
+    return shortest;
+  }, {category: ['creator slots']});
 
 });
 
@@ -50243,71 +50253,6 @@ thisModule.addSlots(String.prototype, function(add) {
 
 });
 
-transporter.module.onLoadCallbacks["core/notifier"] = function() {};
-transporter.module.create('core/notifier', function(requires) {
-
-requires('core/hash_table');
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('notifier', {}, {category: ['core']}, {comment: 'Keeps track of a list of observers and notifies them when requested.'});
-
-});
-
-
-thisModule.addSlots(avocado.notifier, function(add) {
-
-  add.method('on', function (s) {
-    return Object.newChildOf(this, s);
-  });
-
-  add.method('initialize', function (s) {
-    this.subject = s;
-    this.observers = Object.newChildOf(avocado.set, avocado.set.identityComparator);
-  });
-
-  add.method('addObserver', function (o) {
-    this.observers.add(o);
-  });
-
-  add.method('removeObserver', function (o) {
-    this.observers.remove(o);
-  });
-
-  add.method('notifyAllObservers', function (arg) {
-    var s = this.subject;
-    this.observers.each(function(o) {o(s, arg);});
-  });
-
-  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-
-});
-
-
-thisModule.addSlots(avocado.notifier.tests, function(add) {
-
-  add.method('testStuff', function (o) {
-    var n = avocado.notifier.on(3);
-    var sum = 0;
-    n.notifyAllObservers(1);
-    n.addObserver(function(s, arg) { sum += (arg * s); });
-    n.notifyAllObservers(2);
-    this.assertEqual(6, sum);
-    n.notifyAllObservers(3);
-    this.assertEqual(15, sum);
-    n.addObserver(function(s, arg) { sum += (arg - s); });
-    n.notifyAllObservers(4);
-    this.assertEqual(28, sum);
-  });
-
-});
-
-
-});
-
 transporter.module.onLoadCallbacks["core/graphs"] = function() {};
 transporter.module.create('core/graphs', function(requires) {
 
@@ -50391,6 +50336,71 @@ thisModule.addSlots(avocado.graphs.tests, function(add) {
     
     var graph = avocado.graphs.directed.create(['a'], function(v) { return adjacencyLists[v] || []; });
     this.checkTopologicalSort(graph);
+  });
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["core/notifier"] = function() {};
+transporter.module.create('core/notifier', function(requires) {
+
+requires('core/hash_table');
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('notifier', {}, {category: ['core']}, {comment: 'Keeps track of a list of observers and notifies them when requested.'});
+
+});
+
+
+thisModule.addSlots(avocado.notifier, function(add) {
+
+  add.method('on', function (s) {
+    return Object.newChildOf(this, s);
+  });
+
+  add.method('initialize', function (s) {
+    this.subject = s;
+    this.observers = Object.newChildOf(avocado.set, avocado.set.identityComparator);
+  });
+
+  add.method('addObserver', function (o) {
+    this.observers.add(o);
+  });
+
+  add.method('removeObserver', function (o) {
+    this.observers.remove(o);
+  });
+
+  add.method('notifyAllObservers', function (arg) {
+    var s = this.subject;
+    this.observers.each(function(o) {o(s, arg);});
+  });
+
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+
+});
+
+
+thisModule.addSlots(avocado.notifier.tests, function(add) {
+
+  add.method('testStuff', function (o) {
+    var n = avocado.notifier.on(3);
+    var sum = 0;
+    n.notifyAllObservers(1);
+    n.addObserver(function(s, arg) { sum += (arg * s); });
+    n.notifyAllObservers(2);
+    this.assertEqual(6, sum);
+    n.notifyAllObservers(3);
+    this.assertEqual(15, sum);
+    n.addObserver(function(s, arg) { sum += (arg - s); });
+    n.notifyAllObservers(4);
+    this.assertEqual(28, sum);
   });
 
 });
@@ -52896,6 +52906,68 @@ thisModule.addSlots(TextMorph.prototype, function(add) {
 
 });
 
+transporter.module.onLoadCallbacks["lk_ext/scale_to_adjust_details"] = function() {};
+transporter.module.create('lk_ext/scale_to_adjust_details', function(requires) {
+
+requires('lk_ext/optional_morph');
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('scaleBasedOptionalMorph', Object.create(avocado.optionalMorph), {category: ['ui']});
+
+});
+
+
+thisModule.addSlots(avocado.scaleBasedOptionalMorph, function(add) {
+
+  add.method('create', function (morphToUpdate, morphToShowOrHide, owner, threshold) {
+    return Object.newChildOf(this, morphToUpdate, morphToShowOrHide, owner, threshold);
+  });
+
+  add.method('initialize', function ($super, morphToUpdate, morphToShowOrHide, owner, threshold) {
+    $super(morphToUpdate, morphToShowOrHide);
+    this._owner = owner;
+    this._threshold = threshold;
+  });
+
+  add.method('shouldBeShown', function () {
+    var b = false;
+    var onScreen = this._owner.isOnScreen();
+    if (onScreen) {
+      var s = this._owner.overallScale();
+      b = s >= this._threshold;
+    }
+    // console.log("shouldBeShown is " + b + " for " + this._owner + ", scale is " + s + ", threshold is " + this._threshold + ", onScreen is " + onScreen);
+    return b;
+  });
+
+});
+
+
+thisModule.addSlots(Morph.prototype, function(add) {
+
+  add.method('overallScale', function () {
+    var s = 1.0;
+    var m = this;
+    while (m) {
+      s = s * m.getScale();
+      m = m.owner;
+    }
+    return s;
+  }, {category: ['zooming interface']});
+
+  add.method('adjustDetailBasedOnOverallScale', function () {
+    // children can override
+  }, {category: ['zooming interface']});
+
+});
+
+
+});
+
 transporter.module.onLoadCallbacks["lk_ext/toggler"] = function() {};
 transporter.module.create('lk_ext/toggler', function(requires) {
 
@@ -52957,68 +53029,6 @@ thisModule.addSlots(avocado.toggler, function(add) {
     c.setHelpText(function() { return (this.isOn() ? 'Hide ' : 'Show ') + name; }.bind(this));
     return c;
   }, {category: ['commands']});
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["lk_ext/scale_to_adjust_details"] = function() {};
-transporter.module.create('lk_ext/scale_to_adjust_details', function(requires) {
-
-requires('lk_ext/optional_morph');
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('scaleBasedOptionalMorph', Object.create(avocado.optionalMorph), {category: ['ui']});
-
-});
-
-
-thisModule.addSlots(avocado.scaleBasedOptionalMorph, function(add) {
-
-  add.method('create', function (morphToUpdate, morphToShowOrHide, owner, threshold) {
-    return Object.newChildOf(this, morphToUpdate, morphToShowOrHide, owner, threshold);
-  });
-
-  add.method('initialize', function ($super, morphToUpdate, morphToShowOrHide, owner, threshold) {
-    $super(morphToUpdate, morphToShowOrHide);
-    this._owner = owner;
-    this._threshold = threshold;
-  });
-
-  add.method('shouldBeShown', function () {
-    var b = false;
-    var onScreen = this._owner.isOnScreen();
-    if (onScreen) {
-      var s = this._owner.overallScale();
-      b = s >= this._threshold;
-    }
-    // console.log("shouldBeShown is " + b + " for " + this._owner + ", scale is " + s + ", threshold is " + this._threshold + ", onScreen is " + onScreen);
-    return b;
-  });
-
-});
-
-
-thisModule.addSlots(Morph.prototype, function(add) {
-
-  add.method('overallScale', function () {
-    var s = 1.0;
-    var m = this;
-    while (m) {
-      s = s * m.getScale();
-      m = m.owner;
-    }
-    return s;
-  }, {category: ['zooming interface']});
-
-  add.method('adjustDetailBasedOnOverallScale', function () {
-    // children can override
-  }, {category: ['zooming interface']});
 
 });
 
@@ -56194,6 +56204,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   }, {category: ['evaluators']});
 
   add.method('openEvaluator', function (evt) {
+    evt = evt || Event.createFake();
     var e = new avocado.EvaluatorMorph(this);
     this._evaluatorsPanel.addRow(e);
     e.wasJustShown(evt);
@@ -56539,6 +56550,273 @@ thisModule.addSlots(avocado.project, function(add) {
 thisModule.addSlots(avocado.project.defaultMorphStyle, function(add) {
 
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.7019607843137254, 0.6, 0.7019607843137254)), new lively.paint.Stop(1, new Color(0.8, 0.7019607843137254, 0.8))], lively.paint.LinearGradient.SouthNorth));
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["lk_programming_environment/category_morph"] = function() {};
+transporter.module.create('lk_programming_environment/category_morph', function(requires) {
+
+requires('reflection/reflection');
+requires('lk_ext/tree_morph');
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado.category, function(add) {
+
+  add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
+
+  add.method('newMorph', function () {
+    return new avocado.category.Morph(this, this.isRoot());
+  }, {category: ['user interface']});
+
+  add.method('morph', function () {
+    return WorldMorph.current().morphFor(this);
+  }, {category: ['user interface']});
+
+  add.method('existingMorph', function () {
+    return WorldMorph.current().existingMorphFor(this);
+  }, {category: ['user interface']});
+
+  add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(avocado.category.Morph, function(add) {
+
+  add.data('superclass', avocado.TreeNodeMorph);
+
+  add.data('type', 'avocado.category.Morph');
+
+  add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
+
+});
+
+
+thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
+
+  add.data('constructor', avocado.category.Morph);
+
+  add.method('initialize', function ($super, catOfMir, shouldOmitHeaderRow) {
+    $super(catOfMir);
+    this._shouldOmitHeaderRow = shouldOmitHeaderRow;
+
+    this.applyStyle(this.defaultStyle);
+
+    this._highlighter = avocado.booleanHolder.containing(true).addObserver(function() {this.updateHighlighting();}.bind(this));
+    this._highlighter.setChecked(false);
+
+    this.refreshContentOfMeAndSubmorphs();
+  }, {category: ['creating']});
+
+  add.method('category', function () { return this._model; }, {category: ['accessing']});
+
+  add.method('mirror', function () { return this.category().mirror(); }, {category: ['accessing']});
+
+  add.method('mirrorMorph', function () { return this.mirror().morph(); }, {category: ['accessing']});
+
+  add.method('shouldUseZooming', function () {
+    return avocado.shouldMirrorsUseZooming;
+  }, {category: ['zooming']});
+
+  add.creator('defaultStyle', {}, {category: ['styles']});
+
+  add.creator('grabbedStyle', Object.create(avocado.category.Morph.prototype.defaultStyle), {category: ['styles']});
+
+  add.method('createTitleLabel', function () {
+    var lbl = new avocado.TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
+                                                            function(n) { this.rename(n); }.bind(this)));
+    lbl.setEmphasis({style: 'italic'});
+    lbl.setNameOfEditCommand("rename");
+    lbl.backgroundColorWhenWritable = null;
+    lbl.ignoreEvents();
+    return lbl;
+  }, {category: ['creating']});
+
+  add.method('createContentsSummaryMorph', function () {
+    var summaryLabel = TextMorph.createLabel(function() {return this.treeNode().contentsSummaryString();}.bind(this));
+    // summaryLabel.setFontSize(summaryLabel.getFontSize() - 1); // aaa - why does this create a little space at the beginning of the label?
+    
+    // aaa - I get weird 100000-wide behaviour when I try to use just the label instead of wrapping it with a row. I'd like to know why.
+    // summaryLabel.setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+    // return summaryLabel;
+    
+    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
+  }, {category: ['creating']});
+
+  add.method('partsOfUIState', function ($super) {
+    var parts = $super();
+    if (this._shouldOmitHeaderRow) { delete parts['isExpanded']; } // the mirror will handle it
+    return parts;
+  }, {category: ['UI state']});
+
+  add.method('nonNodeContentMorphsInOrder', function () {
+    return this.treeNode().nonNodeContents().map(function(s) { return this.nonNodeMorphFor(s); }.bind(this));
+  }, {category: ['contents panel']});
+
+  add.method('subnodeMorphsInOrder', function () {
+    var subnodeMorphs = this.immediateSubnodeMorphs().toArray();
+    // aaa - Blecch, I hate this whole thing where the categories don't really exist until they've got a slot in them.
+    // Maybe make categories a bit more real, part of the object annotation or something, instead of just having them
+    // live inside the slot annotations?
+    subnodeMorphs = subnodeMorphs.concat(this._contentsPanel.submorphs.select(function(m) {
+      if (m.isNewCategory) {
+        var realCatMorph = this.mirrorMorph().existingCategoryMorphFor(m.category());
+        if (realCatMorph) {
+          m.transferUIStateTo(realCatMorph);
+          return false;
+        } else {
+          return true;
+        }
+      } else {
+        return false;
+      }
+    }.bind(this)));
+    return subnodeMorphs.sortBy(function(scm) { return scm.treeNode().sortOrder(); });
+  }, {category: ['contents panel']});
+
+  add.method('nodeMorphFor', function (cat) {
+    return cat.morph();
+  }, {category: ['contents panel']});
+
+  add.method('nonNodeMorphFor', function (slot) {
+    return slot.morph();
+  }, {category: ['contents panel']});
+
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    var isModifiable = this.mirrorMorph().shouldAllowModification();
+    
+    if (this.mirror().canHaveSlots()) {
+      if (this.mirrorMorph().shouldAllowModification()) {
+        cmdList.addSection([{ label: "add function",  go: function(evt) { this.addSlot    (function() {}, evt); } },
+                            { label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); } }]);
+      }
+      
+      cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(               evt); } }]);
+
+      if (!this.category().isRoot()) {
+        cmdList.addLine();
+
+        if (this._titleLabel) {
+          cmdList.addAllCommands(this._titleLabel.editingCommands());
+        }
+        
+        cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }});
+
+        if (isModifiable) {
+          cmdList.addItem({label: "move", go: function(evt) {
+            this.grabCopy(evt);
+            this.category().removeSlots();
+            avocado.ui.justChanged(this.mirror());
+          }});
+        }
+      }
+    }
+    return cmdList;
+  }, {category: ['menu']});
+
+  add.method('dragAndDropCommands', function () {
+    var cmdList = this.category().dragAndDropCommands().wrapForMorph(this);
+    var mirMorph = this.mirrorMorph();
+    
+    cmdList.itemWith("label", "add slot or category").wrapFunction(function(oldFunctionToRun, evt, slotOrCatMorph) {
+      var result = oldFunctionToRun(evt, slotOrCatMorph);
+      mirMorph.expandCategory(result.category());
+    });
+    
+    return cmdList;
+  }, {category: ['drag and drop']});
+
+  add.method('updateHighlighting', function () {
+    this.setHighlighting(this._highlighter.isChecked());
+  }, {category: ['highlighting']});
+
+  add.method('wasJustShown', function (evt) {
+    this.isNewCategory = true;
+    if (this._titleLabel) { this._titleLabel.wasJustShown(evt); }
+  }, {category: ['events']});
+
+  add.method('rename', function (newName, evt) {
+    // aaa - eww
+    var result = this.category().rename(newName);
+    this.mirrorMorph().justRenamedCategoryMorphFor(result.oldCat, result.newCat, result.numberOfRenamedSlots === 0);
+  }, {category: ['renaming']});
+
+  add.method('addSlot', function (initialContents, evt) {
+    this.mirrorMorph().expandCategoryMorph(this);
+    var s = this.category().automaticallyChooseDefaultNameAndAddNewSlot(reflect(initialContents));
+    var sm = s.morph();
+    sm.wasJustShown(evt);
+    this.updateAppearance(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet);
+  }, {category: ['adding']});
+
+  add.method('addCategory', function (evt) {
+    this.mirrorMorph().expandCategoryMorph(this);
+    var cm = this.category().subcategory("").newMorph();
+    this.addToContentsPanel(cm);
+    cm.wasJustShown(evt);
+    // aaa blecch, I feel like this line should be here, but bad things happen: avocado.ui.justChanged(this.category());
+  }, {category: ['adding']});
+
+  add.method('grabCopy', function (evt) {
+    var newMirror = reflect({});
+    var newCategoryOfMir = this.category().copyInto(newMirror.rootCategory());
+    var newCategoryMorph = newCategoryOfMir.morph();
+    newCategoryMorph.applyStyle(this.grabbedStyle);
+    newCategoryMorph.refreshContent();
+    newCategoryMorph.forceLayoutRejiggering();
+    newCategoryMorph._shouldDisappearAfterCommandIsFinished = true;
+    if (! this.mirrorMorph().shouldAllowModification()) { newCategoryMorph._shouldOnlyBeDroppedOnThisParticularMorph = this.mirrorMorph(); }
+    evt.hand.grabMorphWithoutAskingPermission(newCategoryMorph, evt);
+    return newCategoryMorph;
+  }, {category: ['drag and drop']});
+
+  add.method('wasJustDroppedOnWorld', function (world) {
+    if (! this._shouldOnlyBeDroppedOnThisParticularMorph || this._shouldOnlyBeDroppedOnThisParticularMorph === world) {
+      var mir = reflect({});
+      var newCategoryOfMir = this.category().copyInto(mir.rootCategory());
+      var mirMorph = world.morphFor(mir);
+      world.addMorphAt(mirMorph, this.position());
+      mirMorph.expandCategory(newCategoryOfMir);
+      if (this._shouldDisappearAfterCommandIsFinished) { this.remove(); }
+    }
+  }, {category: ['drag and drop']});
+
+});
+
+
+thisModule.addSlots(avocado.category.Morph.prototype.defaultStyle, function(add) {
+
+  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
+
+  add.data('openForDragAndDrop', false);
+
+  add.data('suppressGrabbing', false);
+
+  add.data('grabsShouldFallThrough', true);
+
+  add.data('fill', null);
+
+  add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
+
+});
+
+
+thisModule.addSlots(avocado.category.Morph.prototype.grabbedStyle, function(add) {
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.8, 0.8, 0.8)), new lively.paint.Stop(1, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255))], lively.paint.LinearGradient.SouthNorth));
+
+  add.data('horizontalLayoutMode', avocado.LayoutModes.ShrinkWrap);
 
 });
 
@@ -58261,318 +58539,6 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
 
 });
 
-transporter.module.onLoadCallbacks["lk_programming_environment/category_morph"] = function() {};
-transporter.module.create('lk_programming_environment/category_morph', function(requires) {
-
-requires('reflection/reflection');
-requires('lk_ext/tree_morph');
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado.category, function(add) {
-
-  add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
-
-});
-
-
-thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
-
-  add.method('newMorph', function () {
-    return new avocado.category.Morph(this, this.isRoot());
-  }, {category: ['user interface']});
-
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
-  }, {category: ['user interface']});
-
-  add.method('existingMorph', function () {
-    return WorldMorph.current().existingMorphFor(this);
-  }, {category: ['user interface']});
-
-  add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
-
-});
-
-
-thisModule.addSlots(avocado.category.Morph, function(add) {
-
-  add.data('superclass', avocado.TreeNodeMorph);
-
-  add.data('type', 'avocado.category.Morph');
-
-  add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
-
-});
-
-
-thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
-
-  add.data('constructor', avocado.category.Morph);
-
-  add.method('initialize', function ($super, catOfMir, shouldOmitHeaderRow) {
-    $super(catOfMir);
-    this._shouldOmitHeaderRow = shouldOmitHeaderRow;
-
-    this.applyStyle(this.defaultStyle);
-
-    this._highlighter = avocado.booleanHolder.containing(true).addObserver(function() {this.updateHighlighting();}.bind(this));
-    this._highlighter.setChecked(false);
-
-    this.refreshContentOfMeAndSubmorphs();
-  }, {category: ['creating']});
-
-  add.method('category', function () { return this._model; }, {category: ['accessing']});
-
-  add.method('mirror', function () { return this.category().mirror(); }, {category: ['accessing']});
-
-  add.method('mirrorMorph', function () { return this.mirror().morph(); }, {category: ['accessing']});
-
-  add.method('shouldUseZooming', function () {
-    return avocado.shouldMirrorsUseZooming;
-  }, {category: ['zooming']});
-
-  add.creator('defaultStyle', {}, {category: ['styles']});
-
-  add.creator('grabbedStyle', Object.create(avocado.category.Morph.prototype.defaultStyle), {category: ['styles']});
-
-  add.method('createTitleLabel', function () {
-    var lbl = new avocado.TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
-                                                            function(n) { this.rename(n); }.bind(this)));
-    lbl.setEmphasis({style: 'italic'});
-    lbl.setNameOfEditCommand("rename");
-    lbl.backgroundColorWhenWritable = null;
-    lbl.ignoreEvents();
-    return lbl;
-  }, {category: ['creating']});
-
-  add.method('createContentsSummaryMorph', function () {
-    var summaryLabel = TextMorph.createLabel(function() {return this.treeNode().contentsSummaryString();}.bind(this));
-    // summaryLabel.setFontSize(summaryLabel.getFontSize() - 1); // aaa - why does this create a little space at the beginning of the label?
-    
-    // aaa - I get weird 100000-wide behaviour when I try to use just the label instead of wrapping it with a row. I'd like to know why.
-    // summaryLabel.setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
-    // return summaryLabel;
-    
-    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
-  }, {category: ['creating']});
-
-  add.method('partsOfUIState', function ($super) {
-    var parts = $super();
-    if (this._shouldOmitHeaderRow) { delete parts['isExpanded']; } // the mirror will handle it
-    return parts;
-  }, {category: ['UI state']});
-
-  add.method('nonNodeContentMorphsInOrder', function () {
-    return this.treeNode().nonNodeContents().map(function(s) { return this.nonNodeMorphFor(s); }.bind(this));
-  }, {category: ['contents panel']});
-
-  add.method('subnodeMorphsInOrder', function () {
-    var subnodeMorphs = this.immediateSubnodeMorphs().toArray();
-    // aaa - Blecch, I hate this whole thing where the categories don't really exist until they've got a slot in them.
-    // Maybe make categories a bit more real, part of the object annotation or something, instead of just having them
-    // live inside the slot annotations?
-    subnodeMorphs = subnodeMorphs.concat(this._contentsPanel.submorphs.select(function(m) {
-      if (m.isNewCategory) {
-        var realCatMorph = this.mirrorMorph().existingCategoryMorphFor(m.category());
-        if (realCatMorph) {
-          m.transferUIStateTo(realCatMorph);
-          return false;
-        } else {
-          return true;
-        }
-      } else {
-        return false;
-      }
-    }.bind(this)));
-    return subnodeMorphs.sortBy(function(scm) { return scm.treeNode().sortOrder(); });
-  }, {category: ['contents panel']});
-
-  add.method('nodeMorphFor', function (cat) {
-    return cat.morph();
-  }, {category: ['contents panel']});
-
-  add.method('nonNodeMorphFor', function (slot) {
-    return slot.morph();
-  }, {category: ['contents panel']});
-
-  add.method('commands', function () {
-    var cmdList = avocado.command.list.create(this);
-    var isModifiable = this.mirrorMorph().shouldAllowModification();
-    
-    if (this.mirror().canHaveSlots()) {
-      if (this.mirrorMorph().shouldAllowModification()) {
-        cmdList.addSection([{ label: "add function",  go: function(evt) { this.addSlot    (function() {}, evt); } },
-                            { label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); } }]);
-      }
-      
-      cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(               evt); } }]);
-
-      if (!this.category().isRoot()) {
-        cmdList.addLine();
-
-        if (this._titleLabel) {
-          cmdList.addAllCommands(this._titleLabel.editingCommands());
-        }
-        
-        cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }});
-
-        if (isModifiable) {
-          cmdList.addItem({label: "move", go: function(evt) {
-            this.grabCopy(evt);
-            this.category().removeSlots();
-            avocado.ui.justChanged(this.mirror());
-          }});
-        }
-      }
-    }
-    return cmdList;
-  }, {category: ['menu']});
-
-  add.method('dragAndDropCommands', function () {
-    var cmdList = this.category().dragAndDropCommands().wrapForMorph(this);
-    var mirMorph = this.mirrorMorph();
-    
-    cmdList.itemWith("label", "add slot or category").wrapFunction(function(oldFunctionToRun, evt, slotOrCatMorph) {
-      var result = oldFunctionToRun(evt, slotOrCatMorph);
-      mirMorph.expandCategory(result.category());
-    });
-    
-    return cmdList;
-  }, {category: ['drag and drop']});
-
-  add.method('updateHighlighting', function () {
-    this.setHighlighting(this._highlighter.isChecked());
-  }, {category: ['highlighting']});
-
-  add.method('wasJustShown', function (evt) {
-    this.isNewCategory = true;
-    if (this._titleLabel) { this._titleLabel.wasJustShown(evt); }
-  }, {category: ['events']});
-
-  add.method('rename', function (newName, evt) {
-    // aaa - eww
-    var result = this.category().rename(newName);
-    this.mirrorMorph().justRenamedCategoryMorphFor(result.oldCat, result.newCat, result.numberOfRenamedSlots === 0);
-  }, {category: ['renaming']});
-
-  add.method('addSlot', function (initialContents, evt) {
-    this.mirrorMorph().expandCategoryMorph(this);
-    var s = this.category().automaticallyChooseDefaultNameAndAddNewSlot(reflect(initialContents));
-    var sm = s.morph();
-    sm.wasJustShown(evt);
-    this.updateAppearance(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet);
-  }, {category: ['adding']});
-
-  add.method('addCategory', function (evt) {
-    this.mirrorMorph().expandCategoryMorph(this);
-    var cm = this.category().subcategory("").newMorph();
-    this.addToContentsPanel(cm);
-    cm.wasJustShown(evt);
-    // aaa blecch, I feel like this line should be here, but bad things happen: avocado.ui.justChanged(this.category());
-  }, {category: ['adding']});
-
-  add.method('grabCopy', function (evt) {
-    var newMirror = reflect({});
-    var newCategoryOfMir = this.category().copyInto(newMirror.rootCategory());
-    var newCategoryMorph = newCategoryOfMir.morph();
-    newCategoryMorph.applyStyle(this.grabbedStyle);
-    newCategoryMorph.refreshContent();
-    newCategoryMorph.forceLayoutRejiggering();
-    newCategoryMorph._shouldDisappearAfterCommandIsFinished = true;
-    if (! this.mirrorMorph().shouldAllowModification()) { newCategoryMorph._shouldOnlyBeDroppedOnThisParticularMorph = this.mirrorMorph(); }
-    evt.hand.grabMorphWithoutAskingPermission(newCategoryMorph, evt);
-    return newCategoryMorph;
-  }, {category: ['drag and drop']});
-
-  add.method('wasJustDroppedOnWorld', function (world) {
-    if (! this._shouldOnlyBeDroppedOnThisParticularMorph || this._shouldOnlyBeDroppedOnThisParticularMorph === world) {
-      var mir = reflect({});
-      var newCategoryOfMir = this.category().copyInto(mir.rootCategory());
-      var mirMorph = world.morphFor(mir);
-      world.addMorphAt(mirMorph, this.position());
-      mirMorph.expandCategory(newCategoryOfMir);
-      if (this._shouldDisappearAfterCommandIsFinished) { this.remove(); }
-    }
-  }, {category: ['drag and drop']});
-
-});
-
-
-thisModule.addSlots(avocado.category.Morph.prototype.defaultStyle, function(add) {
-
-  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
-
-  add.data('openForDragAndDrop', false);
-
-  add.data('suppressGrabbing', false);
-
-  add.data('grabsShouldFallThrough', true);
-
-  add.data('fill', null);
-
-  add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
-
-});
-
-
-thisModule.addSlots(avocado.category.Morph.prototype.grabbedStyle, function(add) {
-
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.8, 0.8, 0.8)), new lively.paint.Stop(1, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255))], lively.paint.LinearGradient.SouthNorth));
-
-  add.data('horizontalLayoutMode', avocado.LayoutModes.ShrinkWrap);
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["programming_environment/searching"] = function() {};
-transporter.module.create('programming_environment/searching', function(requires) {
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado, function(add) {
-
-  add.creator('searchResultsPresenter', {}, {category: ['searching']});
-
-});
-
-
-thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
-
-  add.method('create', function (searcher) {
-    return Object.newChildOf(this, searcher);
-  }, {category: ['creating']});
-
-  add.method('initialize', function (searcher) {
-    this._searcher = searcher;
-  }, {category: ['creating']});
-
-  add.method('inspect', function () {
-    return this._searcher.inspect();
-  }, {category: ['printing']});
-
-  add.method('go', function () {
-    return this._searcher.go();
-  }, {category: ['searching']});
-
-  add.method('sortingCriteriaForSearchResults', function () {
-    if (this._searcher.resultsAreSlots) { // aaa hack
-      return function(s) { return s.holder().name().toUpperCase(); };
-    } else {
-      console.log("Trying to sort " + this.inspect() + " but don't know how.");
-      return null;
-    }
-  }, {category: ['sorting']});
-
-});
-
-
-});
-
 transporter.module.onLoadCallbacks["lk_programming_environment/slot_morph"] = function() {};
 transporter.module.create('lk_programming_environment/slot_morph', function(requires) {
 
@@ -59278,6 +59244,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['categories']});
 
   add.method('openEvaluator', function (evt) {
+    evt = evt || Event.createFake();
     
     // Experimenting with using vocabulary morphs for evaluators, instead of putting the evaluators
     // directly inside the mirror.
@@ -59744,30 +59711,6 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype.headerRowStyle, functio
 thisModule.addSlots(avocado.SearchResultsMorph.prototype.resultsPanelStyle, function(add) {
 
   add.data('padding', {top: 3, bottom: 3, left: 3, right: 3, between: {x: 3, y: 3}}, {initializeTo: '{top: 3, bottom: 3, left: 3, right: 3, between: {x: 3, y: 3}}'});
-
-});
-
-
-});
-
-transporter.module.onLoadCallbacks["lk_programming_environment/searching"] = function() {};
-transporter.module.create('lk_programming_environment/searching', function(requires) {
-
-requires('lk_ext/search_results_morph');
-requires('programming_environment/searching');
-
-}, function(thisModule) {
-
-
-thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
-
-  add.method('newMorph', function () {
-    if (this._searcher.resultsAreSlots) {
-      return new avocado.SearchResultsMorph(this);
-    } else {
-      throw new Error("What kind of morph should we make for " + this.inspect() + "?");
-    }
-  });
 
 });
 
@@ -60652,6 +60595,75 @@ thisModule.addSlots(avocado.couch.db.tests.bargle, function(add) {
 
   add.method('setArgle', function (argle) {
     this.argle__ref = avocado.remoteObjectReference.table.refForObject(argle);
+  });
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["programming_environment/searching"] = function() {};
+transporter.module.create('programming_environment/searching', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('searchResultsPresenter', {}, {category: ['searching']});
+
+});
+
+
+thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
+
+  add.method('create', function (searcher) {
+    return Object.newChildOf(this, searcher);
+  }, {category: ['creating']});
+
+  add.method('initialize', function (searcher) {
+    this._searcher = searcher;
+  }, {category: ['creating']});
+
+  add.method('inspect', function () {
+    return this._searcher.inspect();
+  }, {category: ['printing']});
+
+  add.method('go', function () {
+    return this._searcher.go();
+  }, {category: ['searching']});
+
+  add.method('sortingCriteriaForSearchResults', function () {
+    if (this._searcher.resultsAreSlots) { // aaa hack
+      return function(s) { return s.holder().name().toUpperCase(); };
+    } else {
+      console.log("Trying to sort " + this.inspect() + " but don't know how.");
+      return null;
+    }
+  }, {category: ['sorting']});
+
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["lk_programming_environment/searching"] = function() {};
+transporter.module.create('lk_programming_environment/searching', function(requires) {
+
+requires('lk_ext/search_results_morph');
+requires('programming_environment/searching');
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
+
+  add.method('newMorph', function () {
+    if (this._searcher.resultsAreSlots) {
+      return new avocado.SearchResultsMorph(this);
+    } else {
+      throw new Error("What kind of morph should we make for " + this.inspect() + "?");
+    }
   });
 
 });
