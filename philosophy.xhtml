@@ -1,0 +1,40 @@
+---
+layout: default
+title: Avocado philosophy
+---
+
+<h2>Philosophy</h2>
+
+<p>Avocado is opinionated. Here's what it believes in.</p>
+
+
+<h3>JavaScript</h3>
+
+<p>Avocado is built in JavaScript, for JavaScript. Like it or not, JavaScript is the client-side language of the web - it's everywhere, it's standard, it's fast and it's getting faster. Avocado, and projects built using Avocado, are intended to run inside any modern web browser, without requiring anybody to install any plugins.</p>
+
+<p>Maybe someday Avocado will include support for <a href="http://jashkenas.github.com/coffee-script/">CoffeeScript</a> or <a href="http://clamato.net/">Clamato Smalltalk</a> or other languages built on top of JavaScript. That would be really cool. It's on my list of Stuff To Do That I'll Never Get Around To. But Avocado is first and foremost a JavaScript environment.</p>
+
+
+<h3>Liveness</h3>
+
+<p>Avocado is a live environment, in the tradition of systems like <a href="http://www.smalltalk.org/">Smalltalk</a> and <a href="http://selflanguage.org/">Self</a>. You build your program by shaping it while it's running, rather than by typing into dead text files. (Of course later you can save your program as ordinary .js files. But while you're programming, there are no text files in sight.)</p>
+
+<p>Liveness is a wondrous thing, and it's part of what makes Smalltalk environments so fantastically productive and fun - you can make a change and instantly see the result, rather than needing to restart your program. (Kinda like the real world. If you want to change the color of a wall in your house, you don't tear down the house, modify the source code, and then re-build the house.) But if you're the "You can have my Emacs/vi when you pry it out of my cold dead hands!" type, Avocado is not for you.</p>
+
+
+<h3>Directness</h3>
+
+<p>Most programming environments give you a plethora of tools for viewing and manipulating your system. Class browsers, object hierarchy inspectors, directory trees. These tools can be very powerful. But whenever I use them, I feel like my objects are hiding somewhere deep in the bowels of my computer, and the tool is just presenting me with little knobs and dials that are somehow connected to the objects.</p>
+
+<p>Avocado doesn't have any of those tools. Instead, it tries to give you the feeling of getting your hands directly on your objects. Each object looks like a box on the screen, and if you want to do something to an object - add or change one of its attributes, edit or call one of its functions - you go right up to the object and do it. If you want to see the contents of an object's "foo" attribute, just click on the attribute, and an arrow will shoot out pointing to the contents - and if you want to change the contents, just drag the arrow. If you ask an object how it fits into the inheritance hierarchy, you don't suddenly get shown a new Inheritance Hierarchy Browser tool; rather, the objects themselves zoom around on the screen to arrange themselves into a tree shape.</p>
+
+<p>The result, I hope, is an experience that's very simple and direct. Avocado wants you to feel like your JavaScript objects are real things that you can play with. Like you're getting your hands on your objects, just like Lego blocks. The beauty of Lego is that you don't need a Block Attacher or a Lego Hierarchy Browser - you can build complex and wonderful things just by taking the blocks directly in your hands and snapping them together.</p>
+
+
+<h3>Objects</h3>
+
+<p>With ordinary JavaScript programming environments (i.e. text editors ;), if you're editing the text files that make up your program, JavaScript does an excellent job of supporting both object-oriented programming and functional programming. JavaScript has closures so that you can do functional programming in a natural way, it has prototypal inheritance so that you can program in a prototype-based object-oriented style, and prototypes can be used to build classes (plus JavaScript has the "new" keyword) so you can program in a class-based object-oriented style.</p>
+
+<p>But when shaping a live system while it's running, JavaScript has better support for the two OO styles than for functional programming. JavaScript has reflective capabilities for getting and setting the attributes of an object, but no way to reflectively get and set the local variables of a function. There's no fundamental reason why JS <i>couldn't</i> support that someday; it just happens not to in today's browsers. I'd love it if JS were to gain that ability, so that Avocado could support a functional style of programming too. But for now, if you're a functional junkie, Avocado isn't for you. Complain to the browser makers.</p>
+
+<p>Personally, I prefer prototypes to classes, because it's simpler (beginning programmers find it easier to learn prototypes than classes), more powerful (anything you can do with classes you can do with prototypes, but the reverse is not true), and feels more natural to me (there's some interesting research showing that the way the human brain naturally categorizes the world is more like prototypes than like classes - see George Lakoff's book, "Women, Fire, and Dangerous Things"). But they're both useful, JavaScript supports both, and so does Avocado.</p>

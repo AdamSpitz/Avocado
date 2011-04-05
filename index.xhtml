@@ -39,6 +39,7 @@ transporter.callWhenDoneLoadingAvocado = function(world) {
     var evaluator2 = mirMorph.openEvaluator(Event.createFake());
     evaluator1.textMorph().setText('this.x + 4');
     evaluator2.textMorph().setText('this.xSquared()');
+    world.firstHand().setKeyboardFocus(null);
   });
 };
 </script>
@@ -54,6 +55,8 @@ transporter.callWhenDoneLoadingAvocado = function(world) {
      xml:space="preserve"
      zoomAndPan="disable">
 </svg>
+
+<p>Avocado is built on top of <a href="http://lively-kernel.org/">Lively Kernel</a>, and owes a deep philosophical debt to <a href="http://selflanguage.org/">Self</a>.</p>
 
 <div id="unusedDescriptionUsingNormalHTML" style="display:none">
 
