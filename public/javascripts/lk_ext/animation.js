@@ -171,10 +171,18 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return (! this.owner) || (this.owner instanceof WorldMorph) || (this.owner instanceof HandMorph) || (this.owner instanceof avocado.CarryingHandMorph);
     }.bind(this));
   }, {category: ['adding and removing']});
+  
+  add.method('setFillOpacityRecursively', function (a) {
+    console.log("setFillOpacityRecursively: " + a);
+    this.setFillOpacity(a);
+    for (var i = 0, n = this.submorphs.length; i < n; ++i) {
+      this.submorphs[i].setFillOpacityRecursively(a);
+    }
+  }, {category: ['fading']});
 
   add.method('smoothlyFadeTo', function (desiredAlpha, functionToCallWhenDone) {
-      this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);
-    }, {category: ['resizing']});
+    this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);
+  }, {category: ['fading']});
 
   add.method('smoothlyResizeTo', function (desiredSize, functionToCallWhenDone) {
       this.startAnimating(avocado.animation.newResizer(this, desiredSize), functionToCallWhenDone);

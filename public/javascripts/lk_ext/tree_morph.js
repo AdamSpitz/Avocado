@@ -128,6 +128,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     
     if (this.shouldUseZooming() && this._shouldContentsBeFreeForm) {
       cp = this._contentsPanel = new Morph(new lively.scene.Rectangle(pt(0,0).extent(this._contentsPanelSize))).applyStyle(this.contentsPanelStyle());
+      // var thisToString = this.toString(); cp.toString = function() { return thisToString + " contents panel"; } // aaa just for debugging
       this.adjustScaleOfContentsPanel();
       // aaa - do this more cleanly; for now, just wanna see if this can work
       cp.refreshContent = function () {
@@ -138,15 +139,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
             cp.removeMorph(m);
           }
         });
-        contentMorphs.forEach(function(cm) {
-          if (cm.owner !== cp) {
-            cp.addMorph(cm);
-          }
-        });
         
         if (!cp._hasAlreadyBeenLaidOutAtLeastOnce) {
           cp._hasAlreadyBeenLaidOutAtLeastOnce = true;
-          cp.poseManager().cleanUpAndPreserveScale(Event.createFake());
+          cp.poseManager().assumePose(cp.poseManager().cleaningUpPose(contentMorphs).beUnobtrusive().beSquarish().whenDoneScaleToFitWithinCurrentSpace());
         }
       }.bind(this);
     } else {

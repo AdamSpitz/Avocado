@@ -27,60 +27,79 @@ thisModule.addSlots(avocado.poses, function(add) {
 
 thisModule.addSlots(avocado.poses['abstract'], function(add) {
 
+  add.method('create', function () {
+    var c = Object.create(this);
+    c.initialize.apply(c, arguments);
+    return c;
+  }, {category: ['creating']});
+
   add.method('initialize', function (name) {
     this._name = name;
-  });
+  }, {category: ['creating']});
 
   add.method('name', function () {
     return this._name;
-  });
+  }, {category: ['accessing']});
 
   add.method('toString', function () {
     return this.name();
-  });
+  }, {category: ['printing']});
 
   add.method('recreateInContainer', function (container) {
     var originalScale = container.getScale();
     var originalSpace = container.getExtent().scaleBy(originalScale);
     
-    avocado.callbackWaiter.on(function(finalCallback) {
-    
-      this.eachElement(function(e) {
-        e.poser.isPartOfCurrentPose = true;
-        // do bad things happen if I make the uiState thing happen before moving the poser?
-        if (e.uiState) { e.poser.assumeUIState(e.uiState); }
-        e.poser.ensureIsInWorld(container, e.position, true, true, true, finalCallback());
-      });
+    this.eachElement(function(e) {
+      e.poser.isPartOfCurrentPose = true;
+      // do bad things happen if I make the uiState thing happen before moving the poser?
+      if (e.uiState) { e.poser.assumeUIState(e.uiState); }
+      
+      var poserOrPlaceholder = e.poser;
+      if (e.poser.world()) {
+        poserOrPlaceholder = new avocado.PlaceholderMorph(e.poser);
+      }
+      container.addMorphAt(poserOrPlaceholder, e.position);
+    }.bind(this));
 
-      container.allPotentialPosers().each(function(m) {
-        if (m.isPartOfCurrentPose) {
-          delete m.isPartOfCurrentPose;
-        } else if (! m.shouldIgnorePoses()) {
-          // I am undecided on whether this is a good idea or not. It's annoying if
-          // stuff I want zooms away, but it's also annoying if stuff zooms onto
-          // other stuff and the screen gets all cluttered.
-          var shouldUninvolvedPosersZoomAway = false;
-          if (shouldUninvolvedPosersZoomAway) {
+    container.allPotentialPosers().each(function(m) {
+      if (m.isPartOfCurrentPose) {
+        delete m.isPartOfCurrentPose;
+      } else if (! m.shouldIgnorePoses()) {
+        // I am undecided on whether this is a good idea or not. It's annoying if
+        // stuff I want zooms away, but it's also annoying if stuff zooms onto
+        // other stuff and the screen gets all cluttered.
+        var shouldUninvolvedPosersGoAway = false;
+        if (shouldUninvolvedPosersGoAway) {
+          if (this._shouldBeUnobtrusive) {
+            var callbackWhenDoneFading = finalCallback();
+            m.smoothlyFadeTo(0, function() {
+              m.remove();
+              callbackWhenDoneFading();
+            });
+          } else {
             m.startZoomingOuttaHere(finalCallback());
           }
         }
-      });
-    
-    }.bind(this), function() {
-    
-      if (this._shouldScaleToFitWithinCurrentSpace) {
-        var currentExtent = container.bounds().extent();
-        var hs = originalSpace.x / currentExtent.x;
-        var vs = originalSpace.y / currentExtent.y;
-        container.scaleBy(Math.min(hs, vs));
-        // console.log("Scaling to fit within originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
       }
-    
     }.bind(this));
-  });
+  
+    if (this._shouldScaleToFitWithinCurrentSpace) {
+      container.refreshContentOfMeAndSubmorphs(); // to make sure the submorphs are laid out right - though, aaa, shouldn't this be done before even calculating the pose positions?
+      var currentExtent = container.bounds().extent();
+      var hs = originalSpace.x / currentExtent.x;
+      var vs = originalSpace.y / currentExtent.y;
+      container.scaleBy(Math.min(hs, vs));
+      // console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
+    }
+  }, {category: ['posing']});
   
   add.method('whenDoneScaleToFitWithinCurrentSpace', function () {
     this._shouldScaleToFitWithinCurrentSpace = true;
+    return this;
+  }, {category: ['scaling']});
+
+  add.method('beUnobtrusive', function () {
+    this._shouldBeUnobtrusive = true;
     return this;
   });
 
@@ -295,7 +314,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
   }, {category: ['poses']});
 
   add.method('createSnapshotOfCurrentPose', function (poseName) {
-    return Object.newChildOf(avocado.poses.snapshot, poseName, this.container().posers());
+    return avocado.poses.snapshot.create(poseName, this.container().posers());
   }, {category: ['taking snapshots']});
 
   add.method('rememberThisPose', function () {
@@ -304,18 +323,14 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     }.bind(this));
   }, {category: ['taking snapshots']});
 
-  add.method('cleanUp', function (evt) {
-    this.assumePose(Object.newChildOf(avocado.poses.list, "clean up", this.container(), this.container().posers()).beCollapsing());
-  }, {category: ['cleaning up']});
-
-  add.method('cleanUpAndPreserveScale', function (evt) {
-    this.assumePose(Object.newChildOf(avocado.poses.list, "clean up", this.container(), this.container().posers()).beCollapsing().beSquarish().whenDoneScaleToFitWithinCurrentSpace());
+  add.method('cleaningUpPose', function (posers) {
+    return avocado.poses.list.create("clean up", this.container(), posers || this.container().posers()).beCollapsing();
   }, {category: ['cleaning up']});
 
   add.method('listPoseOfMorphsFor', function (objects, name) {
     // aaa LK-dependent
     var posersToMove = objects.map(function(m) { return this.container().morphFor(m); }.bind(this));
-    return Object.newChildOf(avocado.poses.list, name, this.container(), posersToMove);
+    return avocado.poses.list.create(name, this.container(), posersToMove);
   }, {category: ['cleaning up']});
 
   add.method('poseChooser', function () {
@@ -330,7 +345,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     cmdList.addLine();
     
     cmdList.addItem(["clean up", function(evt) {
-      this.cleanUp(evt);
+      this.assumePose(this.cleaningUpPose());
     }.bind(this)]);
 
     var poseCommands = [];
