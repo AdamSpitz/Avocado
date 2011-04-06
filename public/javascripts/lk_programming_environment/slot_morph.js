@@ -62,7 +62,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var optionalCommentButtonMorph, buttonChooserMorph;
     if (slot.annotationForReading) {
       if (this.shouldUseZooming()) {
-        this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.createRow(function() { return this.annotationMorph(); }.bind(this)), this, 1);
+        this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.createRow(function() { return this.annotationMorph(); }.bind(this)), this, 1, pt(50,25)); // aaa made-up space-holder-size number
       } else {
         this._commentToggler    = avocado.morphToggler.create(this, this.createRow(function() {return this.   commentMorph();}.bind(this)));
         this._annotationToggler = avocado.morphToggler.create(this, this.createRow(function() {return this.annotationMorph();}.bind(this)));
@@ -80,7 +80,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
           return this.slot().equals(this.slot().contents().probableCreatorSlot());
         }.bind(this))
       );
-      //}.bind(this), this, 1.5);
+      //}.bind(this), this, 1.5, pt(10,10));
       signatureRowContent = [this.descriptionMorph(), Morph.createSpacer(), this._annotationToggler, Morph.createSpacer(), buttonChooserMorph].compact();
     } else {
       this._sourceToggler = avocado.morphToggler.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)));

@@ -56,7 +56,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
     if (this.mirror().canHaveAnnotation()) {
       if (this.shouldUseZooming()) {
-        this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.createRow(this.annotationMorph()), this, 1);
+        this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.createRow(this.annotationMorph()), this, 1, pt(50,10)); // aaa made-up space-holder-size number
       } else {
         this._annotationToggler = avocado.morphToggler.create(this, this.createRow(this.annotationMorph()));
         this._commentToggler    = avocado.morphToggler.create(this, this.createRow(this.   commentMorph()));

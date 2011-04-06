@@ -14,23 +14,23 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
 
-  add.method('initialize', function ($super, morphToUpdate, morph1, owner, threshold) {
-    $super(morphToUpdate, morph1 /* , this.spaceHolder.bind(this) */ ); // aaa spaceHolder not working properly yet
+  add.method('initialize', function ($super, morphToUpdate, morph1, owner, threshold, sizeOfSpaceHolder) {
+    $super(morphToUpdate, morph1, this.spaceHolder.bind(this)); // aaa spaceHolder not working properly yet
     this._owner = owner;
     this._threshold = threshold;
+    this._sizeOfSpaceHolder = sizeOfSpaceHolder;
   });
   
   add.method('spaceHolder', function () {
-    if (! this._spaceHolder) {
-      var m = this._morph1;
-      if (typeof m === 'function') { m = m(); }
-      if (!m) { return null; }
-      console.log("Creating spaceHolder for " + m);
-      this._spaceHolder = new Morph(m.shape.copy());
-      this._spaceHolder.setFill(null);
-      this._spaceHolder.ignoreEvents();
+    var h = this._spaceHolder;
+    if (!h) {
+      if (!this._sizeOfSpaceHolder) { return null; }
+      var h = new Morph(new lively.scene.Rectangle(pt(0,0).extent(this._sizeOfSpaceHolder)));
+      h.setFill(null);
+      h.ignoreEvents();
+      this._spaceHolder = h;
     }
-    return this._spaceHolder;
+    return h;
   });
 
   add.method('shouldMorph1BeShown', function () {

@@ -90,7 +90,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('headerRowContents', function () {
     if (this.shouldUseZooming()) {
-      return [this._titleLabel, avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, 2.0)];
+      return [this._titleLabel, avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, 2.0, this._contentsPanelSize)];
     } else {
       
       return [this._expander, this._titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
@@ -99,7 +99,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('potentialContent', function () {
     if (this.shouldUseZooming()) {
-      var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, 0.75)] : [this.headerRow()];
+      var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, 0.75, this._contentsPanelSize)] : [this.headerRow()];
       return avocado.tableContents.createWithColumns([rows]);
     } else {
       var rows = [];
@@ -120,12 +120,14 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   
   add.data('_shouldContentsBeFreeForm', true, {category: ['free-form contents experiment']});
 
+  add.data('_contentsPanelSize', pt(100,100), {category: ['free-form contents experiment']});
+
   add.method('contentsPanel', function () {
     var cp = this._contentsPanel;
     if (cp) { return cp; }
     
     if (this.shouldUseZooming() && this._shouldContentsBeFreeForm) {
-      cp = this._contentsPanel = new Morph(new lively.scene.Rectangle(pt(0,0).extent(pt(100,100)))).applyStyle(this.contentsPanelStyle());
+      cp = this._contentsPanel = new Morph(new lively.scene.Rectangle(pt(0,0).extent(this._contentsPanelSize))).applyStyle(this.contentsPanelStyle());
       this.adjustScaleOfContentsPanel();
       // aaa - do this more cleanly; for now, just wanna see if this can work
       cp.refreshContent = function () {
