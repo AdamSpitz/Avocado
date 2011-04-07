@@ -4,6 +4,7 @@ requires('core/accessors');
 requires('core/commands');
 requires('core/exit');
 requires('core/enumerator');
+requires('core/deep_copy');
 requires('core/range');
 requires('core/hash_table');
 requires('core/notifier');
