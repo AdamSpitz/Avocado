@@ -85,7 +85,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
           // aaa - I am sure that there's a more elegant way to get the globalBounds.
           // aaa - And I don't even think this works right.
     			var topLeft = this.owner.worldPoint(this.getPosition());
-    			var scaledExtent = this.getExtent().scaleBy(this.overallScale() / world.getScale());
+    			var scaledExtent = this.getExtent().scaleBy(this.overallScale(world));
     			var globalBounds = topLeft.extent(scaledExtent);
     			
           var allVertices = globalBounds.vertices().concat(globalBounds.translatedBy(difference).vertices());

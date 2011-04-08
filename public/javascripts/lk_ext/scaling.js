@@ -49,10 +49,10 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
 
 thisModule.addSlots(Morph.prototype, function(add) {
 
-  add.method('overallScale', function () {
+  add.method('overallScale', function (optionalAncestorToStopAt) {
     var s = 1.0;
     var m = this;
-    while (m) {
+    while (m && m !== optionalAncestorToStopAt) {
       s = s * m.getScale();
       m = m.owner;
     }
