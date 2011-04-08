@@ -54,11 +54,15 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       // do bad things happen if I make the uiState thing happen before moving the poser?
       if (e.uiState) { e.poser.assumeUIState(e.uiState); }
       
-      var poserOrPlaceholder = e.poser;
-      if (e.poser.world()) {
-        poserOrPlaceholder = new avocado.PlaceholderMorph(e.poser);
+      if (this._shouldBeUnobtrusive) {
+        var poserOrPlaceholder = e.poser;
+        if (e.poser.world()) {
+          poserOrPlaceholder = new avocado.PlaceholderMorph(e.poser);
+        }
+        container.addMorphAt(poserOrPlaceholder, e.position);
+      } else {
+        e.poser.ensureIsInWorld(container, e.position, true, true, true);
       }
-      container.addMorphAt(poserOrPlaceholder, e.position);
     }.bind(this));
 
     container.allPotentialPosers().each(function(m) {
