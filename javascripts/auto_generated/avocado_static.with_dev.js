@@ -90,9 +90,10 @@ var annotator = {
       var prefixLength = this._slotAnnoPrefix.length;
       for (var n in this) {
         if (this.hasOwnProperty(n)) {
-          var prefix = n.substr(prefixLength);
-          if (prefix === this._slotAnnoPrefix);
-          f(prefix, this[n]);
+          var slotName = n.substr(prefixLength);
+          if (n.substr(0, prefixLength) === this._slotAnnoPrefix) {
+            f(n.substr(prefixLength), this[n]);
+          }
         }
       }
     },
@@ -262,6 +263,21 @@ var annotator = {
 	      var slotName = slotNames[i];
 	      this.slotAnnotation(slotName).setCategoryParts(catParts);
       }
+    },
+  
+    asRawDataObject: function () {
+      var raw = {};
+      if (this.comment        ) { raw.comment         = this.comment;         }
+      if (this.copyDownParents) { raw.copyDownParents = this.copyDownParents; }
+      return raw;
+    },
+
+    copy: function () {
+      var c = avocado.annotator.asObjectAnnotation(this.asRawDataObject());
+      this.eachSlotAnnotation(function(slotName, slotAnno) {
+        c.setSlotAnnotation(slotName, slotAnno.asRawDataObject());
+      });
+      return c;
     }
   },
 
@@ -323,6 +339,15 @@ var annotator = {
     hashCode: function () {
       var catParts = this.categoryParts();
       return catParts ? catParts.join(',') : 'no category';
+    },
+
+    asRawDataObject: function () {
+      var raw = {};
+      var catParts = this.categoryParts();
+      if (catParts          && catParts.length > 0) { raw.category     = catParts;                        }
+      if (this.comment                            ) { raw.comment      = this.getComment();               }
+      if (this.initializeTo                       ) { raw.initializeTo = this.initializationExpression(); }
+      return raw;
     }
   },
 
@@ -406,7 +431,7 @@ var annotator = {
     if (anno['__proto__'] === this.objectAnnotationPrototype) { return anno; }
     return Object.extendWithJustDirectPropertiesOf(Object.create(this.objectAnnotationPrototype), anno);
   },
-  
+
   loadObjectAnnotation: function(o, rawAnno, creatorSlotName, creatorSlotHolder) {
     var a;
     
@@ -40535,6 +40560,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
       avocado.range.tests,
       avocado.notifier.tests,
       avocado.stringBuffer.tests,
+      avocado.deepCopier.tests,
       String.prototype.tests,
       Array.prototype.tests,
       avocado.dependencies.tests,
@@ -42326,6 +42352,242 @@ thisModule.addSlots(avocado.range.tests, function(add) {
     this.assertEqual([3, 5, 7, 9], r.toArray());
   });
 
+});
+
+
+});
+
+transporter.module.onLoadCallbacks["core/deep_copy"] = function() {};
+transporter.module.create('core/deep_copy', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+  
+  add.creator('deepCopier', {}, {category: ['core']}, {comment: 'Does a deep copy, recursing into creator slots. This is not *always* what you want in a deep copy, but often it is.'});
+  
+});
+
+
+thisModule.addSlots(Object, function(add) {
+  
+  add.method('deepCopyRecursingIntoCreatorSlots', function (o) {
+    return avocado.deepCopier.create().copy(o);
+  });
+  
+});
+
+
+thisModule.addSlots(avocado.deepCopier, function(add) {
+  
+  add.method('create', function () {
+    return Object.newChildOf(this);
+  }, {category: ['creating']});
+  
+  add.method('initialize', function () {
+    this._originalsAndCopies = [];
+  }, {category: ['creating']});
+  
+  add.method('copy', function (o) {
+    var c = this.createCopyOf(o);
+    this.fixInternalReferences(c);
+    return c;
+  }, {category: ['copying']});
+  
+  add.method('createCopyOf', function (o) {
+    if (o === null) { return o; }
+    
+    if (this._debugMode) { console.log("Calling createCopyOf " + reflect(o).inspect()); }
+    
+    var t = typeof(o);
+    var isObj  = t === 'object';
+    var isFunc = t === 'function';
+    if (isObj || isFunc) {
+      var c = isObj ? {} : eval("(" + o.toString() + ")");
+      var thisCopier = this;
+      for (var n in o) {
+        if (o.hasOwnProperty(n)) {
+          var contents = o[n];
+          if (n === '__annotation__') {
+            c[n] = contents.copy();
+          } else {
+            var contentsType = typeof(contents);
+            var contentsCreatorSlot = (contentsType === 'object' || contentsType === 'function') && avocado.annotator.theCreatorSlotOf(contents);
+            if (contentsCreatorSlot && contentsCreatorSlot.name === n && contentsCreatorSlot.holder === o) {
+              c[n] = thisCopier.createCopyOf(contents);
+              avocado.annotator.annotationOf(c[n]).setCreatorSlot(n, c);
+            } else {
+              c[n] = contents;
+            }
+          }
+        }
+      }
+      this.recordOriginalAndCopy(o, c);
+      return c;
+    } else {
+      return o;
+    }
+  }, {category: ['copying']});
+
+  add.method('recordOriginalAndCopy', function (o, c) {
+    if (! this._originalsAndCopies) { this._originalsAndCopies = []; }
+    this._originalsAndCopies.push({original: o, copy: c});
+  }, {category: ['internal references']});
+
+  add.method('fixInternalReferences', function (c) {
+    if (! this._originalsAndCopies) { return; }
+    
+    if (c === null) { return c; }
+    
+    if (this._debugMode) { console.log("Calling fixInternalReferences " + reflect(c).inspect()); }
+    
+    var t = typeof(c);
+    var isObj  = t === 'object';
+    var isFunc = t === 'function';
+    if (isObj || isFunc) {
+      var thisCopier = this;
+      var originalsAndCopies = this._originalsAndCopies;
+      var originalsAndCopiesCount = originalsAndCopies.length;
+      for (var n in c) {
+        if (c.hasOwnProperty(n)) {
+          if (n === '__annotation__') {
+            // just ignore it, no refs to fix up, I think - oh, actually, could do the creator slot, but we've already done it up above
+          } else {
+            var contents = c[n];
+            var contentsType = typeof(contents);
+            if (contentsType === 'object' || contentsType === 'function') {
+              var wasInternalRef = false;
+              for (var i = 0; i < originalsAndCopiesCount; ++i) {
+                var r = originalsAndCopies[i];
+                if (contents === r.original) {
+                  c[n] = r.copy;
+                  wasInternalRef = true;
+                  break;
+                }
+              }
+              var contentsCreatorSlot = avocado.annotator.theCreatorSlotOf(contents);
+              if (contentsCreatorSlot && contentsCreatorSlot.name === n && contentsCreatorSlot.holder === c) {
+                thisCopier.fixInternalReferences(c[n]);
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {category: ['internal references']});
+  
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+  
+});
+
+
+thisModule.addSlots(avocado.deepCopier.tests, function(add) {
+
+  add.creator('objectWithNoSubObjects', {});
+
+  add.creator('objectWithSubObjects', {});
+
+  add.creator('objectWithSubObjectsAndInternalReferences', {});
+
+  add.method('testSimpleObject', function () {
+    var o = this.objectWithNoSubObjects;
+    var c = Object.deepCopyRecursingIntoCreatorSlots(o);
+    this.assert(c !== o);
+    this.assertEqual(3, c.x);
+    this.assertEqual('four', c.y);
+    this.assert(c.externalRef === avocado.deepCopier.tests.objectWithSubObjects);
+  });
+
+  add.method('testObjectWithSubObjects', function () {
+    var o = this.objectWithSubObjects;
+    var c = Object.deepCopyRecursingIntoCreatorSlots(o);
+    this.assert(c !== o);
+    this.assertEqual(5, c.x);
+    this.assertEqual(true, c.b);
+    this.assert(c.m !== o.m);
+    this.assertEqual(o.m.toString(), c.m.toString());
+    this.assertEqual(15, o.m(4, 5, 6));
+    this.assertEqual(15, c.m(4, 5, 6));
+    this.assert(c.subObj !== o.subObj);
+    this.assertEqual('uiop', c.subObj.qwerty);
+    this.assert(c.subObj.subSubObj !== o.subObj.subSubObj);
+    this.assertEqual(111, c.subObj.subSubObj.zxcv);
+  });
+
+  add.method('testObjectWithSubObjectsAndInternalReferences', function () {
+    var o = this.objectWithSubObjectsAndInternalReferences;
+    var c = Object.deepCopyRecursingIntoCreatorSlots(o);
+    this.assert(c !== o);
+    this.assertEqual(1, c.a);
+    this.assert(c.subObj !== o.subObj);
+    this.assertEqual(24, c.subObj.x);
+    this.assert(c.subObj === c.internalRefToSubObj);
+    this.assert(c === c.subObj.internalRefToRootObj);
+  });
+
+});
+
+
+thisModule.addSlots(avocado.deepCopier.tests.objectWithNoSubObjects, function(add) {
+  
+  add.data('x', 3);
+  
+  add.data('y', 'four');
+  
+  add.data('externalRef', avocado.deepCopier.tests.objectWithSubObjects);
+  
+});
+
+
+thisModule.addSlots(avocado.deepCopier.tests.objectWithSubObjects, function(add) {
+  
+  add.data('x', 5);
+  
+  add.data('b', true);
+  
+  add.method('m', function (a1, a2, a3) {
+    return a1 + a2 + a3;
+  });
+  
+  add.creator('subObj', {});
+  
+});
+
+
+thisModule.addSlots(avocado.deepCopier.tests.objectWithSubObjects.subObj, function(add) {
+  
+  add.data('qwerty', 'uiop');
+  
+  add.creator('subSubObj', {});
+  
+});
+
+
+thisModule.addSlots(avocado.deepCopier.tests.objectWithSubObjects.subObj.subSubObj, function(add) {
+
+  add.data('zxcv', 111);
+
+});
+
+
+thisModule.addSlots(avocado.deepCopier.tests.objectWithSubObjectsAndInternalReferences, function(add) {
+  
+  add.data('a', 1);
+
+  add.creator('subObj', {});
+
+  add.data('internalRefToSubObj', avocado.deepCopier.tests.objectWithSubObjectsAndInternalReferences.subObj);
+  
+});
+
+
+thisModule.addSlots(avocado.deepCopier.tests.objectWithSubObjectsAndInternalReferences.subObj, function(add) {
+  
+  add.data('x', 24);
+  
+  add.data('internalRefToRootObj', avocado.deepCopier.tests.objectWithSubObjectsAndInternalReferences);
+  
 });
 
 
@@ -45566,9 +45828,10 @@ thisModule.addSlots(Morph.prototype, function(add) {
 thisModule.addSlots(Morph, function(add) {
   
   add.method('createEitherOrMorph', function(m1, m2, condition) {
+    // aaa - callers that are TableMorphs already should just use the new enhanced morphToggler, don't need to wrap it in this RowMorph anymore
     var r = new avocado.RowMorph().beInvisible();
-    var t1 = avocado.toggler.create(null, m1);
-    var t2 = avocado.toggler.create(null, m2);
+    var t1 = avocado.morphToggler.create(null, m1);
+    var t2 = avocado.morphToggler.create(null, m2);
     r.setPotentialColumns([t1, t2]);
     r.refreshContent = avocado.makeSuperWork(r, "refreshContent", function($super) {
       var c = condition();
@@ -46024,8 +46287,10 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['layout']});
 
   add.method('rejiggerTheLayout', function (availableSpace) {
+    if (this._debugMyLayout) { console.log("About to rejigger the layout, availableSpace is " + availableSpace); }
     var thisExtent = this.getExtent();
     var availableSpaceToUse = this.calculateSpaceToUseOutOf(availableSpace, thisExtent);
+    if (this._debugMyLayout) { console.log("availableSpaceToUse is " + availableSpaceToUse); }
     if (this.isAlreadyLaidOutInSpace(availableSpaceToUse)) {
       availableSpaceToUse = thisExtent;
     } else {
@@ -46203,7 +46468,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     if (typeof(this.potentialContent) === 'function') {
       var potentialContent = this.potentialContent();
       var actualContent = potentialContent.selectThenMap(function(morphOrToggler) {
-        return ! morphOrToggler.shouldNotBeShown();
+        return !!morphOrToggler.actualMorphToShow();
       }, function(morphOrToggler) {
         return morphOrToggler.actualMorphToShow();
       });
@@ -46550,8 +46815,6 @@ thisModule.addSlots(avocado.RowMorph.prototype, function(add) {
 
 
 thisModule.addSlots(Morph.prototype, function(add) {
-
-  add.method('shouldNotBeShown', function () { return false; });
 
   add.method('actualMorphToShow', function () { return this; });
 
@@ -47060,7 +47323,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('headerRowContents', function () {
     if (this.shouldUseZooming()) {
-      return [this._titleLabel, avocado.scaleBasedOptionalMorph.create(this, this.contentsPanel(), this, 2.0)];
+      return [this._titleLabel, avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, 2.0, this._contentsPanelSize)];
     } else {
       
       return [this._expander, this._titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
@@ -47069,7 +47332,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('potentialContent', function () {
     if (this.shouldUseZooming()) {
-      var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedOptionalMorph.create(this, this.contentsPanel(), this, 0.75)] : [this.headerRow()];
+      var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, 0.75, this._contentsPanelSize)] : [this.headerRow()];
       return avocado.tableContents.createWithColumns([rows]);
     } else {
       var rows = [];
@@ -47080,19 +47343,47 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('adjustScaleOfContentsPanel', function () {
-    if (this.shouldUseZooming()) {
+    // aaa - not necessary now that the pose does it.
+    // Take this code out once I'm sure the pose way is working.
+    if (false && this.shouldUseZooming()) { 
       var numContentMorphs = this.contentsCount() + 1; // + 1 for the summary, though I guess it shouldn't matter much
       this._contentsPanel.setScale(1 / numContentMorphs);
     }
   }, {category: ['updating']});
+  
+  add.data('_shouldContentsBeFreeForm', true, {category: ['free-form contents experiment']});
+
+  add.data('_contentsPanelSize', pt(100,100), {category: ['free-form contents experiment']});
 
   add.method('contentsPanel', function () {
     var cp = this._contentsPanel;
     if (cp) { return cp; }
-    cp = this._contentsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.contentsPanelStyle());
-    this.adjustScaleOfContentsPanel();
-    cp.potentialContent = this.potentialContentsOfContentsPanel.bind(this);
-    // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
+    
+    if (this.shouldUseZooming() && this._shouldContentsBeFreeForm) {
+      cp = this._contentsPanel = new Morph(new lively.scene.Rectangle(pt(0,0).extent(this._contentsPanelSize))).applyStyle(this.contentsPanelStyle());
+      // var thisToString = this.toString(); cp.toString = function() { return thisToString + " contents panel"; } // aaa just for debugging
+      this.adjustScaleOfContentsPanel();
+      // aaa - do this more cleanly; for now, just wanna see if this can work
+      cp.refreshContent = function () {
+        var contentMorphs = this.allContentMorphs();
+        // aaa - find a more efficient way to do this
+        cp.submorphs.forEach(function(m) {
+          if (! contentMorphs.include(m)) {
+            cp.removeMorph(m);
+          }
+        });
+        
+        if (!cp._hasAlreadyBeenLaidOutAtLeastOnce) {
+          cp._hasAlreadyBeenLaidOutAtLeastOnce = true;
+          cp.poseManager().assumePose(cp.poseManager().cleaningUpPose(contentMorphs).beUnobtrusive().beSquarish().whenDoneScaleToFitWithinCurrentSpace());
+        }
+      }.bind(this);
+    } else {
+      cp = this._contentsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.contentsPanelStyle());
+      this.adjustScaleOfContentsPanel();
+      cp.potentialContent = this.potentialContentsOfContentsPanel.bind(this);
+      // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
+    }
     return cp;
   }, {category: ['contents panel']});
 
@@ -47172,10 +47463,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingNodeStyle, function(a
   add.data('padding', {top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}, {initializeTo: '{top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}'});
 
   add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
+  
+  add.data('horizontalLayoutMode', avocado.LayoutModes.ShrinkWrap);
 
-  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
-
-  add.data('verticalLayoutMode', avocado.LayoutModes.SpaceFill);
+  add.data('verticalLayoutMode', avocado.LayoutModes.ShrinkWrap);
 
 });
 
@@ -47183,6 +47474,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingNodeStyle, function(a
 thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingContentsPanelStyle, function(add) {
 
   add.data('padding', 0);
+  
+  add.data('fill', null);
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 
@@ -50415,6 +50708,7 @@ requires('core/accessors');
 requires('core/commands');
 requires('core/exit');
 requires('core/enumerator');
+requires('core/deep_copy');
 requires('core/range');
 requires('core/hash_table');
 requires('core/notifier');
@@ -52843,39 +53137,44 @@ thisModule.addSlots(avocado.remoteMirror.tests, function(add) {
 
 });
 
-transporter.module.onLoadCallbacks["lk_ext/optional_morph"] = function() {};
-transporter.module.create('lk_ext/optional_morph', function(requires) {
+transporter.module.onLoadCallbacks["lk_ext/morph_hider"] = function() {};
+transporter.module.create('lk_ext/morph_hider', function(requires) {
 
 }, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('optionalMorph', {}, {category: ['ui']});
+  add.creator('morphHider', {}, {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(avocado.optionalMorph, function(add) {
+thisModule.addSlots(avocado.morphHider, function(add) {
 
-  add.method('create', function (updateFunction, morphToShowOrHide, criterionForShowing) {
-    return Object.newChildOf(this, updateFunction, morphToShowOrHide, criterionForShowing);
-  });
+  add.method('create', function () {
+    var c = Object.create(this);
+    c.initialize.apply(c, arguments);
+    return c;
+  }, {category: ['creating']});
 
-  add.method('initialize', function (morphToUpdate, morphToShowOrHide, criterionForShowing) {
+  add.method('initialize', function (morphToUpdate, morph1, morph2, criterionForShowing) {
     this._morphToUpdate = morphToUpdate;
-    this._morphToShowOrHide = morphToShowOrHide;
-    if (criterionForShowing) { this.shouldBeShown = criterionForShowing; }
+    this._morph1 = morph1;
+    this._morph2 = morph2;
+    if (criterionForShowing) { this.shouldMorph1BeShown = criterionForShowing; }
   });
-
-  add.method('shouldNotBeShown', function () { return ! this.shouldBeShown(); });
 
   add.method('update', function (evt) {
     if (this._morphToUpdate) { this._morphToUpdate.updateAppearance(); }
   });
 
+  add.method('morphOrFunctionToShow', function () {
+    return this.shouldMorph1BeShown() ? this._morph1 : this._morph2;
+  });
+
   add.method('actualMorphToShow', function () {
-    var m = this._morphToShowOrHide;
+    var m = this.morphOrFunctionToShow();
     return typeof(m) === 'function' ? m() : m;
   });
 
@@ -52906,41 +53205,50 @@ thisModule.addSlots(TextMorph.prototype, function(add) {
 
 });
 
-transporter.module.onLoadCallbacks["lk_ext/scale_to_adjust_details"] = function() {};
-transporter.module.create('lk_ext/scale_to_adjust_details', function(requires) {
+transporter.module.onLoadCallbacks["lk_ext/scaling"] = function() {};
+transporter.module.create('lk_ext/scaling', function(requires) {
 
-requires('lk_ext/optional_morph');
+requires('lk_ext/morph_hider');
 
 }, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('scaleBasedOptionalMorph', Object.create(avocado.optionalMorph), {category: ['ui']});
+  add.creator('scaleBasedMorphHider', Object.create(avocado.morphHider), {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(avocado.scaleBasedOptionalMorph, function(add) {
+thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
 
-  add.method('create', function (morphToUpdate, morphToShowOrHide, owner, threshold) {
-    return Object.newChildOf(this, morphToUpdate, morphToShowOrHide, owner, threshold);
-  });
-
-  add.method('initialize', function ($super, morphToUpdate, morphToShowOrHide, owner, threshold) {
-    $super(morphToUpdate, morphToShowOrHide);
+  add.method('initialize', function ($super, morphToUpdate, morph1, owner, threshold, sizeOfSpaceHolder) {
+    $super(morphToUpdate, morph1, this.spaceHolder.bind(this)); // aaa spaceHolder not working properly yet
     this._owner = owner;
     this._threshold = threshold;
+    this._sizeOfSpaceHolder = sizeOfSpaceHolder;
+  });
+  
+  add.method('spaceHolder', function () {
+    var h = this._spaceHolder;
+    if (!h) {
+      if (!this._sizeOfSpaceHolder) { return null; }
+      var h = new Morph(new lively.scene.Rectangle(pt(0,0).extent(this._sizeOfSpaceHolder)));
+      h.setFill(null);
+      h.ignoreEvents();
+      this._spaceHolder = h;
+    }
+    return h;
   });
 
-  add.method('shouldBeShown', function () {
+  add.method('shouldMorph1BeShown', function () {
     var b = false;
     var onScreen = this._owner.isOnScreen();
     if (onScreen) {
       var s = this._owner.overallScale();
       b = s >= this._threshold;
     }
-    // console.log("shouldBeShown is " + b + " for " + this._owner + ", scale is " + s + ", threshold is " + this._threshold + ", onScreen is " + onScreen);
+    // console.log("shouldMorph1BeShown is " + b + " for " + this._owner + ", scale is " + s + ", threshold is " + this._threshold + ", onScreen is " + onScreen);
     return b;
   });
 
@@ -52949,10 +53257,10 @@ thisModule.addSlots(avocado.scaleBasedOptionalMorph, function(add) {
 
 thisModule.addSlots(Morph.prototype, function(add) {
 
-  add.method('overallScale', function () {
+  add.method('overallScale', function (optionalAncestorToStopAt) {
     var s = 1.0;
     var m = this;
-    while (m) {
+    while (m && m !== optionalAncestorToStopAt) {
       s = s * m.getScale();
       m = m.owner;
     }
@@ -52971,31 +53279,27 @@ thisModule.addSlots(Morph.prototype, function(add) {
 transporter.module.onLoadCallbacks["lk_ext/toggler"] = function() {};
 transporter.module.create('lk_ext/toggler', function(requires) {
 
-requires('lk_ext/optional_morph');
+requires('lk_ext/morph_hider');
 
 }, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('toggler', Object.create(avocado.optionalMorph), {category: ['ui']});
+  add.creator('morphToggler', Object.create(avocado.morphHider), {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(avocado.toggler, function(add) {
+thisModule.addSlots(avocado.morphToggler, function(add) {
 
-  add.method('create', function (updateFunction, morphToShowOrHide) {
-    return Object.newChildOf(this, updateFunction, morphToShowOrHide);
-  });
-
-  add.method('initialize', function ($super, morphToUpdate, morphToShowOrHide) {
-    $super(morphToUpdate, morphToShowOrHide);
+  add.method('initialize', function ($super, morphToUpdate, morph1, morph2) {
+    $super(morphToUpdate, morph1, morph2);
     this._valueHolder = avocado.booleanHolder.containing(false);
     this._valueHolder.addObserver(this.valueChanged.bind(this));
   });
 
-  add.method('shouldBeShown', function () { return this.isOn(); });
+  add.method('shouldMorph1BeShown', function () { return this.isOn(); });
 
   add.method('isOn', function () { return this._valueHolder.getValue(); });
 
@@ -53013,7 +53317,8 @@ thisModule.addSlots(avocado.toggler, function(add) {
 
   add.method('update', function ($super, evt) {
     $super(evt);
-    if (this.shouldBeShown()) { this.actualMorphToShow().wasJustShown(evt); }
+    var m = this.actualMorphToShow();
+    if (m) { m.wasJustShown(evt); }
   });
 
   add.method('constructUIStateMemento', function () {
@@ -53056,8 +53361,6 @@ thisModule.addSlots(avocado.poses, function(add) {
 
   add.creator('list', Object.create(avocado.poses['abstract']));
 
-  add.creator('clean', Object.create(avocado.poses.list));
-
   add.creator('snapshot', Object.create(avocado.poses['abstract']));
 
   add.creator('manager', {});
@@ -53067,40 +53370,84 @@ thisModule.addSlots(avocado.poses, function(add) {
 
 thisModule.addSlots(avocado.poses['abstract'], function(add) {
 
+  add.method('create', function () {
+    var c = Object.create(this);
+    c.initialize.apply(c, arguments);
+    return c;
+  }, {category: ['creating']});
+
   add.method('initialize', function (name) {
     this._name = name;
-  });
+  }, {category: ['creating']});
 
   add.method('name', function () {
     return this._name;
-  });
+  }, {category: ['accessing']});
 
   add.method('toString', function () {
     return this.name();
-  });
+  }, {category: ['printing']});
 
-  add.method('recreateInWorld', function (w) {
+  add.method('recreateInContainer', function (container) {
+    var originalScale = container.getScale();
+    var originalSpace = container.getExtent().scaleBy(originalScale);
+    
     this.eachElement(function(e) {
       e.poser.isPartOfCurrentPose = true;
+      // do bad things happen if I make the uiState thing happen before moving the poser?
       if (e.uiState) { e.poser.assumeUIState(e.uiState); }
-      e.poser.ensureIsInWorld(w, e.position, true, true, true, function() {
-        // do bad things happen if I make the uiState thing happen before moving the poser?
-      });
-    });
-    
-    w.allPotentialPosers().each(function(m) {
+      
+      if (this._shouldBeUnobtrusive) {
+        var poserOrPlaceholder = e.poser;
+        if (e.poser.world()) {
+          poserOrPlaceholder = new avocado.PlaceholderMorph(e.poser);
+        }
+        container.addMorphAt(poserOrPlaceholder, e.position);
+      } else {
+        e.poser.ensureIsInWorld(container, e.position, true, true, true);
+      }
+    }.bind(this));
+
+    container.allPotentialPosers().each(function(m) {
       if (m.isPartOfCurrentPose) {
         delete m.isPartOfCurrentPose;
       } else if (! m.shouldIgnorePoses()) {
         // I am undecided on whether this is a good idea or not. It's annoying if
         // stuff I want zooms away, but it's also annoying if stuff zooms onto
         // other stuff and the screen gets all cluttered.
-        var shouldUninvolvedPosersZoomAway = false;
-        if (shouldUninvolvedPosersZoomAway) {
-          m.startZoomingOuttaHere();
+        var shouldUninvolvedPosersGoAway = false;
+        if (shouldUninvolvedPosersGoAway) {
+          if (this._shouldBeUnobtrusive) {
+            var callbackWhenDoneFading = finalCallback();
+            m.smoothlyFadeTo(0, function() {
+              m.remove();
+              callbackWhenDoneFading();
+            });
+          } else {
+            m.startZoomingOuttaHere(finalCallback());
+          }
         }
       }
-    });
+    }.bind(this));
+  
+    if (this._shouldScaleToFitWithinCurrentSpace) {
+      container.refreshContentOfMeAndSubmorphs(); // to make sure the submorphs are laid out right - though, aaa, shouldn't this be done before even calculating the pose positions?
+      var currentExtent = container.bounds().extent();
+      var hs = originalSpace.x / currentExtent.x;
+      var vs = originalSpace.y / currentExtent.y;
+      container.scaleBy(Math.min(hs, vs));
+      // console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
+    }
+  }, {category: ['posing']});
+  
+  add.method('whenDoneScaleToFitWithinCurrentSpace', function () {
+    this._shouldScaleToFitWithinCurrentSpace = true;
+    return this;
+  }, {category: ['scaling']});
+
+  add.method('beUnobtrusive', function () {
+    this._shouldBeUnobtrusive = true;
+    return this;
   });
 
 });
@@ -53154,9 +53501,9 @@ thisModule.addSlots(avocado.poses.tree, function(add) {
 
 thisModule.addSlots(avocado.poses.list, function(add) {
 
-  add.method('initialize', function ($super, name, world, posers) {
+  add.method('initialize', function ($super, name, container, posers) {
     $super(name);
-    this._world = world;
+    this._container = container;
     this._posers = posers;
   });
 
@@ -53167,34 +53514,53 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;
     });
 
-    var pos = pt(20,20);
+    var padding = pt(20,20);
+    var pos = padding;
     var widest = 0;
-    for (var i = 0; i < sortedPosersToMove.length; ++i) {
+    var maxY = this._shouldBeSquarish ? null : this._container.getExtent().y - 30;
+    for (var i = 0, n = sortedPosersToMove.length; i < n; ++i) {
       var poser = sortedPosersToMove[i];
       var uiState = this.destinationUIStateFor(poser);
       if (uiState) { poser.assumeUIState(uiState); }
       f({poser: poser, position: pos, uiState: uiState});
-      var extent = poser.getExtent().scaleBy(poser.getScale());
-      pos = pos.withY(pos.y + extent.y);
-      widest = Math.max(widest, extent.x);
-      if (pos.y >= this._world.getExtent().y - 30) { pos = pt(pos.x + widest + 20, 20); }
+      var poserSpace = poser.getExtent().scaleBy(poser.getScale());
+      pos = pos.withY(pos.y + poserSpace.y);
+      widest = Math.max(widest, poserSpace.x);
+      
+      if (this._shouldBeSquarish && !maxY) {
+        // If it seems like the current y is far down enough to make the whole
+        // thing come out squarish (assuming that all columns will be about as
+        // wide as this one), then set this as the maxY.
+        var desiredAspectRatio = 1;
+        var estimatedNumberOfColumns = Math.ceil(n / (i + 1));
+        var estimatedTotalWidth = estimatedNumberOfColumns * (widest + padding.x);
+        // aaa - not sure why it keeps coming out too tall; quick hack for now: compensate by multiplying by 1.2
+        if (pos.y * desiredAspectRatio * 1.2 >= estimatedTotalWidth) { maxY = pos.y; }
+      }
+      
+      if (maxY && pos.y >= maxY) { pos = pt(pos.x + widest + padding.x, padding.y); }
     }
   });
-
-  add.method('destinationUIStateFor', function (poser) {
-    // just use whatever state it's in now
-    return null;
+  
+  add.method('beCollapsing', function () {
+    this._shouldBeCollapsing = true;
+    return this;
+  });
+  
+  add.method('beSquarish', function () {
+    this._shouldBeSquarish = true;
+    return this;
   });
 
-});
-
-
-thisModule.addSlots(avocado.poses.clean, function(add) {
-
   add.method('destinationUIStateFor', function (poser) {
-    var uiState = poser.constructUIStateMemento();
-    if (uiState) { uiState.isExpanded = false; }
-    return uiState;
+    if (this._shouldBeCollapsing) {
+      var uiState = poser.constructUIStateMemento();
+      if (uiState) { uiState.isExpanded = false; }
+      return uiState;
+    } else {
+      // just use whatever state it's in now
+      return null;
+    }
   });
 
 });
@@ -53235,6 +53601,14 @@ thisModule.addSlots(avocado.poses.snapshot, function(add) {
 
 thisModule.addSlots(avocado.poses.manager, function(add) {
 
+  add.method('initialize', function (container) {
+    this._container = container;
+  }, {category: ['creating']});
+
+  add.method('container', function () {
+    return this._container;
+  }, {category: ['accessing']});
+
   add.method('explicitlyRememberedPoses', function () {
     return avocado.organization.current.poses();
   }, {category: ['explicitly remembering']});
@@ -53272,22 +53646,22 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     }
 
     var pose = this.undoPoseStack()[this._undoPoseStackIndex -= 1];
-    pose.recreateInWorld(this.world());
+    pose.recreateInContainer(this.container());
   });
 
   add.method('goForwardToNextPose', function () {
     if (! this.canGoForwardToNextPose()) { throw "there is nothing to go forward to"; }
     var pose = this.undoPoseStack()[this._undoPoseStackIndex += 1];
-    pose.recreateInWorld(this.world());
+    pose.recreateInContainer(this.container());
   });
 
   add.method('assumePose', function (pose) {
     this.addToUndoPoseStack(this.createSnapshotOfCurrentPose(avocado.organization.current.findUnusedPoseName()));
-    pose.recreateInWorld(this.world());
+    pose.recreateInContainer(this.container());
   }, {category: ['poses']});
 
   add.method('createSnapshotOfCurrentPose', function (poseName) {
-    return Object.newChildOf(avocado.poses.snapshot, poseName, this.world().posers());
+    return avocado.poses.snapshot.create(poseName, this.container().posers());
   }, {category: ['taking snapshots']});
 
   add.method('rememberThisPose', function () {
@@ -53296,14 +53670,14 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     }.bind(this));
   }, {category: ['taking snapshots']});
 
-  add.method('cleanUp', function (evt) {
-    this.assumePose(Object.newChildOf(avocado.poses.clean, "clean up", this.world(), this.world().posers()));
+  add.method('cleaningUpPose', function (posers) {
+    return avocado.poses.list.create("clean up", this.container(), posers || this.container().posers()).beCollapsing();
   }, {category: ['cleaning up']});
 
   add.method('listPoseOfMorphsFor', function (objects, name) {
     // aaa LK-dependent
-    var posersToMove = objects.map(function(m) { return this.world().morphFor(m); }.bind(this));
-    return Object.newChildOf(avocado.poses.list, name, this.world(), posersToMove);
+    var posersToMove = objects.map(function(m) { return this.container().morphFor(m); }.bind(this));
+    return avocado.poses.list.create(name, this.container(), posersToMove);
   }, {category: ['cleaning up']});
 
   add.method('poseChooser', function () {
@@ -53318,7 +53692,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     cmdList.addLine();
     
     cmdList.addItem(["clean up", function(evt) {
-      this.cleanUp(evt);
+      this.assumePose(this.cleaningUpPose());
     }.bind(this)]);
 
     var poseCommands = [];
@@ -53329,7 +53703,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
 
     if (this.explicitlyRememberedPoses().size() > 0) {
       poseCommands.push(["assume a pose...", function(evt) {
-        avocado.ui.showMenu(this.poseChooser(), this.world(), null, evt);
+        avocado.ui.showMenu(this.poseChooser(), this.container(), null, evt);
       }.bind(this)]);
     }
 
@@ -53372,21 +53746,12 @@ thisModule.addSlots(avocado.poses, function(add) {
 });
 
 
-thisModule.addSlots(avocado.poses.manager, function(add) {
-
-  add.method('world', function () {
-    // aaa LK-dependent
-    return WorldMorph.current();
-  }, {category: ['accessing']});
-
-});
-
-
-thisModule.addSlots(WorldMorph.prototype, function(add) {
+thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('poseManager', function () {
     if (! this._poseManager) {
-      this._poseManager = Object.newChildOf(avocado.poses.manager);
+      this._poseManager = Object.newChildOf(avocado.poses.manager, this);
+      reflect(this).slotAt('_poseManager').setInitializationExpression('null');
     }
     return this._poseManager;
   }, {category: ['poses']});
@@ -53398,11 +53763,6 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   add.method('allPotentialPosers', function () {
     return $A(this.submorphs);
   });
-
-});
-
-
-thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('shouldIgnorePoses', function () {
     return false;
@@ -54512,32 +54872,6 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 });
 
 
-thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
-
-  add.method('asRawDataObject', function () {
-    var objectAnnoToStringify = {};
-    if (this.comment        ) { objectAnnoToStringify.comment         = this.comment;         }
-    if (this.copyDownParents) { objectAnnoToStringify.copyDownParents = this.copyDownParents; }
-    return objectAnnoToStringify;
-  }, {category: ['transporting']});
-
-});
-
-
-thisModule.addSlots(avocado.annotator.slotAnnotationPrototype, function(add) {
-
-  add.method('asRawDataObject', function () {
-    var slotAnnoToStringify = {};
-    var catParts = this.categoryParts();
-    if (catParts          && catParts.length > 0) { slotAnnoToStringify.category     = catParts;                        }
-    if (this.comment                            ) { slotAnnoToStringify.comment      = this.getComment();               }
-    if (this.initializeTo                       ) { slotAnnoToStringify.initializeTo = this.initializationExpression(); }
-    return slotAnnoToStringify;
-  }, {category: ['transporting']});
-
-});
-
-
 thisModule.addSlots(transporter.tests, function(add) {
 
   add.creator('someObject', {});
@@ -55428,13 +55762,16 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return intersects;
     }, {category: ['testing']});
 
-  add.method('startZoomingOuttaHere', function () {
+  add.method('startZoomingOuttaHere', function (functionToCallWhenDone) {
       var w = this.world();
       if (w) {
         this.becomeDirectSubmorphOfWorld(w);
-        return this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {this.remove();}.bind(this));
+        this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {
+          this.remove();
+          if (functionToCallWhenDone) { functionToCallWhenDone(); }
+        }.bind(this));
       } else {
-        return null;
+        if (functionToCallWhenDone) { functionToCallWhenDone(); }
       }
     }, {category: ['zooming around']});
 
@@ -55487,8 +55824,13 @@ thisModule.addSlots(Morph.prototype, function(add) {
         var difference = newPos.subPt(oldPos);
         var ratio = Math.max(Math.abs(difference.x) / extent.x, Math.abs(difference.y) / extent.y);
         if (ratio > 0.5) {
-          var bounds = this.bounds();
-          var allVertices = bounds.vertices().concat(bounds.translatedBy(difference).vertices());
+          // aaa - I am sure that there's a more elegant way to get the globalBounds.
+          // aaa - And I don't even think this works right.
+    			var topLeft = this.owner.worldPoint(this.getPosition());
+    			var scaledExtent = this.getExtent().scaleBy(this.overallScale(world));
+    			var globalBounds = topLeft.extent(scaledExtent);
+    			
+          var allVertices = globalBounds.vertices().concat(globalBounds.translatedBy(difference).vertices());
           var convexVertices = avocado.quickhull.getConvexHull(allVertices).map(function(a) {return a.pointA;});
           var motionBlurMorph = Morph.makePolygon(convexVertices, 0, Color.black, this.getFill());
           motionBlurMorph.doesNotNeedACreatorSlot = true; // aaa HACK to fix performance bug
@@ -55571,10 +55913,18 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return (! this.owner) || (this.owner instanceof WorldMorph) || (this.owner instanceof HandMorph) || (this.owner instanceof avocado.CarryingHandMorph);
     }.bind(this));
   }, {category: ['adding and removing']});
+  
+  add.method('setFillOpacityRecursively', function (a) {
+    console.log("setFillOpacityRecursively: " + a);
+    this.setFillOpacity(a);
+    for (var i = 0, n = this.submorphs.length; i < n; ++i) {
+      this.submorphs[i].setFillOpacityRecursively(a);
+    }
+  }, {category: ['fading']});
 
   add.method('smoothlyFadeTo', function (desiredAlpha, functionToCallWhenDone) {
-      this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);
-    }, {category: ['resizing']});
+    this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);
+  }, {category: ['fading']});
 
   add.method('smoothlyResizeTo', function (desiredSize, functionToCallWhenDone) {
       this.startAnimating(avocado.animation.newResizer(this, desiredSize), functionToCallWhenDone);
@@ -55641,15 +55991,25 @@ requires('lk_ext/animation');
 
 thisModule.addSlots(Morph.prototype, function(add) {
 
-  add.method('scatter', function (morphs) {
+  add.method('scatterNearMe', function (morphs) {
     var world = this.world();
     var rectToScatterIn = this.bounds().insetBy(-200).intersection(world.bounds().insetBy(50));
     var rectToAvoid = this.bounds().insetBy(-50);
+    world.scatter(morphs, rectToScatterIn, rectToAvoid);
+  });
+
+});
+
+
+thisModule.addSlots(WorldMorph.prototype, function(add) {
+
+  add.method('scatter', function (morphs, rectToScatterIn, rectToAvoid) {
+    if (!rectToScatterIn) { rectToScatterIn = this.bounds().insetBy(50); }
     morphs.each(function(m) {
       while (true) {
         var p = rectToScatterIn.randomPoint();
-        if (! rectToAvoid.containsPoint(p)) {
-          m.ensureIsInWorld(world, p, true, true, false);
+        if (!rectToAvoid || !rectToAvoid.containsPoint(p)) {
+          m.ensureIsInWorld(this, p, true, true, false);
           return p;
         }
       }
@@ -55682,7 +56042,7 @@ requires('lk_ext/shortcuts');
 requires('lk_ext/check_box');
 requires('lk_ext/combo_box');
 requires('lk_ext/toggler');
-requires('lk_ext/scale_to_adjust_details');
+requires('lk_ext/scaling');
 requires('lk_ext/layout');
 requires('lk_ext/rows_and_columns');
 requires('lk_ext/collection_morph');
@@ -55735,9 +56095,9 @@ thisModule.addSlots(avocado.ui, function(add) {
     return this.worldFor(evtOrMorph).confirm(message, callback);
   });
 
-  add.method('grab', function (obj, evt) {
+  add.method('grab', function (obj, evt, callback) {
     var m = this.worldFor(evt).morphFor(obj);
-    m.grabMe(evt);
+    m.grabMe(evt, callback);
     return m;
   });
 
@@ -56610,7 +56970,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     $super(catOfMir);
     this._shouldOmitHeaderRow = shouldOmitHeaderRow;
 
-    this.applyStyle(this.defaultStyle);
+    this.applyStyle(this.desiredCurrentStyle());
 
     this._highlighter = avocado.booleanHolder.containing(true).addObserver(function() {this.updateHighlighting();}.bind(this));
     this._highlighter.setChecked(false);
@@ -56628,9 +56988,15 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     return avocado.shouldMirrorsUseZooming;
   }, {category: ['zooming']});
 
-  add.creator('defaultStyle', {}, {category: ['styles']});
+  add.creator('nonZoomingStyle', {}, {category: ['styles']});
 
-  add.creator('grabbedStyle', Object.create(avocado.category.Morph.prototype.defaultStyle), {category: ['styles']});
+  add.creator('zoomingStyle', {}, {category: ['styles']});
+
+  add.creator('grabbedStyle', Object.create(avocado.category.Morph.prototype.nonZoomingStyle), {category: ['styles']});
+
+  add.method('desiredCurrentStyle', function () {
+    return this.shouldUseZooming() ? this.zoomingStyle : this.nonZoomingStyle;
+  }, {category: ['styles']});
 
   add.method('createTitleLabel', function () {
     var lbl = new avocado.TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),
@@ -56650,7 +57016,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     // summaryLabel.setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     // return summaryLabel;
     
-    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.defaultStyle.contentsSummaryPadding).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
+    return avocado.RowMorph.createSpaceFilling([summaryLabel], this.desiredCurrentStyle().contentsSummaryPadding).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
   }, {category: ['creating']});
 
   add.method('partsOfUIState', function ($super) {
@@ -56702,7 +57068,17 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
                             { label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); } }]);
       }
       
-      cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(               evt); } }]);
+      if (avocado.debugMode) {
+        cmdList.addSection([{ label: "add 50 functions",  go: function(evt) { for (var i = 0; i < 50; ++i) { this.addSlot    (function() {}, evt); } } }]);
+      }
+      
+      cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(evt); } }]);
+      
+      if (this.shouldUseZooming()) {
+        cmdList.addSection([{ label: "clean up",  go: function(evt) {
+          this.contentsPanel().poseManager().assumePose(this.contentsPanel().poseManager().cleaningUpPose().beSquarish().whenDoneScaleToFitWithinCurrentSpace());
+        } }]);
+      }
 
       if (!this.category().isRoot()) {
         cmdList.addLine();
@@ -56730,8 +57106,8 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     var mirMorph = this.mirrorMorph();
     
     cmdList.itemWith("label", "add slot or category").wrapFunction(function(oldFunctionToRun, evt, slotOrCatMorph) {
-      var result = oldFunctionToRun(evt, slotOrCatMorph);
-      mirMorph.expandCategory(result.category());
+      var resultCat = oldFunctionToRun(evt, slotOrCatMorph);
+      mirMorph.expandCategory(resultCat);
     });
     
     return cmdList;
@@ -56795,7 +57171,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(avocado.category.Morph.prototype.defaultStyle, function(add) {
+thisModule.addSlots(avocado.category.Morph.prototype.nonZoomingStyle, function(add) {
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 
@@ -56806,6 +57182,25 @@ thisModule.addSlots(avocado.category.Morph.prototype.defaultStyle, function(add)
   add.data('grabsShouldFallThrough', true);
 
   add.data('fill', null);
+
+  add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
+
+});
+
+
+thisModule.addSlots(avocado.category.Morph.prototype.zoomingStyle, function(add) {
+
+  add.data('openForDragAndDrop', false);
+
+  add.data('suppressGrabbing', false);
+
+  add.data('grabsShouldFallThrough', false);
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
+
+  add.data('borderWidth', 1);
+
+  add.data('borderColor', new Color(0.6, 0.6, 0.6));
 
   add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
 
@@ -58599,15 +58994,15 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     $super();
     this._model = slot;
 
-    this.applyStyle(this.appropriateStyle());
+    this.applyAppropriateStyles();
 
     var optionalCommentButtonMorph, buttonChooserMorph;
     if (slot.annotationForReading) {
       if (this.shouldUseZooming()) {
-        this._annotationToggler = avocado.scaleBasedOptionalMorph.create(this, this.createRow(function() { return this.annotationMorph(); }.bind(this)), this, 1);
+        this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.createRow(function() { return this.annotationMorph(); }.bind(this)), this, 1, pt(50,25)); // aaa made-up space-holder-size number
       } else {
-        this._commentToggler    = avocado.toggler.create(this, this.createRow(function() {return this.   commentMorph();}.bind(this)));
-        this._annotationToggler = avocado.toggler.create(this, this.createRow(function() {return this.annotationMorph();}.bind(this)));
+        this._commentToggler    = avocado.morphToggler.create(this, this.createRow(function() {return this.   commentMorph();}.bind(this)));
+        this._annotationToggler = avocado.morphToggler.create(this, this.createRow(function() {return this.annotationMorph();}.bind(this)));
 
         var commentButton = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
         optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
@@ -58616,24 +59011,28 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
     var signatureRowContent;
     if (this.shouldUseZooming()) {
-      /* aaa why does this produce weird shrinking behaviour?   avocado.scaleBasedOptionalMorph.create(this, function() { */
+      /* aaa why does this produce weird shrinking behaviour?   avocado.scaleBasedMorphHider.create(this, function() { */
       buttonChooserMorph = Morph.wrapToTakeUpConstantHeight(10, 
         this.slot().isSimpleMethod() ? this.sourcePane() : Morph.createEitherOrMorph(function() { return slot.contents().morph(); }, this.contentsPointer.bind(this), function() {
           return this.slot().equals(this.slot().contents().probableCreatorSlot());
         }.bind(this))
       );
-      //}.bind(this), this, 1.5);
+      //}.bind(this), this, 1.5, pt(10,10));
       signatureRowContent = [this.descriptionMorph(), Morph.createSpacer(), this._annotationToggler, Morph.createSpacer(), buttonChooserMorph].compact();
     } else {
-      this._sourceToggler = avocado.toggler.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)));
+      this._sourceToggler = avocado.morphToggler.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)));
       buttonChooserMorph = Morph.createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.slot().isSimpleMethod(); }.bind(this));
       signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph].compact();
     }
 
     this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
+    
+    this.refreshContentOfMeAndSubmorphs(); // wasn't needed back when slot morphs were always part of a table morph, but now that we have free-form layout we need it
   }, {category: ['creating']});
 
   add.method('slot', function () { return this._model; }, {category: ['accessing']});
+
+  add.method('toString', function () { return this._model.toString(); }, {category: ['accessing']});
 
   add.method('shouldUseZooming', function () {
     return avocado.shouldMirrorsUseZooming;
@@ -58641,9 +59040,13 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.creator('defaultStyle', {}, {category: ['styles']});
 
-  add.creator('copyDownStyle', Object.create(avocado.slots['abstract'].Morph.prototype.defaultStyle), {category: ['styles']});
+  add.creator('nonZoomingStyle', {}, {category: ['styles']});
 
-  add.creator('grabbedStyle', Object.create(avocado.slots['abstract'].Morph.prototype.defaultStyle), {category: ['styles']});
+  add.creator('zoomingStyle', {}, {category: ['styles']});
+
+  add.creator('copyDownStyle', {}, {category: ['styles']});
+
+  add.creator('grabbedStyle', {}, {category: ['styles']});
 
   add.creator('annotationStyle', {}, {category: ['styles']});
 
@@ -58829,11 +59232,14 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['UI state']});
 
   add.method('updateFill', function () {
-    this.applyStyle(this.appropriateStyle());
+    this.applyAppropriateStyles();
   }, {category: ['updating']});
 
-  add.method('appropriateStyle', function () {
-    return this._explicitStyle || (this.slot().isFromACopyDownParent() ? this.copyDownStyle : this.defaultStyle);
+  add.method('applyAppropriateStyles', function () {
+    this.applyStyle(this.defaultStyle);
+    this.applyStyle(this.shouldUseZooming() ? this.zoomingStyle : this.nonZoomingStyle);
+    if (this._explicitStyle) { this.applyStyle(this._explicitStyle); }
+    if (this.slot().isFromACopyDownParent()) { this.applyStyle(this.copyDownStyle); }
   }, {category: ['updating']});
 
   add.method('potentialContent', function () {
@@ -58904,17 +59310,33 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.defaultStyle, func
 
   add.data('borderWidth', 1);
 
-  add.data('fill', null);
-
   add.data('padding', 0);
+
+  add.data('openForDragAndDrop', false);
+
+  add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
+
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.nonZoomingStyle, function(add) {
+
+  add.data('fill', null);
 
   add.data('suppressGrabbing', true);
 
   add.data('grabsShouldFallThrough', true);
 
-  add.data('openForDragAndDrop', false);
+});
 
-  add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.zoomingStyle, function(add) {
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
+
+  add.data('suppressGrabbing', false);
+
+  add.data('grabsShouldFallThrough', false);
 
 });
 
@@ -59064,10 +59486,10 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
     if (this.mirror().canHaveAnnotation()) {
       if (this.shouldUseZooming()) {
-        this._annotationToggler = avocado.scaleBasedOptionalMorph.create(this, this.createRow(this.annotationMorph()), this, 1);
+        this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.createRow(this.annotationMorph()), this, 1, pt(50,10)); // aaa made-up space-holder-size number
       } else {
-        this._annotationToggler = avocado.toggler.create(this, this.createRow(this.annotationMorph()));
-        this._commentToggler    = avocado.toggler.create(this, this.createRow(this.   commentMorph()));
+        this._annotationToggler = avocado.morphToggler.create(this, this.createRow(this.annotationMorph()));
+        this._commentToggler    = avocado.morphToggler.create(this, this.createRow(this.   commentMorph()));
         this.commentButton      = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
         var optionalCommentButtonMorph = Morph.createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
       }
@@ -60739,6 +61161,8 @@ thisModule.addSlots(avocado, function(add) {
       console.log("Time to get to timeout: " + (t4 - t3));
     }.bind(this), 0);
   });
+  
+  add.creator('argleBargle', {});
 
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
@@ -60753,6 +61177,17 @@ thisModule.addSlots(avocado, function(add) {
 
     if (this.debugMode) {
       cmdList.addLine();
+
+      cmdList.addItem({label: "get argleBargle", go: function(evt) {
+        var mir = reflect(this.argleBargle);
+        avocado.ui.grab(mir, evt)
+      }.bind(this)});
+
+      cmdList.addItem({label: "scatter 1-100", go: function(evt) {
+        var morphs = [];
+        for (var i = 1; i <= 100; ++i) { morphs.push(reflect(i).morph()); }
+        WorldMorph.current().scatter(morphs);
+      }.bind(this)});
 
       cmdList.addItem({label: "walk annotations", go: function(evt) {
         var walker = avocado.annotationWalker.create();
@@ -60804,6 +61239,69 @@ thisModule.addSlots(avocado, function(add) {
 
   }, {category: ['menu']});
 
+});
+
+
+thisModule.addSlots(avocado.argleBargle, function(add) {
+  
+  add.data('a', 1);
+  
+  add.data('b', 'two');
+  
+  add.data('c', 333);
+  
+  add.method('d', function(x) {
+    return x + 4;
+  });
+  
+  add.method('e', function(x) {
+    return x + 5;
+  }, {category: ['argle']});
+  
+  add.method('f', function(x) {
+    return x + 6;
+  }, {category: ['argle']});
+  
+  add.method('g', function(x) {
+    return x + 7;
+  }, {category: ['argle']});
+  
+  add.method('h', function(x) {
+    return x + 8;
+  }, {category: ['noodle']});
+  
+  add.method('i', function(x) {
+    return x + 9;
+  }, {category: ['noodle']});
+  
+  add.method('j', function(x) {
+    return x + 10;
+  }, {category: ['noodle']});
+  
+  add.method('k', function(x) {
+    return x + 11;
+  }, {category: ['noodle']});
+  
+  add.method('l', function(x) {
+    return x + 12;
+  });
+  
+  add.method('m', function(x) {
+    return x + 13;
+  });
+  
+  add.method('n', function(x) {
+    return x + 14;
+  });
+  
+  add.method('o', function(x) {
+    return x + 15;
+  });
+  
+  add.method('p', function(x) {
+    return x + 16;
+  });
+  
 });
 
 
