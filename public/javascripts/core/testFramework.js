@@ -236,6 +236,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
       avocado.range.tests,
       avocado.notifier.tests,
       avocado.stringBuffer.tests,
+      avocado.deepCopier.tests,
       String.prototype.tests,
       Array.prototype.tests,
       avocado.dependencies.tests,

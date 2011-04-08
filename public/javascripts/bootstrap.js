@@ -87,9 +87,10 @@ var annotator = {
       var prefixLength = this._slotAnnoPrefix.length;
       for (var n in this) {
         if (this.hasOwnProperty(n)) {
-          var prefix = n.substr(prefixLength);
-          if (prefix === this._slotAnnoPrefix);
-          f(prefix, this[n]);
+          var slotName = n.substr(prefixLength);
+          if (n.substr(0, prefixLength) === this._slotAnnoPrefix) {
+            f(n.substr(prefixLength), this[n]);
+          }
         }
       }
     },
@@ -259,6 +260,21 @@ var annotator = {
 	      var slotName = slotNames[i];
 	      this.slotAnnotation(slotName).setCategoryParts(catParts);
       }
+    },
+  
+    asRawDataObject: function () {
+      var raw = {};
+      if (this.comment        ) { raw.comment         = this.comment;         }
+      if (this.copyDownParents) { raw.copyDownParents = this.copyDownParents; }
+      return raw;
+    },
+
+    copy: function () {
+      var c = avocado.annotator.asObjectAnnotation(this.asRawDataObject());
+      this.eachSlotAnnotation(function(slotName, slotAnno) {
+        c.setSlotAnnotation(slotName, slotAnno.asRawDataObject());
+      });
+      return c;
     }
   },
 
@@ -320,6 +336,15 @@ var annotator = {
     hashCode: function () {
       var catParts = this.categoryParts();
       return catParts ? catParts.join(',') : 'no category';
+    },
+
+    asRawDataObject: function () {
+      var raw = {};
+      var catParts = this.categoryParts();
+      if (catParts          && catParts.length > 0) { raw.category     = catParts;                        }
+      if (this.comment                            ) { raw.comment      = this.getComment();               }
+      if (this.initializeTo                       ) { raw.initializeTo = this.initializationExpression(); }
+      return raw;
     }
   },
 
@@ -403,7 +428,7 @@ var annotator = {
     if (anno['__proto__'] === this.objectAnnotationPrototype) { return anno; }
     return Object.extendWithJustDirectPropertiesOf(Object.create(this.objectAnnotationPrototype), anno);
   },
-  
+
   loadObjectAnnotation: function(o, rawAnno, creatorSlotName, creatorSlotHolder) {
     var a;
     

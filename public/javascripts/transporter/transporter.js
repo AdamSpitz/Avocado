@@ -545,32 +545,6 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 });
 
 
-thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
-
-  add.method('asRawDataObject', function () {
-    var objectAnnoToStringify = {};
-    if (this.comment        ) { objectAnnoToStringify.comment         = this.comment;         }
-    if (this.copyDownParents) { objectAnnoToStringify.copyDownParents = this.copyDownParents; }
-    return objectAnnoToStringify;
-  }, {category: ['transporting']});
-
-});
-
-
-thisModule.addSlots(avocado.annotator.slotAnnotationPrototype, function(add) {
-
-  add.method('asRawDataObject', function () {
-    var slotAnnoToStringify = {};
-    var catParts = this.categoryParts();
-    if (catParts          && catParts.length > 0) { slotAnnoToStringify.category     = catParts;                        }
-    if (this.comment                            ) { slotAnnoToStringify.comment      = this.getComment();               }
-    if (this.initializeTo                       ) { slotAnnoToStringify.initializeTo = this.initializationExpression(); }
-    return slotAnnoToStringify;
-  }, {category: ['transporting']});
-
-});
-
-
 thisModule.addSlots(transporter.tests, function(add) {
 
   add.creator('someObject', {});

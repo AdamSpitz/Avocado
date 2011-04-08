@@ -65,6 +65,8 @@ thisModule.addSlots(avocado, function(add) {
       console.log("Time to get to timeout: " + (t4 - t3));
     }.bind(this), 0);
   });
+  
+  add.creator('argleBargle', {});
 
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
@@ -79,6 +81,17 @@ thisModule.addSlots(avocado, function(add) {
 
     if (this.debugMode) {
       cmdList.addLine();
+
+      cmdList.addItem({label: "get argleBargle", go: function(evt) {
+        var mir = reflect(this.argleBargle);
+        avocado.ui.grab(mir, evt)
+      }.bind(this)});
+
+      cmdList.addItem({label: "scatter 1-100", go: function(evt) {
+        var morphs = [];
+        for (var i = 1; i <= 100; ++i) { morphs.push(reflect(i).morph()); }
+        WorldMorph.current().scatter(morphs);
+      }.bind(this)});
 
       cmdList.addItem({label: "walk annotations", go: function(evt) {
         var walker = avocado.annotationWalker.create();
@@ -130,6 +143,69 @@ thisModule.addSlots(avocado, function(add) {
 
   }, {category: ['menu']});
 
+});
+
+
+thisModule.addSlots(avocado.argleBargle, function(add) {
+  
+  add.data('a', 1);
+  
+  add.data('b', 'two');
+  
+  add.data('c', 333);
+  
+  add.method('d', function(x) {
+    return x + 4;
+  });
+  
+  add.method('e', function(x) {
+    return x + 5;
+  }, {category: ['argle']});
+  
+  add.method('f', function(x) {
+    return x + 6;
+  }, {category: ['argle']});
+  
+  add.method('g', function(x) {
+    return x + 7;
+  }, {category: ['argle']});
+  
+  add.method('h', function(x) {
+    return x + 8;
+  }, {category: ['noodle']});
+  
+  add.method('i', function(x) {
+    return x + 9;
+  }, {category: ['noodle']});
+  
+  add.method('j', function(x) {
+    return x + 10;
+  }, {category: ['noodle']});
+  
+  add.method('k', function(x) {
+    return x + 11;
+  }, {category: ['noodle']});
+  
+  add.method('l', function(x) {
+    return x + 12;
+  });
+  
+  add.method('m', function(x) {
+    return x + 13;
+  });
+  
+  add.method('n', function(x) {
+    return x + 14;
+  });
+  
+  add.method('o', function(x) {
+    return x + 15;
+  });
+  
+  add.method('p', function(x) {
+    return x + 16;
+  });
+  
 });
 
 

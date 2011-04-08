@@ -16,21 +16,12 @@ thisModule.addSlots(avocado.poses, function(add) {
 });
 
 
-thisModule.addSlots(avocado.poses.manager, function(add) {
-
-  add.method('world', function () {
-    // aaa LK-dependent
-    return WorldMorph.current();
-  }, {category: ['accessing']});
-
-});
-
-
-thisModule.addSlots(WorldMorph.prototype, function(add) {
+thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('poseManager', function () {
     if (! this._poseManager) {
-      this._poseManager = Object.newChildOf(avocado.poses.manager);
+      this._poseManager = Object.newChildOf(avocado.poses.manager, this);
+      reflect(this).slotAt('_poseManager').setInitializationExpression('null');
     }
     return this._poseManager;
   }, {category: ['poses']});
@@ -42,11 +33,6 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   add.method('allPotentialPosers', function () {
     return $A(this.submorphs);
   });
-
-});
-
-
-thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('shouldIgnorePoses', function () {
     return false;

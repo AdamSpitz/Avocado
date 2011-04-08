@@ -20,13 +20,16 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return intersects;
     }, {category: ['testing']});
 
-  add.method('startZoomingOuttaHere', function () {
+  add.method('startZoomingOuttaHere', function (functionToCallWhenDone) {
       var w = this.world();
       if (w) {
         this.becomeDirectSubmorphOfWorld(w);
-        return this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {this.remove();}.bind(this));
+        this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {
+          this.remove();
+          if (functionToCallWhenDone) { functionToCallWhenDone(); }
+        }.bind(this));
       } else {
-        return null;
+        if (functionToCallWhenDone) { functionToCallWhenDone(); }
       }
     }, {category: ['zooming around']});
 
@@ -79,8 +82,13 @@ thisModule.addSlots(Morph.prototype, function(add) {
         var difference = newPos.subPt(oldPos);
         var ratio = Math.max(Math.abs(difference.x) / extent.x, Math.abs(difference.y) / extent.y);
         if (ratio > 0.5) {
-          var bounds = this.bounds();
-          var allVertices = bounds.vertices().concat(bounds.translatedBy(difference).vertices());
+          // aaa - I am sure that there's a more elegant way to get the globalBounds.
+          // aaa - And I don't even think this works right.
+    			var topLeft = this.owner.worldPoint(this.getPosition());
+    			var scaledExtent = this.getExtent().scaleBy(this.overallScale(world));
+    			var globalBounds = topLeft.extent(scaledExtent);
+    			
+          var allVertices = globalBounds.vertices().concat(globalBounds.translatedBy(difference).vertices());
           var convexVertices = avocado.quickhull.getConvexHull(allVertices).map(function(a) {return a.pointA;});
           var motionBlurMorph = Morph.makePolygon(convexVertices, 0, Color.black, this.getFill());
           motionBlurMorph.doesNotNeedACreatorSlot = true; // aaa HACK to fix performance bug
@@ -163,10 +171,18 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return (! this.owner) || (this.owner instanceof WorldMorph) || (this.owner instanceof HandMorph) || (this.owner instanceof avocado.CarryingHandMorph);
     }.bind(this));
   }, {category: ['adding and removing']});
+  
+  add.method('setFillOpacityRecursively', function (a) {
+    console.log("setFillOpacityRecursively: " + a);
+    this.setFillOpacity(a);
+    for (var i = 0, n = this.submorphs.length; i < n; ++i) {
+      this.submorphs[i].setFillOpacityRecursively(a);
+    }
+  }, {category: ['fading']});
 
   add.method('smoothlyFadeTo', function (desiredAlpha, functionToCallWhenDone) {
-      this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);
-    }, {category: ['resizing']});
+    this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);
+  }, {category: ['fading']});
 
   add.method('smoothlyResizeTo', function (desiredSize, functionToCallWhenDone) {
       this.startAnimating(avocado.animation.newResizer(this, desiredSize), functionToCallWhenDone);

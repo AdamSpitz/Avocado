@@ -100,9 +100,10 @@ thisModule.addSlots(Morph.prototype, function(add) {
 thisModule.addSlots(Morph, function(add) {
   
   add.method('createEitherOrMorph', function(m1, m2, condition) {
+    // aaa - callers that are TableMorphs already should just use the new enhanced morphToggler, don't need to wrap it in this RowMorph anymore
     var r = new avocado.RowMorph().beInvisible();
-    var t1 = avocado.toggler.create(null, m1);
-    var t2 = avocado.toggler.create(null, m2);
+    var t1 = avocado.morphToggler.create(null, m1);
+    var t2 = avocado.morphToggler.create(null, m2);
     r.setPotentialColumns([t1, t2]);
     r.refreshContent = avocado.makeSuperWork(r, "refreshContent", function($super) {
       var c = condition();

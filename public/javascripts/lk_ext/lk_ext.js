@@ -18,7 +18,7 @@ requires('lk_ext/shortcuts');
 requires('lk_ext/check_box');
 requires('lk_ext/combo_box');
 requires('lk_ext/toggler');
-requires('lk_ext/scale_to_adjust_details');
+requires('lk_ext/scaling');
 requires('lk_ext/layout');
 requires('lk_ext/rows_and_columns');
 requires('lk_ext/collection_morph');
@@ -71,9 +71,9 @@ thisModule.addSlots(avocado.ui, function(add) {
     return this.worldFor(evtOrMorph).confirm(message, callback);
   });
 
-  add.method('grab', function (obj, evt) {
+  add.method('grab', function (obj, evt, callback) {
     var m = this.worldFor(evt).morphFor(obj);
-    m.grabMe(evt);
+    m.grabMe(evt, callback);
     return m;
   });
 

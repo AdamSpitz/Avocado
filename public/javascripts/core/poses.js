@@ -18,8 +18,6 @@ thisModule.addSlots(avocado.poses, function(add) {
 
   add.creator('list', Object.create(avocado.poses['abstract']));
 
-  add.creator('clean', Object.create(avocado.poses.list));
-
   add.creator('snapshot', Object.create(avocado.poses['abstract']));
 
   add.creator('manager', {});
@@ -29,40 +27,84 @@ thisModule.addSlots(avocado.poses, function(add) {
 
 thisModule.addSlots(avocado.poses['abstract'], function(add) {
 
+  add.method('create', function () {
+    var c = Object.create(this);
+    c.initialize.apply(c, arguments);
+    return c;
+  }, {category: ['creating']});
+
   add.method('initialize', function (name) {
     this._name = name;
-  });
+  }, {category: ['creating']});
 
   add.method('name', function () {
     return this._name;
-  });
+  }, {category: ['accessing']});
 
   add.method('toString', function () {
     return this.name();
-  });
+  }, {category: ['printing']});
 
-  add.method('recreateInWorld', function (w) {
+  add.method('recreateInContainer', function (container) {
+    var originalScale = container.getScale();
+    var originalSpace = container.getExtent().scaleBy(originalScale);
+    
     this.eachElement(function(e) {
       e.poser.isPartOfCurrentPose = true;
+      // do bad things happen if I make the uiState thing happen before moving the poser?
       if (e.uiState) { e.poser.assumeUIState(e.uiState); }
-      e.poser.ensureIsInWorld(w, e.position, true, true, true, function() {
-        // do bad things happen if I make the uiState thing happen before moving the poser?
-      });
-    });
-    
-    w.allPotentialPosers().each(function(m) {
+      
+      if (this._shouldBeUnobtrusive) {
+        var poserOrPlaceholder = e.poser;
+        if (e.poser.world()) {
+          poserOrPlaceholder = new avocado.PlaceholderMorph(e.poser);
+        }
+        container.addMorphAt(poserOrPlaceholder, e.position);
+      } else {
+        e.poser.ensureIsInWorld(container, e.position, true, true, true);
+      }
+    }.bind(this));
+
+    container.allPotentialPosers().each(function(m) {
       if (m.isPartOfCurrentPose) {
         delete m.isPartOfCurrentPose;
       } else if (! m.shouldIgnorePoses()) {
         // I am undecided on whether this is a good idea or not. It's annoying if
         // stuff I want zooms away, but it's also annoying if stuff zooms onto
         // other stuff and the screen gets all cluttered.
-        var shouldUninvolvedPosersZoomAway = false;
-        if (shouldUninvolvedPosersZoomAway) {
-          m.startZoomingOuttaHere();
+        var shouldUninvolvedPosersGoAway = false;
+        if (shouldUninvolvedPosersGoAway) {
+          if (this._shouldBeUnobtrusive) {
+            var callbackWhenDoneFading = finalCallback();
+            m.smoothlyFadeTo(0, function() {
+              m.remove();
+              callbackWhenDoneFading();
+            });
+          } else {
+            m.startZoomingOuttaHere(finalCallback());
+          }
         }
       }
-    });
+    }.bind(this));
+  
+    if (this._shouldScaleToFitWithinCurrentSpace) {
+      container.refreshContentOfMeAndSubmorphs(); // to make sure the submorphs are laid out right - though, aaa, shouldn't this be done before even calculating the pose positions?
+      var currentExtent = container.bounds().extent();
+      var hs = originalSpace.x / currentExtent.x;
+      var vs = originalSpace.y / currentExtent.y;
+      container.scaleBy(Math.min(hs, vs));
+      // console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
+    }
+  }, {category: ['posing']});
+  
+  add.method('whenDoneScaleToFitWithinCurrentSpace', function () {
+    this._shouldScaleToFitWithinCurrentSpace = true;
+    return this;
+  }, {category: ['scaling']});
+
+  add.method('beUnobtrusive', function () {
+    this._shouldBeUnobtrusive = true;
+    return this;
   });
 
 });
@@ -116,9 +158,9 @@ thisModule.addSlots(avocado.poses.tree, function(add) {
 
 thisModule.addSlots(avocado.poses.list, function(add) {
 
-  add.method('initialize', function ($super, name, world, posers) {
+  add.method('initialize', function ($super, name, container, posers) {
     $super(name);
-    this._world = world;
+    this._container = container;
     this._posers = posers;
   });
 
@@ -129,34 +171,53 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;
     });
 
-    var pos = pt(20,20);
+    var padding = pt(20,20);
+    var pos = padding;
     var widest = 0;
-    for (var i = 0; i < sortedPosersToMove.length; ++i) {
+    var maxY = this._shouldBeSquarish ? null : this._container.getExtent().y - 30;
+    for (var i = 0, n = sortedPosersToMove.length; i < n; ++i) {
       var poser = sortedPosersToMove[i];
       var uiState = this.destinationUIStateFor(poser);
       if (uiState) { poser.assumeUIState(uiState); }
       f({poser: poser, position: pos, uiState: uiState});
-      var extent = poser.getExtent().scaleBy(poser.getScale());
-      pos = pos.withY(pos.y + extent.y);
-      widest = Math.max(widest, extent.x);
-      if (pos.y >= this._world.getExtent().y - 30) { pos = pt(pos.x + widest + 20, 20); }
+      var poserSpace = poser.getExtent().scaleBy(poser.getScale());
+      pos = pos.withY(pos.y + poserSpace.y);
+      widest = Math.max(widest, poserSpace.x);
+      
+      if (this._shouldBeSquarish && !maxY) {
+        // If it seems like the current y is far down enough to make the whole
+        // thing come out squarish (assuming that all columns will be about as
+        // wide as this one), then set this as the maxY.
+        var desiredAspectRatio = 1;
+        var estimatedNumberOfColumns = Math.ceil(n / (i + 1));
+        var estimatedTotalWidth = estimatedNumberOfColumns * (widest + padding.x);
+        // aaa - not sure why it keeps coming out too tall; quick hack for now: compensate by multiplying by 1.2
+        if (pos.y * desiredAspectRatio * 1.2 >= estimatedTotalWidth) { maxY = pos.y; }
+      }
+      
+      if (maxY && pos.y >= maxY) { pos = pt(pos.x + widest + padding.x, padding.y); }
     }
   });
-
-  add.method('destinationUIStateFor', function (poser) {
-    // just use whatever state it's in now
-    return null;
+  
+  add.method('beCollapsing', function () {
+    this._shouldBeCollapsing = true;
+    return this;
+  });
+  
+  add.method('beSquarish', function () {
+    this._shouldBeSquarish = true;
+    return this;
   });
 
-});
-
-
-thisModule.addSlots(avocado.poses.clean, function(add) {
-
   add.method('destinationUIStateFor', function (poser) {
-    var uiState = poser.constructUIStateMemento();
-    if (uiState) { uiState.isExpanded = false; }
-    return uiState;
+    if (this._shouldBeCollapsing) {
+      var uiState = poser.constructUIStateMemento();
+      if (uiState) { uiState.isExpanded = false; }
+      return uiState;
+    } else {
+      // just use whatever state it's in now
+      return null;
+    }
   });
 
 });
@@ -197,6 +258,14 @@ thisModule.addSlots(avocado.poses.snapshot, function(add) {
 
 thisModule.addSlots(avocado.poses.manager, function(add) {
 
+  add.method('initialize', function (container) {
+    this._container = container;
+  }, {category: ['creating']});
+
+  add.method('container', function () {
+    return this._container;
+  }, {category: ['accessing']});
+
   add.method('explicitlyRememberedPoses', function () {
     return avocado.organization.current.poses();
   }, {category: ['explicitly remembering']});
@@ -234,22 +303,22 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     }
 
     var pose = this.undoPoseStack()[this._undoPoseStackIndex -= 1];
-    pose.recreateInWorld(this.world());
+    pose.recreateInContainer(this.container());
   });
 
   add.method('goForwardToNextPose', function () {
     if (! this.canGoForwardToNextPose()) { throw "there is nothing to go forward to"; }
     var pose = this.undoPoseStack()[this._undoPoseStackIndex += 1];
-    pose.recreateInWorld(this.world());
+    pose.recreateInContainer(this.container());
   });
 
   add.method('assumePose', function (pose) {
     this.addToUndoPoseStack(this.createSnapshotOfCurrentPose(avocado.organization.current.findUnusedPoseName()));
-    pose.recreateInWorld(this.world());
+    pose.recreateInContainer(this.container());
   }, {category: ['poses']});
 
   add.method('createSnapshotOfCurrentPose', function (poseName) {
-    return Object.newChildOf(avocado.poses.snapshot, poseName, this.world().posers());
+    return avocado.poses.snapshot.create(poseName, this.container().posers());
   }, {category: ['taking snapshots']});
 
   add.method('rememberThisPose', function () {
@@ -258,14 +327,14 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     }.bind(this));
   }, {category: ['taking snapshots']});
 
-  add.method('cleanUp', function (evt) {
-    this.assumePose(Object.newChildOf(avocado.poses.clean, "clean up", this.world(), this.world().posers()));
+  add.method('cleaningUpPose', function (posers) {
+    return avocado.poses.list.create("clean up", this.container(), posers || this.container().posers()).beCollapsing();
   }, {category: ['cleaning up']});
 
   add.method('listPoseOfMorphsFor', function (objects, name) {
     // aaa LK-dependent
-    var posersToMove = objects.map(function(m) { return this.world().morphFor(m); }.bind(this));
-    return Object.newChildOf(avocado.poses.list, name, this.world(), posersToMove);
+    var posersToMove = objects.map(function(m) { return this.container().morphFor(m); }.bind(this));
+    return avocado.poses.list.create(name, this.container(), posersToMove);
   }, {category: ['cleaning up']});
 
   add.method('poseChooser', function () {
@@ -280,7 +349,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     cmdList.addLine();
     
     cmdList.addItem(["clean up", function(evt) {
-      this.cleanUp(evt);
+      this.assumePose(this.cleaningUpPose());
     }.bind(this)]);
 
     var poseCommands = [];
@@ -291,7 +360,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
 
     if (this.explicitlyRememberedPoses().size() > 0) {
       poseCommands.push(["assume a pose...", function(evt) {
-        avocado.ui.showMenu(this.poseChooser(), this.world(), null, evt);
+        avocado.ui.showMenu(this.poseChooser(), this.container(), null, evt);
       }.bind(this)]);
     }
 

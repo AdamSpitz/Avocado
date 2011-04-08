@@ -90,7 +90,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('headerRowContents', function () {
     if (this.shouldUseZooming()) {
-      return [this._titleLabel, avocado.scaleBasedOptionalMorph.create(this, this.contentsPanel(), this, 2.0)];
+      return [this._titleLabel, avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, 2.0, this._contentsPanelSize)];
     } else {
       
       return [this._expander, this._titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
@@ -99,7 +99,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('potentialContent', function () {
     if (this.shouldUseZooming()) {
-      var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedOptionalMorph.create(this, this.contentsPanel(), this, 0.75)] : [this.headerRow()];
+      var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, 0.75, this._contentsPanelSize)] : [this.headerRow()];
       return avocado.tableContents.createWithColumns([rows]);
     } else {
       var rows = [];
@@ -110,19 +110,47 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('adjustScaleOfContentsPanel', function () {
-    if (this.shouldUseZooming()) {
+    // aaa - not necessary now that the pose does it.
+    // Take this code out once I'm sure the pose way is working.
+    if (false && this.shouldUseZooming()) { 
       var numContentMorphs = this.contentsCount() + 1; // + 1 for the summary, though I guess it shouldn't matter much
       this._contentsPanel.setScale(1 / numContentMorphs);
     }
   }, {category: ['updating']});
+  
+  add.data('_shouldContentsBeFreeForm', true, {category: ['free-form contents experiment']});
+
+  add.data('_contentsPanelSize', pt(100,100), {category: ['free-form contents experiment']});
 
   add.method('contentsPanel', function () {
     var cp = this._contentsPanel;
     if (cp) { return cp; }
-    cp = this._contentsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.contentsPanelStyle());
-    this.adjustScaleOfContentsPanel();
-    cp.potentialContent = this.potentialContentsOfContentsPanel.bind(this);
-    // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
+    
+    if (this.shouldUseZooming() && this._shouldContentsBeFreeForm) {
+      cp = this._contentsPanel = new Morph(new lively.scene.Rectangle(pt(0,0).extent(this._contentsPanelSize))).applyStyle(this.contentsPanelStyle());
+      // var thisToString = this.toString(); cp.toString = function() { return thisToString + " contents panel"; } // aaa just for debugging
+      this.adjustScaleOfContentsPanel();
+      // aaa - do this more cleanly; for now, just wanna see if this can work
+      cp.refreshContent = function () {
+        var contentMorphs = this.allContentMorphs();
+        // aaa - find a more efficient way to do this
+        cp.submorphs.forEach(function(m) {
+          if (! contentMorphs.include(m)) {
+            cp.removeMorph(m);
+          }
+        });
+        
+        if (!cp._hasAlreadyBeenLaidOutAtLeastOnce) {
+          cp._hasAlreadyBeenLaidOutAtLeastOnce = true;
+          cp.poseManager().assumePose(cp.poseManager().cleaningUpPose(contentMorphs).beUnobtrusive().beSquarish().whenDoneScaleToFitWithinCurrentSpace());
+        }
+      }.bind(this);
+    } else {
+      cp = this._contentsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.contentsPanelStyle());
+      this.adjustScaleOfContentsPanel();
+      cp.potentialContent = this.potentialContentsOfContentsPanel.bind(this);
+      // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
+    }
     return cp;
   }, {category: ['contents panel']});
 
@@ -202,10 +230,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingNodeStyle, function(a
   add.data('padding', {top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}, {initializeTo: '{top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}'});
 
   add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
+  
+  add.data('horizontalLayoutMode', avocado.LayoutModes.ShrinkWrap);
 
-  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
-
-  add.data('verticalLayoutMode', avocado.LayoutModes.SpaceFill);
+  add.data('verticalLayoutMode', avocado.LayoutModes.ShrinkWrap);
 
 });
 
@@ -213,6 +241,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingNodeStyle, function(a
 thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingContentsPanelStyle, function(add) {
 
   add.data('padding', 0);
+  
+  add.data('fill', null);
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 

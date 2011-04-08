@@ -220,8 +220,10 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['layout']});
 
   add.method('rejiggerTheLayout', function (availableSpace) {
+    if (this._debugMyLayout) { console.log("About to rejigger the layout, availableSpace is " + availableSpace); }
     var thisExtent = this.getExtent();
     var availableSpaceToUse = this.calculateSpaceToUseOutOf(availableSpace, thisExtent);
+    if (this._debugMyLayout) { console.log("availableSpaceToUse is " + availableSpaceToUse); }
     if (this.isAlreadyLaidOutInSpace(availableSpaceToUse)) {
       availableSpaceToUse = thisExtent;
     } else {
@@ -399,7 +401,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     if (typeof(this.potentialContent) === 'function') {
       var potentialContent = this.potentialContent();
       var actualContent = potentialContent.selectThenMap(function(morphOrToggler) {
-        return ! morphOrToggler.shouldNotBeShown();
+        return !!morphOrToggler.actualMorphToShow();
       }, function(morphOrToggler) {
         return morphOrToggler.actualMorphToShow();
       });
@@ -746,8 +748,6 @@ thisModule.addSlots(avocado.RowMorph.prototype, function(add) {
 
 
 thisModule.addSlots(Morph.prototype, function(add) {
-
-  add.method('shouldNotBeShown', function () { return false; });
 
   add.method('actualMorphToShow', function () { return this; });
 

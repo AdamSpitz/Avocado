@@ -1,30 +1,26 @@
 transporter.module.create('lk_ext/toggler', function(requires) {
 
-requires('lk_ext/optional_morph');
+requires('lk_ext/morph_hider');
 
 }, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('toggler', Object.create(avocado.optionalMorph), {category: ['ui']});
+  add.creator('morphToggler', Object.create(avocado.morphHider), {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(avocado.toggler, function(add) {
+thisModule.addSlots(avocado.morphToggler, function(add) {
 
-  add.method('create', function (updateFunction, morphToShowOrHide) {
-    return Object.newChildOf(this, updateFunction, morphToShowOrHide);
-  });
-
-  add.method('initialize', function ($super, morphToUpdate, morphToShowOrHide) {
-    $super(morphToUpdate, morphToShowOrHide);
+  add.method('initialize', function ($super, morphToUpdate, morph1, morph2) {
+    $super(morphToUpdate, morph1, morph2);
     this._valueHolder = avocado.booleanHolder.containing(false);
     this._valueHolder.addObserver(this.valueChanged.bind(this));
   });
 
-  add.method('shouldBeShown', function () { return this.isOn(); });
+  add.method('shouldMorph1BeShown', function () { return this.isOn(); });
 
   add.method('isOn', function () { return this._valueHolder.getValue(); });
 
@@ -42,7 +38,8 @@ thisModule.addSlots(avocado.toggler, function(add) {
 
   add.method('update', function ($super, evt) {
     $super(evt);
-    if (this.shouldBeShown()) { this.actualMorphToShow().wasJustShown(evt); }
+    var m = this.actualMorphToShow();
+    if (m) { m.wasJustShown(evt); }
   });
 
   add.method('constructUIStateMemento', function () {
