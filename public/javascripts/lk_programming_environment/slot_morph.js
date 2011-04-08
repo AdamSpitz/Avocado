@@ -57,7 +57,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     $super();
     this._model = slot;
 
-    this.applyStyle(this.appropriateStyle());
+    this.applyAppropriateStyles();
 
     var optionalCommentButtonMorph, buttonChooserMorph;
     if (slot.annotationForReading) {
@@ -103,9 +103,13 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.creator('defaultStyle', {}, {category: ['styles']});
 
-  add.creator('copyDownStyle', Object.create(avocado.slots['abstract'].Morph.prototype.defaultStyle), {category: ['styles']});
+  add.creator('nonZoomingStyle', {}, {category: ['styles']});
 
-  add.creator('grabbedStyle', Object.create(avocado.slots['abstract'].Morph.prototype.defaultStyle), {category: ['styles']});
+  add.creator('zoomingStyle', {}, {category: ['styles']});
+
+  add.creator('copyDownStyle', {}, {category: ['styles']});
+
+  add.creator('grabbedStyle', {}, {category: ['styles']});
 
   add.creator('annotationStyle', {}, {category: ['styles']});
 
@@ -291,11 +295,14 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['UI state']});
 
   add.method('updateFill', function () {
-    this.applyStyle(this.appropriateStyle());
+    this.applyAppropriateStyles();
   }, {category: ['updating']});
 
-  add.method('appropriateStyle', function () {
-    return this._explicitStyle || (this.slot().isFromACopyDownParent() ? this.copyDownStyle : this.defaultStyle);
+  add.method('applyAppropriateStyles', function () {
+    this.applyStyle(this.defaultStyle);
+    this.applyStyle(this.shouldUseZooming() ? this.zoomingStyle : this.nonZoomingStyle);
+    if (this._explicitStyle) { this.applyStyle(this._explicitStyle); }
+    if (this.slot().isFromACopyDownParent()) { this.applyStyle(this.copyDownStyle); }
   }, {category: ['updating']});
 
   add.method('potentialContent', function () {
@@ -366,17 +373,33 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.defaultStyle, func
 
   add.data('borderWidth', 1);
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
-
   add.data('padding', 0);
-
-  add.data('suppressGrabbing', false);
-
-  add.data('grabsShouldFallThrough', false);
 
   add.data('openForDragAndDrop', false);
 
   add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
+
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.nonZoomingStyle, function(add) {
+
+  add.data('fill', null);
+
+  add.data('suppressGrabbing', true);
+
+  add.data('grabsShouldFallThrough', true);
+
+});
+
+
+thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.zoomingStyle, function(add) {
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
+
+  add.data('suppressGrabbing', false);
+
+  add.data('grabsShouldFallThrough', false);
 
 });
 

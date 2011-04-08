@@ -1,3 +1,7 @@
+Friday, April 8, 2011
+
+  - More work on the zooming UI. Still not usable, but getting closer.
+
 Monday, February 21, 2011
 
   - Some little workarounds and fixes to get Avocado working in Firefox.
