@@ -31,6 +31,7 @@ newModule('projects/projects');
 newModule('core/commands');
 newModule('core/exit');
 newModule('core/range');
+newModule('core/deep_copy');
 newModule('core/enumerator');
 newModule('core/value_holder');
 newModule('core/little_profiler');
