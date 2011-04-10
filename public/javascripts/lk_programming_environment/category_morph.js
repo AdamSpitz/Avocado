@@ -181,14 +181,14 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     }
     return cmdList;
   }, {category: ['menu']});
-
-  add.method('dragAndDropCommands', function () {
+  
+  add.method('dragAndDropCommandsForTreeContents', function () {
     var cmdList = this.category().dragAndDropCommands().wrapForMorph(this);
     var mirMorph = this.mirrorMorph();
     
     cmdList.itemWith("label", "add slot or category").wrapFunction(function(oldFunctionToRun, evt, slotOrCatMorph) {
-      var resultCat = oldFunctionToRun(evt, slotOrCatMorph);
-      mirMorph.expandCategory(resultCat);
+      var resultCatOrSlot = oldFunctionToRun(evt, slotOrCatMorph);
+      mirMorph.expandCategory(resultCatOrSlot.category());
     });
     
     return cmdList;

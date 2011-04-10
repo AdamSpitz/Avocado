@@ -362,7 +362,8 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.method('dragAndDropCommands', function () {
     var cmdList = avocado.command.list.create(this);
     
-    cmdList.addAllCommands(this._rootCategoryMorph.dragAndDropCommands());
+    var rootCatCmdList = this._rootCategoryMorph.dragAndDropCommands();
+    if (rootCatCmdList) { cmdList.addAllCommands(rootCatCmdList); }
     
     cmdList.addItem(avocado.command.create("make attribute point to me", function(evt, arrowEndpoint) {
       arrowEndpoint.wasJustDroppedOnMirror(this);

@@ -145,6 +145,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
           cp.poseManager().assumePose(cp.poseManager().cleaningUpPose(contentMorphs).beUnobtrusive().beSquarish().whenDoneScaleToFitWithinCurrentSpace());
         }
       }.bind(this);
+      
+      cp.dragAndDropCommands = function() {
+        return this.dragAndDropCommandsForTreeContents();
+      }.bind(this);
     } else {
       cp = this._contentsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.contentsPanelStyle());
       this.adjustScaleOfContentsPanel();
@@ -203,6 +207,12 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.creator('zoomingNodeStyle', {}, {category: ['styles']});
 
   add.creator('zoomingContentsPanelStyle', {}, {category: ['styles']});
+
+  add.method('dragAndDropCommands', function () {
+    if (this.shouldUseZooming()) { return null; } // let the content panel be the drop target
+    
+    return this.dragAndDropCommandsForTreeContents();
+  }, {category: ['drag and drop']});
 
 });
 

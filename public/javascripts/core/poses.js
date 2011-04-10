@@ -93,6 +93,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       var hs = originalSpace.x / currentExtent.x;
       var vs = originalSpace.y / currentExtent.y;
       container.scaleBy(Math.min(hs, vs));
+      container.setExtent(currentExtent); // needed because calling .bounds() returns a rectangle that encompasses the stickouts, but they're still stickouts
       // console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
     }
   }, {category: ['posing']});

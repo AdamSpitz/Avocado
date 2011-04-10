@@ -32,6 +32,8 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
   add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
 
+  add.method('category', function () { return this; }, {category: ['accessing']});
+
   add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
 
   add.method('fullName', function () { return this._parts.join(" "); }, {category: ['accessing']});

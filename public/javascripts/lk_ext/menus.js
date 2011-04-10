@@ -43,7 +43,10 @@ Morph.addMethods({
 
   dragAndDropCommands: function () {
     if (this._model && typeof(this._model.dragAndDropCommands) === 'function') {
-      return this._model.dragAndDropCommands().wrapForMorph(this);
+      var cmdList = this._model.dragAndDropCommands();
+      if (cmdList) {
+        return cmdList.wrapForMorph(this);
+      }
     }
     return null;
   }
