@@ -3,7 +3,7 @@
 Dir.chdir('public/javascripts')
 
 File.chmod(0666, *Dir["*.js"])
-["core", "db", "lk_ext", "lk_programming_environment", "programming_environment", "projects", "reflection", "transporter"].each do |dirName|
+["core", "db", "demo", "lk_ext", "lk_programming_environment", "programming_environment", "projects", "reflection", "transporter"].each do |dirName|
   File.chmod(0777, dirName)
   File.chmod(0666, *Dir["#{dirName}/*.js"])
 end

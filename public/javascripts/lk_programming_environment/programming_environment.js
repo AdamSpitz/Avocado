@@ -17,6 +17,7 @@ requires('lk_programming_environment/test_case_morph');
 requires('lk_programming_environment/db_morph');
 requires('lk_programming_environment/project_morph');
 requires('db/couch');
+requires('demo/person');
 
 }, function(thisModule) {
 
@@ -45,9 +46,9 @@ thisModule.addSlots(avocado, function(add) {
 
   add.data('isReflectionEnabled', true, {category: ['enabling reflection']});
 
-  add.data('shouldMirrorsUseZooming', false, {category: ['debug mode']});
+  add.data('shouldMirrorsUseZooming', true, {category: ['debug mode']});
 
-  add.data('debugMode', false, {category: ['debug mode']});
+  add.data('debugMode', true, {category: ['debug mode']});
 
   add.creator('menuItemContributors', [], {category: ['menu']});
 
@@ -66,7 +67,7 @@ thisModule.addSlots(avocado, function(add) {
     }.bind(this), 0);
   });
   
-  add.creator('argleBargle', {});
+  add.creator('zoomingUIExample', {});
 
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
@@ -82,8 +83,13 @@ thisModule.addSlots(avocado, function(add) {
     if (this.debugMode) {
       cmdList.addLine();
 
-      cmdList.addItem({label: "get argleBargle", go: function(evt) {
-        var mir = reflect(this.argleBargle);
+      cmdList.addItem({label: "get person object", go: function(evt) {
+        var mir = reflect(avocado.person.example);
+        avocado.ui.grab(mir, evt)
+      }.bind(this)});
+
+      cmdList.addItem({label: "get zoomingUIExample", go: function(evt) {
+        var mir = reflect(this.zoomingUIExample);
         avocado.ui.grab(mir, evt)
       }.bind(this)});
 
@@ -146,7 +152,7 @@ thisModule.addSlots(avocado, function(add) {
 });
 
 
-thisModule.addSlots(avocado.argleBargle, function(add) {
+thisModule.addSlots(avocado.zoomingUIExample, function(add) {
   
   add.data('a', 1);
   
