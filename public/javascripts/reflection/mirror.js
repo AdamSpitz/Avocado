@@ -806,6 +806,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return !window.isInCodeOrganizingMode;
   }, {category: ['user interface']});
 
+  add.method('deepCopyOfReflecteeRecursingIntoCreatorSlots', function () {
+    return reflect(Object.deepCopyRecursingIntoCreatorSlots(this.reflectee()));
+  }, {category: ['user interface']});
+
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
 
@@ -833,7 +837,11 @@ thisModule.addSlots(avocado.mirror, function(add) {
       }, this)
     ]]);
     
-    cmdList.addItem();
+    cmdList.addLine();
+
+    cmdList.addItem(avocado.command.create("duplicate", function(evt) {
+      avocado.ui.grab(this.deepCopyOfReflecteeRecursingIntoCreatorSlots(), evt);
+    }, this));
     
     return cmdList;
   }, {category: ['user interface', 'commands']});
