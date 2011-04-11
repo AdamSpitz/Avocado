@@ -44,7 +44,7 @@ thisModule.addSlots(avocado.deepCopier, function(add) {
     var isObj  = t === 'object';
     var isFunc = t === 'function';
     if (isObj || isFunc) {
-      var c = isObj ? {} : eval("(" + o.toString() + ")");
+      var c = isObj ? Object.create(o['__proto__']) : eval("(" + o.toString() + ")");
       var thisCopier = this;
       for (var n in o) {
         if (o.hasOwnProperty(n)) {
