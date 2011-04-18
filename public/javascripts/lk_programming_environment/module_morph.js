@@ -38,7 +38,7 @@ thisModule.addSlots(transporter.module, function(add) {
       return cmdList;
     };
 
-    module.whenChangedNotify(m.updateAppearance.bind(m));
+    module.whenChangedNotify(m.refreshContentIfOnScreenOfMeAndSubmorphs.bind(m));
     m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});

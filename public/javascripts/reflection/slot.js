@@ -333,6 +333,10 @@ thisModule.addSlots(avocado.slots.parent, function(add) {
 
   add.method('isSimpleMethod', function () { return false; }, {category: ['testing']});
 
+  add.method('category', function () {
+    return this.mirror().rootCategory();
+  }, {category: ['accessing annotation', 'category']});
+
   add.method('module', function () {
     var cs = this.mirror().theCreatorSlot();
     return cs ? cs.module() : null;

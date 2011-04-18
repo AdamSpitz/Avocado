@@ -55,12 +55,6 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
 
   add.creator('resultsPanelStyle', {}, {category: ['styles']});
 
-  add.method('updateAppearance', function () {
-    if (! this.world()) { return; }
-    this._titleLabel.refreshText();
-    this.minimumExtentMayHaveChanged();
-  });
-
   add.method('inspect', function () {return this.searcher().inspect();});
 
   add.method('expander', function () { return this._expander; }, {category: ['expanding and collapsing']});

@@ -214,7 +214,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     var s = this.category().automaticallyChooseDefaultNameAndAddNewSlot(reflect(initialContents));
     var sm = s.morph();
     sm.wasJustShown(evt);
-    this.updateAppearance(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet);
+    this.refreshContentOfMeAndSubmorphs(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet);
   }, {category: ['adding']});
 
   add.method('addCategory', function (evt) {

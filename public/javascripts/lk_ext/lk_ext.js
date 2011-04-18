@@ -156,7 +156,7 @@ thisModule.addSlots(avocado.ui, function(add) {
     var ui = this;
     setTimeout(function() {
       var m = ui.worldFor(evt).existingMorphFor(obj);
-      if (m) { m.updateAppearance(); }
+      if (m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); }
     }, 0);
   });
 

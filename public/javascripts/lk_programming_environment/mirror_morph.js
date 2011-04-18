@@ -196,7 +196,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['accessing']});
 
   add.method('updateExpandedness', function () {
-    this.updateAppearance();
+    this.refreshContentIfOnScreenOfMeAndSubmorphs();
   }, {category: ['updating']});
 
   add.method('expandCategory', function (c) {
@@ -205,7 +205,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
   add.method('expandCategoryMorph', function (cm) {
     cm.expandMeAndAncestors();
-    this.updateAppearance(); /// aaa maybe this isn't necessary?;
+    this.refreshContentIfOnScreenOfMeAndSubmorphs(); /// aaa maybe this isn't necessary?;
   }, {category: ['categories']});
 
   add.method('slotMorphFor', function (s) {
@@ -229,7 +229,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       WorldMorph.current().forgetAboutExistingMorphFor(oldCat, oldCatMorph);
       if (!isEmpty) {
         var newCatMorph = this.categoryMorphFor(newCat);
-        this.updateAppearance();
+        this.refreshContentOfMeAndSubmorphs();
         oldCatMorph.transferUIStateTo(newCatMorph, Event.createFake());
       }
     }
@@ -293,7 +293,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       newParentMorph.growFromNothingAt(this.getPosition().midPt(oldParentMorph.getPosition()).addPt(newParentMorph.getExtent().scaleBy(0.5)), function() {
         this.mirror().setParent(newParent);
         this.mirror().parentSlot().beCreator();
-        newParentMorph.updateAppearance(); // just so that the proper name shows up immediately
+        newParentMorph.refreshContentOfMeAndSubmorphs(); // just so that the proper name shows up immediately
         newParentMorph.slotMorphFor(    newParent.parentSlot()).showContentsArrow();
                   this.slotMorphFor(this.mirror().parentSlot()).showContentsArrow();
       }.bind(this));

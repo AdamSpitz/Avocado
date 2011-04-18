@@ -9,6 +9,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 	  if (evt.isCtrlDown() || evt.isMetaDown() || evt.isAltDown()) {
       var factor = Math.pow(1.2, (evt.rawEvent.wheelDeltaY / -600));
       this.zoomBy(factor, evt.point());
+      this.refreshContentIfOnScreenOfMeAndSubmorphs(); // I hope this isn't too slow
       return true;
     }
   }, {category: ['navigation']});

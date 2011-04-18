@@ -24,7 +24,7 @@ thisModule.addSlots(TextMorph, function(add) {
     tf.closeDnD();
     tf.beLabel();
     if (typeof textOrFunction === 'function') {
-      tf.updateAppearance = tf.refreshText = function() {this.setText(textOrFunction());};
+      tf.refreshText = function() {this.setText(textOrFunction());};
     }
     return tf;
   }, {category: ['shortcuts']});

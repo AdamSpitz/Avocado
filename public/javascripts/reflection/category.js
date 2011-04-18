@@ -213,8 +213,8 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['removing']});
 
   add.method('copyInto', function (target) {
-    if (this.isRoot()) { throw new Error("Cannot use copyInto on the root category; maybe you meant to use copyContentsInto?"); }
-    return this.copyContentsInto(target.subcategory(this.lastPart()));
+    var targetSubcat = this.isRoot() ? target : target.subcategory(this.lastPart());
+    return this.copyContentsInto(targetSubcat);
   }, {category: ['copying']});
 
   add.method('copyContentsInto', function (target) {
@@ -229,7 +229,11 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.method('dragAndDropCommands', function () {
     var cmdList = avocado.command.list.create(this);
     cmdList.addItem(avocado.command.create("add slot or category", function(evt, slotOrCat) {
-      return slotOrCat.copyInto(this);
+      if (! this.equals(slotOrCat.category())) {
+        return slotOrCat.copyInto(this);
+      } else {
+        return slotOrCat;
+      }
     }).setArgumentSpecs([avocado.command.argumentSpec.create('slotOrCat').onlyAccepts(function(o) {
       return o && typeof(o.canBeAddedToCategory) === 'function' && o.canBeAddedToCategory();
     })]));

@@ -100,7 +100,7 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
 
   add.method('dropMeOnMorph', function ($super, receiver) {
     $super(receiver);
-    this.updateAppearance(); // because I'm impatient;
+    this.refreshContentOfMeAndSubmorphs(); // because I'm impatient;
   }, {category: ['drag and drop']});
 
   add.data('suppressHandles', true, {category: ['handles']});

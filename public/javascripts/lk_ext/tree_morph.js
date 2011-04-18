@@ -69,7 +69,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['contents panel']});
 
   add.method('updateExpandedness', function () {
-    this.updateAppearance();
+    this.refreshContentOfMeAndSubmorphs();
   }, {category: ['updating']});
 
   add.method('partsOfUIState', function () {
@@ -143,6 +143,21 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
         if (!cp._hasAlreadyBeenLaidOutAtLeastOnce) {
           cp._hasAlreadyBeenLaidOutAtLeastOnce = true;
           cp.poseManager().assumePose(cp.poseManager().cleaningUpPose(contentMorphs).beUnobtrusive().beSquarish().whenDoneScaleToFitWithinCurrentSpace());
+        } else {
+          // Don't redo the pose (because the user may have moved things around, and we don't want to wreck
+          // his arrangement), but make sure that if there are any contentMorphs that aren't actually being
+          // shown yet (perhaps because they were just added by some model-level code), they're added to the
+          // contents panel.
+          contentMorphs.forEach(function(m) {
+            if (m.owner !== cp) {
+              // aaa - at least spread them out so that if multiple ones are added at the same time, they
+              // don't show up right on top of each other.
+              // 
+              // Or, ideally, someday, do something cool where the morphs arrange themselves, being smart enough
+              // to stay approximately where they're put but they shuffle around a bit to avoid colliding with others.
+              cp.addMorphAt(m, pt(0,0));
+            }
+          });
         }
       }.bind(this);
       

@@ -39,7 +39,7 @@ thisModule.addSlots(avocado.project, function(add) {
     
     m.setRows([headerRow]);
 
-    project.module().whenChangedNotify(m.updateAppearance.bind(m));
+    project.module().whenChangedNotify(m.refreshContentIfOnScreenOfMeAndSubmorphs.bind(m));
     m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});

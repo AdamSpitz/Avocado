@@ -270,7 +270,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       var newSlot = this.slot().rename(newName);
       var mirMorph = this.mirrorMorph();
       if (mirMorph) {
-        mirMorph.updateAppearance();
+        mirMorph.refreshContentOfMeAndSubmorphs();
 
         // it's actually a whole nother slot and slotMorph but we want it to feel like the same one
         var newSlotMorph = mirMorph.slotMorphFor(newSlot);

@@ -4,6 +4,12 @@ Morph.addMethods({
     this.submorphs.each(function(m) { m.refreshContentOfMeAndSubmorphs(); });
   },
   
+  refreshContentIfOnScreenOfMeAndSubmorphs: function() {
+    if (! this.isOnScreen()) { return; }
+    this.refreshContent();
+    this.submorphs.each(function(m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); });
+  },
+  
   refreshContent: function() {
     // children can override
     this.updateFill();
@@ -13,15 +19,10 @@ Morph.addMethods({
     // children can override
   },
 
-  updateAppearance: function () {
-    if (! this.world()) { return; }
-    this.refreshContentOfMeAndSubmorphs();
-  },
-
   startPeriodicallyUpdating: function (frequency) {
     this._updater = new PeriodicalExecuter(function(pe) {
       if (window.shouldNotDoAnyPeriodicalMorphUpdating) { pe.stop(); return; }
-      this.updateAppearance();
+      this.refreshContentIfOnScreenOfMeAndSubmorphs();
     }.bind(this), frequency || 8);
   }
 });

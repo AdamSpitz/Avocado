@@ -57,11 +57,6 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var oldExtent = this.getExtent();
     var newExtent = oldExtent;
 
-    /* I think we want to do something sorta like this, in order to make it possible for any morph to be space-filling.
-       But when I did this, bad stuff happened. (Try uncommenting this code and then using a mirror morph's "add attribute"
-       menu item.)
-    */
-
     // Avoid infinite recursion... blecch.
     if (! this._isChangingRightNow) {
       this._isChangingRightNow = true;

@@ -26,7 +26,7 @@ thisModule.addSlots(avocado.morphHider, function(add) {
   });
 
   add.method('update', function (evt) {
-    if (this._morphToUpdate) { this._morphToUpdate.updateAppearance(); }
+    if (this._morphToUpdate) { this._morphToUpdate.refreshContentIfOnScreenOfMeAndSubmorphs(); }
   });
 
   add.method('morphOrFunctionToShow', function () {
