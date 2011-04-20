@@ -11,9 +11,9 @@ requires('projects/projects');
 thisModule.addSlots(avocado.project, function(add) {
 
   add.method('newMorph', function () {
-    var m = new avocado.ColumnMorph().setModel(this).applyStyle(this.defaultMorphStyle);
+    var m = avocado.TableMorph.newColumn().setModel(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'project';
-    var headerRow = new avocado.RowMorph().beInvisible().setPadding(3);
+    var headerRow = avocado.TableMorph.newRow().beInvisible().setPadding(3);
     var project = this;
     
     var changeIndicator = TextMorph.createLabel(function() {
@@ -28,7 +28,7 @@ thisModule.addSlots(avocado.project, function(add) {
     headerRow.setColumns(columns);
     
     /* Why isn't this working?
-    var privacyRow = new avocado.RowMorph().beInvisible().setPadding({between: {x: 3}});
+    var privacyRow = avocado.TableMorph.newRow().beInvisible().setPadding({between: {x: 3}});
     var privacyLabel = TextMorph.createLabel("Private: ");
     var privacyCheckbox = new CheckBoxMorph();
     privacyRow.setColumns([privacyLabel, privacyCheckbox]);

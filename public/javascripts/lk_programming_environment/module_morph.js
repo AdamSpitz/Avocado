@@ -10,7 +10,7 @@ requires('transporter/transporter');
 thisModule.addSlots(transporter.module, function(add) {
 
   add.method('newMorph', function () {
-    var m = new avocado.RowMorph().setModel(this).applyStyle(this.defaultMorphStyle);
+    var m = avocado.TableMorph.newRow().setModel(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'module';
     var module = this;
 

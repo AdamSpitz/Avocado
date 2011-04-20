@@ -10,14 +10,14 @@ requires('lk_programming_environment/slot_morph');
 thisModule.addSlots(avocado.process, function(add) {
 
   add.method('newMorph', function () {
-    var m = new avocado.ColumnMorph().setModel(this).applyStyle(this.defaultMorphStyle);
+    var m = avocado.TableMorph.newColumn().setModel(this).applyStyle(this.defaultMorphStyle);
     m._numberToShow = 0;
     m._hasMore = true;
 
     var headerRow = avocado.RowMorph.createSpaceFilling([m.createNameLabel(), Morph.createSpacer(), m.createDismissButton()]);
     
     var world = WorldMorph.current();
-    var contentColumn = new avocado.ColumnMorph().beInvisible();
+    var contentColumn = avocado.TableMorph.newColumn().beInvisible();
     contentColumn.potentialContent = function () {
       var rows = [];
       var c = m._model.leafContext();
@@ -88,7 +88,7 @@ thisModule.addSlots(avocado.process.context.Morph.prototype, function(add) {
   add.data('constructor', avocado.process.context.Morph);
 
   add.method('descriptionMorph', function () {
-    var m = new avocado.RowMorph().beInvisible();
+    var m = avocado.TableMorph.newRow().beInvisible();
     var columns = [this.nameMorph()];
     var context = this._model._processContext;
     var args = context.args();

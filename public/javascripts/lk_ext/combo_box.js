@@ -19,7 +19,7 @@ thisModule.addSlots(avocado.ComboBoxMorph, function(add) {
   add.data('type', 'avocado.ComboBoxMorph');
 
   add.method('prompt', function (msg, okButtonText, cancelButtonText, values, defaultValue, onAccept, onCancel) {
-    var promptBox = new avocado.ColumnMorph();
+    var promptBox = avocado.TableMorph.newColumn();
     promptBox.setFill(Color.blue.lighter().lighter());
     var messageLabel = TextMorph.createLabel(msg);
     var     okButton = ButtonMorph.createButton(    okButtonText, function(evt) { comboBox.relinquishKeyboardFocus(Event.createFake()); promptBox.remove(); if (onAccept) { onAccept(comboBox.value()); } });

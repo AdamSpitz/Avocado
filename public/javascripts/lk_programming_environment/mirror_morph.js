@@ -49,7 +49,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     this._rootCategoryMorph = this.categoryMorphFor(this._mirror.rootCategory());
     this._expander = this._rootCategoryMorph.expander();
     
-    this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+    this._evaluatorsPanel = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
 
     this._nameMorph = TextMorph.createLabel(function() {return m.name();});
     this._descMorph = TextMorph.createLabel(function() {return m.shortDescription();});
@@ -159,7 +159,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = new avocado.ColumnMorph(this).beInvisible().applyStyle(this.annotationStyle);
+    m = this._annotationMorph = avocado.TableMorph.newColumn().beInvisible().applyStyle(this.annotationStyle);
     if (this.shouldUseZooming()) { m.setScale(0.25); }
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list

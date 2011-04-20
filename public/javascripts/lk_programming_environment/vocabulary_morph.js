@@ -42,8 +42,8 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     this._model = v;
     this.applyStyle(this.defaultStyle);
 
-    this._evaluatorsPanel = new avocado.ColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
-    this._mirrorsPanel    = new avocado.ColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+    this._evaluatorsPanel = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+    this._mirrorsPanel    = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     
     var mirs = this.mirror().meAndAncestors().toArray();
     this._mirrorsPanel.setRows(mirs.map(function(mir) { return new avocado.PlaceholderMorph(mir.morph()); }));

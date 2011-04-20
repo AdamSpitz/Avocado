@@ -10,7 +10,7 @@ requires('core/testFramework');
 thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('newMorph', function () {
-    var m = new avocado.RowMorph().setModel(this).applyStyle(this.defaultMorphStyle);
+    var m = avocado.TableMorph.newRow().setModel(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'test case';
 
     var columns = [m.createNameLabel()];
@@ -30,7 +30,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
 thisModule.addSlots(avocado.testCase.resultProto, function(add) {
 
   add.method('newMorph', function () {
-    var m = new avocado.ColumnMorph().setModel(this);
+    var m = avocado.TableMorph.newColumn().setModel(this);
     m.applyStyle(this.anyFailed() ? this.failedMorphStyle : this.defaultMorphStyle);
 
     var rows = [m.createNameLabel()];

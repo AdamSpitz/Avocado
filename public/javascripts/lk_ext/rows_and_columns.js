@@ -40,6 +40,10 @@ thisModule.addSlots(avocado.TableMorph, function(add) {
   add.creator('boxStyle', {});
 
   add.creator('prototype', Object.create(Morph.prototype));
+  
+  add.method('newColumn', function () { return new avocado.ColumnMorph(); });
+
+  add.method('newRow', function () { return new avocado.RowMorph(); });
 
 });
 

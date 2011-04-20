@@ -101,7 +101,7 @@ thisModule.addSlots(Morph, function(add) {
   
   add.method('createEitherOrMorph', function(m1, m2, condition) {
     // aaa - callers that are TableMorphs already should just use the new enhanced morphToggler, don't need to wrap it in this RowMorph anymore
-    var r = new avocado.RowMorph().beInvisible();
+    var r = avocado.TableMorph.newRow().beInvisible();
     var t1 = avocado.morphToggler.create(null, m1);
     var t2 = avocado.morphToggler.create(null, m2);
     r.setPotentialColumns([t1, t2]);
@@ -116,14 +116,14 @@ thisModule.addSlots(Morph, function(add) {
   }, {category: ['shortcuts']});
 
   add.method('createOptionalMorph', function(m, condition, layoutModes) {
-    var om = Morph.createEitherOrMorph(m, new avocado.RowMorph().beInvisible(), condition);
+    var om = Morph.createEitherOrMorph(m, avocado.TableMorph.newRow().beInvisible(), condition);
     om.horizontalLayoutMode = (layoutModes || m).horizontalLayoutMode;
     om.verticalLayoutMode   = (layoutModes || m).verticalLayoutMode;
     return om;
   }, {category: ['shortcuts']});
 
   add.method('createSpacer', function() {
-    return new avocado.RowMorph().beInvisible().beSpaceFilling();
+    return avocado.TableMorph.newRow().beInvisible().beSpaceFilling();
   }, {category: ['shortcuts']});
 
   add.method('wrapToTakeUpConstantWidth', function(width, morph) {
@@ -135,7 +135,7 @@ thisModule.addSlots(Morph, function(add) {
   }, {category: ['shortcuts']});
 
   add.method('wrapToTakeUpConstantSpace', function(space, morph) {
-    var wrapper = new avocado.RowMorph().beInvisible();
+    var wrapper = avocado.TableMorph.newRow().beInvisible();
     wrapper._desiredSpaceToScaleTo = space;
     wrapper.setColumns([morph]);
     return wrapper;
