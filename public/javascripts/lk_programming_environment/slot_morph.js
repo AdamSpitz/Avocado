@@ -62,7 +62,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var optionalCommentButtonMorph, buttonChooserMorph;
     if (slot.annotationForReading) {
       if (this.shouldUseZooming()) {
-        this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.createRow(function() { return this.annotationMorph(); }.bind(this)), this, 1, pt(50,25)); // aaa made-up space-holder-size number
+        this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.createRow(function() { return this.annotationMorph(); }.bind(this)), this, 4, pt(50,25)); // aaa made-up space-holder-size number
       } else {
         this._commentToggler    = avocado.morphToggler.create(this, this.createRow(function() {return this.   commentMorph();}.bind(this)));
         this._annotationToggler = avocado.morphToggler.create(this, this.createRow(function() {return this.annotationMorph();}.bind(this)));
@@ -192,7 +192,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     
     if (this.shouldUseZooming()) {
       rows.unshift([TextMorph.createLabel("Comment:"), this.commentMorph()]);
-      m.setScale(0.25);
+      m.setScale(0.2);
     }
     
     m.replaceContentWith(avocado.tableContents.createWithRows(rows));

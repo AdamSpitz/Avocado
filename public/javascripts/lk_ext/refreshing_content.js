@@ -6,6 +6,8 @@ Morph.addMethods({
   
   refreshContentIfOnScreenOfMeAndSubmorphs: function() {
     if (! this.isOnScreen()) { return; }
+    // var s = this.toString() || this.inspect();
+    // if (s) { console.log("refreshContentIfOnScreenOfMeAndSubmorphs: refreshing " + s); }
     this.refreshContent();
     this.submorphs.each(function(m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); });
   },

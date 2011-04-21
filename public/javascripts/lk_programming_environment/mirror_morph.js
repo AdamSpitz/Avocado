@@ -85,10 +85,10 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     var optionalDismissButtonMorph = this.createDismissButtonThatOnlyAppearsIfTopLevel();
     var optionalAKAButtonMorph     = Morph.createOptionalMorph(   akaButton, function() { return this.mirror().hasMultiplePossibleNames(); }.bind(this));
     
-    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._nameMorph, this._descMorph, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
+    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._nameMorph, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
-    this.setPotentialRows([this._headerRow, this._annotationToggler, this._commentToggler, this._rootCategoryMorph, this._evaluatorsPanel].compact());
+    this.setPotentialRows([this._headerRow, this._descMorph, this._annotationToggler, this._commentToggler, this._rootCategoryMorph, this._evaluatorsPanel].compact());
 
     this.refreshContent();
 
