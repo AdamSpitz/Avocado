@@ -46,51 +46,19 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
     this.applyStyle(this.defaultStyle);
 
-    this._rootCategoryMorph = this.categoryMorphFor(this._mirror.rootCategory());
-    this._expander = this._rootCategoryMorph.expander();
-    
-    this._evaluatorsPanel = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
-
     this._nameMorph = TextMorph.createLabel(function() {return m.name();});
     this._descMorph = TextMorph.createLabel(function() {return m.shortDescription();});
 
     if (this.mirror().canHaveAnnotation()) {
       if (this.shouldUseZooming()) {
-        this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.createRow(this.annotationMorph()), this, 1, pt(50,10)); // aaa made-up space-holder-size number
+        this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.annotationRow.bind(this), this, 1, pt(50,10)); // aaa made-up space-holder-size number
       } else {
-        this._annotationToggler = avocado.morphToggler.create(this, this.createRow(this.annotationMorph()));
-        this._commentToggler    = avocado.morphToggler.create(this, this.createRow(this.   commentMorph()));
-        this.commentButton      = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
-        var optionalCommentButtonMorph = Morph.createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
+        this._annotationToggler = avocado.morphToggler.create(this, this.annotationRow.bind(this));
+        this._commentToggler    = avocado.morphToggler.create(this, this.commentRow.bind(this));
       }
     }
-    
-    var akaButton         = avocado.command.create("AKA",   function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
-    
-    if (! this.shouldUseZooming()) {
-      // With zooming, these buttons clutter up the object. Plus the parent button isn't really necessary and doesn't make sense
-      // now that the __proto__ slot is always visible (rather than hidden because the object isn't expanded). And the E button
-      // is less interesting now that we have the "script me" command, plus it's kinda weird because evaluators belong to vocab
-      // morphs instead of mirror morphs.
-      
-      if (this.mirror().hasAccessibleParent()) {
-        var parentButton = avocado.command.create("^", function(evt) { this.mirror().getParent(evt); }.bind(this)).setHelpText('Get my parent').newMorph();
-      }
 
-      if (window.avocado && avocado.EvaluatorMorph) {
-        var evaluatorButton = avocado.command.create("E", function(evt) { this.openEvaluator(evt); }.bind(this)).setHelpText('Show an evaluator box').newMorph();
-      }
-    }
-    
-    var optionalDismissButtonMorph = this.createDismissButtonThatOnlyAppearsIfTopLevel();
-    var optionalAKAButtonMorph     = Morph.createOptionalMorph(   akaButton, function() { return this.mirror().hasMultiplePossibleNames(); }.bind(this));
-    
-    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._nameMorph, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
-    this._headerRow.refreshContentOfMeAndSubmorphs();
-
-    this.setPotentialRows([this._headerRow, this._descMorph, this._annotationToggler, this._commentToggler, this._rootCategoryMorph, this._evaluatorsPanel].compact());
-
-    this.refreshContent();
+    // this.refreshContent();   // this used to be here, but I took it out as an optimization; still not quite sure that it isn't needed -- Adam, Apr. 2011
 
     this.startPeriodicallyUpdating();
   }, {category: ['creating']});
@@ -104,10 +72,65 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.method('shouldUseZooming', function () {
     return avocado.shouldMirrorsUseZooming;
   }, {category: ['zooming']});
+  
+  add.method('headerRow', function () {
+    if (! this._headerRow) {
+      if (this._commentToggler) {
+        var commentButton = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
+        var optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
+      }
+      
+      var akaButton = avocado.command.create("AKA", function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
 
+      if (! this.shouldUseZooming()) {
+        // With zooming, these buttons clutter up the object. Plus the parent button isn't really necessary and doesn't make sense
+        // now that the __proto__ slot is always visible (rather than hidden because the object isn't expanded). And the E button
+        // is less interesting now that we have the "script me" command, plus it's kinda weird because evaluators belong to vocab
+        // morphs instead of mirror morphs.
+
+        if (this.mirror().hasAccessibleParent()) {
+          var parentButton = avocado.command.create("^", function(evt) { this.mirror().getParent(evt); }.bind(this)).setHelpText('Get my parent').newMorph();
+        }
+
+        if (window.avocado && avocado.EvaluatorMorph) {
+          var evaluatorButton = avocado.command.create("E", function(evt) { this.openEvaluator(evt); }.bind(this)).setHelpText('Show an evaluator box').newMorph();
+        }
+      }
+
+      var optionalDismissButtonMorph = this.createDismissButtonThatOnlyAppearsIfTopLevel();
+      var optionalAKAButtonMorph     = Morph.createOptionalMorph(   akaButton, function() { return this.mirror().hasMultiplePossibleNames(); }.bind(this));
+
+      var descInHeader = this.shouldUseZooming() ? null : this._descMorph;
+    
+      this._headerRow = avocado.RowMorph.createSpaceFilling([this.expander(), this._nameMorph, descInHeader, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
+      this._headerRow.refreshContentOfMeAndSubmorphs();
+    }
+    return this._headerRow;
+  }, {category: ['header row']});
+  
+  add.method('potentialContent', function () {
+    if (! this._potentialRows) {
+      this._potentialRows = [this.headerRow(), this.shouldUseZooming() ? this._descMorph : null, this._annotationToggler, this._commentToggler, this.rootCategoryMorph(), this.evaluatorsPanel()].compact();
+    }
+    
+    if (! this._potentialContent) {
+      this._potentialContent = avocado.tableContents.createWithColumns([this._potentialRows]);
+    }
+    
+    return this._potentialContent;
+  }, {category: ['updating']});
+  
+  add.method('rootCategoryMorph', function () {
+    if (! this._rootCategoryMorph) {
+      this._rootCategoryMorph = this.categoryMorphFor(this._mirror.rootCategory());
+    }
+    return this._rootCategoryMorph;
+  }, {category: ['root category']});
+  
   add.method('expand', function () {
-    if (this._expander) { this._expander.expand(); }
-  }, {category: ['accessing']});
+    var e = this.expander();
+    if (e) { e.expand(); }
+  }, {category: ['expanding']});
 
   add.method('eachAssociatedObject', function (f) {
     f(this.mirror().reflectee());
@@ -172,6 +195,20 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     return m;
   }, {category: ['annotation']});
 
+  add.method('annotationRow', function () {
+    var m = this._annotationRow;
+    if (m) { return m; }
+    m = this._annotationRow = this.createRow(this.annotationMorph());
+    return m;
+  }, {category: ['annotation']});
+
+  add.method('commentRow', function () {
+    var m = this._commentRow;
+    if (m) { return m; }
+    m = this._commentRow = this.createRow(this.commentMorph());
+    return m;
+  }, {category: ['comment']});
+  
   add.method('commentMorph', function () {
     return this._commentMorph || (this._commentMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.mirror(), 'comment')).applyStyle(this.commentStyle));
   }, {category: ['comment']});
@@ -192,8 +229,12 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['annotation']});
 
   add.method('expander', function () {
+    if (this.shouldUseZooming()) { return null; }
+    if (! this._expander) {
+      this._expander = this.rootCategoryMorph().expander();
+    }
     return this._expander;
-  }, {category: ['accessing']});
+  }, {category: ['expanding']});
 
   add.method('updateExpandedness', function () {
     this.refreshContentIfOnScreenOfMeAndSubmorphs();
@@ -234,6 +275,13 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       }
     }
   }, {category: ['categories']});
+  
+  add.method('evaluatorsPanel', function () {
+    if (! this._evaluatorsPanel) {
+      this._evaluatorsPanel = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+    }
+    return this._evaluatorsPanel;
+  }, {category: ['creating']});
 
   add.method('openEvaluator', function (evt) {
     evt = evt || Event.createFake();
@@ -254,13 +302,13 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     
     
     var e = new avocado.EvaluatorMorph(this);
-    this._evaluatorsPanel.addRow(e);
+    this.evaluatorsPanel().addRow(e);
     e.wasJustShown(evt);
     return e;
   }, {category: ['evaluators']});
 
   add.method('closeEvaluator', function (evaluatorMorph) {
-    this._evaluatorsPanel.removeRow(evaluatorMorph);
+    this.evaluatorsPanel().removeRow(evaluatorMorph);
   }, {category: ['evaluators']});
 
   add.method('grabResult', function (resultMirMorph, evt) {
@@ -306,7 +354,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
-    cmdList.addAllCommands(this._rootCategoryMorph.commands());
+    cmdList.addAllCommands(this.rootCategoryMorph().commands());
     cmdList.addLine();
     cmdList.addAllCommands(this.mirror().commands().wrapForMorph(this));
     cmdList.addLine();
@@ -362,7 +410,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.method('dragAndDropCommands', function () {
     var cmdList = avocado.command.list.create(this);
     
-    var rootCatCmdList = this._rootCategoryMorph.dragAndDropCommands();
+    var rootCatCmdList = this.rootCategoryMorph().dragAndDropCommands();
     if (rootCatCmdList) { cmdList.addAllCommands(rootCatCmdList); }
     
     cmdList.addItem(avocado.command.create("make attribute point to me", function(evt, arrowEndpoint) {
@@ -422,10 +470,10 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
   add.method('partsOfUIState', function () {
     return {
-      isExpanded:       this._expander,  // the root category already has this, but we want it at the top level so "clean up" can set it
+      isExpanded:       this.expander(),  // the root category already has this, but we want it at the top level so "clean up" can set it
       isCommentOpen:    this._commentToggler,
       isAnnotationOpen: this._annotationToggler,
-      rootCategory:     this._rootCategoryMorph
+      rootCategory:     this.rootCategoryMorph()
     };
   }, {category: ['UI state']});
 

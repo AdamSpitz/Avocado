@@ -15,7 +15,7 @@ thisModule.addSlots(avocado, function(add) {
 thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
 
   add.method('initialize', function ($super, morphToUpdate, morph1, owner, thresholdNumberOrFunction, sizeOfSpaceHolder) {
-    $super(morphToUpdate, morph1, this.spaceHolder.bind(this)); // aaa spaceHolder not working properly yet
+    $super(morphToUpdate, morph1, this.spaceHolder.bind(this));
     this._owner = owner;
     if (typeof(thresholdNumberOrFunction) === 'function') {
       this.currentThreshold = thresholdNumberOrFunction;

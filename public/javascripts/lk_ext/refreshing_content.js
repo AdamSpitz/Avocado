@@ -2,14 +2,16 @@ Morph.addMethods({
   refreshContentOfMeAndSubmorphs: function() {
     this.refreshContent();
     this.submorphs.each(function(m) { m.refreshContentOfMeAndSubmorphs(); });
+    return this;
   },
   
   refreshContentIfOnScreenOfMeAndSubmorphs: function() {
-    if (! this.isOnScreen()) { return; }
+    if (! this.isOnScreen()) { return this; }
     // var s = this.toString() || this.inspect();
     // if (s) { console.log("refreshContentIfOnScreenOfMeAndSubmorphs: refreshing " + s); }
     this.refreshContent();
     this.submorphs.each(function(m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); });
+    return this;
   },
   
   refreshContent: function() {
@@ -26,6 +28,10 @@ Morph.addMethods({
       if (window.shouldNotDoAnyPeriodicalMorphUpdating) { pe.stop(); return; }
       this.refreshContentIfOnScreenOfMeAndSubmorphs();
     }.bind(this), frequency || 8);
+  },
+  
+  isPeriodicallyUpdating: function () {
+    return this._updater && this._updater.timer;
   }
 });
 
