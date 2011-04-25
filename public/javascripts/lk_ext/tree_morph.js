@@ -90,7 +90,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('headerRowContents', function () {
     if (this.shouldUseZooming()) {
-      return [this._titleLabel, avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, 2.0, this._contentsPanelSize)];
+      return [this._titleLabel, avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, function() { return Math.sqrt(this.contentsCount()); }.bind(this), this._contentsPanelSize)];
     } else {
       
       return [this._expander, this._titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
@@ -99,7 +99,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('potentialContent', function () {
     if (this.shouldUseZooming()) {
-      var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, 0.75, this._contentsPanelSize)] : [this.headerRow()];
+      var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, function() { return 0.375 * Math.sqrt(this.contentsCount()); }.bind(this), this._contentsPanelSize)] : [this.headerRow()];
       return avocado.tableContents.createWithColumns([rows]);
     } else {
       var rows = [];

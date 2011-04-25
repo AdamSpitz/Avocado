@@ -14,10 +14,14 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
 
-  add.method('initialize', function ($super, morphToUpdate, morph1, owner, threshold, sizeOfSpaceHolder) {
+  add.method('initialize', function ($super, morphToUpdate, morph1, owner, thresholdNumberOrFunction, sizeOfSpaceHolder) {
     $super(morphToUpdate, morph1, this.spaceHolder.bind(this)); // aaa spaceHolder not working properly yet
     this._owner = owner;
-    this._threshold = threshold;
+    if (typeof(thresholdNumberOrFunction) === 'function') {
+      this.currentThreshold = thresholdNumberOrFunction;
+    } else {
+      this._thresholdNumber = thresholdNumberOrFunction;
+    }
     this._sizeOfSpaceHolder = sizeOfSpaceHolder;
   });
   
@@ -32,15 +36,20 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
     }
     return h;
   });
+  
+  add.method('currentThreshold', function () {
+    return this._thresholdNumber;
+  });
 
   add.method('shouldMorph1BeShown', function () {
     var b = false;
     var onScreen = this._owner.isOnScreen();
     if (onScreen) {
       var s = this._owner.overallScale();
-      b = s >= this._threshold;
+      var t = this.currentThreshold();
+      b = s >= t;
     }
-    // console.log("shouldMorph1BeShown is " + b + " for " + this._owner + ", scale is " + s + ", threshold is " + this._threshold + ", onScreen is " + onScreen);
+    // console.log("shouldMorph1BeShown is " + b + " for " + this._owner + ", scale is " + s + ", threshold is " + t + ", onScreen is " + onScreen);
     return b;
   });
 
