@@ -189,7 +189,9 @@ thisModule.addSlots(avocado.poses.list, function(add) {
         // If it seems like the current y is far down enough to make the whole
         // thing come out squarish (assuming that all columns will be about as
         // wide as this one), then set this as the maxY.
-        var desiredAspectRatio = 1;
+        var containerExtent = this._container.getExtent();
+        var desiredAspectRatio = containerExtent.y == 0 ? 1 : containerExtent.x / containerExtent.y;
+        
         var estimatedNumberOfColumns = Math.ceil(n / (i + 1));
         var estimatedTotalWidth = estimatedNumberOfColumns * (widest + padding.x);
         // aaa - not sure why it keeps coming out too tall; quick hack for now: compensate by multiplying by 1.2

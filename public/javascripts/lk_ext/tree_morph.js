@@ -122,7 +122,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   
   add.data('_shouldContentsBeFreeForm', true, {category: ['free-form contents experiment']});
 
-  add.data('_contentsPanelSize', pt(100,100), {category: ['free-form contents experiment']});
+  add.data('_contentsPanelSize', pt(150,100), {category: ['free-form contents experiment']});
 
   add.method('contentsPanel', function () {
     var cp = this._contentsPanel;
