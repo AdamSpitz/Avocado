@@ -99,24 +99,24 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
 thisModule.addSlots(Morph, function(add) {
   
-  add.method('createEitherOrMorph', function(m1, m2, condition) {
-    // aaa - callers that are TableMorphs already should just use the new enhanced morphToggler, don't need to wrap it in this RowMorph anymore
+  add.method('createEitherOrMorph', function(morphs, functionReturningTheIndexOfTheOneToShow) {
+    // aaa - callers that are TableMorphs already and just need two choices should just use the new enhanced morphToggler, don't need to wrap it in this RowMorph anymore
     var r = avocado.TableMorph.newRow().beInvisible();
-    var t1 = avocado.morphToggler.create(null, m1);
-    var t2 = avocado.morphToggler.create(null, m2);
-    r.setPotentialColumns([t1, t2]);
+    var togglers = morphs.map(function(m) { return avocado.morphToggler.create(null, m); });
+    r.setPotentialColumns(togglers);
     r.refreshContent = avocado.makeSuperWork(r, "refreshContent", function($super) {
-      var c = condition();
+      var i = functionReturningTheIndexOfTheOneToShow();
       var evt = Event.createFake();
-      t1.setValue(!!c, evt);
-      t2.setValue( !c, evt);
+      togglers.each(function(t, ti) {
+        t.setValue(i === ti, evt);
+      });
       return $super();
     });
     return r;
   }, {category: ['shortcuts']});
 
   add.method('createOptionalMorph', function(m, condition, layoutModes) {
-    var om = Morph.createEitherOrMorph(m, avocado.TableMorph.newRow().beInvisible(), condition);
+    var om = Morph.createEitherOrMorph([m, avocado.TableMorph.newRow().beInvisible()], function() { return condition() ? 0 : 1; });
     om.horizontalLayoutMode = (layoutModes || m).horizontalLayoutMode;
     om.verticalLayoutMode   = (layoutModes || m).verticalLayoutMode;
     return om;

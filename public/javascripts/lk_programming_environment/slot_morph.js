@@ -75,20 +75,24 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var signatureRowContent;
     if (this.shouldUseZooming()) {
       /* aaa why does this produce weird shrinking behaviour?   avocado.scaleBasedMorphHider.create(this, function() { */
-      buttonChooserMorph = Morph.wrapToTakeUpConstantHeight(10, 
-        this.slot().isSimpleMethod() ? this.sourcePane() : Morph.createEitherOrMorph(function() {
-          var contentsMirrorMorph = slot.contents().morph();
-          contentsMirrorMorph.refreshContentOfMeAndSubmorphs();
-          return contentsMirrorMorph;
-        }, this.contentsPointer.bind(this), function() {
-          return this.slot().equals(this.slot().contents().probableCreatorSlot());
+      this._buttonChooserMorph = Morph.wrapToTakeUpConstantHeight(50, 
+        Morph.createEitherOrMorph([
+          this.sourcePane(),
+          function() {
+            var contentsMirrorMorph = slot.contents().morph();
+            contentsMirrorMorph.refreshContentOfMeAndSubmorphs();
+            return contentsMirrorMorph;
+          },
+          this.contentsPointerPane.bind(this)
+        ], function() {
+          return this.slot().isSimpleMethod() ? 0 : (this.slot().equals(this.slot().contents().probableCreatorSlot()) ? 1 : 2);
         }.bind(this))
       );
       //}.bind(this), this, 1.5, pt(10,10));
-      signatureRowContent = [this.descriptionMorph(), Morph.createSpacer(), this._annotationToggler, Morph.createSpacer(), buttonChooserMorph].compact();
+      signatureRowContent = [this.descriptionMorph(), Morph.createSpacer(), this._annotationToggler].compact();
     } else {
       this._sourceToggler = avocado.morphToggler.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)));
-      buttonChooserMorph = Morph.createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.slot().isSimpleMethod(); }.bind(this));
+      buttonChooserMorph = Morph.createEitherOrMorph([this.sourceButton(), this.contentsPointer()], function() { return this.slot().isSimpleMethod() ? 0 : 1; }.bind(this));
       signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph].compact();
     }
 
@@ -133,6 +137,14 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('contentsPointer', function () {
     return this._contentsPointer || (this._contentsPointer = this.constructor.pointer.create(this).newMorph());
+  }, {category: ['contents']});
+
+  add.method('contentsPointerPane', function () {
+    if (! this._contentsPointerPane) {
+      this._contentsPointerPane = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+      this._contentsPointerPane.setRows([this.contentsPointer(), Morph.wrapToTakeUpConstantHeight(10, this.sourcePane())]);
+    }
+    return this._contentsPointerPane;
   }, {category: ['contents']});
 
   add.method('sourceButton', function () {
@@ -310,11 +322,14 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('potentialContent', function () {
-    if (this.shouldUseZooming()) {
-      return avocado.tableContents.createWithColumns([[this.signatureRow]]);
-    } else {
-      return avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler].compact()]);
+    if (! this._potentialContent) {
+      if (this.shouldUseZooming()) {
+        this._potentialContent = avocado.tableContents.createWithColumns([[this.signatureRow, this._buttonChooserMorph]]);
+      } else {
+        this._potentialContent = avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler].compact()]);
+      }
     }
+    return this._potentialContent;
   }, {category: ['updating']});
 
   add.method('wasJustDroppedOnWorld', function (world) {
