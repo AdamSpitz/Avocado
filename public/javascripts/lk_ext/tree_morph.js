@@ -35,8 +35,6 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
     this._subnodeMorphs = [];
     this._nonNodeContentMorphs = [];
-
-    this._contentsSummaryMorph = this.createContentsSummaryMorph();
     
     if (! this.shouldUseZooming()) {
       this._expander = new ExpanderMorph(this);
@@ -99,8 +97,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('potentialContent', function () {
     if (this.shouldUseZooming()) {
-      var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedMorphHider.create(this, this.contentsPanel(), this, function() { return 0.375 * Math.sqrt(this.contentsCount()); }.bind(this), this._contentsPanelSize)] : [this.headerRow()];
-      return avocado.tableContents.createWithColumns([rows]);
+      if (! this._potentialContent) {
+        var rows = this._shouldOmitHeaderRow ? [avocado.scaleBasedMorphHider.create(this, this.contentsPanel.bind(this), this, function() { return 0.375 * Math.sqrt(this.contentsCount()); }.bind(this), this._contentsPanelSize)] : [this.headerRow()];
+        this._potentialContent = avocado.tableContents.createWithColumns([rows]);
+      }
+      return this._potentialContent;
     } else {
       var rows = [];
       if (! this._shouldOmitHeaderRow)  { rows.push(this.headerRow()); }
@@ -173,6 +174,13 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     return cp;
   }, {category: ['contents panel']});
 
+  add.method('contentsSummaryMorph', function () {
+    if (! this._contentsSummaryMorph) {
+      this._contentsSummaryMorph = this.createContentsSummaryMorph();
+    }
+    return this._contentsSummaryMorph;
+  }, {category: ['contents panel']});
+  
   add.method('allContentMorphs', function () {
     var contentMorphs = [];
     this._nonNodeContentMorphs = this.nonNodeContentMorphsInOrder();
@@ -193,12 +201,15 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['contents panel']});
 
   add.method('contentsCount', function () {
-    return this.treeNode().immediateSubnodes().size() + this.treeNode().nonNodeContents().size();
+    var tn = this.treeNode();
+    var subnodeCount = typeof(tn.immediateSubnodeCount) === 'function' ? tn.immediateSubnodeCount() : tn.immediateSubnodes().size();
+    var nonNodeCount = typeof(tn. nonNodeContentsCount) === 'function' ? tn. nonNodeContentsCount() : tn.  nonNodeContents().size();
+    return subnodeCount + nonNodeCount;
   }, {category: ['contents panel']});
 
   add.method('potentialContentsOfContentsPanel', function () {
     var allSubmorphs = [];
-    if (this.treeNode().requiresContentsSummary()) { allSubmorphs.push(this._contentsSummaryMorph); }
+    if (this.treeNode().requiresContentsSummary()) { allSubmorphs.push(this.contentsSummaryMorph()); }
     var contentMorphs = this.allContentMorphs();
     contentMorphs.each(function(m) {
       m.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;

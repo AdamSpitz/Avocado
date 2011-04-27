@@ -23,14 +23,6 @@ thisModule.addSlots(avocado.annotator, function(add) {
 
 thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
 
-  add.method('categorize', function (catParts, slotNames) {
-    // Just a shortcut to let us categorize a bunch of slots at a time.
-    for (var i = 0, n = slotNames.length; i < n; ++i) {
-      var slotName = slotNames[i];
-	    this.slotAnnotation(slotName).setCategoryParts(catParts);
-    }
-  }, {category: ['categories']});
-
   add.method('theCreatorSlot', function () {
     return this.explicitlySpecifiedCreatorSlot() || this.onlyPossibleCreatorSlot();
   }, {category: ['creator slots']});

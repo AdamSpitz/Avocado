@@ -80,8 +80,6 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
         var optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
       }
       
-      var akaButton = avocado.command.create("AKA", function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
-
       if (! this.shouldUseZooming()) {
         // With zooming, these buttons clutter up the object. Plus the parent button isn't really necessary and doesn't make sense
         // now that the __proto__ slot is always visible (rather than hidden because the object isn't expanded). And the E button
@@ -98,7 +96,12 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       }
 
       var optionalDismissButtonMorph = this.createDismissButtonThatOnlyAppearsIfTopLevel();
-      var optionalAKAButtonMorph     = Morph.createOptionalMorph(   akaButton, function() { return this.mirror().hasMultiplePossibleNames(); }.bind(this));
+      
+      var optionalAKAButtonMorph = Morph.createOptionalMorph(function() {
+        return avocado.command.create("AKA", function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
+      }.bind(this).memoize(), function() {
+        return this.mirror().hasMultiplePossibleNames();
+      }.bind(this));
 
       var descInHeader = this.shouldUseZooming() ? null : this._descMorph;
     

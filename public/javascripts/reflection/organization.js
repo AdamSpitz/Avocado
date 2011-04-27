@@ -111,7 +111,7 @@ thisModule.addSlots(avocado.organizationUsingAnnotations, function(add) {
   }, {category: ['categories']});
 
   add.method('setCategoryForSlot', function (s, catParts) {
-    s.annotationForWriting().setCategoryParts(catParts);
+    s.holder().annotationForWriting().setCategoryPartsForSlotNamed(s.name(), catParts);
   }, {category: ['categories']});
 
   add.method('commentOrNullForReflecteeOf', function (mir) {

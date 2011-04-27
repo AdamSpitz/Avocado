@@ -3,6 +3,7 @@ transporter.module.create('core/core', function(requires) {
 requires('core/accessors');
 requires('core/commands');
 requires('core/exit');
+requires('core/functions');
 requires('core/enumerator');
 requires('core/deep_copy');
 requires('core/range');

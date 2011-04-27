@@ -46,7 +46,7 @@ thisModule.addSlots(avocado.category.Morph, function(add) {
 thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 
   add.data('constructor', avocado.category.Morph);
-
+  
   add.method('initialize', function ($super, catOfMir, shouldOmitHeaderRow) {
     $super(catOfMir);
     this._shouldOmitHeaderRow = shouldOmitHeaderRow;

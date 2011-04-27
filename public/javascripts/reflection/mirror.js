@@ -351,14 +351,52 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['categories']});
 
   add.method('slotsInCategory', function (c) {
-    return this.normalSlots().select(function(s) { return c.equals(s.category()); });
+    if (c.isRoot()) {
+      // aaa - This is the old slow way. The problem is that slots can be added to the object
+      // (even just by doing "obj.x = 3") without there being any way for the category
+      // cache to know about it. I think we should be safe when using the cache to list
+      // slots *not* in the root category, though.
+      //
+      // Maybe keep a timestamp on the cache and refresh it with this list every so
+      // often? I dunno. -- Adam, Apr. 2011
+      return this.normalSlots().select(function(s) { return c.equals(s.category()); });
+    } else {
+      var anno = this.annotationForReading();
+      if (!anno) { return []; }
+      var catCache = anno.getCategoryCache(c.parts());
+      var thisMirror = this;
+      return avocado.enumerator.create(catCache, 'eachSlotName').map(function(n) { return thisMirror.slotAt(n); });
+    }
   }, {category: ['iterating']});
 
   add.method('slotsNestedSomewhereUnderCategory', function (c) {
-    return this.normalSlots().select(function(s) { return s.category().isEqualToOrSubcategoryOf(c); });
+    // aaa old way, remove this once the new way works:
+    // return this.normalSlots().select(function(s) { return s.category().isEqualToOrSubcategoryOf(c); });
+    return avocado.enumerator.create(this, 'eachSlotNestedSomewhereUnderCategory', c);
+  }, {category: ['iterating']});
+
+  add.method('eachSlotNestedSomewhereUnderCategory', function (c, f) {
+    if (c.isRoot()) {
+      this.eachNormalSlot(f);
+    } else {
+      this.slotsInCategory(c).each(f);
+      this.eachImmediateSubcategoryOf(c, function(subcat) {
+        this.eachSlotNestedSomewhereUnderCategory(subcat, f);
+      }.bind(this));
+    }
   }, {category: ['iterating']});
 
   add.method('eachImmediateSubcategoryOf', function (c, f) {
+    var anno = this.annotationForReading();
+    if (!anno) { return; }
+    var catCache = anno.getCategoryCache(c.parts());
+    catCache.eachSubcategoryName(function(n) {
+      f(c.subcategory(n));
+    });
+  }, {category: ['iterating']});
+
+  add.method('aaa_old_eachImmediateSubcategoryOf', function (c, f) {
+    // aaaaaaaaaaaaaaaaa remove this if the new way works.
     var subcats = {};
     this.normalSlots().each(function(s) {
       var sc = s.category();

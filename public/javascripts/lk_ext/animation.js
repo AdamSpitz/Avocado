@@ -167,7 +167,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('createDismissButtonThatOnlyAppearsIfTopLevel', function () {
-    return Morph.createOptionalMorph(this.createDismissButton(), function() {
+    return Morph.createOptionalMorph(this.createDismissButton.bind(this).memoize(), function() {
       return (! this.owner) || (this.owner instanceof WorldMorph) || (this.owner instanceof HandMorph) || (this.owner instanceof avocado.CarryingHandMorph);
     }.bind(this));
   }, {category: ['adding and removing']});

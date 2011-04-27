@@ -79,6 +79,20 @@ var annotator = {
       return this._slotAnnoPrefix + name;
     },
 
+    asSlotAnnotation: function(slotAnno, slotName) {
+      if (slotAnno['__proto__'] !== avocado.annotator.slotAnnotationPrototype) {
+        slotAnno = Object.extendWithJustDirectPropertiesOf(Object.create(avocado.annotator.slotAnnotationPrototype), slotAnno);
+
+        var catParts = slotAnno.category;
+        if (catParts) {
+          delete slotAnno.category;
+          this.setCategoryPartsForSlotNamed(slotName, catParts, slotAnno);
+        }
+      }
+
+      return slotAnno;
+    },
+
     existingSlotAnnotation: function(name) {
       return this[this.annotationNameForSlotNamed(name)];
     },
@@ -97,7 +111,7 @@ var annotator = {
 
     setSlotAnnotation: function(name, slotAnno) {
       if (slotAnno) {
-        var realSlotAnno = avocado.annotator.asSlotAnnotation(slotAnno);
+        var realSlotAnno = this.asSlotAnnotation(slotAnno, name);
         this[this.annotationNameForSlotNamed(name)] = realSlotAnno;
         return realSlotAnno;
       } else {
@@ -241,16 +255,49 @@ var annotator = {
             dst[name] = src[name];
             
             // Copy down the category (and maybe other stuff?).
-            var srcSlotAnno = annotator.existingSlotAnnotation(src, name);
-            if (srcSlotAnno && srcSlotAnno.category) {
-              var dstSlotAnno = this.setSlotAnnotation(name, {});
-              dstSlotAnno.category = srcSlotAnno.category;
-	      // aaa - Make sure the JSQuiche server gets updated?
-	      // Do we store each slot's category separately, or store
-	      // the fact that there's a copy-down parent?
+            var srcAnno = avocado.annotator.existingAnnotationOf(src);
+            if (srcAnno) {
+              var srcSlotAnno = srcAnno.existingSlotAnnotation(name);
+              if (srcSlotAnno && srcSlotAnno.categoryParts()) {
+                var dstSlotAnno = this.setSlotAnnotation(name, {});
+                this.setCategoryPartsForSlotNamed(name, srcSlotAnno.categoryParts(), dstSlotAnno);
+        	      // aaa - Make sure the JSQuiche server gets updated?
+        	      // Do we store each slot's category separately, or store
+        	      // the fact that there's a copy-down parent?
+              }
             }
           }
         }
+      }
+    },
+    
+    getCategoryCache: function(catParts) {
+      var c = this.categoryCache;
+      if (!c) { c = this.categoryCache = Object.newChildOf(avocado.annotator.categoryCachePrototype); }
+      if (catParts) {
+        for (var i = 0, n = catParts.length; i < n; ++i) {
+          c = c.getOrCreateSubcategory(catParts[i]);
+        }
+      }
+      return c;
+    },
+    
+    setCategoryPartsForSlotNamed: function(slotName, catParts, alreadyGotTheSlotAnno) {
+      var slotAnno = alreadyGotTheSlotAnno || this.slotAnnotation(slotName); // just an optimization, allow it to be passed in if the caller already has it
+      
+      var oldCatCache = slotAnno.category;
+      if (oldCatCache) { oldCatCache.removeSlotName(slotName); }
+      
+      if (catParts) {
+        // Sometimes we screw up when hacking on the text files and accidentally write a category as
+        // a string instead of an array of strings.
+        if (! (catParts instanceof Array)) { catParts = [catParts]; }
+        
+        var c = this.getCategoryCache(catParts);
+        slotAnno.category = c;
+        c.addSlotName(slotName);
+      } else {
+        delete slotAnno.category;
       }
     },
 
@@ -258,7 +305,7 @@ var annotator = {
       // Just a shortcut to let us categorize a bunch of slots at a time.
       for (var i = 0, n = slotNames.length; i < n; ++i) {
 	      var slotName = slotNames[i];
-	      this.slotAnnotation(slotName).setCategoryParts(catParts);
+	      this.setCategoryPartsForSlotNamed(slotName, catParts);
       }
     },
   
@@ -287,17 +334,9 @@ var annotator = {
 
   slotAnnotationPrototype: {
     categoryParts: function() {
-      return this.category || null;
-    },
-    
-    setCategoryParts: function(parts) {
-      if (parts) {
-        // Sometimes we screw up when hacking on the text files and accidentally write a category as
-        // a string instead of an array of strings.
-        this.category = annotator.canonicalizeCategoryParts((parts instanceof Array) ? parts : [parts]);
-      } else {
-        delete this.category;
-      }
+      var c = this.category;
+      if (!c) { return null; }
+      return c.parts();
     },
     
     getModule: function() {
@@ -345,6 +384,63 @@ var annotator = {
       if (this.comment                            ) { raw.comment      = this.getComment();               }
       if (this.initializeTo                       ) { raw.initializeTo = this.initializationExpression(); }
       return raw;
+    }
+  },
+  
+  categoryCachePrototype: {
+    initialize: function(n, supercat) {
+      this._lastPart = n;
+      this._supercategory = supercat;
+    },
+    
+    parts: function() {
+      var ps = [];
+      var c = this;
+      while (c && typeof(c._lastPart) !== 'undefined') {
+        ps.unshift(c._lastPart);
+        c = c._supercategory;
+      }
+      return ps;
+    },
+    
+    subcategories: function() {
+      if (! this._subcategories) { this._subcategories = {}; }
+      return this._subcategories;
+    },
+    
+    getOrCreateSubcategory: function(name) {
+      var subcats = this.subcategories();
+      var c = subcats[name];
+      if (!c) {
+        c = subcats[name] = Object.newChildOf(avocado.annotator.categoryCachePrototype, name, this);
+      }
+      return c;
+    },
+    
+    eachSubcategoryName: function(f) {
+      for (var name in this._subcategories) {
+        if (this._subcategories.hasOwnProperty(name)) {
+          f(name);
+        }
+      }
+    },
+    
+    addSlotName: function(name) {
+      if (! this._slotNames) { this._slotNames = {}; }
+      this._slotNames[name] = true;
+    },
+    
+    removeSlotName: function(name) {
+      if (! this._slotNames) { return; }
+      delete this._slotNames[name];
+    },
+    
+    eachSlotName: function(f) {
+      for (var name in this._slotNames) {
+        if (this._slotNames.hasOwnProperty(name)) {
+          f(name);
+        }
+      }
     }
   },
 
@@ -457,18 +553,6 @@ var annotator = {
     }
     
     return a;
-  },
-
-  asSlotAnnotation: function(slotAnno) {
-    if (slotAnno['__proto__'] !== this.slotAnnotationPrototype) {
-      slotAnno = Object.extendWithJustDirectPropertiesOf(Object.create(this.slotAnnotationPrototype), slotAnno);
-    }
-    
-    if (slotAnno.category) {
-      slotAnno.setCategoryParts(slotAnno.category);
-    }
-    
-    return slotAnno;
   },
 
   existingSlotAnnotation: function(holder, name) {
@@ -843,11 +927,12 @@ transporter.makeSureArrayIndexablesGetFiledOut = function (contents, module) {
 
 transporter.module.slotAdder = {
   data: function(name, contents, slotAnnotation, contentsAnnotation) {
+    var holderAnno = annotator.annotationOf(this.holder);
     if (! slotAnnotation) { slotAnnotation = Object.create(annotator.slotAnnotationPrototype); }
-    slotAnnotation = avocado.annotator.asSlotAnnotation(slotAnnotation);
+    slotAnnotation = holderAnno.asSlotAnnotation(slotAnnotation, name);
     this.holder[name] = contents;
     slotAnnotation.setModule(this.module);
-    annotator.annotationOf(this.holder).setSlotAnnotation(name, slotAnnotation);
+    holderAnno.setSlotAnnotation(name, slotAnnotation);
     if (contentsAnnotation) { // used for creator slots
       annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);
     }
