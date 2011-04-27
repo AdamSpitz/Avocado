@@ -97,7 +97,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.method('potentialContent', function () {
     if (this.shouldUseZooming()) {
       if (! this._potentialContent) {
-        var thresholdMultiplier = this._shouldOmitHeaderRow ? 0.375 : 1;
+        var thresholdMultiplier = this._shouldOmitHeaderRow ? 0.25 : 0.7;
         var contentsPanelHider = avocado.scaleBasedMorphHider.create(this, this.contentsPanel.bind(this), this, function() { return thresholdMultiplier * Math.sqrt(this.contentsCount()); }.bind(this), this._contentsPanelSize);
         var rows = this._shouldOmitHeaderRow ? [contentsPanelHider] : [this.headerRow(), contentsPanelHider];
         this._potentialContent = avocado.tableContents.createWithColumns([rows]);

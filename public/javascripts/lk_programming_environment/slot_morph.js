@@ -75,19 +75,18 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var signatureRowContent;
     if (this.shouldUseZooming()) {
       /* aaa why does this produce weird shrinking behaviour?   avocado.scaleBasedMorphHider.create(this, function() { */
-      this._buttonChooserMorph = Morph.wrapToTakeUpConstantHeight(50, 
-        Morph.createEitherOrMorph([
-          this.sourcePane(),
-          function() {
-            var contentsMirrorMorph = slot.contents().morph();
-            contentsMirrorMorph.refreshContentOfMeAndSubmorphs();
-            return contentsMirrorMorph;
-          },
-          this.contentsPointerPane.bind(this)
-        ], function() {
-          return this.slot().isSimpleMethod() ? 0 : (this.slot().equals(this.slot().contents().probableCreatorSlot()) ? 1 : 2);
-        }.bind(this))
-      );
+      this._buttonChooserMorph = Morph.createEitherOrMorph([
+        function() { return Morph.wrapToTakeUpConstantHeight(50, this.sourcePane()); }.bind(this).memoize(),
+        function() {
+          var contentsMirrorMorph = slot.contents().morph();
+          contentsMirrorMorph.setScale(0.65);
+          contentsMirrorMorph.refreshContentOfMeAndSubmorphs();
+          return contentsMirrorMorph;
+        },
+        this.contentsPointerPane.bind(this)
+      ], function() {
+        return this.slot().isSimpleMethod() ? 0 : (this.slot().equals(this.slot().contents().probableCreatorSlot()) ? 1 : 2);
+      }.bind(this)).applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
       //}.bind(this), this, 1.5, pt(10,10));
       signatureRowContent = [this.descriptionMorph(), Morph.createSpacer(), this._annotationToggler].compact();
     } else {
@@ -141,8 +140,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('contentsPointerPane', function () {
     if (! this._contentsPointerPane) {
-      this._contentsPointerPane = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
-      this._contentsPointerPane.setRows([this.contentsPointer(), Morph.wrapToTakeUpConstantHeight(10, this.sourcePane())]);
+      this._contentsPointerPane = avocado.TableMorph.newRow().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+      this._contentsPointerPane.setColumns([Morph.wrapToTakeUpConstantHeight(10, this.sourcePane()), Morph.createSpacer(), this.contentsPointer()]);
     }
     return this._contentsPointerPane;
   }, {category: ['contents']});

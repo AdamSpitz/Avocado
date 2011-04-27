@@ -48,6 +48,9 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
     this._nameMorph = TextMorph.createLabel(function() {return m.name();});
     this._descMorph = TextMorph.createLabel(function() {return m.shortDescription();});
+    
+    this._nameMorph.setEmphasis({style: 'bold'});
+    this._descMorph.setScale(0.9);
 
     if (this.mirror().canHaveAnnotation()) {
       if (this.shouldUseZooming()) {
@@ -95,7 +98,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
         }
       }
 
-      var optionalDismissButtonMorph = this.createDismissButtonThatOnlyAppearsIfTopLevel();
+      var optionalDismissButtonMorph = this.shouldUseZooming() ? null : this.createDismissButtonThatOnlyAppearsIfTopLevel();
       
       var optionalAKAButtonMorph = Morph.createOptionalMorph(function() {
         return avocado.command.create("AKA", function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
@@ -104,7 +107,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       }.bind(this));
 
       var descInHeader = this.shouldUseZooming() ? null : this._descMorph;
-    
+      
       this._headerRow = avocado.RowMorph.createSpaceFilling([this.expander(), this._nameMorph, descInHeader, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
       this._headerRow.refreshContentOfMeAndSubmorphs();
     }
@@ -177,7 +180,8 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.creator('copyDownParentsStyle', {}, {category: ['styles']});
 
   add.method('createRow', function (m) {
-    var r = avocado.RowMorph.createSpaceFilling([m], this.defaultStyle.internalPadding);
+    var content = this.shouldUseZooming() ? [Morph.createSpacer(), m, Morph.createSpacer()] : [m, Morph.createSpacer()];
+    var r = avocado.RowMorph.createSpaceFilling(content, this.defaultStyle.internalPadding);
     r.wasJustShown = function(evt) { m.wasJustShown(evt); };
     return r;
   }, {category: ['creating']});
