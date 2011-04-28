@@ -5,6 +5,7 @@ requires('core/commands');
 requires('core/exit');
 requires('core/functions');
 requires('core/enumerator');
+requires('core/composite_collection');
 requires('core/deep_copy');
 requires('core/range');
 requires('core/hash_table');

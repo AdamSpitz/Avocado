@@ -87,11 +87,14 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['UI state']});
 
   add.method('headerRowContents', function () {
-    if (this.shouldUseZooming()) {
-      return [this._titleLabel];
-    } else {
-      return [this._expander, this._titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
+    if (! this._headerRowContents) {
+      if (this.shouldUseZooming()) {
+        this._headerRowContents = [this._titleLabel];
+      } else {
+        this._headerRowContents = [this._expander, this._titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
+      }
     }
+    return this._headerRowContents;
   }, {category: ['header row']});
 
   add.method('potentialContent', function () {
@@ -130,6 +133,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     
     if (this.shouldUseZooming() && this._shouldContentsBeFreeForm) {
       cp = this._contentsPanel = new Morph(new lively.scene.Rectangle(pt(0,0).extent(this._contentsPanelSize))).applyStyle(this.contentsPanelStyle());
+      cp.typeName = 'tree node contents panel'; // just for debugging purposes
       // var thisToString = this.toString(); cp.toString = function() { return thisToString + " contents panel"; } // aaa just for debugging
       this.adjustScaleOfContentsPanel();
       // aaa - do this more cleanly; for now, just wanna see if this can work
@@ -183,12 +187,9 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['contents panel']});
   
   add.method('allContentMorphs', function () {
-    var contentMorphs = [];
     this._nonNodeContentMorphs = this.nonNodeContentMorphsInOrder();
     this._subnodeMorphs = this.subnodeMorphsInOrder();
-    this._nonNodeContentMorphs.each(function(sm) {contentMorphs.push(sm);});
-    this._subnodeMorphs.each(function(scm) {contentMorphs.push(scm);});
-    return contentMorphs;
+    return avocado.compositeCollection.create([this._nonNodeContentMorphs, this._subnodeMorphs]);
   }, {category: ['contents panel']});
 
   add.method('supernodeMorph', function () {

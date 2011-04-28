@@ -64,31 +64,11 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
         e.poser.ensureIsInWorld(container, e.position, true, true, true);
       }
     }.bind(this));
-
-    container.allPotentialPosers().each(function(m) {
-      if (m.isPartOfCurrentPose) {
-        delete m.isPartOfCurrentPose;
-      } else if (! m.shouldIgnorePoses()) {
-        // I am undecided on whether this is a good idea or not. It's annoying if
-        // stuff I want zooms away, but it's also annoying if stuff zooms onto
-        // other stuff and the screen gets all cluttered.
-        var shouldUninvolvedPosersGoAway = false;
-        if (shouldUninvolvedPosersGoAway) {
-          if (this._shouldBeUnobtrusive) {
-            var callbackWhenDoneFading = finalCallback();
-            m.smoothlyFadeTo(0, function() {
-              m.remove();
-              callbackWhenDoneFading();
-            });
-          } else {
-            m.startZoomingOuttaHere(finalCallback());
-          }
-        }
-      }
-    }.bind(this));
   
+    
     if (this._shouldScaleToFitWithinCurrentSpace) {
-      container.refreshContentOfMeAndSubmorphs(); // to make sure the submorphs are laid out right - though, aaa, shouldn't this be done before even calculating the pose positions?
+      // AAAAAAA - I took out this one line and suddenly everything got way faster.
+      // container.refreshContentOfMeAndSubmorphs(); // to make sure the submorphs are laid out right - though, aaa, shouldn't this be done before even calculating the pose positions?
       var currentExtent = container.bounds().extent();
       var hs = originalSpace.x / currentExtent.x;
       var vs = originalSpace.y / currentExtent.y;

@@ -102,6 +102,7 @@ thisModule.addSlots(Morph, function(add) {
   add.method('createEitherOrMorph', function(morphs, functionReturningTheIndexOfTheOneToShow) {
     // aaa - callers that are TableMorphs already and just need two choices should just use the new enhanced morphToggler, don't need to wrap it in this RowMorph anymore
     var r = avocado.TableMorph.newRow().beInvisible();
+    r.typeName = 'either-or morph';
     var togglers = morphs.map(function(m) { return avocado.morphToggler.create(null, m); });
     r.setPotentialColumns(togglers);
     r.refreshContent = avocado.makeSuperWork(r, "refreshContent", function($super) {
@@ -117,6 +118,7 @@ thisModule.addSlots(Morph, function(add) {
 
   add.method('createOptionalMorph', function(m, condition, layoutModes) {
     var om = Morph.createEitherOrMorph([m, avocado.TableMorph.newRow().beInvisible()], function() { return condition() ? 0 : 1; });
+    om.typeName = 'optional morph';
     om.horizontalLayoutMode = (layoutModes || m).horizontalLayoutMode;
     om.verticalLayoutMode   = (layoutModes || m).verticalLayoutMode;
     return om;

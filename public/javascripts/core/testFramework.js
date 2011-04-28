@@ -233,6 +233,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
       avocado.objectGraphWalker.tests,
       exitValueOf.tests,
       avocado.enumerator.tests,
+      avocado.compositeCollection.tests,
       avocado.range.tests,
       avocado.notifier.tests,
       avocado.stringBuffer.tests,

@@ -47,9 +47,9 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     this.applyStyle(this.defaultStyle);
 
     this._nameMorph = TextMorph.createLabel(function() {return m.name();});
-    this._descMorph = TextMorph.createLabel(function() {return m.shortDescription();});
-    
     this._nameMorph.setEmphasis({style: 'bold'});
+    
+    this._descMorph = TextMorph.createLabel(function() {return m.shortDescription();});
     this._descMorph.setScale(0.9);
 
     if (this.mirror().canHaveAnnotation()) {
@@ -79,8 +79,11 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.method('headerRow', function () {
     if (! this._headerRow) {
       if (this._commentToggler) {
-        var commentButton = this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
-        var optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
+        var optionalCommentButtonMorph = avocado.morphHider.create(this, function() {
+          return this._commentToggler.commandForToggling('my comment', "'...'").newMorph();
+        }.bind(this).memoize(), null, function() {
+          return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment());
+        }.bind(this));
       }
       
       if (! this.shouldUseZooming()) {
@@ -100,15 +103,16 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
       var optionalDismissButtonMorph = this.shouldUseZooming() ? null : this.createDismissButtonThatOnlyAppearsIfTopLevel();
       
-      var optionalAKAButtonMorph = Morph.createOptionalMorph(function() {
+      var optionalAKAButtonMorph = avocado.morphHider.create(this, function() {
         return avocado.command.create("AKA", function(evt) { this.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }.bind(this)).newMorph();
-      }.bind(this).memoize(), function() {
+      }.bind(this).memoize(), null, function() {
         return this.mirror().hasMultiplePossibleNames();
       }.bind(this));
 
       var descInHeader = this.shouldUseZooming() ? null : this._descMorph;
       
-      this._headerRow = avocado.RowMorph.createSpaceFilling([this.expander(), this._nameMorph, descInHeader, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact(), this.defaultStyle.headerRowPadding);
+      var headerRowContents = [this.expander(), this._nameMorph, descInHeader, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact();
+      this._headerRow = avocado.RowMorph.createSpaceFilling(function() { return headerRowContents; }, this.defaultStyle.headerRowPadding);
       this._headerRow.refreshContentOfMeAndSubmorphs();
     }
     return this._headerRow;

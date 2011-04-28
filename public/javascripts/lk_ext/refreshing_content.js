@@ -1,5 +1,6 @@
 Morph.addMethods({
   refreshContentOfMeAndSubmorphs: function() {
+    this._hasBeenRefreshedAtLeastOnce = true;
     this.refreshContent();
     this.submorphs.each(function(m) { m.refreshContentOfMeAndSubmorphs(); });
     return this;
@@ -9,6 +10,8 @@ Morph.addMethods({
     if (! this.isOnScreen()) { return this; }
     // var s = this.toString() || this.inspect();
     // if (s) { console.log("refreshContentIfOnScreenOfMeAndSubmorphs: refreshing " + s); }
+
+    this._hasBeenRefreshedAtLeastOnce = true;
     this.refreshContent();
     this.submorphs.each(function(m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); });
     return this;
@@ -17,6 +20,12 @@ Morph.addMethods({
   refreshContent: function() {
     // children can override
     this.updateFill();
+  },
+  
+  refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore: function() {
+    if (! this._hasBeenRefreshedAtLeastOnce) {
+      this.refreshContentOfMeAndSubmorphs();
+    }
   },
 
   updateFill: function() {

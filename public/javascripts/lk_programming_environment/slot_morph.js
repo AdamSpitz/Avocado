@@ -52,7 +52,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph, function(add) {
 thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.data('constructor', avocado.slots['abstract'].Morph);
-
+  
   add.method('initialize', function ($super, slot) {
     $super();
     this._model = slot;
@@ -80,7 +80,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
         function() {
           var contentsMirrorMorph = slot.contents().morph();
           contentsMirrorMorph.setScale(0.65);
-          contentsMirrorMorph.refreshContentOfMeAndSubmorphs();
+          contentsMirrorMorph.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore();
           return contentsMirrorMorph;
         },
         this.contentsPointerPane.bind(this)
@@ -142,6 +142,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     if (! this._contentsPointerPane) {
       this._contentsPointerPane = avocado.TableMorph.newRow().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
       this._contentsPointerPane.setColumns([Morph.wrapToTakeUpConstantHeight(10, this.sourcePane()), Morph.createSpacer(), this.contentsPointer()]);
+      this._contentsPointerPane.typeName = 'slot contents pointer pane';
     }
     return this._contentsPointerPane;
   }, {category: ['contents']});
