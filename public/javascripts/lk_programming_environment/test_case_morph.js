@@ -24,11 +24,14 @@ thisModule.addSlots(avocado.testCase, function(add) {
       return cmdList;
     }.bind(this);
     
-    m.createAndRunAndUpdateAppearance = function() {
+    m.createAndRunAndUpdateAppearance = function(callback) {
       m._latestResult = null;
       m.refreshContentOfMeAndSubmorphs();
-      m._latestResult = this.createAndRun();
-      m.refreshContentOfMeAndSubmorphs();
+      this.createAndRun(function(result) {
+        m._latestResult = result;
+        m.refreshContentOfMeAndSubmorphs();
+        if (callback) { callback(result); }
+      });
     }.bind(this);
     
     m.anyFailedOrNull = function() {
@@ -73,12 +76,23 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
       return cmdList;
     };
     
-    m.createAndRunAndUpdateAppearance = function() {
+    m.createAndRunAndUpdateAppearance = function(callback) {
       m.allContentMorphs().each(function(cm) { cm._latestResult = null; });
       m.refreshContentOfMeAndSubmorphs();
-      m.allContentMorphs().each(function(cm) { cm.createAndRunAndUpdateAppearance(); });
-      m.refreshContentOfMeAndSubmorphs();
-    }.bind(this);
+      
+      avocado.callbackWaiter.on(function(finalCallback) {
+        m.allContentMorphs().each(function(cm) {
+          var callbackForThisOne = finalCallback();
+          cm.createAndRunAndUpdateAppearance(function() {
+            m.refreshContentOfMeAndSubmorphs();
+            callbackForThisOne();
+          });
+        });
+      }, function() {
+        m.refreshContentOfMeAndSubmorphs();
+        if (callback) { callback(); }
+      }, "running test suite");
+    };
     
     m.anyFailedOrNull = function() {
       var r = false;

@@ -1,3 +1,11 @@
+Friday, April 29, 2011
+
+  - Made a test-suite morph that uses the zooming UI - zoom in on it to see the individual test cases.
+
+Thursday, April 28, 2011
+
+  - Some performance and cosmetic enhancements to the zooming UI.
+
 Friday, April 8, 2011
 
   - More work on the zooming UI. Still not usable, but getting closer.

@@ -103,12 +103,13 @@ thisModule.addSlots(avocado.testCase, function(add) {
     return Object.newChildOf(this, testResult, optTestSelector);
   });
 
-  add.method('createAndRun', function () {
+  add.method('createAndRun', function (callback) {
     var testCase = this.create();
-    testCase.runAll();
-    var result = testCase.result;
-    result.testCase = testCase;
-    return result;
+    testCase.runAll(function() {
+      var result = testCase.result;
+      result.testCase = testCase;
+      callback(result);
+    });
   });
 
   add.method('runTest', function (callback) {
@@ -178,23 +179,30 @@ thisModule.addSlots(avocado.testCase, function(add) {
     this.assert(thrown, msg); // can't put this inside the try because it works by throwing an exception;
   });
 
-  add.method('runAll', function (statusUpdateFunc) {
+  add.method('runAll', function (callback) {
 		var tests = this.createTests();
 		var totalTime = 0;
-		tests.forEach(function(test) {
-  		var t1 = new Date().getTime();
-			test.statusUpdateFunc = statusUpdateFunc;
-			test.runTest(function() {
-    		var t2 = new Date().getTime();
-    		this.result.incrementTimeToRun(this.name(), t2 - t1);
-			}.bind(this));
-		}.bind(this));
+
+    avocado.callbackWaiter.on(function(finalCallback) {
+  		tests.forEach(function(test) {
+    		var t1 = new Date().getTime();
+  			var callbackForThisTest = finalCallback();
+  			test.runTest(function() {
+      		var t2 = new Date().getTime();
+      		this.result.incrementTimeToRun(this.name(), t2 - t1);
+      		callbackForThisTest();
+  			}.bind(this));
+  		}.bind(this));
+    }.bind(this), callback, "running tests");
+
 	});
 
   add.creator('resultProto', {}, {category: ['results']});
 
   add.method('createAndRunAndShowResult', function () {
-    avocado.ui.showNextTo(this, this.createAndRun(), this);
+    this.createAndRun(function(result) {
+      avocado.ui.showNextTo(this, result, this);
+    }.bind(this));
   }, {category: ['user interface', 'commands']});
 
   add.method('getTestCaseObject', function (evt) {
