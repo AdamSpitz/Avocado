@@ -209,21 +209,40 @@ thisModule.addSlots(avocado.testCase, function(add) {
     return cmdList;
   }, {category: ['user interface', 'commands']});
 
-  add.method('buttonCommands', function () {
-    return avocado.command.list.create(this, [
-      avocado.command.create('Run', this.createAndRunAndShowResult)
-    ]);
-  }, {category: ['user interface', 'commands']});
-
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
 
     cmdList.addItem(["get tests", function(evt) {
-      avocado.ui.showObjects(this.allAvocadoTestCasePrototypes(), "test cases for avocado");
+      avocado.ui.grab(this.suite, evt);
     }.bind(this)]);
   }, {category: ['user interface', 'commands']});
+  
+  add.creator('suite', {}, {category: ['suites']});
 
-  add.method('allAvocadoTestCasePrototypes', function () {
+});
+
+
+thisModule.addSlots(avocado.testCase.suite, function(add) {
+  
+  add.method('inspect', function () { return "Avocado tests"; });
+
+  add.method('immediateSubnodes', function () {
+    return [];
+  });
+
+  add.method('nonNodeContents', function () {
+    return this.testCasePrototypes();
+  });
+
+  add.method('nonNodeContentMorphsInOrder', function () {
+    return this.testCasePrototypes();
+  });
+  
+  add.method('requiresContentsSummary', function () {
+    return false;
+  }, {category: ['user interface']});
+
+  add.method('testCasePrototypes', function () {
     // aaa - This should be replaced with a more general mechanism for finding tests.
     return [
       avocado.dictionary.tests,
@@ -251,6 +270,12 @@ thisModule.addSlots(avocado.testCase, function(add) {
     ];
   });
 
+  add.method('dragAndDropCommands', function () {
+    var cmdList = avocado.command.list.create(this);
+    // aaa - allow adding and removing from the list of tests?
+    return cmdList;
+  }, {category: ['user interface', 'drag and drop']});
+  
 });
 
 

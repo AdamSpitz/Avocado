@@ -51,11 +51,15 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.method('headerRow', function () {
     var hr = this._headerRow;
     if (hr) { return hr; }
-    this._titleLabel = this.createTitleLabel();
+    this._titleLabel = this.createTitleLabel ? this.createTitleLabel() : this.createNameLabel();
     hr = avocado.RowMorph.createSpaceFilling(this.headerRowContents.bind(this), this.nodeStyle().headerRowPadding);
     this._headerRow = hr;
     return hr;
   }, {category: ['creating']});
+
+  add.method('shouldUseZooming', function () {
+    return avocado.shouldMirrorsUseZooming;
+  }, {category: ['zooming']});
 
   add.method('expander', function () { return this._expander; }, {category: ['expanding and collapsing']});
 
@@ -185,6 +189,26 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     }
     return this._contentsSummaryMorph;
   }, {category: ['contents panel']});
+
+  add.method('nonNodeContentMorphsInOrder', function () {
+    // can be overridden in children, if desired
+    return this.treeNode().nonNodeContents().map(function(s) { return this.nonNodeMorphFor(s); }.bind(this));
+  }, {category: ['contents panel']});
+
+  add.method('subnodeMorphsInOrder', function () {
+    var subnodeMorphs = this.immediateSubnodeMorphs().toArray();
+    return subnodeMorphs.sortBy(function(m) { return m.treeNode().sortOrder(); });
+  }, {category: ['contents panel']});
+    
+  add.method('nodeMorphFor', function (subnode) {
+    // can be overridden in children, if desired
+    return subnode.morph ? subnode.morph() : WorldMorph.current().morphFor(subnode);
+  }, {category: ['contents panel']});
+
+  add.method('nonNodeMorphFor', function (content) {
+    // can be overridden in children, if desired
+    return content.morph ? content.morph() : WorldMorph.current().morphFor(content);
+  }, {category: ['contents panel']});
   
   add.method('allContentMorphs', function () {
     this._nonNodeContentMorphs = this.nonNodeContentMorphsInOrder();
@@ -240,6 +264,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     if (this.shouldUseZooming()) { return null; } // let the content panel be the drop target
     
     return this.dragAndDropCommandsForTreeContents();
+  }, {category: ['drag and drop']});
+  
+  add.method('dragAndDropCommandsForTreeContents', function () {
+    return this.treeNode().dragAndDropCommands().wrapForMorph(this);
   }, {category: ['drag and drop']});
 
 });

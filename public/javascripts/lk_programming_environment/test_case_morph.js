@@ -12,11 +12,86 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('newMorph', function () {
     var m = avocado.TableMorph.newRow().setModel(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'test case';
+    m.setColumns([m.createNameLabel()]);
+    
+    m.commands = function() {
+      var cmdList = this.commands().wrapForMorph(m);
+      
+      cmdList.itemWith("label", "run").wrapFunction(function(oldFunctionToRun, evt) {
+        m.createAndRunAndUpdateAppearance();
+      });
+      
+      return cmdList;
+    }.bind(this);
+    
+    m.createAndRunAndUpdateAppearance = function() {
+      m._latestResult = null;
+      m.refreshContentOfMeAndSubmorphs();
+      m._latestResult = this.createAndRun();
+      m.refreshContentOfMeAndSubmorphs();
+    }.bind(this);
+    
+    m.anyFailedOrNull = function() {
+      var r = m._latestResult;
+      return r ? r.anyFailed() : null;
+    };
+    
+    m.updateFill = function() { avocado.testCase.updateFillOfMorph(m); };
+    
+    m.refreshContentOfMeAndSubmorphs();
+    m.startPeriodicallyUpdating();
+    return m;
+  }, {category: ['user interface']});
 
-    var columns = [m.createNameLabel()];
-    this.buttonCommands().commands().each(function(c) { columns.push(c.newMorph()); });
-    columns.push(m.createDismissButtonThatOnlyAppearsIfTopLevel());
-    m.setPotentialColumns(columns);
+  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
+  
+  add.method('updateFillOfMorph', function (m) {
+    var r = m.anyFailedOrNull();
+    if (r === true) {
+      m.setFill(avocado.testCase.resultProto.failedMorphStyle.fill);
+    } else if (r === false) {
+      m.setFill(avocado.testCase.resultProto.defaultMorphStyle.fill);
+    } else {
+      m.setFill(avocado.testCase.defaultMorphStyle.fill);
+    }
+  }, {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(avocado.testCase.suite, function(add) {
+
+  add.method('newMorph', function () {
+    var m = new avocado.TreeNodeMorph(this).applyStyle(this.defaultMorphStyle);
+    m.typeName = 'test suite';
+    
+    m.commands = function() {
+      var cmdList = avocado.command.list.create(this);
+      cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: function() {
+        m.createAndRunAndUpdateAppearance();
+      }});
+      return cmdList;
+    };
+    
+    m.createAndRunAndUpdateAppearance = function() {
+      m.allContentMorphs().each(function(cm) { cm._latestResult = null; });
+      m.refreshContentOfMeAndSubmorphs();
+      m.allContentMorphs().each(function(cm) { cm.createAndRunAndUpdateAppearance(); });
+      m.refreshContentOfMeAndSubmorphs();
+    }.bind(this);
+    
+    m.anyFailedOrNull = function() {
+      var r = false;
+      m.allContentMorphs().each(function(cm) {
+        var mr = cm.anyFailedOrNull();
+        if (mr === null) { r = null; throw $break; }
+        if (mr === true) { r = true; throw $break; }
+      });
+      return r;
+    };
+    
+    m.updateFill = function() { avocado.testCase.updateFillOfMorph(m); };
+    
     m.refreshContentOfMeAndSubmorphs();
     m.startPeriodicallyUpdating();
     return m;
@@ -24,12 +99,18 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
 
+  add.method('commands', function () {
+  }, {category: ['user interface', 'commands']});
+
 });
 
 
 thisModule.addSlots(avocado.testCase.resultProto, function(add) {
 
   add.method('newMorph', function () {
+    // aaa - This code is obsolete, now that we have the new UI where we change the test case's colour.
+    // Delete it once I'm satisfied that the new way is better.
+    
     var m = avocado.TableMorph.newColumn().setModel(this);
     m.applyStyle(this.anyFailed() ? this.failedMorphStyle : this.defaultMorphStyle);
 
@@ -50,7 +131,14 @@ thisModule.addSlots(avocado.testCase.resultProto, function(add) {
 
 thisModule.addSlots(avocado.testCase.defaultMorphStyle, function(add) {
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.4980392156862745, 0, 0.4980392156862745)), new lively.paint.Stop(1, new Color(0.7490196078431373, 0.4980392156862745, 0.7490196078431373))], lively.paint.LinearGradient.SouthNorth));
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.5, 0.5, 0.5)), new lively.paint.Stop(1, new Color(0.75, 0.75, 0.75))], lively.paint.LinearGradient.SouthNorth));
+
+});
+
+
+thisModule.addSlots(avocado.testCase.suite.defaultMorphStyle, function(add) {
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.5, 0.5, 0.5)), new lively.paint.Stop(1, new Color(0.75, 0.75, 0.75))], lively.paint.LinearGradient.SouthNorth));
 
 });
 
