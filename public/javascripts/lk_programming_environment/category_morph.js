@@ -265,7 +265,7 @@ thisModule.addSlots(avocado.category.Morph.prototype.zoomingStyle, function(add)
 
   add.data('suppressGrabbing', false);
 
-  add.data('grabsShouldFallThrough', false);
+  add.data('grabsShouldFallThrough', true, {comment: 'Otherwise it\'s just too easy to accidentally mess up an object.'});
 
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
 

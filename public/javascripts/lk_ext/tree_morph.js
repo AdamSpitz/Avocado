@@ -314,6 +314,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingContentsPanelStyle, f
 
   add.data('verticalLayoutMode', avocado.LayoutModes.SpaceFill);
 
+  add.data('grabsShouldFallThrough', true, {comment: 'Otherwise it\'s just too easy to accidentally mess up an object.'});
+
 });
 
 

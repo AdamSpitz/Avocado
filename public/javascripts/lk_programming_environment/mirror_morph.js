@@ -331,11 +331,17 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['evaluators']});
 
   add.method('scriptMe', function (evt) {
+    /*
+    Meh, vocabulary morphs aren't quite feeling right yet. For now, go back to regular evaluators.
+    
     var m = avocado.vocabulary.create(this.mirror()).morph();
     m.expand();
     m.grabMeWithoutZoomingAroundFirst(evt);
     m.getAllMirrors();
     return m;
+    */
+    
+    return this.openEvaluator(evt);
   }, {category: ['evaluators']});
 
   add.method('interposeNewParent', function (evt) {

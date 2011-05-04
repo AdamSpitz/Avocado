@@ -72,9 +72,18 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       var currentExtent = container.bounds().extent();
       var hs = originalSpace.x / currentExtent.x;
       var vs = originalSpace.y / currentExtent.y;
-      container.scaleBy(Math.min(hs, vs));
-      container.setExtent(currentExtent); // needed because calling .bounds() returns a rectangle that encompasses the stickouts, but they're still stickouts
-      // console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
+      
+      var newExtent;
+      if (hs < vs) {
+        container.scaleBy(hs);
+        newExtent = currentExtent.withY(currentExtent.x * (originalSpace.y / originalSpace.x));
+      } else {
+        container.scaleBy(vs);
+        newExtent = currentExtent.withX(currentExtent.y * (originalSpace.x / originalSpace.y));
+      }
+      
+      container.setExtent(newExtent); // needed because calling .bounds() returns a rectangle that encompasses the stickouts, but they're still stickouts
+      // console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", newExtent: " + newExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
     }
   }, {category: ['posing']});
   
