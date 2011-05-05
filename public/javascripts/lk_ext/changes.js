@@ -55,6 +55,10 @@ PasteUpMorph.addMethods({
 });
 
 Morph.addMethods({
+    aboutToReceiveDrop: function(m) {
+      // children can override
+    },
+  
     checkForDoubleClick: function(evt) {
       var currentTime = new Date().getTime(); // Use evt.timeStamp? I just tried that and it didn't seem to work.
       if (this.timeOfMostRecentDoubleClickCheck != null && currentTime - this.timeOfMostRecentDoubleClickCheck < 400) { // aaa magic number
@@ -79,6 +83,7 @@ HandMorph.addMethods({
         if (receiver !== this.world()) this.unbundleCarriedSelection();
         if (this.logDnD) console.log("%s dropping %s on %s", this, this.topSubmorph(), receiver);
         this.carriedMorphsDo( function(m) {
+            receiver.aboutToReceiveDrop(m); // Added by Adam
             m.dropMeOnMorph(receiver);
             this.showAsUngrabbed(m);
             receiver.justReceivedDrop(m, this); // Added by Adam

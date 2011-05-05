@@ -151,8 +151,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
         });
         
         if (!cp._hasAlreadyBeenLaidOutAtLeastOnce) {
-          cp._hasAlreadyBeenLaidOutAtLeastOnce = true;
-          cp.poseManager().assumePose(cp.poseManager().cleaningUpPose(contentMorphs).beUnobtrusive().beSquarish().whenDoneScaleToFitWithinCurrentSpace());
+          this.cleanUpContentsPanel(contentMorphs);
         } else {
           // Don't redo the pose (because the user may have moved things around, and we don't want to wreck
           // his arrangement), but make sure that if there are any contentMorphs that aren't actually being
@@ -181,6 +180,14 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
     }
     return cp;
+  }, {category: ['contents panel']});
+  
+  add.method('cleanUpContentsPanel', function (contentMorphsOrNull) {
+    var contentMorphs = contentMorphsOrNull || this.allContentMorphs();
+    var cp = this.contentsPanel();
+    cp._hasAlreadyBeenLaidOutAtLeastOnce = true;
+    var pose = cp.poseManager().cleaningUpPose(contentMorphs).beUnobtrusive().beSquarish().whenDoneScaleToFitWithinCurrentSpace();
+    cp.poseManager().assumePose(pose);
   }, {category: ['contents panel']});
 
   add.method('contentsSummaryMorph', function () {

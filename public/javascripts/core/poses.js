@@ -56,7 +56,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       
       if (this._shouldBeUnobtrusive) {
         var poserOrPlaceholder = e.poser;
-        if (e.poser.world()) {
+        if (e.poser.owner !== container && e.poser.world()) { // aaa what's going on here?
           poserOrPlaceholder = new avocado.PlaceholderMorph(e.poser);
         }
         container.addMorphAt(poserOrPlaceholder, e.position);
@@ -69,21 +69,22 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     if (this._shouldScaleToFitWithinCurrentSpace) {
       // AAAAAAA - I took out this one line and suddenly everything got way faster.
       // container.refreshContentOfMeAndSubmorphs(); // to make sure the submorphs are laid out right - though, aaa, shouldn't this be done before even calculating the pose positions?
-      var currentExtent = container.bounds().extent();
-      var hs = originalSpace.x / currentExtent.x;
-      var vs = originalSpace.y / currentExtent.y;
+      var currentScale = container.getScale();
+      var currentExternalExtent = container.bounds().extent();
+      var hs = originalSpace.x / currentExternalExtent.x;
+      var vs = originalSpace.y / currentExternalExtent.y;
       
       var newExtent;
       if (hs < vs) {
         container.scaleBy(hs);
-        newExtent = currentExtent.withY(currentExtent.x * (originalSpace.y / originalSpace.x));
+        newExtent = currentExternalExtent.withY(currentExternalExtent.x * (originalSpace.y / originalSpace.x)).scaleBy(1 / currentScale);
       } else {
         container.scaleBy(vs);
-        newExtent = currentExtent.withX(currentExtent.y * (originalSpace.x / originalSpace.y));
+        newExtent = currentExternalExtent.withX(currentExternalExtent.y * (originalSpace.x / originalSpace.y)).scaleBy(1 / currentScale);
       }
       
       container.setExtent(newExtent); // needed because calling .bounds() returns a rectangle that encompasses the stickouts, but they're still stickouts
-      // console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExtent: " + currentExtent + ", newExtent: " + newExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
+      // console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExternalExtent: " + currentExternalExtent + ", newExtent: " + newExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
     }
   }, {category: ['posing']});
   
