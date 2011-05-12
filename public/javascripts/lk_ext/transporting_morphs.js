@@ -119,6 +119,21 @@ thisModule.addSlots(lively.paint.LinearGradient.prototype, function(add) {
 
 });
 
+thisModule.addSlots(lively.paint.RadialGradient.prototype, function(add) {
+
+  add.method('storeString', function () {
+    return ["new lively.paint.RadialGradient([",
+            this.stops.map(function(s) {return s.storeString();}).join(", "),
+            "])"
+            ].join("");
+  }, {category: ['transporting']});
+
+  add.method('storeStringNeeds', function () {
+    return lively.paint.LinearGradient.prototype;
+  }, {category: ['transporting']});
+
+});
+
 
 thisModule.addSlots(lively.paint.Stop.prototype, function(add) {
 

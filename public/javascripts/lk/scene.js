@@ -2158,7 +2158,7 @@ this.Shape.subclass('lively.scene.Group', {
 		this.rawNode = NodeFactory.create("g");
 		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 		this.content = [];
-		reflect(this).slotAt('content').setInitializationExpression('[]'); // aaa hack, or broken? -- Adam
+		reflect(this).slotAt('content').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 	},
 
 	copyFrom: function($super, copier, other) {

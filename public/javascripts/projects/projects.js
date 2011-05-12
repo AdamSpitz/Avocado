@@ -30,6 +30,8 @@ thisModule.addSlots(avocado.project, function(add) {
     if (typeof(avocado.justSetCurrentProject) === 'function') {
       avocado.justSetCurrentProject(p);
     }
+    
+    return p;
   }, {category: ['current one']});
 
   add.method('create', function (info) {
@@ -112,20 +114,26 @@ thisModule.addSlots(avocado.project, function(add) {
   }, {category: ['deploying']});
   
   add.method('addGlobalCommandsTo', function (cmdList, evt) {
-    var currentProject = avocado.project.current();
-    if (!currentProject) { return; }
-    
     cmdList.addLine();
+    
+    var currentProject = avocado.project.current();
+    if (currentProject) {
+      cmdList.addItem(["current project...", [
+        ["get info", function(evt) {
+          avocado.ui.grab(currentProject, evt);
+        }],
 
-    cmdList.addItem(["current project...", [
-      ["get info", function(evt) {
+        ["show deployment area", function(evt) {
+          currentProject.grabDeploymentMorph(evt);
+        }]
+      ]]);
+    } else {
+      cmdList.addItem(["start new project", function(evt) {
+        transporter.module.named("thisProject");
+        currentProject = avocado.project.current();
         avocado.ui.grab(currentProject, evt);
-      }],
-      
-      ["show deployment area", function(evt) {
-        currentProject.grabDeploymentMorph(evt);
-      }]
-    ]]);
+      }]);
+    }
   }, {category: ['commands']});
 
   add.method('togglePrivacy', function (evt) {
@@ -200,7 +208,7 @@ thisModule.addSlots(avocado.project, function(add) {
   	var currentWorldStateModule = this.currentWorldStateModule();
   	
   	currentWorldStateModule.morphs = [];
-  	reflect(currentWorldStateModule).slotAt('morphs').beCreator().setInitializationExpression('[]');
+  	// reflect(currentWorldStateModule).slotAt('morphs').beCreator().setInitializationExpression('[]'); // aaa I don't understand why this was here, it just seems broken
   	var morphsArrayMir = reflect(currentWorldStateModule.morphs);
   	
     var currentWorldSubmorphs = WorldMorph.current().submorphs;
@@ -233,7 +241,7 @@ thisModule.addSlots(avocado.project, function(add) {
   	};
   	reflect(currentWorldStateModule).slotAt('postFileIn').beCreator();
   	
-  	var walker = avocado.objectGraphAnnotator.create().setShouldWalkIndexables(true);
+  	var walker = avocado.objectGraphAnnotator.create(true /* aaa - not sure this is a good idea */).setShouldWalkIndexables(true);
   	walker.alsoAssignUnownedSlotsToModule(function(holder, slotName, slotContents, slotAnno) {
   	  if (holder === currentWorldStateModule) { return currentWorldStateModule; }
   	  return avocado.annotator.moduleOfAnyCreatorInChainFor(holder);
@@ -250,6 +258,10 @@ thisModule.addSlots(avocado.project, function(add) {
     walker.shouldContinueRecursingIntoSlot = function (holder, slotName, howDidWeGetHere) {
       // aaa - hack; really these slots should be annotated with an initializeTo: 'undefined' or something like that
       if (['pvtCachedTransform', 'fullBounds', '_currentVersion', '_requirements', '_modificationFlag'].include(slotName)) { return false; }
+      
+      var slotAnno = avocado.annotator.existingSlotAnnotation(holder, slotName);
+      if (slotAnno && slotAnno.initializationExpression()) { return false; }
+      
       return true;
     };
 
@@ -276,11 +288,14 @@ thisModule.addSlots(avocado.project, function(add) {
       avocado.MessageNotifierMorph.showError("WARNING: You have modified modules that are not part of your project; they will not be saved.", evt, Color.orange);
     }
     
-    var mockRepo = avocado.project.repository.create(this, isAutoSave);
+    var mockRepo = avocado.project.moduleRepository.create(this, isAutoSave);
     mockRepo.setRoot(versionsToSave[this.module().name()]);
-    var errors = transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, transporter.module.filerOuters.justBody);
+    var errors = transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, this.defaultModuleFilerOuter());
     if (errors.length === 0) {
-      mockRepo.save(function() {
+      var server = this.defaultServer();
+      var format = this.defaultFormat();
+      server.save(mockRepo, format, function() {
+        console.log("Successfully saved the project.");
     	  if (!this._shouldNotSaveCurrentWorld) { avocado.project.resetCurrentWorldStateModule(); }
         this.markAsUnchanged();
         for (var moduleName in versionsToSave) {
@@ -294,13 +309,37 @@ thisModule.addSlots(avocado.project, function(add) {
     }
   }, {category: ['saving']});
 
-  add.creator('repository', {}, {category: ['saving']});
+  add.creator('moduleRepository', {}, {category: ['saving']});
 
-  add.method('buttonCommands', function () {
-    return avocado.command.list.create(this, [
-      avocado.command.create('Save', this.save)
-    ]);
-  }, {category: ['user interface', 'commands']});
+  add.creator('servers', {}, {category: ['saving']});
+  
+  add.creator('formats', {}, {category: ['saving']});
+  
+  add.method('defaultServer', function () {
+    // aaa - this needs to be specified by the various kinds of servers
+    // return this._defaultServer || avocado.project.servers.savingScript.create("http://" + window.location.host + "/project/save", "post");
+    return this._defaultServer || avocado.project.servers.webdav.create(modules.bootstrap.repository(), "put");
+  }, {category: ['saving']});
+  
+  add.method('defaultFormat', function () {
+    // aaa - this needs to be specified by the various kinds of servers
+    // return this._defaultFormat || this.formats.json;
+    return this._defaultFormat || this.formats.runnable;
+  }, {category: ['saving']});
+  
+  add.method('defaultModuleFilerOuter', function () {
+    // aaa - this needs to be specified by the various kinds of servers
+    // return transporter.module.filerOuters.justBody;
+    return transporter.module.filerOuters.normal;
+  }, {category: ['saving']});
+  
+  add.method('setDefaultServer', function (s) {
+    this._defaultServer = s;
+  }, {category: ['saving']});
+  
+  add.method('setDefaultFormat', function (f) {
+    this._defaultFormat = f;
+  }, {category: ['saving']});
 
   add.method('commands', function () {
     return avocado.command.list.create(this, [
@@ -315,7 +354,7 @@ thisModule.addSlots(avocado.project, function(add) {
 });
 
 
-thisModule.addSlots(avocado.project.repository, function(add) {
+thisModule.addSlots(avocado.project.moduleRepository, function(add) {
 
   add.method('create', function (project, isAutoSave) {
     return Object.newChildOf(this, project, isAutoSave);
@@ -347,26 +386,54 @@ thisModule.addSlots(avocado.project.repository, function(add) {
     });
   }, {category: ['saving']});
 
-  add.method('save', function (successBlock, failBlock) {
-    var json = Object.toJSON(this._projectData);
-    // aaa - I imagine it's possible to send the JSON without encoding it as a POST parameter, but let's not worry about it yet.
-    var postBody = "projectDataJSON=" + encodeURIComponent(json);
-    var url = "http://" + window.location.host + "/project/save";
-    console.log("About to save the project to URL " + url + ", sending JSON:\n" + json);
-    var req = new Ajax.Request(url, {
-      method: 'post',
-      //postBody: postBody,
-      //contentType: 'application/x-www-form-urlencoded',
-      postBody: json,
-      contentType: 'application/json',
+});
 
-      asynchronous: true,
-      onSuccess:   function(transport) { this.onSuccessfulPost(JSON.parse(transport.responseText), successBlock, failBlock); }.bind(this),
-      onFailure:   function(t        ) { failBlock("Failed to file out project " + this._project + " to repository " + this + "; HTTP status code was " + req.getStatus()); }.bind(this),
-      onException: function(r,      e) { failBlock("Failed to file out project " + this._project + " to repository " + this + "; exception was " + e); }.bind(this)
-    });
+
+thisModule.addSlots(avocado.project.servers, function(add) {
+
+  add.creator('generic', {});
+  
+  add.creator('savingScript', Object.create(avocado.project.servers.generic));
+  
+  add.creator('webdav', Object.create(avocado.project.servers.generic));
+  
+});
+
+
+thisModule.addSlots(avocado.project.servers.savingScript, function(add) {
+
+  add.method('create', function (url) {
+    return Object.newChildOf(this, url);
+  }, {category: ['creating']});
+
+  add.method('initialize', function (url) {
+    this._url = url;
+  }, {category: ['creating']});
+
+  add.method('save', function (moduleRepo, format, successBlock, failBlock) {
+    var body = format.fileContentsFromProjectData(moduleRepo._projectData);
+    console.log("About to save the project to URL " + this._url + ", sending:\n" + body);
+    
+    var req = new XMLHttpRequest();
+    req.open('post', this._url, true);
+    req.onreadystatechange = function() {
+      if (req.readyState === 4) {
+        try {
+          var status = req.status;
+          var success = !status || (status >= 200 && status < 300);
+          if (success) {
+            this.onSuccessfulPost(format.parseResponse(req.responseText), successBlock, failBlock);
+          } else {
+            failBlock("Failed to file out project " + moduleRepo._project + " to repository " + moduleRepo + "; HTTP status code was " + status);
+          }
+        } catch (e) {
+          failBlock("Failed to file out project " + moduleRepo._project + " to repository " + moduleRepo + "; exception was " + e);
+        }
+      }
+    }.bind(this);
+    req.send(body);
   }, {category: ['saving']});
-
+  
   add.method('onSuccessfulPost', function (responseJSON, successBlock, failBlock) {
     if (responseJSON.error) {
       failBlock("Server responded with error: " + responseJSON.error);
@@ -379,6 +446,126 @@ thisModule.addSlots(avocado.project.repository, function(add) {
     }
   }, {category: ['saving']});
 
+});
+
+
+thisModule.addSlots(avocado.project.servers.webdav, function(add) {
+
+  add.method('create', function (repo) {
+    return Object.newChildOf(this, repo);
+  }, {category: ['creating']});
+
+  add.method('initialize', function (repo) {
+    this._repo = repo;
+  }, {category: ['creating']});
+
+  add.method('save', function (moduleRepo, format, successBlock, failBlock) {
+    var project = moduleRepo._project;
+    var projectData = moduleRepo._projectData;
+    var modulesData = projectData.modules;
+    projectData.modules = projectData.modules.map(function(moduleData) { return moduleData.module; });
+    var errors = [];
+    avocado.callbackWaiter.on(function(generateIntermediateCallback) {
+      modulesData.forEach(function(moduleData) {
+        this.saveModuleData(moduleData, errors, generateIntermediateCallback());
+      }.bind(this));
+      this.saveProjectData(project, projectData, format, errors, generateIntermediateCallback());
+    }.bind(this), function() {
+      if (errors.length === 0) {
+        successBlock();
+      } else {
+        failBlock(errors.join(", "));
+      }
+    }, "saving a project");
+  }, {category: ['saving']});
+  
+  add.method('saveModuleData', function (moduleData, errors, callback) {
+    var module = modules[moduleData.module];
+    var moduleVersion = module.currentVersion();
+    if (moduleVersion.versionID() !== moduleData.version) { throw new Error("Assertion failure: trying to save the wrong version of a module?"); }
+    transporter.fileOut(moduleVersion, this._repo, moduleData.code, function() {
+      module.markAsUnchanged();
+      callback();
+    }, function(err) {
+      errors.push("Failed to file out module " + module + ": " + err);
+      callback();
+    });
+  }, {category: ['saving']});
+  
+  add.method('saveProjectData', function (project, projectData, format, errors, callback) {
+    var body = format.fileContentsFromProjectData(projectData);
+    var req = new XMLHttpRequest();
+    req.open('put', this._repo.url() + project.name() + "_project.js", true);
+    req.onreadystatechange = function() {
+      if (req.readyState === 4) {
+        try {
+          var status = req.status;
+          var success = !status || (status >= 200 && status < 300);
+          if (success) {
+            callback();
+          } else {
+            errors.push("Failed to file out project " + project + " to repository at " + this._repo.url() + "; HTTP status code was " + status);
+            callback();
+          }
+        } catch (e) {
+          errors.push("Failed to file out project " + project + " to repository at " + this._repo.url() + "; exception was " + e);
+          callback();
+        }
+      }
+    }.bind(this);
+    req.send(body);
+  }, {category: ['saving']});
+  
+
+});
+
+
+thisModule.addSlots(avocado.project.formats, function(add) {
+  
+  add.creator('json', {});
+
+  add.creator('runnable', {});
+  
+});
+
+
+thisModule.addSlots(avocado.project.formats.json, function(add) {
+  
+  add.method('fileContentsFromProjectData', function (projectData) {
+    return Object.toJSON(projectData);
+  });
+  
+  add.method('parseResponse', function (responseText) {
+    return JSON.parse(responseText);
+  });
+  
+  add.method('contentType', function () {
+    return 'application/json';
+  });
+  
+});
+
+
+thisModule.addSlots(avocado.project.formats.runnable, function(add) {
+  
+  add.method('fileContentsFromProjectData', function (projectData) {
+    var projectDataToSend = {};
+    if (projectData._id) { projectDataToSend._id = projectData._id.toString(); }
+    projectDataToSend.moduleName = "thisProject";
+    projectDataToSend.name = projectData.name.toString();
+    projectDataToSend.isPrivate = !! projectData.isPrivate;
+    return "modules.bootstrap.repository().fileIn('thisProject', function() {\n  avocado.project.setCurrent(avocado.project.create(" + Object.toJSON(projectDataToSend) + "));\n});\n";
+  });
+  
+  add.method('parseResponse', function (responseText) {
+    // I don't think there should be anything in the responseText.
+    return {};
+  });
+  
+  add.method('contentType', function () {
+    return 'text/plain';
+  });
+  
 });
 
 

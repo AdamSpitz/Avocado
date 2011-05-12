@@ -6,7 +6,7 @@ Morph.addMethods({
     if (!isReflectionEnabled) { return; }
 
     var menu = this.morphMenu(evt);
-    menu.openIn(this.world(), evt.point(), false, Object.inspect(this).truncate());
+    menu.openIn(this.world(), evt.point(), false, (Object.inspect(this) || "").truncate()); // added || "" -- Adam
   },
 
   showContextMenu: function(evt) {
@@ -25,7 +25,7 @@ Morph.addMethods({
       menu.textStyle.textColor   = baseColor;
     }
     
-    menu.openIn(this.world(), evt.point(), false, Object.inspect(this).truncate());
+    menu.openIn(this.world(), evt.point(), false, (Object.inspect(this) || "").truncate()); // added || "" -- Adam
   },
 
   contextMenu: function (evt) {

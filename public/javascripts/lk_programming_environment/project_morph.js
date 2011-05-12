@@ -23,8 +23,6 @@ thisModule.addSlots(avocado.project, function(add) {
 
     var columns = [m.createNameLabel()];
     columns.push(changeIndicator);
-    this.buttonCommands().commands().each(function(c) { columns.push(c.newMorph()); });
-    columns.push(m.createDismissButton());
     headerRow.setColumns(columns);
     
     /* Why isn't this working?

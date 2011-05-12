@@ -176,7 +176,7 @@ thisModule.addSlots(transporter.module, function(add) {
     if (!name)         { throw new Error("Cannot create a module with no name"); }
     if (modules[name]) { throw new Error("There is already a module named " + name); }
     var module = transporter.module.named(name);
-    module._repository = repo;
+    module.setRepository(repo);
     if (!parentModule && avocado.project.current()) { parentModule = avocado.project.current().module(); }
     if (parentModule) { parentModule.addRequirement(name); }
     return module;
@@ -483,7 +483,11 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
             // console.log("Marking " + this.name() + " as a possible creator slot.");
             contents.addPossibleCreatorSlot(this); // aaa - not sure this is a good idea, but maybe
             cs = contents.theCreatorSlot();
-            if (!cs) { throw new Error("Why is there no creator? Something is wrong."); }
+            if (!cs) {
+              var error = new Error("Why is there no creator? Something is wrong.");
+              error.objectsToShow = [contents];
+              throw error;
+            }
             
             /* Old code, remove it if the new automatically-make-it-a-possible-creator mechanism seems to be working. -- Adam, Mar. 2011
             var err = new Error("Cannot file out a reference to an object without a creator slot: " + contents.name());

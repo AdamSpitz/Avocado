@@ -1069,7 +1069,7 @@ thisModule.addSlots(transporter, function(add) {
     
     transporter.availableRepositories.push(kernelRepo);
     
-    modules.bootstrap._repository = kernelRepo;
+    modules.bootstrap.setRepository(kernelRepo);
     
     // aaa - This is not really the right place for this. I think. Maybe. Where's the
     // place where we really know where the emailing script is? -- Adam
@@ -1202,7 +1202,7 @@ thisModule.addSlots(transporter.repositories['abstract'], function(add) {
     this.loadModuleNamed(name, function() {
       var module = modules[name];
       if (module) {
-        module._repository = thisRepository;
+        module.setRepository(thisRepository);
       } else {
         // Must just be some external Javascript library - not one of our
         // modules. So we consider the module to be loaded now, since the
@@ -1311,6 +1311,11 @@ thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add)
 
 
 thisModule.addSlots(transporter.module, function(add) {
+  
+  add.data('setRepository', function (r) {
+    this._repository = r;
+    avocado.annotator.annotationOf(this).setSlotAnnotation('_repository', {initializeTo: 'null'}); // aaa blecch, make slot annotations inherit or something
+  });
 
   add.method('existingOneNamed', function (n) {
     return modules[n];
