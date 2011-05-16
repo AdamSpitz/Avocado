@@ -58,7 +58,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('shouldUseZooming', function () {
-    return avocado.shouldMirrorsUseZooming;
+    return avocado.isZoomingEnabled;
   }, {category: ['zooming']});
 
   add.method('expander', function () { return this._expander; }, {category: ['expanding and collapsing']});
