@@ -632,6 +632,7 @@ var annotator = {
   },
 
   theCreatorSlotOf: function(o) {
+    if (!o) { return null; }
     var cs = this.creatorSlotDeterminableFromTheObjectItself(o);
     if (cs) { return cs; }
     var a = this.existingAnnotationOf(o);

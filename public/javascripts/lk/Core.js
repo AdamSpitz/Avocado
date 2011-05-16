@@ -1389,7 +1389,7 @@ lively.data.Wrapper.subclass('Morph', {
     layoutHandler: null, //a LayoutHandler for special response to setExtent, etc
     openForDragAndDrop: true, // Submorphs can be extracted from or dropped into me
     mouseHandler: MouseHandlerForDragging.prototype, //a MouseHandler for mouse sensitivity, etc
-    noShallowCopyProperties: ['id', 'rawNode', 'shape', 'submorphs', 'defs', 'activeScripts', 'nextNavigableSibling', 'focusHalo', 'fullBounds', '__annotation__'], // __annotation__ added by Adam
+    noShallowCopyProperties: ['id', 'rawNode', 'shape', 'submorphs', 'defs', 'activeScripts', 'nextNavigableSibling', 'focusHalo', 'fullBounds', '__annotation__', '_poseManager'], // __annotation__ and _poseManager added by Adam
     isEpimorph: false, // temporary additional morph that goes away quickly, not included in bounds
 
     suppressBalloonHelp: Config.suppressBalloonHelp,
@@ -1535,6 +1535,13 @@ lively.data.Wrapper.subclass('Morph', {
 
 			if (!(other[p] instanceof lively.paint.Gradient)) {
 				this[p] = other[p];
+			}
+			
+			// aaa - hack to copy the _model and other sub-objects properly; in the long run, this whole
+			// copying mechanism should be using deepCopyRecursingIntoCreatorSlots -- Adam
+		  var otherSlot = reflect(other).slotAt(p);
+		  if (otherSlot.equals(otherSlot.contents().probableCreatorSlot())) {
+			  this[p] = avocado.deepCopier.create().recordOriginalAndCopy(other, this).copy(other[p]);
 			}
 			
 		  // set the creator slot if necessary -- Adam

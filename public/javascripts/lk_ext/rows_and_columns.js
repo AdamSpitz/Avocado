@@ -595,12 +595,13 @@ thisModule.addSlots(avocado.tableContents, function(add) {
 
   add.method('initialize', function (a, dir1) {
     if (! reflect(a).isReflecteeArray()) { throw "Why ain't the data an array?"; }
-    a.each(function(r) {
-      if (! reflect(r).isReflecteeArray()) { throw "Why ain't the row or column an array? " + r; }
+    a.forEach(function(line) {
+      if (! reflect(line).isReflecteeArray()) { throw "Why ain't the row or column an array? " + r; }
     });
     this._data = a;
     reflect(this).slotAt('_data').beCreator();
-    reflect(this._data).eachIndexableSlot(function(s) { s.beCreator(); });
+    this._data.makeAllCreatorSlots();
+    this._data.forEach(function(line) { line.makeAllCreatorSlots(); });
     this._direction1 = dir1;
     this._direction2 = dir1.sideways;
   }, {category: ['creating']});
@@ -611,6 +612,10 @@ thisModule.addSlots(avocado.tableContents, function(add) {
 
   add.method('copy', function () {
     return avocado.tableContents.create(this._data.map(function(line) { return line.map(function(elem) { return elem; }); }), this._direction1);
+  }, {category: ['copying']});
+
+  add.method('duplicate', function (copier) {
+    return this.copy(copier);
   }, {category: ['copying']});
 
   add.method('equals', function (other) {
@@ -704,6 +709,7 @@ thisModule.addSlots(avocado.tableContents, function(add) {
   }, {category: ['accessing']});
 
   add.method('insertPrimaryLine', function (line, i) {
+    line.makeAllCreatorSlots();
     this._data.spliceAndAdjustCreatorSlots(i, 0, line);
   }, {category: ['inserting']});
 
@@ -716,7 +722,8 @@ thisModule.addSlots(avocado.tableContents, function(add) {
           newRowOrCol.push(mapFn(x));
         }
       });
-      c._data.push(newRowOrCol);
+      newRowOrCol.makeAllCreatorSlots();
+      c._data.pushAndAdjustCreatorSlots(newRowOrCol);
     });
     return c;
   }, {category: ['transforming']});

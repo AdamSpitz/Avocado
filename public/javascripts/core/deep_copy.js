@@ -44,21 +44,27 @@ thisModule.addSlots(avocado.deepCopier, function(add) {
     var isObj  = t === 'object';
     var isFunc = t === 'function';
     if (isObj || isFunc) {
-      var c = isObj ? Object.create(o['__proto__']) : eval("(" + o.toString() + ")");
-      var thisCopier = this;
-      for (var n in o) {
-        if (o.hasOwnProperty(n)) {
-          var contents = o[n];
-          if (n === '__annotation__') {
-            c[n] = contents.copy();
-          } else {
-            var contentsType = typeof(contents);
-            var contentsCreatorSlot = (contentsType === 'object' || contentsType === 'function') && avocado.annotator.theCreatorSlotOf(contents);
-            if (contentsCreatorSlot && contentsCreatorSlot.name === n && contentsCreatorSlot.holder === o) {
-              c[n] = thisCopier.createCopyOf(contents);
-              avocado.annotator.annotationOf(c[n]).setCreatorSlot(n, c);
+      var c;
+      if (typeof(o.duplicate) === 'function') { // aaa hack, just for now until morphs can be copied the normal way
+        c = o.duplicate(this);
+      } else {
+        var isArray = isObj && (o instanceof Array);
+        c = isObj ? (isArray ? [] : Object.create(o['__proto__'])) : eval("(" + o.toString() + ")");
+        var thisCopier = this;
+        for (var n in o) {
+          if (o.hasOwnProperty(n)) {
+            var contents = o[n];
+            if (n === '__annotation__') {
+              c[n] = contents.copy();
             } else {
-              c[n] = contents;
+              var contentsType = typeof(contents);
+              var contentsCreatorSlot = (contentsType === 'object' || contentsType === 'function') && avocado.annotator.theCreatorSlotOf(contents);
+              if (contentsCreatorSlot && contentsCreatorSlot.name === n && contentsCreatorSlot.holder === o) {
+                c[n] = thisCopier.createCopyOf(contents);
+                avocado.annotator.annotationOf(c[n]).setCreatorSlot(n, c);
+              } else {
+                c[n] = contents;
+              }
             }
           }
         }
@@ -73,6 +79,7 @@ thisModule.addSlots(avocado.deepCopier, function(add) {
   add.method('recordOriginalAndCopy', function (o, c) {
     if (! this._originalsAndCopies) { this._originalsAndCopies = []; }
     this._originalsAndCopies.push({original: o, copy: c});
+    return this;
   }, {category: ['internal references']});
 
   add.method('fixInternalReferences', function (c) {

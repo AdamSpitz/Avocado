@@ -52,18 +52,21 @@ thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
   this.world().showMessage("Inspect the button and edit its 'run' method.");
 }).closeDnD();
 
-    ellipse.setFill(new Color(0.8, 0.5, 0.5)); // make it a different color than the rectangle
+    var container = new avocado.ContainerMorph().applyStyle({borderRadius: 10});
 
-    var factory = Morph.makeRectangle(pt(0,0), pt(300, 400));
+    ellipse.setFill(new Color(0.8, 0.5, 0.5)); // make it a different color than the rectangle
+    
+    var factory = Morph.makeRectangle(pt(0,0), pt(300, 560));
     factory.applyStyle(avocado.morphFactories.defaultStyle);
-    factory.addMorphAt(line,     pt( 20,  20));
-    factory.addMorphAt(rect,     pt(120,  20));
-    factory.addMorphAt(ellipse,  pt( 20, 120));
-    factory.addMorphAt(text,     pt(120, 120));
-    factory.addMorphAt(star,     pt( 20, 220));
-    factory.addMorphAt(heart,    pt(200, 300));
-    factory.addMorphAt(button,   pt( 20, 340));
-    factory.addMorphAt(triangle, pt(150, 340));
+    factory.addMorphAt(line,      pt( 20,  20));
+    factory.addMorphAt(rect,      pt(120,  20));
+    factory.addMorphAt(ellipse,   pt( 20, 120));
+    factory.addMorphAt(text,      pt(120, 120));
+    factory.addMorphAt(star,      pt( 20, 220));
+    factory.addMorphAt(heart,     pt(200, 300));
+    factory.addMorphAt(button,    pt( 20, 340));
+    factory.addMorphAt(triangle,  pt(150, 340));
+    factory.addMorphAt(container, pt( 20, 410));
     return factory;
   });
 

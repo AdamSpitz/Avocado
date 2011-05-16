@@ -30,16 +30,18 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
   add.method('initialize', function ($super) {
     $super();
     this._model = Object.newChildOf(this.modelUsingWhicheverMorphsHappenToBeThere, this);
+    reflect(this).slotAt('_model').beCreator();
     this.applyStyle(this.defaultStyle);
     
     this.contentsPanel().aboutToReceiveDrop = function(m) {
-      var tfm = m.transformForNewOwner(this.contentsPanel());
+      var tfm = m.transformForNewOwner(this);
 			m.scaleBy(1 / tfm.getScale());
-    }.bind(this);
+    };
     
     this.contentsPanel().justReceivedDrop = function(m) {
-      this.cleanUpContentsPanel();
-    }.bind(this);
+      this.owner.cleanUpContentsPanel();
+    };
+    
     this.refreshContentOfMeAndSubmorphs();
     
   }, {category: ['creating']});
