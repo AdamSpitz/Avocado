@@ -86,7 +86,12 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     lbl.setNameOfEditCommand("rename");
     lbl.backgroundColorWhenWritable = null;
     lbl.ignoreEvents();
+    this._titleLabel = lbl;
     return lbl;
+  }, {category: ['creating']});
+
+  add.method('findTitleLabel', function () {
+    return this._titleLabel;
   }, {category: ['creating']});
 
   add.method('createContentsSummaryMorph', function () {

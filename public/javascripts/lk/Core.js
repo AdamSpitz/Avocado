@@ -3449,6 +3449,7 @@ addAllHandles: function(evt) {
 		copy.setPosition(copy.getExtent().scaleBy(-0.5)); // Grab it by the center. -- Adam, May 2010
 		hand.showAsGrabbed(copy);
 		// copy.withAllSubmorphsDo(function() { this.startStepping(null); }, null);
+    copy.refreshContentOfMeAndSubmorphs(); // added by Adam
 		return copy
 	},
 

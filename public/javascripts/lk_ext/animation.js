@@ -9,14 +9,14 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('isOnScreen', function () {
       var w = this.world();
-      if (!w) { return false; }
+      if (!w) { /* console.log(this + " is not on screen because it's not in the world"); */ return false; }
       if (w === this) { return true; }
       // var wTransform = w.getTransform();
       var wBounds = w.visibleBounds();
       var thisBounds = this.shape.bounds();
       var transformedBounds = rect(this.worldPoint(thisBounds.topLeft()), this.worldPoint(thisBounds.bottomRight()));
       var intersects = wBounds.intersects(transformedBounds);
-      // console.log("intersects is " + intersects + "; wBounds is " + wBounds + ", transformedBounds is " + transformedBounds);
+      // console.log("For " + this + ", intersects is " + intersects + "; wBounds is " + wBounds + ", transformedBounds is " + transformedBounds);
       return intersects;
     }, {category: ['testing']});
 
@@ -119,7 +119,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var owner = this.owner;
     if (w) {
       if (owner !== w) {
-        var initialLoc = (!owner || this.world() !== w) ? this.getExtent().scaleBy(-1.1) : owner.worldPoint(this.getPosition());
+        var initialLoc = (!owner || this.world() !== w) ? this.getExtent().scaleBy(-1.1).addXY(-100,-100) : owner.worldPoint(this.getPosition());
         if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
         this.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore(); // aaa - not sure this is a good idea, but maybe; it makes sure that a mirror will be updated as soon as it's visible, for one thing.
         w.addMorphAt(this, initialLoc);

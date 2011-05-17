@@ -28,6 +28,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.data('constructor', avocado.TreeNodeMorph);
 
+	add.data('noShallowCopyProperties', Morph.prototype.noShallowCopyProperties.concat(["_potentialContent", "_headerRow", "_headerRowContents", "_containerName"]), {initializeTo: 'Morph.prototype.noShallowCopyProperties.concat(["_potentialContent", "_headerRow", "_headerRowContents", "_containerName"])'});
+	
   add.method('initialize', function ($super, treeNode) {
     $super();
     this._model = treeNode;
@@ -35,6 +37,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
     this._subnodeMorphs = [];
     this._nonNodeContentMorphs = [];
+    reflect(this).slotAt('_subnodeMorphs').beCreator();
+    reflect(this).slotAt('_nonNodeContentMorphs').beCreator();
     
     if (! this.shouldUseZooming()) {
       this._expander = new ExpanderMorph(this);
@@ -44,14 +48,14 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.method('treeNode', function () { return this._model; }, {category: ['accessing']});
 
   add.method('toString', function () {
-    if (this._titleLabel) { return this._titleLabel.getText(); }
+    var t = this.findTitleLabel && this.findTitleLabel();
+    if (t) { return t.getText(); }
     return "a tree node";
   }, {category: ['printing']});
 
   add.method('headerRow', function () {
     var hr = this._headerRow;
     if (hr) { return hr; }
-    this._titleLabel = this.createTitleLabel ? this.createTitleLabel() : this.createNameLabel();
     hr = avocado.RowMorph.createSpaceFilling(this.headerRowContents.bind(this), this.nodeStyle().headerRowPadding);
     this._headerRow = hr;
     return hr;
@@ -92,10 +96,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('headerRowContents', function () {
     if (! this._headerRowContents) {
+      var titleLabel = this.createTitleLabel ? this.createTitleLabel() : this.createNameLabel();
       if (this.shouldUseZooming()) {
-        this._headerRowContents = [this._titleLabel];
+        this._headerRowContents = [titleLabel];
       } else {
-        this._headerRowContents = [this._expander, this._titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
+        this._headerRowContents = [this._expander, titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
       }
     }
     return this._headerRowContents;
@@ -105,7 +110,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     if (this.shouldUseZooming()) {
       if (! this._potentialContent) {
         var thresholdMultiplier = this._shouldOmitHeaderRow ? 0.25 : 0.7;
-        var contentsPanelHider = avocado.scaleBasedMorphHider.create(this, this.contentsPanel.bind(this), this, function() { return thresholdMultiplier * Math.sqrt(this.contentsCount()); }.bind(this), this._contentsPanelSize);
+        var contentsPanelHider = this._shouldNotHideContentsEvenIfTooSmall ? this.contentsPanel() : avocado.scaleBasedMorphHider.create(this, this.contentsPanel.bind(this), this, function() { return thresholdMultiplier * Math.sqrt(this.contentsCount()); }.bind(this), this._contentsPanelSize);
         var rows = this._shouldOmitHeaderRow ? [contentsPanelHider] : [this.headerRow(), contentsPanelHider];
         this._potentialContent = avocado.tableContents.createWithColumns([rows]);
       }

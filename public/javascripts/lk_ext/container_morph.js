@@ -49,6 +49,10 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
   add.creator('modelUsingWhicheverMorphsHappenToBeThere', {});
 
   add.creator('defaultStyle', {}, {category: ['styles']});
+  
+  add.method('findTitleLabel', function () {
+    return this.headerRow().submorphsRecursively().find(function(m) { return m instanceof avocado.TwoModeTextMorph; });
+  }, {category: ['title']});
 
   add.method('createTitleLabel', function () {
     this._containerName = 'a container';
@@ -57,12 +61,13 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
     lbl.backgroundColorWhenWritable = null;
     lbl.ignoreEvents();
     return lbl;
-  }, {category: ['creating']});
+  }, {category: ['title']});
   
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
-    if (this._titleLabel) {
-      cmdList.addAllCommands(this._titleLabel.editingCommands());
+    var titleLabel = this.findTitleLabel();
+    if (titleLabel) {
+      cmdList.addAllCommands(titleLabel.editingCommands());
     }
     return cmdList;
   }, {category: ['commands']});
@@ -97,6 +102,8 @@ thisModule.addSlots(avocado.ContainerMorph.prototype.modelUsingWhicheverMorphsHa
 thisModule.addSlots(avocado.ContainerMorph.prototype.defaultStyle, function(add) {
   
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth));
+  
+  add.data('openForDragAndDrop', false);
 
 });
 

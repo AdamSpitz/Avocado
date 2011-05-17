@@ -75,6 +75,17 @@ Morph.addMethods({
       if (UserAgent.isTouch) {
         this.showContextMenu(evt);
       }
+    },
+    
+    eachSubmorphRecursively: function(f) {
+      this.submorphs.forEach(function(m) {
+        f(m);
+        m.eachSubmorphRecursively(f);
+      });
+    },
+    
+    submorphsRecursively: function() {
+      return avocado.enumerator.create(this, 'eachSubmorphRecursively');
     }
 });
 
