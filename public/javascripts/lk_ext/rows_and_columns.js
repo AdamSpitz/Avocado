@@ -158,8 +158,13 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
 
   add.method('currentOrDesiredScaleGivenExtent', function (e) {
     if (this._desiredSpaceToScaleTo) {
-      if      (this._desiredSpaceToScaleTo.x && e.x) { return this._desiredSpaceToScaleTo.x / e.x; }
-      else if (this._desiredSpaceToScaleTo.y && e.y) { return this._desiredSpaceToScaleTo.y / e.y; }
+      var hs = null;
+      var vs = null;
+      if (this._desiredSpaceToScaleTo.x && e.x) { hs = this._desiredSpaceToScaleTo.x / e.x; }
+      if (this._desiredSpaceToScaleTo.y && e.y) { vs = this._desiredSpaceToScaleTo.y / e.y; }
+      if (hs !== null && vs !== null) { return Math.min(hs, vs); }
+      if (hs === null && vs !== null) { return vs; }
+      if (hs !== null && vs === null) { return hs; }
     }
     return this.getScale();
   }, {category: ['layout']});

@@ -76,7 +76,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     if (this.shouldUseZooming()) {
       /* aaa why does this produce weird shrinking behaviour?   avocado.scaleBasedMorphHider.create(this, function() { */
       this._buttonChooserMorph = Morph.createEitherOrMorph([
-        function() { return Morph.wrapToTakeUpConstantHeight(50, this.sourcePane()); }.bind(this).memoize(),
+        function() { return Morph.wrapToTakeUpConstantSpace(pt(100, 50), this.sourcePane()); }.bind(this).memoize(),
         function() {
           var contentsMirrorMorph = slot.contents().morph();
           contentsMirrorMorph.setScale(0.65);
