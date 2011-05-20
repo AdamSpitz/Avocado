@@ -278,7 +278,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     avocado.ui.justChanged(this.slot());
   }, {category: ['accessing']});
 
-  add.method('slotName', function () { return this.slot().name(); }, {category: ['accessing']});
+  add.method('slotName', function () { return this.slot().readableName(); }, {category: ['accessing']});
 
   add.method('setSlotName', function (newName, evt) {
     evt = evt || Event.createFake();

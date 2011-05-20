@@ -52,12 +52,14 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     this._descMorph = TextMorph.createLabel(function() {return m.shortDescription();});
     this._descMorph.setScale(0.9);
 
-    if (this.mirror().canHaveAnnotation()) {
+    if (this.mirror().canHaveAnnotation() || this.mirror().hasAccessibleParent()) {
       if (this.shouldUseZooming()) {
         this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.annotationRow.bind(this), this, 1, pt(50,10)); // aaa made-up space-holder-size number
       } else {
         this._annotationToggler = avocado.morphToggler.create(this, this.annotationRow.bind(this));
-        this._commentToggler    = avocado.morphToggler.create(this, this.commentRow.bind(this));
+        if (this.mirror().canHaveAnnotation()) {
+          this._commentToggler  = avocado.morphToggler.create(this, this.commentRow.bind(this));
+        }
       }
     }
 
@@ -209,8 +211,15 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.method('annotationRow', function () {
     var m = this._annotationRow;
     if (m) { return m; }
-    m = this._annotationRow = this.createRow(this.annotationMorph());
-    return m;
+
+    var annoMorph = this.mirror().canHaveAnnotation() ? this.annotationMorph() : null;
+    var parentSlotMorph = this.mirror().hasAccessibleParent() ? this.slotMorphFor(this.mirror().parentSlot()) : null;
+    if (parentSlotMorph) { parentSlotMorph.setScale(this.shouldUseZooming() ? 0.5 : 1.0); }
+    var content = this.shouldUseZooming() ? [parentSlotMorph, Morph.createSpacer(), annoMorph].compact() : [parentSlotMorph, annoMorph, Morph.createSpacer()].compact();
+    var r = this._annotationRow = avocado.RowMorph.createSpaceFilling(content, this.defaultStyle.internalPadding);
+    r.wasJustShown = function(evt) { annoMorph.wasJustShown(evt); };
+
+    return r;
   }, {category: ['annotation']});
 
   add.method('commentRow', function () {

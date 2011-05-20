@@ -59,6 +59,10 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     if (this.name() === undefined) { return ""; }
     return this.holder().name() + "." + this.name();
   }, {category: ['printing']});
+  
+  add.method('readableName', function () {
+    return this.name();
+  }, {category: ['printing']});
 
   add.method('sortOrder', function () { return this.name().toUpperCase(); }, {category: ['sorting']});
 
@@ -310,6 +314,8 @@ thisModule.addSlots(avocado.slots.domChildNode, function(add) {
 thisModule.addSlots(avocado.slots.parent, function(add) {
 
   add.method('name', function () { return "__proto__"; }, {category: ['accessing']});
+  
+  add.method('readableName', function () { return "inherits from"; }, {category: ['printing']});
 
   add.method('sortOrder', function () { return ''; }, {category: ['sorting'], comment: 'Should come first.'});
 

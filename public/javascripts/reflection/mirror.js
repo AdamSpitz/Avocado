@@ -269,7 +269,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('eachFakeSlot', function (f) {
     if (this.isReflecteeFunction()) { f(this.functionBodySlot()); }
-    if (this.hasAccessibleParent()) { f(this.      parentSlot()); }
+    
+    // I think we don't want this here anymore, because we're putting the parent slot right
+    // into the object's header. This may be the wrong place to fix it, though.
+    // if (this.hasAccessibleParent()) { f(this.      parentSlot()); }
   }, {category: ['iterating']});
 
   add.method('functionBodySlot', function () {
