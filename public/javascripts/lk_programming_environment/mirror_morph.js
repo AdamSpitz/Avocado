@@ -127,7 +127,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   
   add.method('potentialContent', function () {
     if (! this._potentialRows) {
-      this._potentialRows = [this.headerRow(), this.shouldUseZooming() ? this._descMorph : null, this._annotationToggler, this._commentToggler, this.rootCategoryMorph(), this.evaluatorsPanel()].compact();
+      this._potentialRows = [this.headerRow(), this.shouldUseZooming() ? this._descMorph : null, this._annotationToggler, this._commentToggler, this.mirror().canHaveSlots() ? this.rootCategoryMorph() : null, this.evaluatorsPanel()].compact();
     }
     
     if (! this._potentialContent) {
