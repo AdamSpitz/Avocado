@@ -49,8 +49,13 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     this._nameMorph = TextMorph.createLabel(function() {return m.name();});
     this._nameMorph.setEmphasis({style: 'bold'});
     
-    this._descMorph = TextMorph.createLabel(function() {return m.shortDescription();});
-    this._descMorph.setScale(0.9);
+    var descLabel = TextMorph.createLabel('');
+    descLabel.setScale(0.9);
+    this._descMorph = avocado.morphHider.create(this, descLabel, null, function() {
+      var s = m.shortDescription();
+      descLabel.setText(s);
+      return s !== '';
+    });
 
     if (this.mirror().canHaveAnnotation() || this.mirror().hasAccessibleParent()) {
       if (this.shouldUseZooming()) {
