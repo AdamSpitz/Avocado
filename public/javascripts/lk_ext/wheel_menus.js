@@ -42,11 +42,15 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype, function(add) {
   add.method('createCommandMorphsIfNecessary', function () {
     if (this._hasCreatedCommandMorphs) { return; }
     this._hasCreatedCommandMorphs = true;
-		var r = (this._innerRadius + this._outerRadius) / 2;
+		var r = (this._innerRadius + this._outerRadius) * 0.575;
 		for (var i = 0; i <= 8; ++i) {
 		  var c = this._commands[i];
 		  if (c) {
-        var p = (i === 0) ? this.centerPoint() : this.centerPoint().addPt(Point.polar(r, ((i - 3) / 8) * (2 * Math.PI)));
+		    var p = this.centerPoint();
+		    if (i !== 0) {
+  		    var theta = ((i - 3) / 8) * (2 * Math.PI);
+		      p = p.addPt(Point.polar(r * ((i % 2 === 0) ? 1 : 0.84), theta));
+		    }
         this.addCommandMorphFor(i, p);
       }
 		}
@@ -181,10 +185,14 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype, function(add) {
     this.startOpeningAnimation();
   }, {category: ['opening']});
 
-  add.method('startOpeningAnimation', function () {
+  add.method('startOpeningAnimation', function (callWhenDone) {
     var desiredScale = (Config.fatFingers ? 1.5 : 1) / this.world().getScale();
     this.setScale(desiredScale * 0.01);
-    this.smoothlyScaleTo(desiredScale);
+    this.smoothlyScaleTo(desiredScale, function() {
+      // aaa - Make sure the text is visible. Not sure why this is necessary - why isn't it already visible?
+      this.submorphs.forEach(function(cm) { cm.beHighlighted(); cm.beUnhighlighted(); });
+      if (callWhenDone) { callWhenDone(); }
+    }.bind(this));
   }, {category: ['opening']});
 
   add.method('startClosingAnimation', function (callback) {
@@ -253,14 +261,39 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.CommandMorph.prototype, fun
   add.data('constructor', avocado.WheelMenuMorph.prototype.CommandMorph);
 
   add.method('initialize', function ($super, menuMorph, commandIndex) {
-		$super(new lively.scene.Ellipse(pt(0, 0), 25));
+    if (commandIndex === 0) {
+  		$super(new lively.scene.Ellipse(pt(0, 0), menuMorph._innerRadius));
+    } else {
+  		$super(this.createWedgeShape(commandIndex, menuMorph._innerRadius, menuMorph._outerRadius * 0.95));
+    }
 		this._commandIndex = commandIndex;
 		this._menuMorph = menuMorph;
 		this._labelMorph = TextMorph.createLabel(this.command().labelString().attemptToInsertALineBreak()).fitText();
-		this.addMorphAt(this._labelMorph, this._labelMorph.getExtent().scaleBy(-0.5));
+		var labelCenter = commandIndex === 0 ? pt(0, 0) : Point.polar((menuMorph._innerRadius + menuMorph._outerRadius) / 2, ((commandIndex - 3) / 8) * (2 * Math.PI));
+		this.addMorphAt(this._labelMorph, labelCenter.addPt(this._labelMorph.getExtent().scaleBy(-0.5)));
 		this.applyStyle(this.defaultStyle);
 		this.applyStyle(this._menuMorph.commandStyle);
   }, {category: ['creating']});
+  
+  add.method('createWedgeShape', function (commandIndex, innerRadius, outerRadius) {
+    var thetaA = ((commandIndex - 3.5) / 8) * (2 * Math.PI);
+    var thetaB = ((commandIndex - 3  ) / 8) * (2 * Math.PI);
+    var thetaC = ((commandIndex - 2.5) / 8) * (2 * Math.PI);
+    var p0    = Point.polar(innerRadius, thetaA);
+    var p1    = Point.polar(innerRadius, thetaC);
+    var ctrl1 = Point.polar(innerRadius * 1.05, thetaB);
+    var p2    = Point.polar(outerRadius, thetaA);
+    var p3    = Point.polar(outerRadius, thetaC);
+    var ctrl2 = Point.polar(outerRadius * 1.05, thetaB);
+		var g = lively.scene;
+		var cmds = [];
+		cmds.push(new g.MoveTo(true, p0.x,  p0.y));
+		cmds.push(new g.QuadCurveTo(true, p1.x, p1.y, ctrl1.x, ctrl1.y));
+		cmds.push(new g.LineTo(true, p3.x,  p3.y));
+		cmds.push(new g.QuadCurveTo(true, p2.x, p2.y, ctrl2.x, ctrl2.y));
+		cmds.push(new g.LineTo(true, p0.x,  p0.y));
+		return new g.Path(cmds);
+  }, {category: ['accessing']});
 
   add.method('commandIndex', function () {
     return this._commandIndex;

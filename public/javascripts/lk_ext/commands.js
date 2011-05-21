@@ -81,7 +81,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
     return avocado.command.list.create(this._defaultContext, this._commands.map(function(c) { return c ? c.wrapForMorph(morph) : null; }));
   }, {category: ['user interface']});
 
-  add.data('shouldUseWheelMenus', false);
+  add.data('shouldUseWheelMenus', true);
 
   add.method('createMenu', function (target, menuClass) {
     menuClass = menuClass || (this.shouldUseWheelMenus ? avocado.WheelMenuMorph : MenuMorph);

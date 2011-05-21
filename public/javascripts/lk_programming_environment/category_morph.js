@@ -139,21 +139,20 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     var isModifiable = this.mirrorMorph().shouldAllowModification();
     
     if (this.mirror().canHaveSlots()) {
+      var addCommands = [];
       if (this.mirrorMorph().shouldAllowModification()) {
-        cmdList.addSection([{ label: "add function",  go: function(evt) { this.addSlot    (function() {}, evt); } },
-                            { label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); } }]);
+        addCommands.push(avocado.command.create("function",  function(evt) { this.addSlot    (function() {}, evt); }, this));
+        addCommands.push(avocado.command.create("attribute", function(evt) { this.addSlot    (null,          evt); }, this));
       }
+      addCommands.push(avocado.command.create("category", function(evt) { this.addCategory(evt); }, this));
       
       if (avocado.debugMode) {
-        cmdList.addSection([{ label: "add 50 functions",  go: function(evt) { for (var i = 0; i < 50; ++i) { this.addSlot    (function() {}, evt); } } }]);
+        addCommands.push(avocado.command.create("50 functions", function(evt) { for (var i = 0; i < 50; ++i) { this.addSlot    (function() {}, evt); } }, this));
       }
-      
-      cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(evt); } }]);
+      cmdList.addItem(["add...", addCommands]);
       
       if (this.shouldUseZooming()) {
-        cmdList.addSection([{ label: "clean up",  go: function(evt) {
-          this.contentsPanel().poseManager().assumePose(this.contentsPanel().poseManager().cleaningUpPose().beSquarish().whenDoneScaleToFitWithinCurrentSpace());
-        } }]);
+        cmdList.addSection([{ label: "clean up",  go: this.cleanUp }]);
       }
 
       if (!this.category().isRoot()) {
@@ -188,6 +187,13 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     
     return cmdList;
   }, {category: ['drag and drop']});
+  
+  add.method('cleanUp', function (evt, shouldBeUnobtrusive) {
+    var cp = this.contentsPanel();
+    var pose = cp.poseManager().cleaningUpPose().beSquarish().whenDoneScaleToFitWithinCurrentSpace();
+    if (shouldBeUnobtrusive) { pose.beUnobtrusive(); }
+    cp.poseManager().assumePose(pose);
+  }, {category: ['cleaning up']});
 
   add.method('updateHighlighting', function () {
     this.setHighlighting(this._highlighter.isChecked());
