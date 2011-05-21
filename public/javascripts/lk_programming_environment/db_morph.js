@@ -24,7 +24,7 @@ thisModule.addSlots(avocado.db, function(add) {
 
 thisModule.addSlots(avocado.db.morphFactory, function(add) {
 
-  add.method('factoryName', function () { return 'database'; });
+  add.method('factoryName', function () { return 'database morphs'; });
 
   add.method('createFactoryMorph', function () {
     var dbMorph = new avocado.db.Morph(null);

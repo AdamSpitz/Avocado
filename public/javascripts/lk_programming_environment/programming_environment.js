@@ -229,15 +229,13 @@ thisModule.addSlots(avocado.menuItemContributors, function(add) {
 
   add.data('0', avocado.morphFactories);
 
-  add.data('1', avocado.CoreSamplerMorph);
+  add.data('1', transporter);
 
-  add.data('2', transporter);
+  add.data('2', avocado.project);
 
-  add.data('3', avocado.project);
+  add.data('3', avocado.poses);
 
-  add.data('4', avocado.poses);
-
-  add.data('5', avocado.testCase);
+  add.data('4', avocado.testCase);
 
 });
 

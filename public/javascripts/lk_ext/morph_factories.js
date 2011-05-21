@@ -1,5 +1,7 @@
 transporter.module.create('lk_ext/morph_factories', function(requires) {
 
+requires('lk_ext/core_sampler');
+
 }, function(thisModule) {
 
 
@@ -14,13 +16,15 @@ thisModule.addSlots(avocado.morphFactories, function(add) {
 
   add.creator('simpleMorphs', {}, {category: ['simple morphs']});
 
+  add.creator('tools', {}, {category: ['tools']});
+
   add.data('globalFactories', [], {category: ['registering'], initializeTo: '[]'});
 
   add.method('addGlobalCommandsTo', function (menu) {
     menu.addLine();
     
     menu.addItem(["morph factory", avocado.morphFactories.globalFactories.map(function(factory) {
-      return [factory.factoryName() + " morphs", function(evt) { factory.createFactoryMorph().grabMe(evt); }]
+      return [factory.factoryName(), function(evt) { factory.createFactoryMorph().grabMe(evt); }]
     })]);
   }, {category: ['menu']});
 
@@ -31,7 +35,7 @@ thisModule.addSlots(avocado.morphFactories, function(add) {
 
 thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
 
-  add.method('factoryName', function () { return 'simple'; });
+  add.method('factoryName', function () { return 'simple morphs'; });
 
   add.method('createFactoryMorph', function () {
     var line     = Morph.makeLine([pt(0,0), pt(60, 30)], 2, Color.black).closeDnD();
@@ -67,6 +71,27 @@ thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
     factory.addMorphAt(button,    pt( 20, 340));
     factory.addMorphAt(triangle,  pt(150, 340));
     factory.addMorphAt(container, pt( 20, 410));
+    return factory;
+  });
+
+  add.method('postFileIn', function () {
+    avocado.morphFactories.globalFactories.push(this);
+  });
+
+});
+
+
+thisModule.addSlots(avocado.morphFactories.tools, function(add) {
+
+  add.method('factoryName', function () { return 'tools'; });
+
+  add.method('createFactoryMorph', function () {
+    var coreSampler = new avocado.CoreSamplerMorph();
+    
+    var factory = Morph.makeRectangle(pt(0,0), pt(300, 200));
+    factory.applyStyle(avocado.morphFactories.defaultStyle);
+    factory.addMorphAt(coreSampler, pt( 70,  70));
+    
     return factory;
   });
 
