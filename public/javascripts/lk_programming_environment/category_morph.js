@@ -191,7 +191,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.method('cleanUp', function (evt, shouldBeUnobtrusive) {
     var cp = this.contentsPanel();
     var pose = cp.poseManager().cleaningUpPose().beSquarish().whenDoneScaleToFitWithinCurrentSpace();
-    if (shouldBeUnobtrusive) { pose.beUnobtrusive(); }
+    if (true || shouldBeUnobtrusive) { pose.beUnobtrusive(); } // aaa - doing it with animation doesn't work right yet - try making a new object, adding a few slots, and hitting "clean up"
     cp.poseManager().assumePose(pose);
   }, {category: ['cleaning up']});
 
@@ -216,6 +216,9 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     var sm = s.morph();
     sm.wasJustShown(evt);
     this.refreshContentOfMeAndSubmorphs(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet);
+    if (this.shouldUseZooming()) {
+      this.cleanUp(evt, true); // aaa - Not sure this is what we want in the long run - it'd probably be better to just add the slot in an empty area of the content panel
+    }
   }, {category: ['adding']});
 
   add.method('addCategory', function (evt) {

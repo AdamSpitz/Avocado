@@ -67,6 +67,9 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
   
     
     if (this._shouldScaleToFitWithinCurrentSpace) {
+      // aaa - Shoot, this isn't going to work right if this pose is doing the animation (i.e. if _shouldBeUnobtrusive is false), because
+      // the container won't know how much space its submorphs will take up until the animation is done.
+      
       // AAAAAAA - I took out this one line and suddenly everything got way faster.
       // container.refreshContentOfMeAndSubmorphs(); // to make sure the submorphs are laid out right - though, aaa, shouldn't this be done before even calculating the pose positions?
       var currentScale = container.getScale();

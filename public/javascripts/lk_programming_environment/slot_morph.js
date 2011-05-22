@@ -252,7 +252,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     // slot.)
     
     if (this.shouldUseZooming()) {
-      this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3);
+      // aaa - I think this is unnecessary now that we do the automatic-scaling thing.
+      // this.sourcePane().setScale(this.slot().isSimpleMethod() ? 0.9 : 0.3);
 
       // aaa - I need a better understanding of what exactly needs to happen
       // when I change the scale of a morph. -- Adam
@@ -293,6 +294,10 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
         this.transferUIStateTo(newSlotMorph);
         newSlotMorph.sourceMorph().beWritableAndSelectAll();
         this.justBecameObsolete();
+        if (mirMorph.shouldUseZooming()) {
+          // aaa - this shouldn't stay here in the long run, I think, but for now I just want everything to stay lined up nicely
+          newSlot.category().morph().cleanUp(evt, true);
+        }
       }
     }.bind(this), evt);
   }, {category: ['accessing']});

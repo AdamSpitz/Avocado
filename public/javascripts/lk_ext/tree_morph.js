@@ -169,6 +169,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
               // 
               // Or, ideally, someday, do something cool where the morphs arrange themselves, being smart enough
               // to stay approximately where they're put but they shuffle around a bit to avoid colliding with others.
+              // var possibleLocations = this._contentsPanelSize.subPt(m.getExtent().scaleBy(m.getScale()));
+              // cp.addMorphAt(m, possibleLocations.random());
               cp.addMorphAt(m, pt(0,0));
             }
           });
