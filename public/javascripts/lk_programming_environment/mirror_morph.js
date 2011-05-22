@@ -118,7 +118,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
       var descInHeader = this.shouldUseZooming() ? null : this._descMorph;
       
-      var headerRowContents = [this.expander(), this._nameMorph, descInHeader, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact();
+      var headerRowContents = [this.shouldUseZooming() ? Morph.createSpacer() : null, this.expander(), this._nameMorph, descInHeader, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact();
       this._headerRow = avocado.RowMorph.createSpaceFilling(function() { return headerRowContents; }, this.defaultStyle.headerRowPadding);
       this._headerRow.refreshContentOfMeAndSubmorphs();
     }
