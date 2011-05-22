@@ -37,11 +37,14 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     // make the top-left corner be (-X,-Y) instead of (0,0). But that was turning out to be complicated.
     // So for now, just move all the morphs by (X,Y).
     this.submorphs.each(function(m) {
-      if (! m.shouldStickToScreen) {
+      if (m.shouldStickToScreen) {
+      } else {
         // The animated version is a bit weird for now, I think. -- Adam
         // m.startZoomingInAStraightLineTo(m.position().addPt(delta), false, false, true);
         
-        m.moveBy(delta);
+        if (! (m instanceof avocado.ArrowMorph)) { // aaa I have no idea why this is necessary, but try taking it out and then zooming in while an arrow is visible
+          m.moveBy(delta);
+        }
       }
     });
     
@@ -56,8 +59,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   add.method('zoomBy', function (factor, pointerPosition) {
     var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
     
-    worldNavigator.staySameSizeAndScaleTo(this.getScale() * factor, pointerPosition, function() {
-    }.bind(this));
+    worldNavigator.staySameSizeAndScaleTo(this.getScale() * factor, pointerPosition);
   }, {category: ['navigation']});
 
   add.method('stickyMorphs', function (f) {
@@ -174,6 +176,11 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     this._world.slideBy(delta);
     this._world.hands.each(function(m) { m.setScale(1 / s); });
     this._world.stickyMorphs().each(function(m) { m.setScale(1 / s); m.moveBy(m.origin.translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor)); });
+    this._world.submorphs.forEach(function(m) {
+      if (typeof(m.justScaledWorld) === 'function') {
+        m.justScaledWorld(s);
+      }
+    });
   });
 
   add.method('isOnScreen', function () {

@@ -150,7 +150,9 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
       this.endpoint1.attachToTheRightPlace();
       this.endpoint2.attachToTheRightPlace();
       if (! this.owner) {
-        WorldMorph.current().addMorph(this);
+        var w = WorldMorph.current();
+        this.adjustScaleBasedOnWorldScale(w.getScale());
+        w.addMorph(this);
       }
       this.changeVerticesIfNecessary();
     } else {
@@ -159,28 +161,6 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
       }
     }
   }, {category: ['vertices']});
-
-  add.method('disappear', function (callWhenDone) {
-    avocado.callbackWaiter.on(function(finalCallback) {
-      this.endpoint1.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback());
-      this.endpoint2.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback());
-    }.bind(this), function() {
-      this.noLongerNeedsToBeUpdated = true;
-      if (this.owner) {
-        this.remove();
-        this.tickSlowly();
-      }
-      if (callWhenDone) { callWhenDone(); }
-    }.bind(this), "making the arrow disappear");
-  }, {category: ['showing and hiding']});
-
-  add.method('shouldBeShown', function () {
-    if (this.noLongerNeedsToBeUpdated) { return false; }
-    var m1 = this.endpoint1.determineWhichMorphToAttachTo();
-    var m2 = this.endpoint2.determineWhichMorphToAttachTo();
-    var w  = WorldMorph.current();
-    return m1 && m2 && (m1 !== w || m2 !== w);
-  }, {category: ['showing and hiding']});
 
   add.method('changeVerticesIfNecessary', function () {
     var oldVertices = this.shape.vertices();
@@ -211,6 +191,41 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
       }
     }
   }, {category: ['vertices']});
+  
+  add.method('adjustScaleBasedOnWorldScale', function (worldScale) {
+    var inverse = 1 / worldScale;
+    this.setBorderWidth(inverse);
+    if (this.endpoint1 instanceof avocado.ArrowEndpoint) { this.endpoint1.setScale(inverse); }
+    if (this.endpoint2 instanceof avocado.ArrowEndpoint) { this.endpoint2.setScale(inverse); }
+  }, {category: ['scaling']});
+    
+  add.method('justScaledWorld', function (worldScale) {
+    console.log("justScaledWorld to " + worldScale);
+    this.adjustScaleBasedOnWorldScale(worldScale);
+    this.putVerticesInTheRightPlace();
+  }, {category: ['scaling']});
+
+  add.method('disappear', function (callWhenDone) {
+    avocado.callbackWaiter.on(function(finalCallback) {
+      this.endpoint1.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback());
+      this.endpoint2.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback());
+    }.bind(this), function() {
+      this.noLongerNeedsToBeUpdated = true;
+      if (this.owner) {
+        this.remove();
+        this.tickSlowly();
+      }
+      if (callWhenDone) { callWhenDone(); }
+    }.bind(this), "making the arrow disappear");
+  }, {category: ['showing and hiding']});
+
+  add.method('shouldBeShown', function () {
+    if (this.noLongerNeedsToBeUpdated) { return false; }
+    var m1 = this.endpoint1.determineWhichMorphToAttachTo();
+    var m2 = this.endpoint2.determineWhichMorphToAttachTo();
+    var w  = WorldMorph.current();
+    return m1 && m2 && (m1 !== w || m2 !== w);
+  }, {category: ['showing and hiding']});
 
   add.method('grabEndpoint', function (evt, endpoint) {endpoint.grabMe(evt);}, {category: ['vertices']});
 
@@ -268,7 +283,6 @@ thisModule.addSlots(avocado.ArrowEndpoint.prototype, function(add) {
 
   add.method('initialize', function ($super, assoc, arrow) {
     $super(new lively.scene.Rectangle(pt(0, 0).extent(pt(10, 10))));
-    this.relativeLineEndpoint = pt(5, 5);
     this.isArrowEndpoint = true;
     this.shouldNotBePartOfRowOrColumn = true;
     this.association = assoc;
@@ -280,7 +294,7 @@ thisModule.addSlots(avocado.ArrowEndpoint.prototype, function(add) {
 
   add.method('okToDuplicate', function () { return false; });
 
-  add.data('relativeLineEndpoint', new Point(0, 0));
+  add.data('relativeLineEndpoint', new Point(5, 5));
 
   add.method('determineWhichMorphToAttachTo', function () {
     var m = this.owner instanceof HandMorph ? this.owner : this.whichMorphToAttachTo();
