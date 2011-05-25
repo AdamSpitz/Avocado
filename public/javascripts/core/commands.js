@@ -201,7 +201,7 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
 
   add.method('onlyAcceptsType', function (t) {
     this._type = t;
-    this.onlyAccepts(function(o) { return t.doesTypeMatch(obj); });
+    this.onlyAccepts(function(o) { return t.doesTypeMatch(o); });
     return this;
   }, {category: ['accessing']});
 
@@ -379,6 +379,26 @@ thisModule.addSlots(avocado.command.list, function(add) {
   add.method('wrapWithPromptersForArguments', function () {
     return avocado.command.list.create(this._defaultContext, this._commands.map(function(c) { return c ? c.wrapWithPromptersForArguments() : null; }));
   }, {category: ['prompting for arguments']});
+
+});
+
+
+thisModule.addSlots(String, function(add) {
+  
+  add.creator('prompter', {}, {category: ['prompting']});
+  
+});
+
+
+thisModule.addSlots(String.prompter, function(add) {
+
+  add.method('prompt', function (caption, context, evt, callback) {
+    WorldMorph.current().prompt(caption, function(s) {
+      if (s) {
+        callback(s);
+      }
+    }, '');
+  }, {category: ['prompting']});
 
 });
 

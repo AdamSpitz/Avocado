@@ -32,14 +32,20 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
     this._model = Object.newChildOf(this.modelUsingWhicheverMorphsHappenToBeThere, this);
     reflect(this).slotAt('_model').beCreator();
     this.applyStyle(this.defaultStyle);
-    
+
+    this.contentsPanel().acceptsDropping = function(m) {
+      return this.owner.isOKToAdd(m);
+    };
+      
     this.contentsPanel().aboutToReceiveDrop = function(m) {
       var tfm = m.transformForNewOwner(this);
 			m.scaleBy(1 / tfm.getScale());
+			this.owner.aboutToAdd(m);
     };
     
     this.contentsPanel().justReceivedDrop = function(m) {
       this.owner.cleanUpContentsPanel();
+      this.owner.justAdded(m);
     };
     
     this.refreshContentOfMeAndSubmorphs();
@@ -71,6 +77,19 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
     }
     return cmdList;
   }, {category: ['commands']});
+  
+  add.method('isOKToAdd', function (m) {
+    // children can override
+    return true;
+  }, {category: ['events']});
+  
+  add.method('aboutToAdd', function (m) {
+    // children can override
+  }, {category: ['events']});
+  
+  add.method('justAdded', function (m) {
+    // children can override
+  }, {category: ['events']});
 
 });
 
@@ -104,6 +123,8 @@ thisModule.addSlots(avocado.ContainerMorph.prototype.defaultStyle, function(add)
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth));
   
   add.data('openForDragAndDrop', false);
+  
+  add.data('borderRadius', 10);
 
 });
 

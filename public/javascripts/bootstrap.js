@@ -47,6 +47,17 @@ if (typeof Object.shallowCopy !== 'function') {
   };
 }
 
+Object.inheritsFrom = function(ancestor, child) {
+  // Does JS have a built-in way to check this? Similar to instanceof, but for checking the
+  // prototype chain directly rather than assuming we have access to the constructor object?
+  var p = child;
+  while (p) {
+    if (p === ancestor) { return true; }
+    p = p['__proto__'];
+  }
+  return false;
+};
+
 
 // Gotta overwrite Prototype's Object.extend, or bad things happen with annotations.
 Object.extend = function extend(destination, source) {

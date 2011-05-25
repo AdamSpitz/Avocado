@@ -56,7 +56,7 @@ thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
   this.world().showMessage("Inspect the button and edit its 'run' method.");
 }).closeDnD();
 
-    var container = new avocado.ContainerMorph().applyStyle({borderRadius: 10});
+    var container = new avocado.ContainerMorph();
 
     ellipse.setFill(new Color(0.8, 0.5, 0.5)); // make it a different color than the rectangle
     

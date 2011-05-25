@@ -1,6 +1,8 @@
 transporter.module.create('lk_programming_environment/db_morph', function(requires) {
 
+requires('lk_ext/container_morph');
 requires('db/abstract');
+requires('db/couch');
 
 }, function(thisModule) {
 
@@ -22,6 +24,36 @@ thisModule.addSlots(avocado.db, function(add) {
 });
 
 
+thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add) {
+
+  add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
+
+  add.method('newMorph', function () {
+    return new this.Morph(this);
+  }, {category: ['user interface']});
+
+  add.method('morph', function () {
+    return WorldMorph.current().morphFor(this);
+  }, {category: ['user interface']});
+  
+});
+
+
+thisModule.addSlots(avocado.couch.db.container, function(add) {
+
+  add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
+
+  add.method('newMorph', function () {
+    return new this.Morph(this);
+  }, {category: ['user interface']});
+
+  add.method('morph', function () {
+    return WorldMorph.current().morphFor(this);
+  }, {category: ['user interface']});
+  
+});
+
+
 thisModule.addSlots(avocado.db.morphFactory, function(add) {
 
   add.method('factoryName', function () { return 'database morphs'; });
@@ -35,7 +67,7 @@ thisModule.addSlots(avocado.db.morphFactory, function(add) {
     return factory;
   });
 
-  add.data('enableDBExperiment', false);
+  add.data('enableDBExperiment', true);
 
   add.method('postFileIn', function () {
     if (this.enableDBExperiment && avocado.morphFactories) {
@@ -81,16 +113,20 @@ thisModule.addSlots(avocado.db.Morph.prototype, function(add) {
   add.method('labelString', function () { return this.db() ? this.db().labelString() : 'DB'; }, {category: ['accessing']});
 
   add.method('commands', function ($super) {
-    if (this._model) { return $super(); }
-    
-    var cmdList = avocado.command.list.create(this);
-    cmdList.addItem(avocado.command.create('connect to', function(evt, db) {
-      this.setDB(db);
-    }.bind(this)).setArgumentSpecs([
-      avocado.command.argumentSpec.create('db').onlyAcceptsType(avocado.couch.db)
-    ]));
-    
-    return cmdList;
+    if (this._model) {
+      var cmdList = $super() || avocado.command.list.create(this);
+      cmdList.addItem(avocado.command.create('container types', function(evt) { new avocado.couch.db.containerTypesOrganizerProto.Morph(this.db().containerTypesOrganizer()).grabMe(evt); }, this));
+      return cmdList;
+    } else {
+      var cmdList = avocado.command.list.create(this);
+      cmdList.addItem(avocado.command.create('connect to', function(evt, db) {
+        this.setDB(db);
+      }.bind(this)).setArgumentSpecs([
+        avocado.command.argumentSpec.create('db').onlyAcceptsType(avocado.couch.db)
+      ]));
+
+      return cmdList;
+    }
   }, {category: ['commands']});
 
 });
@@ -105,6 +141,119 @@ thisModule.addSlots(avocado.db.Morph.prototype.defaultStyle, function(add) {
   add.data('borderColor', new Color(0, 0, 0));
 
   add.data('openForDragAndDrop', false);
+
+});
+
+
+thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto.Morph, function(add) {
+
+  add.data('superclass', avocado.TreeNodeMorph);
+
+  add.data('type', 'avocado.couch.db.containerTypesOrganizerProto.Morph');
+
+  add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
+
+});
+
+
+thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto.Morph.prototype, function(add) {
+
+  add.data('constructor', avocado.couch.db.containerTypesOrganizerProto.Morph);
+
+  add.method('initialize', function ($super, containerTypesOrganizer) {
+    $super();
+    this._model = containerTypesOrganizer;
+    this.applyStyle(this.defaultStyle);
+    
+    this.contentsPanel().aboutToReceiveDrop = function(m) {
+      var tfm = m.transformForNewOwner(this);
+			m.scaleBy(1 / tfm.getScale());
+    };
+    
+    this.contentsPanel().justReceivedDrop = function(m) {
+      this.owner.cleanUpContentsPanel();
+    };
+    
+    this.refreshContentOfMeAndSubmorphs();
+  }, {category: ['creating']});
+  
+  add.method('inspect', function () {
+    return this._model.toString();
+  }, {category: ['printing']});
+
+  add.creator('defaultStyle', {}, {category: ['styles']});
+  
+  add.method('refreshContent', function ($super) {
+    $super();
+    
+  }, {category: ['printing']});
+
+});
+
+
+thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto.Morph.prototype.defaultStyle, function(add) {
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth));
+  
+  add.data('openForDragAndDrop', false);
+  
+  add.data('borderRadius', 10);
+
+});
+
+
+thisModule.addSlots(avocado.couch.db.container.Morph, function(add) {
+
+  add.data('superclass', avocado.TreeNodeMorph);
+
+  add.data('type', 'avocado.couch.db.container.Morph');
+
+  add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
+
+});
+
+
+thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
+
+  add.data('constructor', avocado.couch.db.container.Morph);
+
+  add.method('initialize', function ($super, container) {
+    $super();
+    this._model = container;
+    this.applyStyle(this.defaultStyle);
+    this.refreshContentOfMeAndSubmorphs();
+  }, {category: ['creating']});
+  
+  add.method('inspect', function () {
+    return this._model.toString();
+  }, {category: ['printing']});
+
+  add.creator('defaultStyle', {}, {category: ['styles']});
+  
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+
+    cmdList.addItem(avocado.command.create('change attribute', function(evt, attributeName) {
+      this._model.setAttributeName(attributeName);
+      this.refreshContentOfMeAndSubmorphs();
+      this._model.updateContents(this.refreshContentOfMeAndSubmorphs.bind(this));
+    }.bind(this)).setArgumentSpecs([
+      avocado.command.argumentSpec.create('attributeName').onlyAcceptsType(String)
+    ]));
+
+    return cmdList;
+  }, {category: ['commands']});
+
+});
+
+
+thisModule.addSlots(avocado.couch.db.container.Morph.prototype.defaultStyle, function(add) {
+
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.7, 0.6)), new lively.paint.Stop(1, new Color(1, 0.8, 0.8))], lively.paint.LinearGradient.SouthNorth));
+  
+  add.data('openForDragAndDrop', false);
+  
+  add.data('borderRadius', 10);
 
 });
 
