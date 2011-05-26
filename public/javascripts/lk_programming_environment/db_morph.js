@@ -170,9 +170,11 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto.Morph.prototyp
 			m.scaleBy(1 / tfm.getScale());
     };
     
+    /* Do this differently. Can't override justReceivedDrop or the command system breaks.
     this.contentsPanel().justReceivedDrop = function(m) {
       this.owner.cleanUpContentsPanel();
     };
+    */
     
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['creating']});
@@ -186,7 +188,7 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto.Morph.prototyp
   add.method('refreshContent', function ($super) {
     $super();
     
-  }, {category: ['printing']});
+  }, {category: ['updating']});
 
 });
 
@@ -243,6 +245,15 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
 
     return cmdList;
   }, {category: ['commands']});
+  
+  add.method('copyAttributesFrom', function ($super, copier, other) {
+    // aaa - this is kind of a hack, but for now I just want a custom copy; in the
+    // long run make this work with the general copying mechanism
+    $super(copier, other);
+    
+    // Make a new container object, don't try to copy all the contents yet.
+    this._model = this._model.copyRemoveAll();
+  }, {category: ['copying']});
 
 });
 

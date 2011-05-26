@@ -200,7 +200,7 @@ Morph.addMethods({
               : dropCmd ? ["drop",    function() { carryingHand.dropOn(this, evt); }.bind(this)]
                         : handEmpty ? ["pick up", function() { carryingHand.pickUp(this, evt); }.bind(this)]
                                     : null, // aaa - Shoot, leaving a null currently doesn't leave a hole in the menu; I want it to, so that the layout doesn't change around.
-            ["remove", this.startZoomingOuttaHere], // so much cooler this way -- Adam
+            ["remove", function() { this.startZoomingOuttaHere(); }.bind(this)], // so much cooler this way -- Adam
             this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
             // ["drill", this.showOwnerChain.curry(evt)], // not needed now that we have core samplers. -- Adam
             // ["drag", this.dragMe.curry(evt)], // This menu has too much stuff in it. -- Adam

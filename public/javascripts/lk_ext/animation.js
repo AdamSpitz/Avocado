@@ -225,13 +225,13 @@ thisModule.addSlots(WindowMorph.prototype, function(add) {
 
 thisModule.addSlots(SelectionMorph.prototype, function(add) {
 
-  add.method('startZoomingOuttaHere', function ($super) {
+  add.method('startZoomingOuttaHere', function ($super, callWhenDone) {
       // Alternate way that I don't think looks quite as good: this.selectedMorphs.invoke('startZoomingOuttaHere');
 
       this.selectedMorphs.each(function(m) {
         this.addMorphAt(m, this.relativize(m.owner.worldPoint(m.getPosition())));
       }.bind(this));
-      $super();
+      $super(callWhenDone);
     }, {category: ['zooming around']});
 
 });

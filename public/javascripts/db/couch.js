@@ -201,7 +201,7 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     } else if (alreadyInDB && ref.id() !== id) {
       throw new Error("That object is already in this DB under a different ID: " + ref.id());
     } else {
-      var json = this.convertRealObjectToJSON(obj, ref.rev());
+      var json = this.convertRealObjectToJSON(obj, {_rev: ref.rev()});
       this.doRequest("PUT", "/" + id, "", json, function(responseObj) {
         if (responseObj.ok) {
           ref.setRev(responseObj.rev);
@@ -246,14 +246,16 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     }.bind(this));
   }, {category: ['documents']});
 
-  add.method('convertRealObjectToJSON', function (obj, rev) {
+  add.method('convertRealObjectToJSON', function (obj, hardwiredSlots) {
     if (typeof(obj) === 'string') { return obj; } // allow raw JSON
     
     var mir = reflect(obj);
     var slots = mir.slots();
-    if (rev) {
-      slots = slots.toArray();
-      slots.push(Object.newChildOf(avocado.slots.hardWiredContents, mir, '_rev', reflect(rev)));
+    if (hardwiredSlots) {
+      reflect(hardwiredSlots).normalSlots().each(function(hardwiredSlot) {
+        slots = slots.toArray();
+        slots.push(Object.newChildOf(avocado.slots.hardWiredContents, mir, hardwiredSlot.name(), hardwiredSlot.contents()));
+      });
     }
     
     var fo = transporter.module.filerOuters.json.create(this);
@@ -372,10 +374,16 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
   }, {category: ['accessing']})
   
   add.method('updateContainerTypes', function (callback) {
+    console.log("About to updateContainerTypes");
     var design = this.design();
     design.get(function(designDoc) {
-      this.setContainerPrototypes(reflect(designDoc.views).normalSlotNames().map(function(n) {
-        return avocado.couch.db.relationships.oneToMany.create(Object.prototype, Object.prototype, n).containerFor({}, design);
+      var viewsDoc = designDoc.views;
+      console.log("updateContainerTypes: got back the designDoc");
+      this.setContainerPrototypes(reflect(viewsDoc).normalSlotNames().map(function(viewName) {
+        console.log("updateContainerTypes: found view named " + viewName);
+        var viewDoc = viewsDoc[viewName];
+        var relationship = avocado.couch.db.relationships.oneToMany.createFromViewDocument(viewDoc, viewName);
+        return relationship.containerFor({}, design);
       }));
     }.bind(this));
   }, {category: ['updating']})
@@ -400,7 +408,7 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
           }.bind(this));
         }.bind(this));
       }.bind(this));
-    }).setArgumentSpecs([avocado.command.argumentSpec.create('mir').onlyAcceptsType(avocado.couch.db.container)]));
+    }).setArgumentSpecs([avocado.command.argumentSpec.create('container').onlyAcceptsType(avocado.couch.db.container)]));
     return cmdList;
   }, {category: ['commands']});
   
@@ -416,9 +424,9 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
     var ref = db.existingRemoteRefForID(id);
     this._rawDoc = {
       "_id" : id,
-      "_rev" : (ref ? ref.rev() : undefined),
       "views" : {}
     };
+    if (ref) { this._rawDoc._rev = ref.rev(); }
     this._viewsByName = {};
   }, {category: ['creating']});
 
@@ -445,7 +453,9 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
   }, {category: ['views']});
 
   add.method('put', function (callback) {
-    var json = JSON.stringify(this.rawDoc());
+    var hardwiredSlots = { _id: this.id() };
+    if (this._rawDoc._rev) { hardwiredSlots._rev = this._rawDoc._rev; }
+    var json = avocado.couch.db.convertRealObjectToJSON(this.rawDoc(), hardwiredSlots);
     this._db.putDocumentAt(this.id(), json, callback);
   }, {category: ['adding and removing']});
 
@@ -458,7 +468,9 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
   }, {category: ['views']});
 
   add.method('addViewForRelationship', function (r) {
-    this.rawDoc().views[r.viewName()] = { map: r.stringForMapFunction() };
+    var viewDoc = { map: r.stringForMapFunction() };
+    r.attachMetaInfoToViewDocument(viewDoc);
+    this.rawDoc().views[r.viewName()] = viewDoc;
   }, {category: ['views']});
 
 });
@@ -502,9 +514,13 @@ thisModule.addSlots(avocado.couch.db.query, function(add) {
     var db = this.view().design().db();
     var viewName = this.view().name();
     this.view().design().doRequest("GET", "/_view/" + viewName, "", null, function(responseObj) {
-      responseObj.refs = responseObj.rows.map(function(row) { return db.updateRealObjectFromDumbDataObject(row.value); });
+      if (responseObj.rows) {
+        responseObj.refs = responseObj.rows.map(function(row) { return db.updateRealObjectFromDumbDataObject(row.value); });
+      } else {
+        // Should we throw an exception here? Or have a separate error callback? Or is passing the responseObj into the normal callback good enough?
+      }
       callback(responseObj);
-    });
+    }.bind(this));
   }, {category: ['views']});
 
 });
@@ -521,6 +537,17 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
 
   add.method('create', function (containerType, elementType, nameOfAttributePointingToContainer) {
     return Object.newChildOf(this, containerType, elementType, nameOfAttributePointingToContainer);
+  }, {category: ['creating']});
+
+  add.method('createFromViewDocument', function (viewDoc, viewName) {
+    var containerTypeMir = avocado.mirror.forObjectNamed(viewDoc.containerCreatorSlotChain);
+    var   elementTypeMir = avocado.mirror.forObjectNamed(viewDoc.elementCreatorSlotChain);
+    var prefix = elementTypeMir.explicitlySpecifiedCreatorSlot().name() + "__";
+    if (viewName.substr(0, prefix.length) !== prefix) {
+      throw new Error("View name " + viewName.inspect() + " does not match the view's element type " + reflect(viewDoc.elementCreatorSlotChain).expressionEvaluatingToMe());
+    }
+    var attrName = viewName.substr(prefix.length);
+    return this.create(containerTypeMir.reflectee(), elementTypeMir.reflectee(), attrName);
   }, {category: ['creating']});
 
   add.method('initialize', function (containerType, elementType, nameOfAttributePointingToContainer) {
@@ -572,6 +599,11 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
     return design.viewNamed(this.viewName());
   }, {category: ['views']});
 
+  add.method('attachMetaInfoToViewDocument', function (viewDoc) {
+    viewDoc.containerCreatorSlotChain = reflect(this._containerType).creatorSlotChain().map(function(s) { return s.name(); }).reverse();
+    viewDoc.  elementCreatorSlotChain = reflect(this._elementType  ).creatorSlotChain().map(function(s) { return s.name(); }).reverse();
+  }, {category: ['views']});
+
   add.method('containerFor', function (containerObj, design) {
     return avocado.couch.db.container.create(this, containerObj, design);
   }, {category: ['querying']});
@@ -599,6 +631,10 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
     this._contents = [];
   }, {category: ['creating']});
   
+  add.method('copyRemoveAll', function () {
+    return avocado.couch.db.container.create(this._relationship, Object.create(this._containerObj.__proto__), this._design);
+  }, {category: ['copying']})
+  
   add.method('setAttributeName', function (n) {
     this._relationship = this._relationship.copyForAttribute(n);
     this._contents = [];
@@ -623,13 +659,18 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
     if (!ref) { return; }
     var query = this._relationship.queryFor(this._containerObj, this._design);
     query.getResults(function(responseObj) {
-      this._contents = responseObj.refs;
+      if (responseObj.refs) {
+        this._contents = responseObj.refs;
+      } else {
+        debugger;
+        console.error("Error: " + responseObj.error + ", reason: " + responseObj.reason);
+      }
       if (callback) { callback(this._contents); }
     }.bind(this));
   }, {category: ['updating']});
   
   add.method('toString', function () {
-    return this._relationship.toString() + " of " + reflect(this._containerObj).inspect();
+    return "" + this._relationship + " of " + reflect(this._containerObj).inspect();
   }, {category: ['printing']});
   
   add.method('immediateSubnodes', function () {
