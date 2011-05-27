@@ -201,7 +201,8 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     } else if (alreadyInDB && ref.id() !== id) {
       throw new Error("That object is already in this DB under a different ID: " + ref.id());
     } else {
-      var json = this.convertRealObjectToJSON(obj, {_rev: ref.rev()});
+      var extraSlots = ref.rev() ? { _rev: ref.rev() } : {};
+      var json = this.convertRealObjectToJSON(obj, extraSlots);
       this.doRequest("PUT", "/" + id, "", json, function(responseObj) {
         if (responseObj.ok) {
           ref.setRev(responseObj.rev);
@@ -227,21 +228,23 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     this.doRequest("GET", "/" + id, "", null, function(responseObj) {
       var idAgain = responseObj._id;
       if (id !== idAgain) {
-        var errorMessage;
+        var errorObj;
         if (typeof(responseObj.error) !== 'undefined') {
+          errorObj = responseObj;
           errorMessage = "Error getting document: " + responseObj.error + ", " + responseObj.reason;
         } else {
-          errorMessage = "Uh oh, something's wrong, why does the document that came back from the DB have a different ID than the one we asked for?";
+          errorObj = { error: "The document that came back from the DB has a different ID from the one we asked for.", reason: "unknown" };
+          errorMessage = "Why does the document that came back from the DB have a different ID than the one we asked for?";
         }
         
         if (errback) {
-          errback(errorMessage);
+          errback(errorObj);
         } else {
           throw new Error(errorMessage);
         }
       } else {
         var ref = this.updateRealObjectFromDumbDataObject(responseObj);
-        callback(ref.object(), ref.id());
+        callback(ref.object(), ref.id(), ref);
       }
     }.bind(this));
   }, {category: ['documents']});
@@ -374,17 +377,22 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
   }, {category: ['accessing']})
   
   add.method('updateContainerTypes', function (callback) {
-    console.log("About to updateContainerTypes");
     var design = this.design();
     design.get(function(designDoc) {
       var viewsDoc = designDoc.views;
-      console.log("updateContainerTypes: got back the designDoc");
       this.setContainerPrototypes(reflect(viewsDoc).normalSlotNames().map(function(viewName) {
-        console.log("updateContainerTypes: found view named " + viewName);
         var viewDoc = viewsDoc[viewName];
         var relationship = avocado.couch.db.relationships.oneToMany.createFromViewDocument(viewDoc, viewName);
         return relationship.containerFor({}, design);
       }));
+      if (callback) { callback(); }
+    }.bind(this), function(err) {
+      var relationship = avocado.couch.db.relationships.oneToMany.create(Object.prototype, Object.prototype, "holder");
+      design.addViewForRelationship(relationship);
+      design.put(function(responseObj) {
+        this.setContainerPrototypes([relationship.containerFor({}, design)]);
+        if (callback) { callback(); }
+      }.bind(this));
     }.bind(this));
   }, {category: ['updating']})
   
@@ -405,8 +413,11 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
         design.put(function(responseObj) {
           this.updateContainerTypes(function() {
             avocado.ui.justChanged(this, evt);
+            this.morph().cleanUpContentsPanel(); // aaa hack, tangles up the model and morph
           }.bind(this));
         }.bind(this));
+      }.bind(this), function(err) {
+        console.error("Error getting the DB design: " + err.error + ", reason: " + err.reason);
       }.bind(this));
     }).setArgumentSpecs([avocado.command.argumentSpec.create('container').onlyAcceptsType(avocado.couch.db.container)]));
     return cmdList;
@@ -421,12 +432,8 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
     this._db = db;
     this._name = n;
     var id = "_design/" + n;
-    var ref = db.existingRemoteRefForID(id);
-    this._rawDoc = {
-      "_id" : id,
-      "views" : {}
-    };
-    if (ref) { this._rawDoc._rev = ref.rev(); }
+    this._ref = db.existingRemoteRefForID(id);
+    this._rawDoc = this._ref ? this._ref.object() : { _id : id, views : {} };
     this._viewsByName = {};
   }, {category: ['creating']});
 
@@ -442,21 +449,29 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
     this._db.deleteDocumentAt(this.id(), callback);
   }, {category: ['adding and removing']});
 
-  add.method('get', function (callback) {
-    return this._db.getDocument(this.id(), function(responseObj) {
-      this._rawDoc._rev = responseObj._rev;
-      this._rawDoc.views = responseObj.views || this._rawDoc.views;
-      if (callback) { callback(responseObj); }
-    }.bind(this), function() {
-      if (callback) { callback(this._rawDoc); } // just use the local new one if there's no existing one
+  add.method('get', function (callback, errback) {
+    return this._db.getDocument(this.id(), function(obj, id, ref) {
+      this._rawDoc = obj;
+      this._ref = ref;
+      if (callback) { callback(obj); }
+    }.bind(this), function(errorObj) {
+      if (errback) {
+        errback(errorObj);
+      } else {
+        if (callback) { callback(this._rawDoc); } // just use the local new one if there's no existing one
+      }
     }.bind(this));
   }, {category: ['views']});
 
   add.method('put', function (callback) {
-    var hardwiredSlots = { _id: this.id() };
-    if (this._rawDoc._rev) { hardwiredSlots._rev = this._rawDoc._rev; }
-    var json = avocado.couch.db.convertRealObjectToJSON(this.rawDoc(), hardwiredSlots);
-    this._db.putDocumentAt(this.id(), json, callback);
+    //var hardwiredSlots = { _id: this.id() };
+    //if (this._rawDoc._rev) { hardwiredSlots._rev = this._rawDoc._rev; }
+    //var json = avocado.couch.db.convertRealObjectToJSON(this.rawDoc(), hardwiredSlots);
+    this._db.putDocumentAt(this.id(), this._rawDoc, function(responseObj) {
+      this._ref = responseObj.ref;
+      this._rawDoc = responseObj.ref.object();
+      if (callback) { callback(responseObj); }
+    });
   }, {category: ['adding and removing']});
 
   add.method('doRequest', function (httpMethod, url, paramsString, body, callback) {
@@ -542,7 +557,7 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
   add.method('createFromViewDocument', function (viewDoc, viewName) {
     var containerTypeMir = avocado.mirror.forObjectNamed(viewDoc.containerCreatorSlotChain);
     var   elementTypeMir = avocado.mirror.forObjectNamed(viewDoc.elementCreatorSlotChain);
-    var prefix = elementTypeMir.explicitlySpecifiedCreatorSlot().name() + "__";
+    var prefix = this.viewNamePrefix(containerTypeMir, elementTypeMir);
     if (viewName.substr(0, prefix.length) !== prefix) {
       throw new Error("View name " + viewName.inspect() + " does not match the view's element type " + reflect(viewDoc.elementCreatorSlotChain).expressionEvaluatingToMe());
     }
@@ -551,18 +566,24 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
   }, {category: ['creating']});
 
   add.method('initialize', function (containerType, elementType, nameOfAttributePointingToContainer) {
-    this._containerType = containerType;
-    this._elementType = elementType;
+    this._containerTypeMir = reflect(containerType);
+    this._elementTypeMir   = reflect(elementType);
     this._nameOfAttributePointingToContainer = nameOfAttributePointingToContainer;
   }, {category: ['creating']});
 
   add.method('viewName', function () {
-    return reflect(this._elementType).explicitlySpecifiedCreatorSlot().name() + "__" + this._nameOfAttributePointingToContainer;
+    return this.viewNamePrefix(this._containerTypeMir, this._elementTypeMir) + this._nameOfAttributePointingToContainer;
   }, {category: ['views']});
   
-  add.method('containerType', function () { return this._containerType; }, {category: ['accessing']});
+  add.method('viewNamePrefix', function (containerTypeMir, elementTypeMir) {
+    var contPart = containerTypeMir.creatorSlotChain().reverse().map(function(s) { return s.name(); }).join("__");
+    var elemPart =   elementTypeMir.creatorSlotChain().reverse().map(function(s) { return s.name(); }).join("__");
+    return contPart + "__" + elemPart + "___";
+  }, {category: ['views']});
   
-  add.method('elementType', function () { return this._elementType; }, {category: ['accessing']});
+  add.method('containerTypeMir', function () { return this._containerTypeMir; }, {category: ['accessing']});
+  
+  add.method('elementTypeMir', function () { return this._elementTypeMir; }, {category: ['accessing']});
   
   add.method('copyForAttribute', function (nameOfAttributePointingToContainer) {
     var c = Object.shallowCopy(this);
@@ -577,14 +598,14 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
   add.method('stringForMapFunction', function () {
     var s = ["function(doc) { var p = doc.underscoreReplacement__proto____creatorPath; if (!p) { return; }"];
     
-    var containerCreatorSlotChain = reflect(this._containerType).creatorSlotChain();
+    var containerCreatorSlotChain = this._containerTypeMir.creatorSlotChain();
     s.push(" if (p.length === ", containerCreatorSlotChain.length);
     for (var i = 0, n = containerCreatorSlotChain.length; i < n; ++i) {
       s.push(" && p[", i, "] === ", containerCreatorSlotChain[n - 1 - i].name().inspect());
     }
     s.push(") { emit([doc._id, 0], doc); } else");
     
-    var elementCreatorSlotChain = reflect(this._elementType).creatorSlotChain();
+    var elementCreatorSlotChain = this._elementTypeMir.creatorSlotChain();
     s.push(" if (p.length === ", elementCreatorSlotChain.length);
     for (var i = 0, n = elementCreatorSlotChain.length; i < n; ++i) {
       s.push(" && p[", i, "] === ", elementCreatorSlotChain[n - 1 - i].name().inspect());
@@ -600,8 +621,8 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
   }, {category: ['views']});
 
   add.method('attachMetaInfoToViewDocument', function (viewDoc) {
-    viewDoc.containerCreatorSlotChain = reflect(this._containerType).creatorSlotChain().map(function(s) { return s.name(); }).reverse();
-    viewDoc.  elementCreatorSlotChain = reflect(this._elementType  ).creatorSlotChain().map(function(s) { return s.name(); }).reverse();
+    viewDoc.containerCreatorSlotChain = this._containerTypeMir.creatorSlotChain().map(function(s) { return s.name(); }).reverse();
+    viewDoc.  elementCreatorSlotChain = this._elementTypeMir  .creatorSlotChain().map(function(s) { return s.name(); }).reverse();
   }, {category: ['views']});
 
   add.method('containerFor', function (containerObj, design) {
@@ -694,7 +715,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
       if (!mir) { return false; }
       if (typeof(mir.reflectee) !== 'function') { return false; }
       var obj = mir.reflectee();
-      return Object.inheritsFrom(this._relationship.elementType(), obj);
+      return Object.inheritsFrom(this._relationship.elementTypeMir().reflectee(), obj);
     }.bind(this))]));
     
     return cmdList;
