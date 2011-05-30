@@ -59,16 +59,21 @@ thisModule.addSlots(avocado.remoteObjectReference, function(add) {
   add.method('fetchObjectIfNotYetPresent', function (callback) {
     var obj = this.object();
     if (obj) {
-      callback(obj);
+      if (callback) { callback(obj); }
     } else {
       this.db().getDocument(this.id(), callback);
     }
+    return this;
   }, {category: ['objects']});
 
   add.method('forgetMe', function () {
     if (this._db)     { this._db.forgetRemoteRefForID(this._id); }
     if (this._object) { this.table.forgetRefForObject(this._object); }
   });
+  
+  add.method('expressionToRecreateRefAndFetchObject', function () {
+    return ["(", this._db.storeString(), ").remoteRefForID(", this.id().inspect(), ").fetchObjectIfNotYetPresent()"].join("");
+  }, {category: ['transporting']});
 
 });
 

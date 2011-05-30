@@ -57,7 +57,13 @@ PasteUpMorph.addMethods({
 Morph.addMethods({
     aboutToReceiveDrop: function(m) {
       // children can override
+      
+      if (this._shouldScaleSubmorphsToFit) {
+  			m.scaleBy(1 / m.transformForNewOwner(this).getScale());
+      }
     },
+    
+    
   
     checkForDoubleClick: function(evt) {
       var currentTime = new Date().getTime(); // Use evt.timeStamp? I just tried that and it didn't seem to work.

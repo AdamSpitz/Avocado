@@ -42,26 +42,38 @@ thisModule.addSlots(avocado.couch.dbServer, function(add) {
   add.method('dbNamed', function (name) {
     return this._dbsByName[name] || (this._dbsByName[name] = Object.newChildOf(avocado.couch.db, this, name));
   }, {category: ['databases']});
+  
+  add.method('storeString', function () {
+    return ["avocado.couch.dbServer.atURL(", this._baseURL.inspect(), ", ", this._proxyURL.inspect(), ")"].join("");
+  }, {category: ['transporting']});
 
-  add.method('doRequest', function (httpMethod, url, paramsString, body, callback) {
+  add.method('paramsStringFrom', function (paramsStringOrObject) {
+    if (!paramsStringOrObject) { return ""; }
+    var paramsMir = reflect(paramsStringOrObject);
+    if (paramsMir.isReflecteeString()) { return paramsStringOrObject; }
+    return paramsMir.normalSlots().map(function(s) { return /* encodeURIComponent */ (s.name()) + "=" + /* encodeURIComponent */ (s.contents().reflectee()); }).toArray().join("&");
+  }, {category: ['requests']});
+
+  add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback) {
     // See http://wiki.apache.org/couchdb/Complete_HTTP_API_Reference for a list of possible requests.
     
     if (typeof(callback) !== 'function') { throw new Error("Need to pass in a callback to doRequest."); }
     
     var fullURL = this._baseURL + url;
+    var paramsString = this.paramsStringFrom(paramsStringOrObject);
     var req = new XMLHttpRequest();
     var urlForTheImmediateRequest;
     if (this._proxyURL) {
       urlForTheImmediateRequest = this._proxyURL;
       if (httpMethod === 'GET') {
-        urlForTheImmediateRequest = urlForTheImmediateRequest + "?url=" + fullURL + "&" + paramsString;
+        urlForTheImmediateRequest = urlForTheImmediateRequest + "?url=" + fullURL + (paramsString ? "&" + paramsString : "");
       } else {
         body = "url=" + fullURL + (paramsString ? "&" + paramsString : "") + "\n" + body;
       }
     } else {
       urlForTheImmediateRequest = fullURL;
     }
-    // console.log("About to doRequest: " + httpMethod + " " + urlForTheImmediateRequest + "\n" + body);
+    console.log("About to doRequest: " + httpMethod + " " + urlForTheImmediateRequest + "\n" + body);
     req.open(httpMethod, urlForTheImmediateRequest, true);
     req.setRequestHeader("Content-Type", "application/json");
     req.onreadystatechange = function() {
@@ -115,9 +127,13 @@ thisModule.addSlots(avocado.couch.db, function(add) {
   add.method('labelString', function () { return this._name; }, {category: ['user interface']});
 
   add.method('textualReference', function () { return 'couch:' + this.baseURL(); }, {category: ['accessing']});
+  
+  add.method('storeString', function () {
+    return ["(", this._server.storeString(), ").dbNamed(", this._name.inspect(), ")"].join("");
+  }, {category: ['transporting']});
 
-  add.method('doRequest', function (httpMethod, url, paramsString, body, callback) {
-    this._server.doRequest(httpMethod, "/" + this.name() + url, paramsString, body, callback);
+  add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback) {
+    this._server.doRequest(httpMethod, "/" + this.name() + url, paramsStringOrObject, body, callback);
   }, {category: ['requests']});
 
   add.method('ensureExists', function (callback) {
@@ -244,7 +260,7 @@ thisModule.addSlots(avocado.couch.db, function(add) {
         }
       } else {
         var ref = this.updateRealObjectFromDumbDataObject(responseObj);
-        callback(ref.object(), ref.id(), ref);
+        if (callback) { callback(ref.object(), ref.id(), ref); }
       }
     }.bind(this));
   }, {category: ['documents']});
@@ -253,10 +269,10 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     if (typeof(obj) === 'string') { return obj; } // allow raw JSON
     
     var mir = reflect(obj);
-    var slots = mir.slots();
+    var slots = mir.slots().toArray();
+    slots.push(mir.parentSlot());
     if (hardwiredSlots) {
       reflect(hardwiredSlots).normalSlots().each(function(hardwiredSlot) {
-        slots = slots.toArray();
         slots.push(Object.newChildOf(avocado.slots.hardWiredContents, mir, hardwiredSlot.name(), hardwiredSlot.contents()));
       });
     }
@@ -364,8 +380,6 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
   
   add.method('setContainerPrototypes', function (types) {
     types = types.toArray();
-    var design = this.design();
-    if (types.length === 0) { types.push(avocado.couch.db.relationships.oneToMany.create(Object.prototype, Object.prototype, "rename_me").containerFor({}, design)); }
     this._containerPrototypes = types;
     types.forEach(function(containerProto) {
       containerProto.updateContents();
@@ -474,8 +488,8 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
     });
   }, {category: ['adding and removing']});
 
-  add.method('doRequest', function (httpMethod, url, paramsString, body, callback) {
-    this._db.doRequest(httpMethod, "/" + this.id() + url, paramsString, body, callback);
+  add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback) {
+    this._db.doRequest(httpMethod, "/" + this.id() + url, paramsStringOrObject, body, callback);
   }, {category: ['requests']});
 
   add.method('viewNamed', function (viewName) {
@@ -487,6 +501,10 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
     r.attachMetaInfoToViewDocument(viewDoc);
     this.rawDoc().views[r.viewName()] = viewDoc;
   }, {category: ['views']});
+  
+  add.method('storeString', function () {
+    return ["(", this._db.storeString(), ").designWithName(", this._name.inspect(), ")"].join("");
+  }, {category: ['transporting']});
 
 });
 
@@ -509,6 +527,10 @@ thisModule.addSlots(avocado.couch.db.view, function(add) {
   add.method('queryForAllResults', function () {
     return this.newQuery();
   }, {category: ['queries']});
+  
+  add.method('storeString', function () {
+    return ["(", this._design.storeString(), ").viewNamed(", this._name.inspect(), ")"].join("");
+  }, {category: ['transporting']});
 
 });
 
@@ -528,7 +550,7 @@ thisModule.addSlots(avocado.couch.db.query, function(add) {
     // aaa - implement other kinds of queries, not just "get all results"
     var db = this.view().design().db();
     var viewName = this.view().name();
-    this.view().design().doRequest("GET", "/_view/" + viewName, "", null, function(responseObj) {
+    this.view().design().doRequest("GET", "/_view/" + viewName, this.options(), null, function(responseObj) {
       if (responseObj.rows) {
         responseObj.refs = responseObj.rows.map(function(row) { return db.updateRealObjectFromDumbDataObject(row.value); });
       } else {
@@ -596,21 +618,23 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
   }, {category: ['printing']});
 
   add.method('stringForMapFunction', function () {
-    var s = ["function(doc) { var p = doc.underscoreReplacement__proto____creatorPath; if (!p) { return; }"];
+    var s = [];
+    s.push("function(doc) { var p = doc.underscoreReplacement__proto____creatorPath; if (!p) { return; }");
     
     var containerCreatorSlotChain = this._containerTypeMir.creatorSlotChain();
     s.push(" if (p.length === ", containerCreatorSlotChain.length);
     for (var i = 0, n = containerCreatorSlotChain.length; i < n; ++i) {
       s.push(" && p[", i, "] === ", containerCreatorSlotChain[n - 1 - i].name().inspect());
     }
-    s.push(") { emit([doc._id, 0], doc); } else");
+    s.push(") { emit([doc._id, 0], doc); }");
     
     var elementCreatorSlotChain = this._elementTypeMir.creatorSlotChain();
     s.push(" if (p.length === ", elementCreatorSlotChain.length);
     for (var i = 0, n = elementCreatorSlotChain.length; i < n; ++i) {
       s.push(" && p[", i, "] === ", elementCreatorSlotChain[n - 1 - i].name().inspect());
     }
-    s.push(") { emit([doc.", this._nameOfAttributePointingToContainer, ", 1], doc); }");
+    s.push(" && doc.", this._nameOfAttributePointingToContainer, "__id !== undefined");
+    s.push(") { emit([doc.", this._nameOfAttributePointingToContainer, "__id, 1], doc); }");
     
     s.push(" }");
     return s.join("");
@@ -626,34 +650,46 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
   }, {category: ['views']});
 
   add.method('containerFor', function (containerObj, design) {
-    return avocado.couch.db.container.create(this, containerObj, design);
+    var containerRef = avocado.remoteObjectReference.table.refForObject(containerObj);
+    return avocado.couch.db.container.create(this, containerRef, design);
   }, {category: ['querying']});
 
   add.method('queryFor', function (containerObj, design) {
     var ref = avocado.remoteObjectReference.table.existingRefForObject(containerObj);
     if (!ref) { throw new Error("Can't create a oneToMany query for " + containerObj + " because we don't know its ID."); }
-    var id = ref.id();
-    return this.viewInDesign(design).newQuery({startkey: '[' + id.inspect(true) + ']', endkey: '[' + id.inspect(true) + ',{}]'});
+    return this.queryForID(ref.id(), design);
   }, {category: ['querying']});
+
+  add.method('queryForID', function (containerID, design) {
+    return this.viewInDesign(design).newQuery({startkey: '[' + containerID.inspect(true) + ',0]', endkey: '[' + containerID.inspect(true) + ',{}]'});
+  }, {category: ['querying']});
+  
+  add.method('storeString', function () {
+    return ["avocado.couch.db.relationships.oneToMany.create(", this._containerTypeMir.creatorSlotChainExpression(), ", ", this._elementTypeMir.creatorSlotChainExpression(), ", ", this._nameOfAttributePointingToContainer.inspect(), ")"].join("");
+  }, {category: ['transporting']});
 
 });
 
 
 thisModule.addSlots(avocado.couch.db.container, function(add) {
 
-  add.method('create', function (relationship, containerObj, design) {
-    return Object.newChildOf(this, relationship, containerObj, design);
+  add.method('create', function (relationship, containerRef, design) {
+    return Object.newChildOf(this, relationship, containerRef, design);
   }, {category: ['creating']});
 
-  add.method('initialize', function (relationship, containerObj, design) {
+  add.method('initialize', function (relationship, containerRef, design) {
     this._relationship = relationship;
-    this._containerObj = containerObj;
+    this._containerRef = containerRef;
     this._design = design;
     this._contents = [];
   }, {category: ['creating']});
   
+  add.method('containerObj', function () {
+    return this._containerRef.object();
+  }, {category: ['creating']});
+  
   add.method('copyRemoveAll', function () {
-    return avocado.couch.db.container.create(this._relationship, Object.create(this._containerObj.__proto__), this._design);
+    return avocado.couch.db.container.create(this._relationship, avocado.remoteObjectReference.table.refForObject(Object.create(this.containerObj().__proto__)), this._design);
   }, {category: ['copying']})
   
   add.method('setAttributeName', function (n) {
@@ -676,22 +712,22 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
   add.method('doesTypeMatch', function (obj) { return obj && obj.__proto__ === avocado.couch.db.container; }, {category: ['testing']});
   
   add.method('updateContents', function (callback) {
-    var ref = avocado.remoteObjectReference.table.existingRefForObject(this._containerObj);
-    if (!ref) { return; }
-    var query = this._relationship.queryFor(this._containerObj, this._design);
+    var ref = this._containerRef;
+    if (!ref.id()) { return this; }
+    var query = this._relationship.queryForID(ref.id(), this._design);
     query.getResults(function(responseObj) {
       if (responseObj.refs) {
-        this._contents = responseObj.refs;
+        this._contents = responseObj.refs.map(function(ref) { return reflect(ref.object()); }); // aaa - enhance this, want to be able to hold more than mirrors
       } else {
-        debugger;
         console.error("Error: " + responseObj.error + ", reason: " + responseObj.reason);
       }
       if (callback) { callback(this._contents); }
     }.bind(this));
+    return this;
   }, {category: ['updating']});
   
   add.method('toString', function () {
-    return "" + this._relationship + " of " + reflect(this._containerObj).inspect();
+    return "" + this._relationship + " of " + reflect(this.containerObj()).inspect();
   }, {category: ['printing']});
   
   add.method('immediateSubnodes', function () {
@@ -709,6 +745,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
       this.addObject(mir.reflectee(), function(responseObj) {
         var ref = responseObj.ref;
         avocado.ui.justChanged(this, evt);
+        this.morph().cleanUpContentsPanel(); // aaa hack, tangles up the model and morph
         console.log("Successfully added " + mir.name() + " to " + this);
       }.bind(this));
     }).setArgumentSpecs([avocado.command.argumentSpec.create('mir').onlyAccepts(function(mir) {
@@ -722,13 +759,18 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
   }, {category: ['commands']});
   
   add.method('addObject', function (elementObj, callback) {
-    this.db().addDocument(this._containerObj, function(responseObj) { // aaa - figure out a better way to make sure the container obj is in the DB
+    this.db().addDocument(this.containerObj(), function(responseObj) { // aaa - figure out a better way to make sure the container obj is in the DB
+      this._containerRef = responseObj.ref;
       elementObj[this._relationship._nameOfAttributePointingToContainer] = responseObj.ref;
       this.db().addDocument(elementObj, function() {
         this.updateContents(callback);
       }.bind(this));
     }.bind(this));
   }, {category: ['adding']});
+  
+  add.method('storeString', function () {
+    return ["avocado.couch.db.container.create(", this._relationship.storeString(), ", ", this._containerRef.expressionToRecreateRefAndFetchObject(), ", ", this._design.storeString(), ")"].join("");
+  }, {category: ['transporting']});
 
 });
 
@@ -794,7 +836,7 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
     db.ensureDoesNotExist(function () {
       db.ensureExists(function () {
         var design = db.designWithName("queryTest");
-        var argleBargles = avocado.couch.db.relationships.oneToMany.create(avocado.couch.db.tests.argle, avocado.couch.db.tests.bargle, 'argle__ref__id');
+        var argleBargles = avocado.couch.db.relationships.oneToMany.create(avocado.couch.db.tests.argle, avocado.couch.db.tests.bargle, 'argle__ref');
         design.addViewForRelationship(argleBargles);
         design.rawDoc().views.bFive = { map: "function(doc) { if (doc.b === 5) { emit(doc._id, doc); }}" };
         design.remove(function(responseObj) {
@@ -829,10 +871,18 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
                             db.addDocument(bargle22, function(responseObj) {
                               argle1Bargles.getResults(function(responseObj) {
                                 var argle1BarglesResults = responseObj.refs;
+                                this.assertEqual(3, argle1BarglesResults.length);
                                 this.assertEqual(argle1,   argle1BarglesResults[0].object());
                                 this.assertEqual(bargle11, argle1BarglesResults[1].object());
                                 this.assertEqual(bargle12, argle1BarglesResults[2].object());
-                                callIfSuccessful();
+                                argle2Bargles.getResults(function(responseObj) {
+                                  var argle2BarglesResults = responseObj.refs;
+                                  this.assertEqual(3, argle2BarglesResults.length);
+                                  this.assertEqual(argle2,   argle2BarglesResults[0].object());
+                                  this.assertEqual(bargle21, argle2BarglesResults[1].object());
+                                  this.assertEqual(bargle22, argle2BarglesResults[2].object());
+                                  callIfSuccessful();
+                                }.bind(this));
                               }.bind(this));
                             }.bind(this));
                           }.bind(this));

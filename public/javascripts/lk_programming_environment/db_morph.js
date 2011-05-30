@@ -164,11 +164,7 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto.Morph.prototyp
     $super();
     this._model = containerTypesOrganizer;
     this.applyStyle(this.defaultStyle);
-    
-    this.contentsPanel().aboutToReceiveDrop = function(m) {
-      var tfm = m.transformForNewOwner(this);
-			m.scaleBy(1 / tfm.getScale());
-    };
+    this.contentsPanel()._shouldScaleSubmorphsToFit = true;
     
     /* Do this differently. Can't override justReceivedDrop or the command system breaks.
     this.contentsPanel().justReceivedDrop = function(m) {
@@ -223,10 +219,15 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
     $super();
     this._model = container;
     this.applyStyle(this.defaultStyle);
+    this.contentsPanel()._shouldScaleSubmorphsToFit = true;
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['creating']});
   
   add.method('inspect', function () {
+    return this._model.toString();
+  }, {category: ['printing']});
+  
+  add.method('toString', function () {
     return this._model.toString();
   }, {category: ['printing']});
 
@@ -254,6 +255,16 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
     // Make a new container object, don't try to copy all the contents yet.
     this._model = this._model.copyRemoveAll();
   }, {category: ['copying']});
+  
+  add.method('updateContents', function (callback) {
+    this._model.updateContents(callback);
+    return this;
+  }, {category: ['updating']});
+  
+  add.method('storeString', function () {
+    // aaa - hack, in the long run the transporter should be smart enough to handle this
+    return ["(", this._model.storeString(), ").morph().updateContents()"].join("");
+  }, {category: ['transporting']});
 
 });
 

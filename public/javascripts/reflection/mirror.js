@@ -79,7 +79,8 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('storeString', function () {
     // aaa - This is not a good long-term solution. The transporter should be able to handle mirrors.
-    return ["reflect(", this.expressionEvaluatingToMe(), ")"].join("");
+    var expr = this.reflectee().storeString ? this.reflectee().storeString() : this.expressionEvaluatingToMe();
+    return ["reflect(", expr, ")"].join("");
   }, {category: ['transporting']});
 
   add.method('storeStringNeeds', function () {
@@ -574,7 +575,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
     // aaa - try something like Self's 1 _AsObject, except of course in JS it'll have to be a hack;
   }, {category: ['naming']});
-
+  
   add.method('reflecteeStoreString', function () {
     if (! this.canHaveSlots()) { return null; }
     var o = this.reflectee();

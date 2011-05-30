@@ -147,7 +147,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       this.adjustScaleOfContentsPanel();
       // aaa - do this more cleanly; for now, just wanna see if this can work
       cp.refreshContent = function () {
-        var contentMorphs = this.allContentMorphs();
+        var treeNodeMorph = this.owner;
+        var contentMorphs = treeNodeMorph.allContentMorphs();
         // aaa - find a more efficient way to do this
         cp.submorphs.forEach(function(m) {
           if (! contentMorphs.include(m)) {
@@ -156,7 +157,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
         });
         
         if (!cp._hasAlreadyBeenLaidOutAtLeastOnce) {
-          this.cleanUpContentsPanel(contentMorphs);
+          treeNodeMorph.cleanUpContentsPanel(contentMorphs);
         } else {
           // Don't redo the pose (because the user may have moved things around, and we don't want to wreck
           // his arrangement), but make sure that if there are any contentMorphs that aren't actually being
@@ -169,17 +170,17 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
               // 
               // Or, ideally, someday, do something cool where the morphs arrange themselves, being smart enough
               // to stay approximately where they're put but they shuffle around a bit to avoid colliding with others.
-              // var possibleLocations = this._contentsPanelSize.subPt(m.getExtent().scaleBy(m.getScale()));
+              // var possibleLocations = treeNodeMorph._contentsPanelSize.subPt(m.getExtent().scaleBy(m.getScale()));
               // cp.addMorphAt(m, possibleLocations.random());
               cp.addMorphAt(m, pt(0,0));
             }
           });
         }
-      }.bind(this);
+      };
       
       cp.dragAndDropCommands = function() {
-        return this.dragAndDropCommandsForTreeContents();
-      }.bind(this);
+        return this.owner.dragAndDropCommandsForTreeContents();
+      };
     } else {
       cp = this._contentsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.contentsPanelStyle());
       this.adjustScaleOfContentsPanel();
