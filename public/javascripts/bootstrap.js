@@ -340,6 +340,10 @@ var annotator = {
     initialize: function(name, holder) {
       this.name = name;
       this.holder = holder;
+    },
+    
+    contentsObject: function() {
+      return this.holder[this.name];
     }
   },
 

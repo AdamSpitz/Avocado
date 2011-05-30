@@ -421,7 +421,10 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
         if (shouldExplicitlySetIt) {
           contentsAnno.setCreatorSlot(slotName, slotHolder);
         } else {
-          if (! contentsAnno.explicitlySpecifiedCreatorSlot()) {
+          var existingCS = contentsAnno.explicitlySpecifiedCreatorSlot();
+          if (existingCS && existingCS.contentsObject() === contents) {
+            // no need to do anything
+          } else {
             contentsAnno.addPossibleCreatorSlot(slotName, slotHolder);
           }
         }
