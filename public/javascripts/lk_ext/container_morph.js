@@ -31,7 +31,6 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
     $super();
     this._model = Object.newChildOf(this.modelUsingWhicheverMorphsHappenToBeThere, this);
     reflect(this).slotAt('_model').beCreator();
-    this.applyStyle(this.defaultStyle);
 
     this.contentsPanel().acceptsDropping = function(m) {
       return this.owner.isOKToAdd(m);
@@ -54,7 +53,7 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
   
   add.creator('modelUsingWhicheverMorphsHappenToBeThere', {});
 
-  add.creator('defaultStyle', {}, {category: ['styles']});
+  add.creator('style', {}, {category: ['styles']});
   
   add.method('findTitleLabel', function () {
     return this.headerRow().submorphsRecursively().find(function(m) { return m instanceof avocado.TwoModeTextMorph; });
@@ -118,7 +117,7 @@ thisModule.addSlots(avocado.ContainerMorph.prototype.modelUsingWhicheverMorphsHa
 });
 
 
-thisModule.addSlots(avocado.ContainerMorph.prototype.defaultStyle, function(add) {
+thisModule.addSlots(avocado.ContainerMorph.prototype.style, function(add) {
   
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth));
   

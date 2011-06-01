@@ -50,7 +50,12 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.method('toString', function () {
     var t = this.findTitleLabel && this.findTitleLabel();
     if (t) { return t.getText(); }
+    if (this._model) { return this._model.toString(); }
     return "a tree node";
+  }, {category: ['printing']});
+  
+  add.method('inspect', function () {
+    return this.toString();
   }, {category: ['printing']});
 
   add.method('headerRow', function () {
@@ -135,6 +140,12 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.data('_shouldContentsBeFreeForm', true, {category: ['free-form contents experiment']});
 
   add.data('_contentsPanelSize', pt(150,100), {category: ['free-form contents experiment']});
+  
+  add.method('setShouldScaleContentsToFit', function (b) {
+    if (this._contentsPanel) { this._contentsPanel._shouldScaleSubmorphsToFit = b; }
+    this._shouldScaleContentsPanelSubmorphsToFit = b;
+    return this;
+  }, {category: ['scaling submorphs']});
 
   add.method('contentsPanel', function () {
     var cp = this._contentsPanel;
@@ -143,6 +154,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     if (this.shouldUseZooming() && this._shouldContentsBeFreeForm) {
       cp = this._contentsPanel = new Morph(new lively.scene.Rectangle(pt(0,0).extent(this._contentsPanelSize))).applyStyle(this.contentsPanelStyle());
       cp.typeName = 'tree node contents panel'; // just for debugging purposes
+      if (this._shouldScaleContentsPanelSubmorphsToFit) { cp._shouldScaleSubmorphsToFit = true; }
       // var thisToString = this.toString(); cp.toString = function() { return thisToString + " contents panel"; } // aaa just for debugging
       this.adjustScaleOfContentsPanel();
       // aaa - do this more cleanly; for now, just wanna see if this can work
@@ -290,9 +302,13 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
 thisModule.addSlots(avocado.TreeNodeMorph.prototype.nonZoomingNodeStyle, function(add) {
 
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth));
+
   add.data('padding', {top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}, {initializeTo: '{top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}'});
 
   add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
+  
+  add.data('openForDragAndDrop', false);
 
 });
 
@@ -308,6 +324,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype.nonZoomingContentsPanelStyle
 
 thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingNodeStyle, function(add) {
 
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth));
+
   add.data('padding', {top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}, {initializeTo: '{top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}'});
 
   add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
@@ -315,6 +333,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingNodeStyle, function(a
   add.data('horizontalLayoutMode', avocado.LayoutModes.ShrinkWrap);
 
   add.data('verticalLayoutMode', avocado.LayoutModes.ShrinkWrap);
+  
+  add.data('openForDragAndDrop', false);
 
 });
 

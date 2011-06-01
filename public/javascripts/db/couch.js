@@ -51,7 +51,7 @@ thisModule.addSlots(avocado.couch.dbServer, function(add) {
     if (!paramsStringOrObject) { return ""; }
     var paramsMir = reflect(paramsStringOrObject);
     if (paramsMir.isReflecteeString()) { return paramsStringOrObject; }
-    return paramsMir.normalSlots().map(function(s) { return /* encodeURIComponent */ (s.name()) + "=" + /* encodeURIComponent */ (s.contents().reflectee()); }).toArray().join("&");
+    return paramsMir.normalSlots().map(function(s) { return encodeURIComponent(s.name()) + "=" + encodeURIComponent(s.contents().reflectee()); }).toArray().join("&");
   }, {category: ['requests']});
 
   add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback) {
@@ -66,7 +66,7 @@ thisModule.addSlots(avocado.couch.dbServer, function(add) {
     if (this._proxyURL) {
       urlForTheImmediateRequest = this._proxyURL;
       if (httpMethod === 'GET') {
-        urlForTheImmediateRequest = urlForTheImmediateRequest + "?url=" + fullURL + (paramsString ? "&" + paramsString : "");
+        urlForTheImmediateRequest = urlForTheImmediateRequest + "?url=" + (fullURL + encodeURIComponent(paramsString ? (fullURL.include("?") ? "&" : "?") + paramsString : ""));
       } else {
         body = "url=" + fullURL + (paramsString ? "&" + paramsString : "") + "\n" + body;
       }
@@ -351,6 +351,14 @@ thisModule.addSlots(avocado.couch.db, function(add) {
   }, {category: ['containers']});
   
   add.creator('containerTypesOrganizerProto', {}, {category: ['containers']});
+
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addItem(avocado.command.create('container types', function(evt) {
+      avocado.ui.grab(this.containerTypesOrganizer(), evt);
+    }));
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
 
   add.method('dragAndDropCommands', function () {
     var cmdList = avocado.command.list.create(this);
@@ -689,7 +697,8 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
   }, {category: ['creating']});
   
   add.method('copyRemoveAll', function () {
-    return avocado.couch.db.container.create(this._relationship, avocado.remoteObjectReference.table.refForObject(Object.create(this.containerObj().__proto__)), this._design);
+    var newContainerObj = Object.create(this.containerObj().__proto__);
+    return this._relationship.containerFor(newContainerObj, this._design);
   }, {category: ['copying']})
   
   add.method('setAttributeName', function (n) {
@@ -719,7 +728,11 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
       if (responseObj.refs) {
         this._contents = responseObj.refs.map(function(ref) { return reflect(ref.object()); }); // aaa - enhance this, want to be able to hold more than mirrors
       } else {
-        console.error("Error: " + responseObj.error + ", reason: " + responseObj.reason);
+        if (responseObj.error) {
+          console.error("Error: " + responseObj.error + ", reason: " + responseObj.reason);
+        } else {
+          debugger;
+        }
       }
       if (callback) { callback(this._contents); }
     }.bind(this));
