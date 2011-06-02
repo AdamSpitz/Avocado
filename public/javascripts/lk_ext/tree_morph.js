@@ -162,13 +162,13 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
         var treeNodeMorph = this.owner;
         var contentMorphs = treeNodeMorph.allContentMorphs();
         // aaa - find a more efficient way to do this
-        cp.submorphs.forEach(function(m) {
+        this.submorphs.forEach(function(m) {
           if (! contentMorphs.include(m)) {
-            cp.removeMorph(m);
+            this.removeMorph(m);
           }
-        });
+        }.bind(this));
         
-        if (!cp._hasAlreadyBeenLaidOutAtLeastOnce) {
+        if (!this._hasAlreadyBeenLaidOutAtLeastOnce) {
           treeNodeMorph.cleanUpContentsPanel(contentMorphs);
         } else {
           // Don't redo the pose (because the user may have moved things around, and we don't want to wreck
@@ -176,7 +176,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
           // shown yet (perhaps because they were just added by some model-level code), they're added to the
           // contents panel.
           contentMorphs.forEach(function(m) {
-            if (m.owner !== cp) {
+            if (m.owner !== this) {
               // aaa - at least spread them out so that if multiple ones are added at the same time, they
               // don't show up right on top of each other.
               // 
@@ -184,9 +184,9 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
               // to stay approximately where they're put but they shuffle around a bit to avoid colliding with others.
               // var possibleLocations = treeNodeMorph._contentsPanelSize.subPt(m.getExtent().scaleBy(m.getScale()));
               // cp.addMorphAt(m, possibleLocations.random());
-              cp.addMorphAt(m, pt(0,0));
+              this.addMorphAt(m, pt(0,0));
             }
-          });
+          }.bind(this));
         }
       };
       
