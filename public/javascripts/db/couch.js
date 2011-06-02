@@ -726,6 +726,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
     var query = this._relationship.queryForID(ref.id(), this._design);
     query.getResults(function(responseObj) {
       if (responseObj.refs) {
+        var containerRef = responseObj.refs.shift();
         this._contents = responseObj.refs.map(function(ref) { return reflect(ref.object()); }); // aaa - enhance this, want to be able to hold more than mirrors
       } else {
         if (responseObj.error) {
