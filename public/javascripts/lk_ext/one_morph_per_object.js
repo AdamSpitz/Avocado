@@ -34,6 +34,10 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     }
   }, {category: ['one morph per object']});
 
+  add.method('rememberMorphFor', function (obj, morph) {
+    this.morphsByObject().put(obj, morph);
+  }, {category: ['one morph per object']});
+
 });
 
 
