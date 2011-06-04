@@ -159,16 +159,17 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     //       The transporter should be able to handle them. But for now it's
     //       choking for some reason, so let's do this for now. -- Adam, Mar. 2011
     return [
-      "(function() {var m = (",
+      "(",
       this.mirror().storeString(),
-      ").morph(); m.setPosition(",
-      this.getPosition().storeString(),
+      ").morph().setBasicMorphProperties(",
+      this.basicMorphPropertiesStoreString(),
+      ")"
       /* aaa - not working because the UI state contains references to the actual reflectee of the mirror,
                which means it needs to respect object identity
-      "); m.assumeUIState(",
+      "m.assumeUIState(",
       reflect(this.constructUIStateMemento()).expressionEvaluatingToMe(),
+      ");"
       */
-      "); return m; })()"
     ].join("");
   }, {category: ['transporting']});
 

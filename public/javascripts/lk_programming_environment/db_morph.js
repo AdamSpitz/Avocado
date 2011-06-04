@@ -202,7 +202,7 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
   
   add.method('storeString', function () {
     // aaa - hack, in the long run the transporter should be smart enough to handle this
-    return ["(", this._model.storeString(), ").morph().updateContents()"].join("");
+    return ["(", this._model.storeString(), ").morph().setBasicMorphProperties(", this.basicMorphPropertiesStoreString(), ").updateContents()"].join("");
   }, {category: ['transporting']});
 
 });

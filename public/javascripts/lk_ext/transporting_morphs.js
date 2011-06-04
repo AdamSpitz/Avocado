@@ -47,6 +47,17 @@ thisModule.addSlots(Morph.prototype, function(add) {
     // Children can override.
     return false;
   }, {category: ['transporting']});
+  
+  add.method('basicMorphPropertiesStoreString', function() {
+    // useful for creating storeStrings
+    return ["{ position: ", this.getPosition().storeString(), " }"].join("");
+  }, {category: ['transporting']});
+  
+  add.method('setBasicMorphProperties', function(info) {
+    // useful for creating storeStrings
+    this.setPosition(info.position);
+    return this;
+  }, {category: ['transporting']});
 
 });
 
