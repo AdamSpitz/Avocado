@@ -175,7 +175,7 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
     ]));
 
     cmdList.addItem(avocado.command.create('update contents', function(evt) {
-      this._model.updateContents(this.refreshContentOfMeAndSubmorphs.bind(this));
+      this.updateContents();
     }));
 
     return cmdList;
@@ -191,7 +191,12 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
   }, {category: ['copying']});
   
   add.method('updateContents', function (callback) {
-    this._model.updateContents(callback);
+    this._model.updateContents(function(contents) {
+      contents.forEach(function(c) { this.nonNodeMorphFor(c).refreshContentOfMeAndSubmorphs(); }.bind(this));
+      this.cleanUpContentsPanel();
+      this.refreshContentOfMeAndSubmorphs();
+      if (callback) { callback(contents); }
+    }.bind(this));
     return this;
   }, {category: ['updating']});
   
