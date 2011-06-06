@@ -232,7 +232,9 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
 thisModule.addSlots(avocado.testCase.suite, function(add) {
   
-  add.method('inspect', function () { return "Avocado tests"; });
+  add.method('toString', function () { return "Avocado tests"; });
+  
+  add.method('inspect', function () { return this.toString(); });
 
   add.method('immediateSubnodes', function () {
     return [];

@@ -17,15 +17,30 @@ thisModule.addSlots(lively.paint, function(add) {
 
 thisModule.addSlots(TextMorph, function(add) {
   
-  add.method('createLabel', function(textOrFunction, pos, extent) {
-    var initialText = typeof textOrFunction === 'function' ? textOrFunction() : textOrFunction || "";
+  add.method('createLabel', function(textOrFunctionOrObject, pos, extent) {
+    var initialText = "";
+    var calculateNewText = null;
+    if (textOrFunctionOrObject) {
+      if (typeof textOrFunctionOrObject === 'string') {
+        initialText = textOrFunctionOrObject;
+      } else if (typeof textOrFunctionOrObject === 'function') {
+        calculateNewText = textOrFunctionOrObject;
+      } else if (typeof textOrFunctionOrObject === 'object') {
+        initialText = textOrFunctionOrObject.initialText || "";
+        calculateNewText = textOrFunctionOrObject.calculateNewText;
+      }
+    }
+    
     var tf = new this((pos || pt(5, 10)).extent(extent || pt(0, 0)), initialText);
     tf.acceptInput = false;
     tf.closeDnD();
     tf.beLabel();
-    if (typeof textOrFunction === 'function') {
-      tf.refreshText = function() {this.setText(textOrFunction());};
+    
+    if (calculateNewText) {
+      tf.calculateNewText = calculateNewText;
+      tf.refreshText = function() { this.setText(this.calculateNewText()); };
     }
+    
     return tf;
   }, {category: ['shortcuts']});
 
@@ -91,7 +106,14 @@ thisModule.addSlots(DisplayThemes.lively.button, function(add) {
 thisModule.addSlots(Morph.prototype, function(add) {
   
   add.method('createNameLabel', function() {
-    return TextMorph.createLabel(function() { return this.inspect(); }.bind(this));
+    // can't use "bind" because we can't transport closures, so instead use ownerWithAModel
+    return TextMorph.createLabel({
+      initialText: this.inspect(),
+      calculateNewText: function() {
+        var o = this.ownerWithAModel();
+        return o ? o.inspect() : "";
+      }
+    });
   }, {category: ['shortcuts']});
 
 });

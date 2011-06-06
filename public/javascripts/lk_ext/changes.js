@@ -279,6 +279,10 @@ Morph.addMethods({
     if (!this.owner) { return null; }
     if (condition(this.owner)) { return this.owner; }
     return this.owner.ownerSatisfying(condition);
+  },
+  
+  ownerWithAModel: function() {
+    return this.ownerSatisfying(function(m) { return typeof(m._model) !== 'undefined'; });
   }
 });
 

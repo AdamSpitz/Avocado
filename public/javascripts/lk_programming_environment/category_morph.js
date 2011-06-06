@@ -95,7 +95,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('createContentsSummaryMorph', function () {
-    var summaryLabel = TextMorph.createLabel(function() {return this.treeNode().contentsSummaryString();}.bind(this));
+    var summaryLabel = TextMorph.createLabel(function() {return this.ownerWithAModel().treeNode().contentsSummaryString();});
     // summaryLabel.setFontSize(summaryLabel.getFontSize() - 1); // aaa - why does this create a little space at the beginning of the label?
     
     // aaa - I get weird 100000-wide behaviour when I try to use just the label instead of wrapping it with a row. I'd like to know why.

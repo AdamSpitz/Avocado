@@ -29,7 +29,7 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
 
   add.method('initialize', function ($super, searcher) {
     $super();
-    this._searcher = searcher;
+    this._model = searcher;
 
     this.setFill(lively.paint.defaultFillWithColor(Color.blue.lighter()));
     this.setPadding(5);
@@ -39,7 +39,7 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     this._resultsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.resultsPanelStyle);
 
     this._expander = new ExpanderMorph(this);
-    this._titleLabel = TextMorph.createLabel(function() {return this.inspect();}.bind(this));
+    this._titleLabel = this.createNameLabel();
     this.redoButton = ButtonMorph.createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
 
@@ -49,7 +49,7 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     this.refreshContent();
   });
 
-  add.method('searcher', function () { return this._searcher; });
+  add.method('searcher', function () { return this._model; });
 
   add.creator('headerRowStyle', {}, {category: ['styles']});
 

@@ -12,9 +12,9 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('newMorph', function () {
     var m = avocado.TableMorph.newRow().setModel(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'module';
-    var module = this;
 
     var changeIndicator = TextMorph.createLabel(function() {
+      var module = this.ownerWithAModel()._model;
       if (module.modificationFlag().hasJustThisOneChanged()) { return ' has changed '; }
       // aaa - maybe it's fine to just say 'has changed' here too?
       if (module.modificationFlag().hasThisOneOrChildrenChanged()) { return ' dependencies have changed '; }
@@ -29,6 +29,7 @@ thisModule.addSlots(transporter.module, function(add) {
     m.setColumns(columns);
 
     m.commands = function() {
+      var module = this.ownerWithAModel()._model;
       var cmdList = module.commands().wrapForMorph(m);
       var saveCmd = cmdList.itemWith("id", "save");
       if (saveCmd) {
@@ -38,7 +39,7 @@ thisModule.addSlots(transporter.module, function(add) {
       return cmdList;
     };
 
-    module.whenChangedNotify(m.refreshContentIfOnScreenOfMeAndSubmorphs.bind(m));
+    this.whenChangedNotify(m.refreshContentIfOnScreenOfMeAndSubmorphs.bind(m));
     m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});

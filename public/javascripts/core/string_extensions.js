@@ -31,7 +31,7 @@ thisModule.addSlots(String.prototype, function(add) {
     var i1 = this.indexOf(' ', middle);
     var i2 = this.lastIndexOf(' ', middle);
     var i = (Math.abs(middle - i1) > Math.abs(middle - i2)) ? i2 : i1;
-    if (i < 0) { return this; }
+    if (i < 0) { return this.substring(0); } // I have ABSOLUTELY NO IDEA why the call to substring is necessary; VM bug in Chrome?
     return this.replaceAt(i, 1, '\n');
   });
 

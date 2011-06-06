@@ -288,6 +288,7 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     delete dumbDataObj._id;
     var ref = this.remoteRefForID(id);
     ref._rev = dumbDataObj._rev;
+    delete dumbDataObj._rev;
     
     var obj = ref.object() || dumbDataObj;
     if (obj === dumbDataObj) {
@@ -486,9 +487,6 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
   }, {category: ['views']});
 
   add.method('put', function (callback) {
-    //var hardwiredSlots = { _id: this.id() };
-    //if (this._rawDoc._rev) { hardwiredSlots._rev = this._rawDoc._rev; }
-    //var json = avocado.couch.db.convertRealObjectToJSON(this.rawDoc(), hardwiredSlots);
     this._db.putDocumentAt(this.id(), this._rawDoc, function(responseObj) {
       this._ref = responseObj.ref;
       this._rawDoc = responseObj.ref.object();

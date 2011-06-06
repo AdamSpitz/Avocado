@@ -46,7 +46,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
     this.applyStyle(this.defaultStyle);
 
-    this._nameMorph = TextMorph.createLabel(function() {return m.name();});
+    this._nameMorph = this.createNameLabel();
     this._nameMorph.setEmphasis({style: 'bold'});
     
     var descLabel = TextMorph.createLabel('');

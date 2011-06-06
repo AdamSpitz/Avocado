@@ -14,9 +14,9 @@ thisModule.addSlots(avocado.project, function(add) {
     var m = avocado.TableMorph.newColumn().setModel(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'project';
     var headerRow = avocado.TableMorph.newRow().beInvisible().setPadding(3);
-    var project = this;
     
     var changeIndicator = TextMorph.createLabel(function() {
+      var project = this.ownerWithAModel()._model;
       return project.modificationFlag().hasThisOneOrChildrenChanged() ? ' has changed ' : '';
     });
     changeIndicator.setTextColor(Color.green.darker());
@@ -37,7 +37,7 @@ thisModule.addSlots(avocado.project, function(add) {
     
     m.setRows([headerRow]);
 
-    project.module().whenChangedNotify(m.refreshContentIfOnScreenOfMeAndSubmorphs.bind(m));
+    this.module().whenChangedNotify(m.refreshContentIfOnScreenOfMeAndSubmorphs.bind(m));
     m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});
