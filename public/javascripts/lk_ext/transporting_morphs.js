@@ -50,11 +50,12 @@ thisModule.addSlots(Morph.prototype, function(add) {
   
   add.method('basicMorphPropertiesStoreString', function() {
     // useful for creating storeStrings
-    return ["{ position: ", this.getPosition().storeString(), " }"].join("");
+    return ["{ owner: " + reflect(this.owner).creatorSlotChainExpression() + ", position: ", this.getPosition().storeString(), " }"].join("");
   }, {category: ['transporting']});
   
   add.method('setBasicMorphProperties', function(info) {
     // useful for creating storeStrings
+    this.owner = info.owner;
     this.setPosition(info.position);
     return this;
   }, {category: ['transporting']});
