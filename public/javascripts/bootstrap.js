@@ -1065,10 +1065,16 @@ thisModule.addSlots(transporter, function(add) {
     if (baseURL === undefined) { baseURL = document.documentURI; }
     baseURL = baseURL.substring(0, baseURL.lastIndexOf("/")) + '/';
     var repoURL = baseURL + "javascripts/";
-    // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
+    
+    // aaa - hack because I want saving to keep working on my local machine
+    if (repoURL.indexOf("http://localhost") === 0) { avocado.kernelModuleSupportsWebDAV = true; }
+    
+    // aaa - hack because I haven't managed to get WebDAV working on the real server yet
+    if (repoURL.indexOf("coolfridgesoftware.com") >= 0) { window.kernelModuleSavingScriptURL = "http://coolfridgesoftware.com/cgi-bin/savefile.cgi"; }
+    
     var kernelRepo;
-    if (window.kernelModuleSavingScriptURL || repoURL.indexOf("coolfridgesoftware.com") >= 0) {
-      var savingScriptURL = window.kernelModuleSavingScriptURL || "http://coolfridgesoftware.com/cgi-bin/savefile.cgi";
+    if (window.kernelModuleSavingScriptURL) {
+      var savingScriptURL = window.kernelModuleSavingScriptURL;
       kernelRepo = Object.create(transporter.repositories.httpWithSavingScript);
       kernelRepo.initialize(repoURL, savingScriptURL);
     } else if (avocado.kernelModuleSupportsWebDAV) {
@@ -1142,6 +1148,11 @@ thisModule.addSlots(transporter, function(add) {
       transporter.callWhenWorldIsCreated();
       delete transporter.callWhenWorldIsCreated;
     }
+  }, {category: ['bootstrapping']});
+
+  add.method('doneLoadingWindow', function () {
+    transporter.isDoneLoadingWindow = true;
+    transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAvocadoLib', function () {
