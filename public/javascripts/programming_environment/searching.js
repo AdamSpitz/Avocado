@@ -1,4 +1,4 @@
-transporter.module.create('programming_environment/searching', function(requires) {
+avocado.transporter.module.create('programming_environment/searching', function(requires) {
 
 }, function(thisModule) {
 

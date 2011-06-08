@@ -1,4 +1,4 @@
-transporter.module.create('transporter/transporter', function(requires) {
+avocado.transporter.module.create('transporter/transporter', function(requires) {
 
 requires('core/testFramework');
 requires('core/notifier');
@@ -10,7 +10,7 @@ requires('transporter/loading_and_saving');
 }, function(thisModule) {
 
 
-thisModule.addSlots(transporter, function(add) {
+thisModule.addSlots(avocado.transporter, function(add) {
 
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
@@ -25,7 +25,7 @@ thisModule.addSlots(transporter, function(add) {
       }],
       
       ["changed modules", function(evt) {
-        var changedOnes = transporter.module.changedOnes();
+        var changedOnes = avocado.transporter.module.changedOnes();
         if (changedOnes.size() > 0) {
           avocado.ui.showObjects(changedOnes, "changed modules", evt);
         } else {
@@ -34,13 +34,13 @@ thisModule.addSlots(transporter, function(add) {
       }],
 
       ["all modules", function(evt) {
-        avocado.ui.showObjects(transporter.module.allModules(), "all modules", evt);
+        avocado.ui.showObjects(avocado.transporter.module.allModules(), "all modules", evt);
       }]
     ]]);
 
-    if (transporter.availableRepositories.any(function(repo) { return repo.canListDirectoryContents; })) {
+    if (avocado.transporter.availableRepositories.any(function(repo) { return repo.canListDirectoryContents; })) {
       cmdList.addItem(["load JS file...", function(evt) {
-        var cmdList = transporter.repositories.prompter.commandListForRepositories(function(repo) { return repo.menuItemsForLoadMenu(); });
+        var cmdList = avocado.transporter.repositories.prompter.commandListForRepositories(function(repo) { return repo.menuItemsForLoadMenu(); });
         avocado.ui.showMenu(cmdList, evt.hand.world(), "From where?", evt);
       }]);
     }
@@ -72,7 +72,7 @@ thisModule.addSlots(transporter, function(add) {
 });
 
 
-thisModule.addSlots(transporter.idTracker, function(add) {
+thisModule.addSlots(avocado.transporter.idTracker, function(add) {
 
   add.data('latestTemporaryIDNumber', 0, {initializeTo: '0'});
 
@@ -95,7 +95,7 @@ thisModule.addSlots(transporter.idTracker, function(add) {
 });
 
 
-thisModule.addSlots(transporter.reasonsForNeedingCreatorPath, function(add) {
+thisModule.addSlots(avocado.transporter.reasonsForNeedingCreatorPath, function(add) {
 
   add.method('recordIfExceptionDuring', function (f, reason) {
     try {
@@ -116,16 +116,16 @@ thisModule.addSlots(transporter.reasonsForNeedingCreatorPath, function(add) {
 
   add.creator('abstract', {});
 
-  add.creator('ancestorOfObjectCreatedInTheModule', Object.create(transporter.reasonsForNeedingCreatorPath['abstract']));
+  add.creator('ancestorOfObjectCreatedInTheModule', Object.create(avocado.transporter.reasonsForNeedingCreatorPath['abstract']));
 
-  add.creator('objectContainsSlotInTheModule', Object.create(transporter.reasonsForNeedingCreatorPath['abstract']));
+  add.creator('objectContainsSlotInTheModule', Object.create(avocado.transporter.reasonsForNeedingCreatorPath['abstract']));
 
-  add.creator('referencedBySlotInTheModule', Object.create(transporter.reasonsForNeedingCreatorPath['abstract']));
+  add.creator('referencedBySlotInTheModule', Object.create(avocado.transporter.reasonsForNeedingCreatorPath['abstract']));
 
 });
 
 
-thisModule.addSlots(transporter.reasonsForNeedingCreatorPath['abstract'], function(add) {
+thisModule.addSlots(avocado.transporter.reasonsForNeedingCreatorPath['abstract'], function(add) {
 
   add.method('create', function (param) {
     return Object.newChildOf(this, param);
@@ -143,7 +143,7 @@ thisModule.addSlots(transporter.reasonsForNeedingCreatorPath['abstract'], functi
 });
 
 
-thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule, function(add) {
+thisModule.addSlots(avocado.transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule, function(add) {
 
   add.method('toString', function () {
     return "it is an ancestor of " + this._param.inspect();
@@ -152,7 +152,7 @@ thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCre
 });
 
 
-thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule, function(add) {
+thisModule.addSlots(avocado.transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule, function(add) {
 
   add.method('toString', function () {
     return "it's referenced from " + this._param;
@@ -161,7 +161,7 @@ thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.referencedBySlotInT
 });
 
 
-thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule, function(add) {
+thisModule.addSlots(avocado.transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule, function(add) {
 
   add.method('toString', function () {
     return "the module contains slots in that object: " + this._param.name();
@@ -170,12 +170,12 @@ thisModule.addSlots(transporter.reasonsForNeedingCreatorPath.objectContainsSlotI
 });
 
 
-thisModule.addSlots(transporter.module, function(add) {
+thisModule.addSlots(avocado.transporter.module, function(add) {
 
   add.method('createNewOne', function (name, repo, parentModule) {
     if (!name)         { throw new Error("Cannot create a module with no name"); }
     if (modules[name]) { throw new Error("There is already a module named " + name); }
-    var module = transporter.module.named(name);
+    var module = avocado.transporter.module.named(name);
     module.setRepository(repo);
     if (!parentModule && avocado.project.current()) { parentModule = avocado.project.current().module(); }
     if (parentModule) { parentModule.addRequirement(name); }
@@ -199,14 +199,14 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('uninstall', function () {
     this.slots().each(function(s) { s.remove(); });
     reflect(modules).slotAt(this._name).remove();
-    reflect(transporter.module.cache).slotAt(this._name).remove();
+    reflect(avocado.transporter.module.cache).slotAt(this._name).remove();
   }, {category: ['removing']});
 
   add.method('rename', function (newName) {
     if (this.existingOneNamed(newName)) { throw new Error("There is already a module named " + newName); }
     var oldName = this._name;
     reflect(modules                 ).slotAt(oldName).rename(newName);
-    reflect(transporter.module.cache).slotAt(oldName).rename(newName);
+    reflect(avocado.transporter.module.cache).slotAt(oldName).rename(newName);
     this._name = newName;
     this.markAsChanged();
     // aaa - should fix up the modules that depend on this one;
@@ -249,7 +249,7 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.method('createNewVersion', function () {
     this.setCurrentVersion(this.version.create(this, [this.currentVersion()]));
-    transporter.idTracker.createTemporaryIDFor(this._currentVersion);
+    avocado.transporter.idTracker.createTemporaryIDFor(this._currentVersion);
     return this._currentVersion;
   }, {category: ['versions']});
 
@@ -258,7 +258,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['requirements']});
 
   add.method('createNewOneRequiredByThisOne', function (name) {
-    return transporter.module.createNewOne(name, this.repository(), this);
+    return avocado.transporter.module.createNewOne(name, this.repository(), this);
   }, {category: ['creating']});
 
   add.method('repository', function () {
@@ -354,7 +354,7 @@ thisModule.addSlots(transporter.module, function(add) {
 });
 
 
-thisModule.addSlots(transporter.slotCollection, function(add) {
+thisModule.addSlots(avocado.transporter.slotCollection, function(add) {
   
   add.method('eachPossibleHolderMirror', function (f) {
     var alreadySeen = avocado.set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
@@ -370,7 +370,7 @@ thisModule.addSlots(transporter.slotCollection, function(add) {
 });
 
 
-thisModule.addSlots(transporter.module.prompter, function(add) {
+thisModule.addSlots(avocado.transporter.module.prompter, function(add) {
 
   add.method('prompt', function (caption, context, evt, callback) {
     this.chooseOrCreateAModule(evt, context.likelyModules(), context, caption, function(m, evt) { callback(m); });
@@ -396,13 +396,13 @@ thisModule.addSlots(transporter.module.prompter, function(add) {
   });
 
   add.method('modulePathTree', function () {
-    return avocado.dictionary.createPathTree(transporter.module.allModules().map(function(m) { return { object: m, path: m.name().split('/') }; }));
+    return avocado.dictionary.createPathTree(avocado.transporter.module.allModules().map(function(m) { return { object: m, path: m.name().split('/') }; }));
   }, {category: ['module tree']});
 
   add.method('createAModule', function (evt, target, callback) {
-    transporter.repositories.prompter.prompt('Which server should the new module live on?', target, evt, function(repo, evt) {
+    avocado.transporter.repositories.prompter.prompt('Which server should the new module live on?', target, evt, function(repo, evt) {
       avocado.ui.prompt("Module name?", function(name) {
-        callback(transporter.module.createNewOne(name, repo), evt);
+        callback(avocado.transporter.module.createNewOne(name, repo), evt);
       }, null, evt);
     });
   });
@@ -410,7 +410,7 @@ thisModule.addSlots(transporter.module.prompter, function(add) {
 });
 
 
-thisModule.addSlots(transporter.module.version, function(add) {
+thisModule.addSlots(avocado.transporter.module.version, function(add) {
 
   add.method('create', function (module, id, parentVersions) {
     return Object.newChildOf(this, module, id, parentVersions);
@@ -443,7 +443,7 @@ thisModule.addSlots(transporter.module.version, function(add) {
     } catch (ex) {
       return failBlock(ex, [ex]);
     }
-    transporter.fileOut(this, repo, codeToFileOut, function() {this.module().markAsUnchanged(); if (successBlock) { successBlock(); }}.bind(this), failBlock);
+    avocado.transporter.fileOut(this, repo, codeToFileOut, function() {this.module().markAsUnchanged(); if (successBlock) { successBlock(); }}.bind(this), failBlock);
   }, {category: ['transporting']});
 
 });
@@ -499,12 +499,12 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
           }
           
           if (! cs.equals(this)) {
-            transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
+            avocado.transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
               var chain = contents.creatorSlotChain('probableCreatorSlot');
               info.contentsExpr = contents.expressionForCreatorSlotChain(chain);
               info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = chain.reverse().map(function(s) { return s.name(); });
               if (this.isDOMChildNode()) { info.creationMethod = 'domChildNode'; } // hack to let us transport morphs
-            }.bind(this), transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
+            }.bind(this), avocado.transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
           } else {
             info.isCreator = true;
             
@@ -532,10 +532,10 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
                 if (contentsParent.equals(reflect(Object.prototype))) {
                   info.contentsExpr = "{}";
                 } else {
-                  transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
+                  avocado.transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
                     var parentInfo = contents.parentSlot().transportableInfo();
                     info.contentsExpr = "Object.create(" + parentInfo.contentsExpr + ")";
-                  }, transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(contents));
+                  }, avocado.transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(contents));
                 }
               }
             }
@@ -549,7 +549,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 });
 
 
-thisModule.addSlots(transporter.tests, function(add) {
+thisModule.addSlots(avocado.transporter.tests, function(add) {
 
   add.creator('someObject', {});
 
@@ -564,7 +564,7 @@ thisModule.addSlots(transporter.tests, function(add) {
     var w1 = avocado.testingObjectGraphWalker.create();
     w1.go();
     
-    var m = transporter.module.named('blah');
+    var m = avocado.transporter.module.named('blah');
 
     this.addSlot(m, this.someObject, 'qwerty', 3);
     
@@ -578,7 +578,7 @@ thisModule.addSlots(transporter.tests, function(add) {
   });
 
   add.method('testModuleCache', function () {
-    var m = transporter.module.named('test_blah');
+    var m = avocado.transporter.module.named('test_blah');
 
     this.assertEqual(0, m.slotCollection().possibleHolders().size());
 
@@ -601,8 +601,8 @@ thisModule.addSlots(transporter.tests, function(add) {
   });
 
   add.method('testChangeMarking', function () {
-    var m1 = transporter.module.named('test_blah1');
-    var m2 = transporter.module.named('test_blah2');
+    var m1 = avocado.transporter.module.named('test_blah1');
+    var m2 = avocado.transporter.module.named('test_blah2');
 
     this.assert(! m1.modificationFlag().hasJustThisOneChanged());
     this.assert(! m2.modificationFlag().hasJustThisOneChanged());
@@ -623,7 +623,7 @@ thisModule.addSlots(transporter.tests, function(add) {
   });
 
   add.method('testRenaming', function () {
-    var m = transporter.module.named('test_blah');
+    var m = avocado.transporter.module.named('test_blah');
 
     var s1 = this.addSlot(m, this.someObject, 'qwerty', {}).beCreator();
     var s2 = this.addSlot(m, this.someObject.qwerty, 'uiop', 4);
@@ -637,10 +637,10 @@ thisModule.addSlots(transporter.tests, function(add) {
     this.assert(s1.isIncludedInModule(m));
     this.assert(s2.isIncludedInModule(m));
     this.assertEqual(2, m.slots().size());
-    this.assertEqual(m, transporter.module.existingOneNamed('test_argleBargle'));
-    this.assert(! transporter.module.existingOneNamed('test_blah'));
+    this.assertEqual(m, avocado.transporter.module.existingOneNamed('test_argleBargle'));
+    this.assert(! avocado.transporter.module.existingOneNamed('test_blah'));
 
-    var m2 = transporter.module.named('test_blah');
+    var m2 = avocado.transporter.module.named('test_blah');
     this.assertEqual(0, m2.slots().size());
     this.assertThrowsException(function() { m.rename("test_argleBargle"); });
 
@@ -649,7 +649,7 @@ thisModule.addSlots(transporter.tests, function(add) {
   });
 
   add.method('testTransportableInfo', function () {
-    var m = transporter.module.named('test_blah');
+    var m = avocado.transporter.module.named('test_blah');
 
     var s1 = this.addSlot(m, this.someObject, 'qwerty', {});
     s1.beCreator();
@@ -667,7 +667,7 @@ thisModule.addSlots(transporter.tests, function(add) {
   });
 
   add.method('testOrderingForFilingOut', function () {
-    var m = transporter.module.named('test_blah');
+    var m = avocado.transporter.module.named('test_blah');
 
     var s1 = this.addSlot(m, this.someObject, 'qwerty', {});
     s1.beCreator();
@@ -684,7 +684,7 @@ thisModule.addSlots(transporter.tests, function(add) {
   });
 
   add.method('testFilingOutArrays', function () {
-    var m = transporter.module.named('test_array_fileout');
+    var m = avocado.transporter.module.named('test_array_fileout');
 
     var s1 = this.addSlot(m, this.someObject, 'anArrayToFileOut', ['a', 2, 'three']);
     s1.beCreator();
@@ -698,14 +698,14 @@ thisModule.addSlots(transporter.tests, function(add) {
 
     this.assertEqual(
 "start module test_array_fileout\n" +
-"  start object transporter.tests.someObject\n" +
+"  start object avocado.transporter.tests.someObject\n" +
 "    slot anArrayToFileOut: []\n" +
-"  end object transporter.tests.someObject\n" +
-"  start object transporter.tests.someObject.anArrayToFileOut\n" +
+"  end object avocado.transporter.tests.someObject\n" +
+"  start object avocado.transporter.tests.someObject.anArrayToFileOut\n" +
 "    slot 0: 'a'\n" +
 "    slot 1: 2\n" +
 "    slot 2: 'three'\n" +
-"  end object transporter.tests.someObject.anArrayToFileOut\n",
+"  end object avocado.transporter.tests.someObject.anArrayToFileOut\n",
     m.codeOfMockFileOut());
 
     m.uninstall();
@@ -713,18 +713,18 @@ thisModule.addSlots(transporter.tests, function(add) {
 
   add.method('obsolete_testObjectsWithNoCreatorPath', function () {
     // aaa - This test is obsolete, but we should do something similar to test the trash-can warning, once we've implemented that. -- Adam, Mar. 2011
-    var m = transporter.module.named('test_non_well_known_objects');
+    var m = avocado.transporter.module.named('test_non_well_known_objects');
 
     var o = {};
     var oMir = reflect(o);
     var s1 = this.addSlot(m, o, 'x', 3);
     var s2 = this.addSlot(m, o, 'y', 'four');
     
-    var fo = transporter.module.filerOuters.mock.create();
+    var fo = avocado.transporter.module.filerOuters.mock.create();
     m.codeToFileOut(fo);
     this.assertEqual(1, fo.errors().length);
     this.assertEqual(oMir, fo.errors()[0].mirrorWithoutCreatorPath);
-    this.assertEqual(transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule.create(s1), fo.errors()[0].reasonForNeedingCreatorPath);
+    this.assertEqual(avocado.transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule.create(s1), fo.errors()[0].reasonForNeedingCreatorPath);
     
     m.uninstall();
   });
@@ -732,7 +732,7 @@ thisModule.addSlots(transporter.tests, function(add) {
   add.method('obsolete_testObjectsThatHaveParentsWithNoCreatorPath', function () {
     // aaa - This test is obsolete too.
     
-    var m = transporter.module.named('test_non_well_known_parents');
+    var m = avocado.transporter.module.named('test_non_well_known_parents');
 
     var p = {};
     var o = Object.create(p);
@@ -742,30 +742,30 @@ thisModule.addSlots(transporter.tests, function(add) {
     var s2 = this.addSlot(m, this.someObject, 'pleh', o);
     s2.beCreator();
     
-    var fo = transporter.module.filerOuters.mock.create();
+    var fo = avocado.transporter.module.filerOuters.mock.create();
     m.codeToFileOut(fo);
     this.assertEqual(1, fo.errors().length);
     this.assertEqual(pMir, fo.errors()[0].mirrorWithoutCreatorPath);
     // aaa - fix this and put it back in; it's the right idea, just gotta fix the details, don't have time right now
-    // this.assertEqual(transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(oMir), fo.errors()[0].reasonForNeedingCreatorPath);
+    // this.assertEqual(avocado.transporter.reasonsForNeedingCreatorPath.ancestorOfObjectCreatedInTheModule.create(oMir), fo.errors()[0].reasonForNeedingCreatorPath);
     
     m.uninstall();
   });
 
   add.method('testFilingOutToJSON', function () {
-      var m = transporter.module.named('test_JSON_fileout');
+      var m = avocado.transporter.module.named('test_JSON_fileout');
 
       this.addSlot(m, this.someObject, 'x', 123);
       this.addSlot(m, this.someObject, 'a', ['a', 2, 'three', false]).beCreator();
       this.addSlot(m, this.someObject, 's', 'pleh');
       this.addSlot(m, this.someObject, 'b', true);
       this.addSlot(m, this.someObject, 'o', {n: 456}).beCreator();
-      this.addSlot(m, this.someObject, 'r', transporter.tests);
+      this.addSlot(m, this.someObject, 'r', avocado.transporter.tests);
       
-      var fo = transporter.module.filerOuters.json.create();
+      var fo = avocado.transporter.module.filerOuters.json.create();
       fo.fileOutSlots(reflect(this.someObject).normalSlots());
       this.assertEqual([], fo.errors());
-      this.assertEqual('{\n  "x": 123,\n  "a": [\n    "a",\n    2,\n    "three",\n    false\n  ],\n  "s": "pleh",\n  "b": true,\n  "o": {\n    "n": 456\n  },\n  "r__creatorPath": [\n    "transporter",\n    "tests"\n  ]\n}', fo.fullText());
+      this.assertEqual('{\n  "x": 123,\n  "a": [\n    "a",\n    2,\n    "three",\n    false\n  ],\n  "s": "pleh",\n  "b": true,\n  "o": {\n    "n": 456\n  },\n  "r__creatorPath": [\n    "avocado",\n    "transporter",\n    "tests"\n  ]\n}', fo.fullText());
 
       m.uninstall();
     });

@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/commands', function(requires) {
+avocado.transporter.module.create('lk_ext/commands', function(requires) {
 
 requires('core/commands');
 requires('lk_ext/wheel_menus');

@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/carrying_hand', function(requires) {
+avocado.transporter.module.create('lk_ext/carrying_hand', function(requires) {
 
 }, function(thisModule) {
 

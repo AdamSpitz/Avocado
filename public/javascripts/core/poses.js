@@ -1,4 +1,4 @@
-transporter.module.create('core/poses', function(requires) {
+avocado.transporter.module.create('core/poses', function(requires) {
 
 }, function(thisModule) {
 

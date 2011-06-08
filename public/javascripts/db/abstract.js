@@ -1,4 +1,4 @@
-transporter.module.create('db/abstract', function(requires) {
+avocado.transporter.module.create('db/abstract', function(requires) {
 
 requires('core/hash_table');
 

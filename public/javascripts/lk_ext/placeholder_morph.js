@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/placeholder_morph', function(requires) {
+avocado.transporter.module.create('lk_ext/placeholder_morph', function(requires) {
 
 }, function(thisModule) {
 

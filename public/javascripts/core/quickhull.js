@@ -1,4 +1,4 @@
-transporter.module.create('core/quickhull', function(requires) {
+avocado.transporter.module.create('core/quickhull', function(requires) {
 
 }, function(thisModule) {
 

@@ -1,4 +1,4 @@
-transporter.module.create('lk_programming_environment/programming_environment', function(requires) {
+avocado.transporter.module.create('lk_programming_environment/programming_environment', function(requires) {
 
 requires('avocado_lib');
 requires('lk_ext/core_sampler');
@@ -229,7 +229,7 @@ thisModule.addSlots(avocado.menuItemContributors, function(add) {
 
   add.data('0', avocado.morphFactories);
 
-  add.data('1', transporter);
+  add.data('1', avocado.transporter);
 
   add.data('2', avocado.project);
 

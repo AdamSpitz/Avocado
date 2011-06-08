@@ -1,11 +1,11 @@
-transporter.module.create('bootstrap_lk', function(requires) {}, function(thisModule) {
+avocado.transporter.module.create('bootstrap_lk', function(requires) {}, function(thisModule) {
 
 
-thisModule.addSlots(transporter, function(add) {
+thisModule.addSlots(avocado.transporter, function(add) {
   
   add.creator('livelyKernelInitializer', {}, {category: ['user interface', 'lively kernel']});
   
-  add.data('userInterfaceInitializer', transporter.livelyKernelInitializer, {category: ['user interface']});
+  add.data('userInterfaceInitializer', avocado.transporter.livelyKernelInitializer, {category: ['user interface']});
 
   add.method('shouldLoadModule', function (name) {
     return true;
@@ -14,7 +14,7 @@ thisModule.addSlots(transporter, function(add) {
 });
 
 
-thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
+thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
 
   add.method('loadUserInterface', function (callWhenDone) {
     if (document.body) {
@@ -37,7 +37,7 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
     else if (window.isInRunMode)       { whichOne = "lk_programming_environment/runtime_environment";     }
     else                               { whichOne = "lk_programming_environment/programming_environment"; }
     
-    transporter.fileInIfWanted(whichOne, callWhenDone);
+    avocado.transporter.fileInIfWanted(whichOne, callWhenDone);
   }, {category: ['bootstrapping']});
 
   add.method('createCanvasIfNone', function () {
@@ -73,7 +73,7 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
 
   add.method('loadLivelyKernelCode', function (callWhenDone) {
     // Loading LK modules dynamically, in the same order that they are loaded in the xhtml file.   
-    transporter.loadExternal(
+    avocado.transporter.loadExternal(
       ["prototype/prototype",
        "lk/JSON",
        "lk/defaultconfig",
@@ -111,7 +111,7 @@ thisModule.addSlots(transporter.livelyKernelInitializer, function(add) {
     world.displayOnCanvas(canvas);
     modules.init.markAsUnchanged(); // because displayOnCanvas sets the creator slot of the world
     if (navigator.appName == 'Opera') { window.onresize(); }
-    if (transporter.shouldLog) { console.log("The world should be visible now."); }
+    if (avocado.transporter.shouldLog) { console.log("The world should be visible now."); }
     // this.initializeGestures(world); // aaa disable loading of mootools for now, since we're not using moosture
     return world;
   }, {category: ['bootstrapping']});

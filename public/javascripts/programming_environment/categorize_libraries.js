@@ -1,4 +1,4 @@
-transporter.module.create('programming_environment/categorize_libraries', function(requires) {
+avocado.transporter.module.create('programming_environment/categorize_libraries', function(requires) {
 
 }, function(thisModule) {
 

@@ -1,4 +1,4 @@
-transporter.module.create('lk_programming_environment/code_organizer', function(requires) {
+avocado.transporter.module.create('lk_programming_environment/code_organizer', function(requires) {
 
 requires('avocado_lib');
 requires('lk_ext/poses');

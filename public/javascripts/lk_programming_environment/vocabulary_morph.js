@@ -1,4 +1,4 @@
-transporter.module.create('lk_programming_environment/vocabulary_morph', function(requires) {
+avocado.transporter.module.create('lk_programming_environment/vocabulary_morph', function(requires) {
 
 requires('reflection/vocabulary');
 

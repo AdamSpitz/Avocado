@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/message_notifier', function(requires) {
+avocado.transporter.module.create('lk_ext/message_notifier', function(requires) {
 
 requires('lk_ext/rows_and_columns');
 

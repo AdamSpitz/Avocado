@@ -1,4 +1,4 @@
-transporter.module.create('avocado_lib', function(requires) {
+avocado.transporter.module.create('avocado_lib', function(requires) {
 
 requires('core/testFramework');
 requires('core/core');

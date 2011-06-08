@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/world_navigation', function(requires) {
+avocado.transporter.module.create('lk_ext/world_navigation', function(requires) {
 
 }, function(thisModule) {
 

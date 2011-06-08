@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/applications', function(requires) {
+avocado.transporter.module.create('lk_ext/applications', function(requires) {
 
 }, function(thisModule) {
 

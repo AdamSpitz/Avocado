@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/combo_box', function(requires) {
+avocado.transporter.module.create('lk_ext/combo_box', function(requires) {
 
 requires('lk_ext/rows_and_columns');
 

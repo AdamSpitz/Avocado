@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/edit_mode', function(requires) {
+avocado.transporter.module.create('lk_ext/edit_mode', function(requires) {
 
 }, function(thisModule) {
 

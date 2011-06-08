@@ -1,4 +1,4 @@
-transporter.module.create('core/enumerator', function(requires) {
+avocado.transporter.module.create('core/enumerator', function(requires) {
 
 }, function(thisModule) {
 

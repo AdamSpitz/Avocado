@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/container_morph', function(requires) {
+avocado.transporter.module.create('lk_ext/container_morph', function(requires) {
 
 requires('lk_ext/tree_morph');
 

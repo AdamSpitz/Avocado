@@ -1,4 +1,4 @@
-transporter.module.create('db/couch', function(requires) {
+avocado.transporter.module.create('db/couch', function(requires) {
 
 requires('core/testFramework');
 requires('transporter/transporter');
@@ -93,7 +93,7 @@ thisModule.addSlots(avocado.couch.db, function(add) {
 
   add.method('proxyURL', function () {
     // aaa - This is still a bit too hard-coded. Should be configurable from within Avocado, I think. -- Adam
-    var baseURL = transporter.avocadoBaseURL;
+    var baseURL = avocado.transporter.avocadoBaseURL;
     if (baseURL === undefined) { baseURL = document.documentURI; }
     baseURL = baseURL.substring(0, baseURL.lastIndexOf("/")) + '/';
     return baseURL + "cgi/proxy.cgi";
@@ -277,7 +277,7 @@ thisModule.addSlots(avocado.couch.db, function(add) {
       });
     }
     
-    var fo = transporter.module.filerOuters.json.create(this);
+    var fo = avocado.transporter.module.filerOuters.json.create(this);
     fo.fileOutSlots(slots);
     if (fo.errors().size() > 0) { throw new Error("Errors converting " + obj + " to JSON: " + fo.errors().map(function(e) { return e.toString(); }).join(", ")); }
     return fo.fullText() || "{}";

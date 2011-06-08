@@ -1,4 +1,4 @@
-transporter.module.create('lk_programming_environment/process_morph', function(requires) {
+avocado.transporter.module.create('lk_programming_environment/process_morph', function(requires) {
 
 requires('lk_ext/rows_and_columns');
 requires('reflection/process');

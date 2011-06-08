@@ -1,4 +1,4 @@
-transporter.module.create('core/notifier', function(requires) {
+avocado.transporter.module.create('core/notifier', function(requires) {
 
 requires('core/hash_table');
 

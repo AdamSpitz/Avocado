@@ -10,15 +10,15 @@ def postscript
 end
 
 def newModule(name)
-  puts("transporter.module.onLoadCallbacks[#{name.inspect}] = function() {};") unless name == 'bootstrap'
+  puts("avocado.transporter.module.onLoadCallbacks[#{name.inspect}] = function() {};") unless name == 'bootstrap'
   puts(File.read("#{name}.js"))
   puts
 end
 
 def externalScript(name)
-  puts("transporter.module.onLoadCallbacks[#{name.inspect}] = function() {};")
+  puts("avocado.transporter.module.onLoadCallbacks[#{name.inspect}] = function() {};")
   puts(File.read("#{name}.js"))
-  puts("transporter.module.onLoadCallbacks[#{name.inspect}] = 'done';")
+  puts("avocado.transporter.module.onLoadCallbacks[#{name.inspect}] = 'done';")
   puts
 end
 

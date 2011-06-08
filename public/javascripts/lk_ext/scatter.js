@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/scatter', function(requires) {
+avocado.transporter.module.create('lk_ext/scatter', function(requires) {
 
 requires('lk_ext/animation');
 

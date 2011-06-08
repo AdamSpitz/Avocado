@@ -1,4 +1,4 @@
-transporter.module.create('core/modification_flag', function(requires) {
+avocado.transporter.module.create('core/modification_flag', function(requires) {
 
 }, function(thisModule) {
 

@@ -1,4 +1,4 @@
-transporter.module.create('core/animation_math', function(requires) {
+avocado.transporter.module.create('core/animation_math', function(requires) {
 
 requires('core/quickhull');
 

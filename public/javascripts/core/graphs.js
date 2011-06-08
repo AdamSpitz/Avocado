@@ -1,4 +1,4 @@
-transporter.module.create('core/graphs', function(requires) {
+avocado.transporter.module.create('core/graphs', function(requires) {
 
 requires('core/testFramework');
 requires('core/hash_table');

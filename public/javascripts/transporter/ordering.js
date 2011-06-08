@@ -1,9 +1,9 @@
-transporter.module.create('transporter/ordering', function(requires) {
+avocado.transporter.module.create('transporter/ordering', function(requires) {
 
 }, function(thisModule) {
 
 
-thisModule.addSlots(transporter.module, function(add) {
+thisModule.addSlots(avocado.transporter.module, function(add) {
 
   add.creator('slotOrderizer', {}, {category: ['transporting']});
 
@@ -14,7 +14,7 @@ thisModule.addSlots(transporter.module, function(add) {
 });
 
 
-thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
+thisModule.addSlots(avocado.transporter.module.slotOrderizer, function(add) {
 
   add.method('initialize', function (m) {
     this._module = m;

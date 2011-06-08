@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/wheel_menus', function(requires) {
+avocado.transporter.module.create('lk_ext/wheel_menus', function(requires) {
 
 }, function(thisModule) {
 

@@ -1,4 +1,4 @@
-transporter.module.create('reflection/slot', function(requires) {
+avocado.transporter.module.create('reflection/slot', function(requires) {
 
 requires('reflection/mirror');
 
@@ -182,7 +182,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
         cmdList.addItem(avocado.command.create("set module", function(evt, module) {
           this.setModule(module);
         }).setArgumentSpecs([
-          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(transporter.module)
+          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(avocado.transporter.module)
         ]));
       }
 
@@ -190,7 +190,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
         cmdList.addItem(avocado.command.create("set module recursively", function(evt, module) {
           this.setModuleRecursively(module);
         }).setArgumentSpecs([
-          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(transporter.module)
+          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(avocado.transporter.module)
         ]));
       }
     }
@@ -509,11 +509,11 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['user interface', 'accessing annotation', 'module']});
 
   add.method('setModuleName', function (n) {
-    var module = transporter.module.existingOneNamed(n);
+    var module = avocado.transporter.module.existingOneNamed(n);
     if (module) { return this.setModule(module); }
     avocado.ui.confirm("The '" + n + "' module does not exist. Create it?", function(b) {
       if (b) {
-        this.setModule(transporter.module.named(n));
+        this.setModule(avocado.transporter.module.named(n));
       }
     }.bind(this));
   }, {category: ['user interface', 'accessing annotation', 'module']});

@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/morph_hider', function(requires) {
+avocado.transporter.module.create('lk_ext/morph_hider', function(requires) {
 
 }, function(thisModule) {
 

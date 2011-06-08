@@ -1,4 +1,4 @@
-transporter.module.create('reflection/mirror', function(requires) {
+avocado.transporter.module.create('reflection/mirror', function(requires) {
 
 requires('core/enumerator');
 requires('core/identity_hash');
@@ -863,7 +863,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
           slotsToReassign.each(function(slot) { slot.setModule(targetModule); });
         }).setArgumentSpecs([
           avocado.command.argumentSpec.create("Of which slots?").onlyAcceptsType(avocado.types.collection.of(avocado.slots['abstract'])).setPrompter(avocado.mirror.sourceModulePrompter),
-          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(transporter.module)
+          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(avocado.transporter.module)
         ]));
       }
     }
@@ -1266,8 +1266,8 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     this.assertEqual("a Function", reflect(function() {}).name());
     this.assertEqual("an Object", reflect({}).name());
     this.assertEqual("an Array", reflect([1, 'two', 3]).name());
-    this.assertEqual("transporter", reflect(transporter).name());
-    this.assertEqual("transporter.module", reflect(transporter.module).name());
+    this.assertEqual("avocado.transporter", reflect(avocado.transporter).name());
+    this.assertEqual("avocado.transporter.module", reflect(avocado.transporter.module).name());
     this.assertEqual("window", reflect(window).name());
     
     this.createNestedClasses(function() {
@@ -1283,8 +1283,8 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     this.assertEqual("a Function", reflect(function() {}).inspect());
     this.assertEqual("an Object", reflect({}).inspect());
     this.assertEqual("an Array([1, 'two', 3])", reflect([1, 'two', 3]).inspect());
-    this.assertEqual("transporter", reflect(transporter).inspect());
-    this.assertEqual("transporter.module", reflect(transporter.module).inspect());
+    this.assertEqual("avocado.transporter", reflect(avocado.transporter).inspect());
+    this.assertEqual("avocado.transporter.module", reflect(avocado.transporter.module).inspect());
     this.assertEqual("window", reflect(window).inspect());
     
     var mirWithBadCreatorSlot = reflect({});
@@ -1300,8 +1300,8 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     this.assertThrowsException(function() { reflect(function() {}).creatorSlotChainExpression(); });
     this.assertThrowsException(function() { reflect({}).creatorSlotChainExpression(); });
     this.assertThrowsException(function() { reflect([1, 'two', 3]).creatorSlotChainExpression(); });
-    this.assertEqual("transporter", reflect(transporter).creatorSlotChainExpression());
-    this.assertEqual("transporter.module", reflect(transporter.module).creatorSlotChainExpression());
+    this.assertEqual("avocado.transporter", reflect(avocado.transporter).creatorSlotChainExpression());
+    this.assertEqual("avocado.transporter.module", reflect(avocado.transporter.module).creatorSlotChainExpression());
     this.assertEqual("window", reflect(window).creatorSlotChainExpression());
     
     avocado['!=!'] = {};
@@ -1461,9 +1461,9 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
   add.method('testGettingSlotsByModule', function () {
     var o = {};
     var p = {copiedDown1: 'copiedDown1', copiedDown2: 'copiedDown2'};
-    var m1 = transporter.module.named('temp_mod_1');
-    var m2 = transporter.module.named('temp_mod_2');
-    var m3 = transporter.module.named('temp_mod_3');
+    var m1 = avocado.transporter.module.named('temp_mod_1');
+    var m2 = avocado.transporter.module.named('temp_mod_2');
+    var m3 = avocado.transporter.module.named('temp_mod_3');
     var mir  = reflect(o);
     var pMir = reflect(p);
     mir.setCopyDownParents([{parent: p}]);
@@ -1494,7 +1494,7 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
   });
 
   add.method('testSettingModuleRecursively', function () {
-    var m = transporter.module.named('temp_mod');
+    var m = avocado.transporter.module.named('temp_mod');
     var cdp = {copiedDown: true};
     var p = {c: 3};
     var o = Object.create(p);

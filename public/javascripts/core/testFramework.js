@@ -1,4 +1,4 @@
-transporter.module.create('core/testFramework', function(requires) {
+avocado.transporter.module.create('core/testFramework', function(requires) {
 
 }, function(thisModule) {
 
@@ -258,7 +258,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
       avocado.dictionary.tests,
       avocado.set.tests,
       avocado.mirror.tests,
-      transporter.tests,
+      avocado.transporter.tests,
       avocado.objectGraphWalker.tests,
       exitValueOf.tests,
       avocado.enumerator.tests,

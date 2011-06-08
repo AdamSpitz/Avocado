@@ -1,4 +1,4 @@
-transporter.module.create('lk_programming_environment/runtime_environment', function(requires) {
+avocado.transporter.module.create('lk_programming_environment/runtime_environment', function(requires) {
 
 requires('avocado_lib');
 

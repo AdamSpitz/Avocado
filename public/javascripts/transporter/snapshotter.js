@@ -1,4 +1,4 @@
-transporter.module.create('transporter/snapshotter', function(requires) {
+avocado.transporter.module.create('transporter/snapshotter', function(requires) {
 
 requires('transporter/object_graph_walker');
 

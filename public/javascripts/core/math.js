@@ -1,4 +1,4 @@
-transporter.module.create('core/math', function(requires) {
+avocado.transporter.module.create('core/math', function(requires) {
 
 }, function(thisModule) {
 

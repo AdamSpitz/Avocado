@@ -1,4 +1,4 @@
-transporter.module.create('projects/projects', function(requires) {
+avocado.transporter.module.create('projects/projects', function(requires) {
 
 }, function(thisModule) {
 
@@ -45,7 +45,7 @@ thisModule.addSlots(avocado.project, function(add) {
     if (info._id) {
       this.setID(info._id);
     } else {
-      transporter.idTracker.createTemporaryIDFor(this);
+      avocado.transporter.idTracker.createTemporaryIDFor(this);
     }
   }, {category: ['creating']});
 
@@ -129,7 +129,7 @@ thisModule.addSlots(avocado.project, function(add) {
       ]]);
     } else {
       cmdList.addItem(["start new project", function(evt) {
-        transporter.module.named("thisProject");
+        avocado.transporter.module.named("thisProject");
         currentProject = avocado.project.current();
         avocado.ui.grab(currentProject, evt);
       }]);
@@ -281,7 +281,7 @@ thisModule.addSlots(avocado.project, function(add) {
     var sortedVersionsToSave = this.sortVersionsToSave(versionsToSave);
     
     // Check to make sure there aren't any *other* changes in the image that aren't part of this project.
-    var allChangedModules = transporter.module.changedOnes();
+    var allChangedModules = avocado.transporter.module.changedOnes();
     var changedModulesNotInThisProject = allChangedModules.select(function(m) { return ! versionsToSave[m.name()]; }).toArray();
     if (changedModulesNotInThisProject.size() > 0) {
       avocado.ui.showObjects(changedModulesNotInThisProject, "changed modules not in this project", evt);
@@ -290,7 +290,7 @@ thisModule.addSlots(avocado.project, function(add) {
     
     var mockRepo = avocado.project.moduleRepository.create(this, isAutoSave);
     mockRepo.setRoot(versionsToSave[this.module().name()]);
-    var errors = transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, this.defaultModuleFilerOuter());
+    var errors = avocado.transporter.fileOutPlural(sortedVersionsToSave.map(function(v) { return { moduleVersion: v }; }), evt, mockRepo, this.defaultModuleFilerOuter());
     if (errors.length === 0) {
       var server = this.defaultServer();
       var format = this.defaultFormat();
@@ -329,8 +329,8 @@ thisModule.addSlots(avocado.project, function(add) {
   
   add.method('defaultModuleFilerOuter', function () {
     // aaa - this needs to be specified by the various kinds of servers
-    // return transporter.module.filerOuters.justBody;
-    return transporter.module.filerOuters.normal;
+    // return avocado.transporter.module.filerOuters.justBody;
+    return avocado.transporter.module.filerOuters.normal;
   }, {category: ['saving']});
   
   add.method('setDefaultServer', function (s) {
@@ -440,7 +440,7 @@ thisModule.addSlots(avocado.project.servers.savingScript, function(add) {
     } else {
       var realIDsByTempID = responseJSON;
       for (var tempID in realIDsByTempID) {
-        transporter.idTracker.recordRealID(tempID, realIDsByTempID[tempID]);
+        avocado.transporter.idTracker.recordRealID(tempID, realIDsByTempID[tempID]);
       }
       successBlock();
     }
@@ -483,7 +483,7 @@ thisModule.addSlots(avocado.project.servers.webdav, function(add) {
     var module = modules[moduleData.module];
     var moduleVersion = module.currentVersion();
     if (moduleVersion.versionID() !== moduleData.version) { throw new Error("Assertion failure: trying to save the wrong version of a module?"); }
-    transporter.fileOut(moduleVersion, this._repo, moduleData.code, function() {
+    avocado.transporter.fileOut(moduleVersion, this._repo, moduleData.code, function() {
       module.markAsUnchanged();
       callback();
     }, function(err) {

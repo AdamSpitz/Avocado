@@ -1,4 +1,4 @@
-transporter.module.create('core/string_buffer', function(requires) {
+avocado.transporter.module.create('core/string_buffer', function(requires) {
 
 }, function(thisModule) {
 

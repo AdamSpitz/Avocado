@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/animation', function(requires) {
+avocado.transporter.module.create('lk_ext/animation', function(requires) {
 
 requires('core/animation_math');
 

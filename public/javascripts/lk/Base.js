@@ -941,7 +941,7 @@ Namespace.addMethods({ // module specific, should be a subclass?
 		if (window.avocado && avocado.isLoadingStatically) {return true;}
 
 		// aaa - another hack added by Adam, to enable XHR+eval loading
-		if (window.transporter && typeof transporter.loadedURLs[this.uri()] === 'function') {return true;}
+		if (window.avocado && avocado.transporter && typeof avocado.transporter.loadedURLs[this.uri()] === 'function') {return true;}
 
 		// aaa - jeez, one more hack, for when we use urlForKernelModuleName (like on GAE) -- Adam
 		var name = this.namespaceIdentifier;
@@ -955,7 +955,7 @@ Namespace.addMethods({ // module specific, should be a subclass?
 		var realURI;
 		if (window.urlForKernelModuleName) {
   		realURI = window.urlForKernelModuleName(name);
-		  if (window.transporter && typeof transporter.loadedURLs[realURI] === 'function') { return true;}
+		  if (window.avocado && avocado.transporter && typeof avocado.transporter.loadedURLs[realURI] === 'function') { return true;}
 		}
 
 		if (this.isLoaded()) return false;

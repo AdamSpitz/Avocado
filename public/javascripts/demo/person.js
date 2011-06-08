@@ -1,4 +1,4 @@
-transporter.module.create('demo/person', function(requires) {
+avocado.transporter.module.create('demo/person', function(requires) {
 
 requires("core/deep_copy");
 

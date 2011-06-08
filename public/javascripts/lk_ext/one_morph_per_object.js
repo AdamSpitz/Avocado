@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/one_morph_per_object', function(requires) {
+avocado.transporter.module.create('lk_ext/one_morph_per_object', function(requires) {
 
 }, function(thisModule) {
 

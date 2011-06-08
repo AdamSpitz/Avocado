@@ -1,9 +1,9 @@
-transporter.module.create('transporter/loading_and_saving', function(requires) {
+avocado.transporter.module.create('transporter/loading_and_saving', function(requires) {
 
 }, function(thisModule) {
 
 
-thisModule.addSlots(transporter, function(add) {
+thisModule.addSlots(avocado.transporter, function(add) {
 
   add.method('fileOut', function (moduleVersion, repo, codeToFileOut, successBlock, failBlock) {
     var m = moduleVersion.module();
@@ -15,18 +15,18 @@ thisModule.addSlots(transporter, function(add) {
 });
 
 
-thisModule.addSlots(transporter.repositories, function(add) {
+thisModule.addSlots(avocado.transporter.repositories, function(add) {
   
   add.creator('prompter', {}, {category: ['user interface']});
   
 });
 
 
-thisModule.addSlots(transporter.repositories.prompter, function(add) {
+thisModule.addSlots(avocado.transporter.repositories.prompter, function(add) {
   
   add.method('prompt', function (caption, context, evt, callback) {
-    if (transporter.availableRepositories.length === 1) {
-      callback(transporter.availableRepositories[0], evt);
+    if (avocado.transporter.availableRepositories.length === 1) {
+      callback(avocado.transporter.availableRepositories[0], evt);
     } else {
       var repoCmdList = this.commandListForRepositories(function(repo) { return function() { callback(repo, evt); }});
       avocado.ui.showMenu(repoCmdList, context, caption, evt);
@@ -35,7 +35,7 @@ thisModule.addSlots(transporter.repositories.prompter, function(add) {
 
   add.method('commandListForRepositories', function (f) {
     var cmdList = avocado.command.list.create();
-    transporter.availableRepositories.each(function(repo) {
+    avocado.transporter.availableRepositories.each(function(repo) {
       var c = f(repo);
       if (c) {
         cmdList.addItem([repo.toString(), c]);
@@ -47,7 +47,7 @@ thisModule.addSlots(transporter.repositories.prompter, function(add) {
 });
 
 
-thisModule.addSlots(transporter.repositories.http, function(add) {
+thisModule.addSlots(avocado.transporter.repositories.http, function(add) {
 
   add.method('menuItemsForLoadMenu', function () {
     return this.menuItemsForLoadMenuForDir(new FileDirectory(new URL(this._url)), "");
@@ -77,13 +77,13 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
   }, {category: ['user interface', 'commands']});
 
   add.method('copyWithSavingScript', function (savingScriptURL) {
-    return Object.newChildOf(transporter.repositories.httpWithSavingScript, this.url(), savingScriptURL);
+    return Object.newChildOf(avocado.transporter.repositories.httpWithSavingScript, this.url(), savingScriptURL);
   }, {category: ['copying']});
 
 });
 
 
-thisModule.addSlots(transporter.repositories.httpWithWebDAV, function(add) {
+thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(add) {
 
   add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
     var m = moduleVersion.module();
@@ -117,7 +117,7 @@ thisModule.addSlots(transporter.repositories.httpWithWebDAV, function(add) {
 });
 
 
-thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add) {
+thisModule.addSlots(avocado.transporter.repositories.httpWithSavingScript, function(add) {
 
   add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
     var m = moduleVersion.module();
@@ -164,7 +164,7 @@ thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add)
 });
 
 
-thisModule.addSlots(transporter.repositories.console, function(add) {
+thisModule.addSlots(avocado.transporter.repositories.console, function(add) {
 
   add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
     console.log(codeToFileOut);

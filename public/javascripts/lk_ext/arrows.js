@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/arrows', function(requires) {
+avocado.transporter.module.create('lk_ext/arrows', function(requires) {
 
 requires('core/commands');
 

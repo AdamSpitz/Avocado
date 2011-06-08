@@ -1,4 +1,4 @@
-transporter.module.create('lk_programming_environment/db_morph', function(requires) {
+avocado.transporter.module.create('lk_programming_environment/db_morph', function(requires) {
 
 requires('lk_ext/container_morph');
 requires('db/abstract');

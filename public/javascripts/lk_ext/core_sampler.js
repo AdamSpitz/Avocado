@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/core_sampler', function(requires) {
+avocado.transporter.module.create('lk_ext/core_sampler', function(requires) {
 
 requires('lk_ext/rows_and_columns');
 

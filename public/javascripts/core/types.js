@@ -1,4 +1,4 @@
-transporter.module.create('core/types', function(requires) {
+avocado.transporter.module.create('core/types', function(requires) {
 
 requires('core/exit');
 

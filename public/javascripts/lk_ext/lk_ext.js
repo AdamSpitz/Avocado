@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/lk_ext', function(requires) {
+avocado.transporter.module.create('lk_ext/lk_ext', function(requires) {
 
 requires('core/math');
 requires('lk_ext/fixes');

@@ -1,4 +1,4 @@
-transporter.module.create('core/little_profiler', function(requires) {
+avocado.transporter.module.create('core/little_profiler', function(requires) {
 
 }, function(thisModule) {
 

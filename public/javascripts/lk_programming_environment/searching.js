@@ -1,4 +1,4 @@
-transporter.module.create('lk_programming_environment/searching', function(requires) {
+avocado.transporter.module.create('lk_programming_environment/searching', function(requires) {
 
 requires('lk_ext/search_results_morph');
 requires('programming_environment/searching');

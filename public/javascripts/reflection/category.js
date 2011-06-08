@@ -1,4 +1,4 @@
-transporter.module.create('reflection/category', function(requires) {
+avocado.transporter.module.create('reflection/category', function(requires) {
 
 }, function(thisModule) {
 

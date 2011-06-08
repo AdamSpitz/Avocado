@@ -1,4 +1,4 @@
-transporter.module.create('reflection/reflection', function(requires) {
+avocado.transporter.module.create('reflection/reflection', function(requires) {
 
 requires('reflection/annotation');
 requires('reflection/mirror');

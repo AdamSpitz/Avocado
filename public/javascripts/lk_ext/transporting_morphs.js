@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/transporting_morphs', function(requires) {
+avocado.transporter.module.create('lk_ext/transporting_morphs', function(requires) {
 
 requires('core/dom_stuff');
 

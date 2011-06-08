@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/poses', function(requires) {
+avocado.transporter.module.create('lk_ext/poses', function(requires) {
 
 requires('core/poses');
 

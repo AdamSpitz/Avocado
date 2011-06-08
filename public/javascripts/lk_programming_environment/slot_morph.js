@@ -1,4 +1,4 @@
-transporter.module.create('lk_programming_environment/slot_morph', function(requires) {
+avocado.transporter.module.create('lk_programming_environment/slot_morph', function(requires) {
 
 requires('reflection/reflection');
 requires('lk_ext/rows_and_columns');
@@ -152,7 +152,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['source']});
 
   add.method('createIconForButton', function (path) {
-    return new ImageMorph(pt(10,10).extentAsRectangle(), (transporter.avocadoBaseURL || "") + path).beLabel();
+    return new ImageMorph(pt(10,10).extentAsRectangle(), (avocado.transporter.avocadoBaseURL || "") + path).beLabel();
   }, {category: ['creating']});
 
   add.method('createRow', function (getOrCreateContent) {

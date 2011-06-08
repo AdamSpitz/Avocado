@@ -2,8 +2,8 @@
 
 newModule('bootstrap');
 newModule('bootstrap_lk');
-doIt('transporter.initializeCallbackWaiters();');
-doIt('transporter.initializeRepositories();');
+doIt('avocado.transporter.initializeCallbackWaiters();');
+doIt('avocado.transporter.initializeRepositories();');
 externalScript('prototype/prototype');
 externalScript('lk/JSON');
 externalScript('lk/defaultconfig');
@@ -24,7 +24,7 @@ externalScript('lk/cop/Layers');
 externalScript('jslint');
 newModule('core/testFramework');
 newModule('transporter/object_graph_walker');
-doIt('transporter.putUnownedSlotsInInitModule();');
+doIt('avocado.transporter.putUnownedSlotsInInitModule();');
 newModule('projects/projects');
 newModule('core/accessors');
 newModule('core/exit');
@@ -97,6 +97,6 @@ newModule('lk_ext/animation');
 newModule('lk_ext/scatter');
 newModule('lk_ext/lk_ext');
 newModule('avocado_lib');
-doIt('transporter.doneLoadingAvocadoLib();');
+doIt('avocado.transporter.doneLoadingAvocadoLib();');
 newModule('lk_programming_environment/runtime_environment');
-doIt('transporter.doneLoadingAllAvocadoCode();');
+doIt('avocado.transporter.doneLoadingAllAvocadoCode();');

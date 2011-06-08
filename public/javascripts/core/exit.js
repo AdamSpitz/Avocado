@@ -1,4 +1,4 @@
-transporter.module.create('core/exit', function(requires) {
+avocado.transporter.module.create('core/exit', function(requires) {
 
 requires('core/testFramework');
 

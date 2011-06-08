@@ -1,4 +1,4 @@
-transporter.module.create('core/identity_hash', function(requires) {
+avocado.transporter.module.create('core/identity_hash', function(requires) {
 
 }, function(thisModule) {
 

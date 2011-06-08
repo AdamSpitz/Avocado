@@ -1,4 +1,4 @@
-transporter.module.create('core/string_extensions', function(requires) {
+avocado.transporter.module.create('core/string_extensions', function(requires) {
 
 }, function(thisModule) {
 

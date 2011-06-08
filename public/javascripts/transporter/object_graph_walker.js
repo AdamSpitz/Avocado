@@ -1,4 +1,4 @@
-transporter.module.create('transporter/object_graph_walker', function(requires) {
+avocado.transporter.module.create('transporter/object_graph_walker', function(requires) {
 
 requires('core/testFramework');
 requires('core/dom_stuff');
@@ -451,7 +451,7 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
       if (this._debugMode) { console.log("Setting module of " + slotName + " to " + module); }
       slotAnno.setModule(module);
       module.slotCollection().addPossibleHolder(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
-      transporter.makeSureArrayIndexablesGetFiledOut(contents, module);
+      avocado.transporter.makeSureArrayIndexablesGetFiledOut(contents, module);
     } else {
       if (this._debugMode) { console.log("NOT setting module of " + slotName); }
     }

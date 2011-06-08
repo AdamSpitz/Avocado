@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/shortcuts', function(requires) {
+avocado.transporter.module.create('lk_ext/shortcuts', function(requires) {
 
 }, function(thisModule) {
 

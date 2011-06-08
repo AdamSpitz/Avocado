@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/scaling', function(requires) {
+avocado.transporter.module.create('lk_ext/scaling', function(requires) {
 
 requires('lk_ext/morph_hider');
 

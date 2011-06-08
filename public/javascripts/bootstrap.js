@@ -807,60 +807,60 @@ annotator.annotationOf(avocado).setSlotAnnotation('callbackWaiter', {category: [
 
 window.modules = {};
 annotator.annotationOf(modules).setCreatorSlot('modules', window);
-annotator.annotationOf(window).setSlotAnnotation('modules', {category: ['transporter']});
+annotator.annotationOf(window).setSlotAnnotation('modules', {category: ['avocado']});
 
-if (! window.hasOwnProperty('transporter')) { window.transporter = {}; }
-annotator.annotationOf(transporter).setCreatorSlot('transporter', window);
-annotator.annotationOf(window).setSlotAnnotation('transporter', {category: ['transporter']});
+if (! avocado.hasOwnProperty('transporter')) { avocado.transporter = {}; }
+annotator.annotationOf(avocado.transporter).setCreatorSlot('transporter', avocado);
+annotator.annotationOf(avocado).setSlotAnnotation('transporter', {category: ['transporter']});
 
-transporter.loadedURLs = {};
+avocado.transporter.loadedURLs = {};
 
-transporter.loadOrder = [];
+avocado.transporter.loadOrder = [];
 
-transporter.shouldLog = false;
+avocado.transporter.shouldLog = false;
 
-transporter.module = {};
-annotator.annotationOf(transporter.module).setCreatorSlot('module', transporter);
+avocado.transporter.module = {};
+annotator.annotationOf(avocado.transporter.module).setCreatorSlot('module', avocado.transporter);
 
-transporter.module.version = {};
-annotator.annotationOf(transporter.module.version).setCreatorSlot('version', transporter.module);
+avocado.transporter.module.version = {};
+annotator.annotationOf(avocado.transporter.module.version).setCreatorSlot('version', avocado.transporter.module);
 
-transporter.module.cache = {};
+avocado.transporter.module.cache = {};
 
-transporter.module.onLoadCallbacks = {};
+avocado.transporter.module.onLoadCallbacks = {};
 
-transporter.slotCollection = {};
-annotator.annotationOf(transporter.slotCollection).setCreatorSlot('slotCollection', transporter);
+avocado.transporter.slotCollection = {};
+annotator.annotationOf(avocado.transporter.slotCollection).setCreatorSlot('slotCollection', avocado.transporter);
 
-transporter.slotCollection.initialize = function() {
+avocado.transporter.slotCollection.initialize = function() {
   this._possibleHolders = [];
 };
 
-transporter.slotCollection.possibleHolders = function() {
+avocado.transporter.slotCollection.possibleHolders = function() {
   return this._possibleHolders;
 };
 
-transporter.slotCollection.addPossibleHolder = function(h) {
+avocado.transporter.slotCollection.addPossibleHolder = function(h) {
   this._possibleHolders.push(h);
 };
 
-transporter.module.named = function(n) {
+avocado.transporter.module.named = function(n) {
   var m = modules[n];
   if (m) {return m;}
-  if (transporter.shouldLog) { console.log("Creating module named " + n); }
+  if (avocado.transporter.shouldLog) { console.log("Creating module named " + n); }
   m = modules[n] = Object.create(this);
   m._name = n;
   annotator.annotationOf(m).setCreatorSlot(n, modules);
-  transporter.module.cache[n] = Object.newChildOf(transporter.slotCollection);
+  avocado.transporter.module.cache[n] = Object.newChildOf(avocado.transporter.slotCollection);
   return m;
 };
 
-transporter.module.create = function(n, reqBlock, contentsBlock, versionInfo) {
+avocado.transporter.module.create = function(n, reqBlock, contentsBlock, versionInfo) {
   if (modules[n]) { throw 'The ' + n + ' module is already loaded.'; }
   var newModule = this.named(n);
 
   if (versionInfo) {
-    newModule.setCurrentVersion(Object.newChildOf(transporter.module.version, newModule, versionInfo.versionID, 'unknown'));
+    newModule.setCurrentVersion(Object.newChildOf(avocado.transporter.module.version, newModule, versionInfo.versionID, 'unknown'));
   }
   
   avocado.callbackWaiter.on(function(finalCallback) {
@@ -868,39 +868,39 @@ transporter.module.create = function(n, reqBlock, contentsBlock, versionInfo) {
       newModule.requires(reqName, finalCallback());
     });
   }, function() {
-    transporter.loadOrder.push({module: n});
+    avocado.transporter.loadOrder.push({module: n});
     contentsBlock(newModule);
-    if (transporter.shouldLog) { console.log("Finished loading module: " + n); }
+    if (avocado.transporter.shouldLog) { console.log("Finished loading module: " + n); }
     if (newModule.objectsWithAPostFileInMethod) {
       newModule.objectsWithAPostFileInMethod.each(function(o) {
         o.postFileIn();
       });
       delete newModule.objectsWithAPostFileInMethod;
     }
-    transporter.module.doneLoadingModuleNamed(n);
+    avocado.transporter.module.doneLoadingModuleNamed(n);
   }, n);
 };
 
-transporter.module.setCurrentVersion = function (v) {
+avocado.transporter.module.setCurrentVersion = function (v) {
   this._currentVersion = v;
 };
 
-transporter.module.version.initialize = function (module, id, parentVersions) {
+avocado.transporter.module.version.initialize = function (module, id, parentVersions) {
   this._module = module;
   this._id = id || "";
   this._parentVersions = parentVersions || [];
 };
 
-transporter.module.callWhenDoneLoadingModuleNamed = function(n, callback) {
+avocado.transporter.module.callWhenDoneLoadingModuleNamed = function(n, callback) {
   callback = callback || function() {};
 
   if (typeof(callback) !== 'function') { throw "What kind of callback is that? " + callback; }
   
-  var existingOnLoadCallback = transporter.module.onLoadCallbacks[n];
+  var existingOnLoadCallback = avocado.transporter.module.onLoadCallbacks[n];
   if (!existingOnLoadCallback) {
-    transporter.module.onLoadCallbacks[n] = callback;
+    avocado.transporter.module.onLoadCallbacks[n] = callback;
   } else if (typeof(existingOnLoadCallback) === 'function') {
-    transporter.module.onLoadCallbacks[n] = function() {
+    avocado.transporter.module.onLoadCallbacks[n] = function() {
       existingOnLoadCallback();
       callback();
     };
@@ -914,26 +914,26 @@ transporter.module.callWhenDoneLoadingModuleNamed = function(n, callback) {
   return false;
 };
 
-transporter.module.doneLoadingModuleNamed = function(n) {
-  var onLoadCallback = transporter.module.onLoadCallbacks[n];
+avocado.transporter.module.doneLoadingModuleNamed = function(n) {
+  var onLoadCallback = avocado.transporter.module.onLoadCallbacks[n];
   if (typeof(onLoadCallback) === 'function') {
-    transporter.module.onLoadCallbacks[n] = 'done';
+    avocado.transporter.module.onLoadCallbacks[n] = 'done';
     onLoadCallback();
   } else if (onLoadCallback === 'done') {
     // Fine, I think.
   } else if (typeof(onLoadCallback) === 'undefined') {
     // aaa - I think this is OK too. Really, this whole callback system is a mess - needs to be cleaned up. -- Adam, Feb. 2011
-    transporter.module.onLoadCallbacks[n] = 'done';
+    avocado.transporter.module.onLoadCallbacks[n] = 'done';
   } else {
     throw "What's wrong with the on-load callback for " + n + "? " + typeof(onLoadCallback);
   }
 };
 
-transporter.module.slotCollection = function() {
-  return transporter.module.cache[this._name];
+avocado.transporter.module.slotCollection = function() {
+  return avocado.transporter.module.cache[this._name];
 };
 
-transporter.makeSureArrayIndexablesGetFiledOut = function (contents, module) {
+avocado.transporter.makeSureArrayIndexablesGetFiledOut = function (contents, module) {
   // aaa see makeSureArrayIndexablesGetFiledOut in the slot object
   if (! module) { return; }
   if (typeof contents === 'object' && ((contents instanceof Array) || (contents instanceof Node))) {
@@ -941,7 +941,7 @@ transporter.makeSureArrayIndexablesGetFiledOut = function (contents, module) {
   }
 };
 
-transporter.module.slotAdder = {
+avocado.transporter.module.slotAdder = {
   data: function(name, contents, slotAnnotation, contentsAnnotation) {
     var holderAnno = annotator.annotationOf(this.holder);
     if (! slotAnnotation) { slotAnnotation = Object.create(annotator.slotAnnotationPrototype); }
@@ -953,7 +953,7 @@ transporter.module.slotAdder = {
       annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);
     }
     
-    transporter.makeSureArrayIndexablesGetFiledOut(contents, this.module);
+    avocado.transporter.makeSureArrayIndexablesGetFiledOut(contents, this.module);
 
     if (name === 'postFileIn') {
       this.module.objectsWithAPostFileInMethod = this.module.objectsWithAPostFileInMethod || [];
@@ -989,7 +989,7 @@ transporter.module.slotAdder = {
   }
 };
 
-transporter.module.addSlots = function(holder, block) {
+avocado.transporter.module.addSlots = function(holder, block) {
   this.slotCollection().addPossibleHolder(holder);
   var slotAdder = Object.create(this.slotAdder);
   slotAdder.module = this;
@@ -997,16 +997,16 @@ transporter.module.addSlots = function(holder, block) {
   block(slotAdder);
 };
 
-annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__annotation__', 'bootstrapTheModuleSystem', 'modules', 'transporter', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
+annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__annotation__', 'bootstrapTheModuleSystem', 'modules', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
 
-transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
-transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_lk', function() {}); // aaa lk-specific
+avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
+avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_lk', function() {}); // aaa lk-specific
 };
 bootstrapTheModuleSystem();
 
 
 
-transporter.module.create('bootstrap', function(requires) {
+avocado.transporter.module.create('bootstrap', function(requires) {
 
 }, function(thisModule) {
 
@@ -1018,7 +1018,7 @@ thisModule.addSlots(modules.bootstrap, function(add) {
 });
 
 
-thisModule.addSlots(transporter, function(add) {
+thisModule.addSlots(avocado.transporter, function(add) {
 
   add.creator('repositories', {});
 
@@ -1044,8 +1044,8 @@ thisModule.addSlots(transporter, function(add) {
   add.method('loadExternal', function (names, callWhenDone) {
     if (names.length === 0) { return callWhenDone(); }
     var name = names.shift();
-    transporter.fileIn(name, function() {
-      transporter.loadExternal(names, callWhenDone);
+    avocado.transporter.fileIn(name, function() {
+      avocado.transporter.loadExternal(names, callWhenDone);
     });
   }, {category: ['bootstrapping']});
   
@@ -1053,7 +1053,7 @@ thisModule.addSlots(transporter, function(add) {
     var i = url.lastIndexOf("/");
     var repoURL = url.substring(0, i) + '/';
     var fileName = url.substring(i + 1);
-    var repo = Object.newChildOf(transporter.repositories.http, repoURL);
+    var repo = Object.newChildOf(avocado.transporter.repositories.http, repoURL);
     repo.fileIn(fileName, function () {
       console.log("Loaded " + url);
       if (callWhenDone) { callWhenDone(); }
@@ -1061,7 +1061,7 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('initializeRepositories', function () {
-    var baseURL = transporter.avocadoBaseURL;
+    var baseURL = avocado.transporter.avocadoBaseURL;
     if (baseURL === undefined) { baseURL = document.documentURI; }
     baseURL = baseURL.substring(0, baseURL.lastIndexOf("/")) + '/';
     var repoURL = baseURL + "javascripts/";
@@ -1075,13 +1075,13 @@ thisModule.addSlots(transporter, function(add) {
     var kernelRepo;
     if (window.kernelModuleSavingScriptURL) {
       var savingScriptURL = window.kernelModuleSavingScriptURL;
-      kernelRepo = Object.create(transporter.repositories.httpWithSavingScript);
+      kernelRepo = Object.create(avocado.transporter.repositories.httpWithSavingScript);
       kernelRepo.initialize(repoURL, savingScriptURL);
     } else if (avocado.kernelModuleSupportsWebDAV) {
-      kernelRepo = Object.create(transporter.repositories.httpWithWebDAV);
+      kernelRepo = Object.create(avocado.transporter.repositories.httpWithWebDAV);
       kernelRepo.initialize(repoURL);
     } else {
-      kernelRepo = Object.create(transporter.repositories.http);
+      kernelRepo = Object.create(avocado.transporter.repositories.http);
       kernelRepo.initialize(repoURL);
     }
     
@@ -1089,26 +1089,26 @@ thisModule.addSlots(transporter, function(add) {
       kernelRepo.urlForModuleName = window.urlForKernelModuleName;
     }
     
-    transporter.availableRepositories.push(kernelRepo);
+    avocado.transporter.availableRepositories.push(kernelRepo);
     
     modules.bootstrap.setRepository(kernelRepo);
     
     // aaa - This is not really the right place for this. I think. Maybe. Where's the
     // place where we really know where the emailing script is? -- Adam
-    transporter.emailingScriptURL = "http://" + document.domain + "/cgi-bin/emailSource.cgi";
+    avocado.transporter.emailingScriptURL = "http://" + document.domain + "/cgi-bin/emailSource.cgi";
   }, {category: ['bootstrapping']});
 
   add.method('initializeCallbackWaiters', function () {
     avocado.callbackWaiter.on(function(callback) {
-      transporter.callWhenWorldIsCreated = callback();
-      transporter.callWhenAllAvocadoCodeIsLoaded = callback();
+      avocado.transporter.callWhenWorldIsCreated = callback();
+      avocado.transporter.callWhenAllAvocadoCodeIsLoaded = callback();
     }, function () {
-      transporter.doneLoadingAllOfAvocado();
+      avocado.transporter.doneLoadingAllOfAvocado();
     });
   }, {category: ['bootstrapping']});
 
   add.method('putUnownedSlotsInInitModule', function () {
-    var initModule = transporter.module.named('init');
+    var initModule = avocado.transporter.module.named('init');
     // aaa - HACK! necessary because the phone runs out of memory while doing this, I think.
     // The right solution in the long run, I think, is to have some clear way of specifying
     // whether the programming-environment stuff should be loaded. -- Adam
@@ -1118,7 +1118,7 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('printLoadOrder', function () {
-    console.log(transporter.loadOrder.map(function(itemToLoad) {
+    console.log(avocado.transporter.loadOrder.map(function(itemToLoad) {
       if (itemToLoad.externalScript) {
         return "externalScript(" + itemToLoad.externalScript.inspect() + ");";
       } else if (itemToLoad.module) {
@@ -1133,7 +1133,7 @@ thisModule.addSlots(transporter, function(add) {
 
   add.method('createAvocadoWorld', function () {
     Event.prepareEventSystem();
-    var world = transporter.userInterfaceInitializer.createAvocadoWorld();
+    var world = avocado.transporter.userInterfaceInitializer.createAvocadoWorld();
     if (this.callWhenDoneCreatingAvocadoWorld) {
       this.callWhenDoneCreatingAvocadoWorld(world);
       delete this.callWhenDoneCreatingAvocadoWorld;
@@ -1142,27 +1142,27 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded', function () {
-    if (transporter.isDoneLoadingAvocadoLib && transporter.isDoneLoadingWindow) {
-      avocado.world = transporter.createAvocadoWorld();
+    if (avocado.transporter.isDoneLoadingAvocadoLib && avocado.transporter.isDoneLoadingWindow) {
+      avocado.world = avocado.transporter.createAvocadoWorld();
       if (avocado.theApplication && avocado.world.addApplication) { avocado.world.addApplication(avocado.theApplication); }
-      transporter.callWhenWorldIsCreated();
-      delete transporter.callWhenWorldIsCreated;
+      avocado.transporter.callWhenWorldIsCreated();
+      delete avocado.transporter.callWhenWorldIsCreated;
     }
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingWindow', function () {
-    transporter.isDoneLoadingWindow = true;
-    transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
+    avocado.transporter.isDoneLoadingWindow = true;
+    avocado.transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAvocadoLib', function () {
-    transporter.isDoneLoadingAvocadoLib = true;
-    transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
+    avocado.transporter.isDoneLoadingAvocadoLib = true;
+    avocado.transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAllAvocadoCode', function () {
-    transporter.callWhenAllAvocadoCodeIsLoaded();
-    delete transporter.callWhenAllAvocadoCodeIsLoaded;
+    avocado.transporter.callWhenAllAvocadoCodeIsLoaded();
+    delete avocado.transporter.callWhenAllAvocadoCodeIsLoaded;
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAllOfAvocado', function () {
@@ -1173,7 +1173,7 @@ thisModule.addSlots(transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('doBootstrappingStep', function (name) {
-    transporter.loadOrder.push({doIt: 'transporter.' + name + '();'});
+    avocado.transporter.loadOrder.push({doIt: 'avocado.transporter.' + name + '();'});
     //console.log("Doing bootstrapping step: " + name);
     return this[name].call(this);
   }, {category: ['bootstrapping']});
@@ -1184,18 +1184,18 @@ thisModule.addSlots(transporter, function(add) {
     this.doBootstrappingStep('initializeCallbackWaiters');
     this.doBootstrappingStep('initializeRepositories');
 
-    transporter.userInterfaceInitializer.loadUserInterface(function() {
+    avocado.transporter.userInterfaceInitializer.loadUserInterface(function() {
 
-      transporter.fileInIfWanted("transporter/object_graph_walker", function() {
-        transporter.doBootstrappingStep('putUnownedSlotsInInitModule');
+      avocado.transporter.fileInIfWanted("transporter/object_graph_walker", function() {
+        avocado.transporter.doBootstrappingStep('putUnownedSlotsInInitModule');
         
-        transporter.fileInIfWanted("avocado_lib", function() {
-          transporter.doBootstrappingStep('doneLoadingAvocadoLib');
-          transporter.userInterfaceInitializer.loadTopLevelEnvironment(function() {
-            transporter.doBootstrappingStep('doneLoadingAllAvocadoCode');
+        avocado.transporter.fileInIfWanted("avocado_lib", function() {
+          avocado.transporter.doBootstrappingStep('doneLoadingAvocadoLib');
+          avocado.transporter.userInterfaceInitializer.loadTopLevelEnvironment(function() {
+            avocado.transporter.doBootstrappingStep('doneLoadingAllAvocadoCode');
 
             var shouldPrintLoadOrder = false;
-            if (shouldPrintLoadOrder) { transporter.printLoadOrder(); }
+            if (shouldPrintLoadOrder) { avocado.transporter.printLoadOrder(); }
           });
         });
       });
@@ -1205,25 +1205,25 @@ thisModule.addSlots(transporter, function(add) {
 });
 
 
-thisModule.addSlots(transporter.repositories, function(add) {
+thisModule.addSlots(avocado.transporter.repositories, function(add) {
 
   add.creator('abstract', {});
 
-  add.creator('console', Object.create(transporter.repositories['abstract']));
+  add.creator('console', Object.create(avocado.transporter.repositories['abstract']));
 
-  add.creator('http', Object.create(transporter.repositories['abstract']));
+  add.creator('http', Object.create(avocado.transporter.repositories['abstract']));
 
-  add.creator('httpWithWebDAV', Object.create(transporter.repositories.http));
+  add.creator('httpWithWebDAV', Object.create(avocado.transporter.repositories.http));
 
-  add.creator('httpWithSavingScript', Object.create(transporter.repositories.http));
+  add.creator('httpWithSavingScript', Object.create(avocado.transporter.repositories.http));
 
 });
 
 
-thisModule.addSlots(transporter.repositories['abstract'], function(add) {
+thisModule.addSlots(avocado.transporter.repositories['abstract'], function(add) {
 
   add.method('fileIn', function (name, moduleLoadedCallback) {
-    if (transporter.module.callWhenDoneLoadingModuleNamed(name, moduleLoadedCallback)) { return; }
+    if (avocado.transporter.module.callWhenDoneLoadingModuleNamed(name, moduleLoadedCallback)) { return; }
     
     var thisRepository = this;
     this.loadModuleNamed(name, function() {
@@ -1234,9 +1234,9 @@ thisModule.addSlots(transporter.repositories['abstract'], function(add) {
         // Must just be some external Javascript library - not one of our
         // modules. So we consider the module to be loaded now, since the
         // file is loaded.
-        transporter.loadOrder.push({externalScript: name});
-        if (transporter.shouldLog) { console.log("Finished loading external script: " + name); }
-        transporter.module.doneLoadingModuleNamed(name);
+        avocado.transporter.loadOrder.push({externalScript: name});
+        if (avocado.transporter.shouldLog) { console.log("Finished loading external script: " + name); }
+        avocado.transporter.module.doneLoadingModuleNamed(name);
       }
     });
   }, {category: ['loading']});
@@ -1244,7 +1244,7 @@ thisModule.addSlots(transporter.repositories['abstract'], function(add) {
 });
 
 
-thisModule.addSlots(transporter.repositories.http, function(add) {
+thisModule.addSlots(avocado.transporter.repositories.http, function(add) {
 
   add.method('initialize', function (url) {
     this._url = url;
@@ -1266,7 +1266,7 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
 
   add.method('loadModuleNamed', function (name, callWhenDone) {
     var url = this.urlForModuleName(name);
-    if (transporter.shouldLog) { console.log("About to try to loadModuleNamed " + name + " at URL " + url); }
+    if (avocado.transporter.shouldLog) { console.log("About to try to loadModuleNamed " + name + " at URL " + url); }
     this.loadURL(url, callWhenDone);
   }, {category: ['loading']});
 
@@ -1274,9 +1274,9 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
     scriptLoadedCallback = scriptLoadedCallback || function() {};
 
     // Don't load the same JS file more than once.
-    var loadingStatus = transporter.loadedURLs[url];
+    var loadingStatus = avocado.transporter.loadedURLs[url];
     if (typeof loadingStatus === 'function') {
-      transporter.loadedURLs[url] = function() {
+      avocado.transporter.loadedURLs[url] = function() {
         loadingStatus();
         scriptLoadedCallback();
       };
@@ -1288,7 +1288,7 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
     }
 
     // aaa - don't use this global loadedURLs thing, use something repo-specific.
-    transporter.loadedURLs[url] = scriptLoadedCallback;
+    avocado.transporter.loadedURLs[url] = scriptLoadedCallback;
 
     // Intentionally using primitive mechanisms (either XHR or script tags), so
     // that we don't depend on having any other code loaded.
@@ -1302,8 +1302,8 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
           // I really hope "with" is the right thing to do here. We seem to need
           // it in order to make globally-defined things work.
           with (window) { eval("//@ sourceURL=" + url + "\n" + _fileContents); } // sourceURL will show up in the debugger
-          transporter.loadedURLs[url]();
-          transporter.loadedURLs[url] = 'done';
+          avocado.transporter.loadedURLs[url]();
+          avocado.transporter.loadedURLs[url] = 'done';
         }
       };
       req.send();
@@ -1312,8 +1312,8 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
       var script = document.createElement('script');
       script.type = 'text/javascript';
       script.onload = function() {
-        transporter.loadedURLs[url]();
-        transporter.loadedURLs[url] = 'done';
+        avocado.transporter.loadedURLs[url]();
+        avocado.transporter.loadedURLs[url] = 'done';
       };
       script.src = url + (url.indexOf('?') >= 0 ? "&" : "?") + "t=" + new Date().getTime(); // to avoid caching; aaa - might want to have caching in production
       head.appendChild(script);
@@ -1327,7 +1327,7 @@ thisModule.addSlots(transporter.repositories.http, function(add) {
 });
 
 
-thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add) {
+thisModule.addSlots(avocado.transporter.repositories.httpWithSavingScript, function(add) {
 
   add.method('initialize', function (url, savingScriptURL) {
     this._url = url;
@@ -1337,7 +1337,7 @@ thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add)
 });
 
 
-thisModule.addSlots(transporter.module, function(add) {
+thisModule.addSlots(avocado.transporter.module, function(add) {
   
   add.data('setRepository', function (r) {
     this._repository = r;
@@ -1364,11 +1364,11 @@ thisModule.addSlots(transporter.module, function(add) {
 
     reqLoadedCallback = reqLoadedCallback || function() {};
 
-    var module = transporter.module.existingOneNamed(moduleName);
+    var module = avocado.transporter.module.existingOneNamed(moduleName);
     if (module) {
-      transporter.module.callWhenDoneLoadingModuleNamed(moduleName, reqLoadedCallback);
+      avocado.transporter.module.callWhenDoneLoadingModuleNamed(moduleName, reqLoadedCallback);
     } else {
-      transporter.fileIn(moduleName, reqLoadedCallback);
+      avocado.transporter.fileIn(moduleName, reqLoadedCallback);
     }
   }, {category: ['requirements']});
 

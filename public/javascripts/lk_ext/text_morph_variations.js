@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/text_morph_variations', function(requires) {
+avocado.transporter.module.create('lk_ext/text_morph_variations', function(requires) {
 
 }, function(thisModule) {
 

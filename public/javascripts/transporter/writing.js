@@ -1,9 +1,9 @@
-transporter.module.create('transporter/writing', function(requires) {
+avocado.transporter.module.create('transporter/writing', function(requires) {
 
 }, function(thisModule) {
 
 
-thisModule.addSlots(transporter.module, function(add) {
+thisModule.addSlots(avocado.transporter.module, function(add) {
 
   add.creator('filerOuters', {}, {category: ['transporting']});
 
@@ -24,42 +24,42 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['transporting']});
 
   add.method('fileOutAndReportErrors', function (evt, repo, filerOuterProto) {
-    transporter.fileOutPlural([{moduleVersion: this.currentVersion()}], evt, repo, filerOuterProto);
+    avocado.transporter.fileOutPlural([{moduleVersion: this.currentVersion()}], evt, repo, filerOuterProto);
   }, {category: ['user interface', 'commands', 'filing out']});
 
   add.method('fileOutWithoutAnnotations', function (evt) {
-    this.fileOutAndReportErrors(evt, null, transporter.module.filerOuters.annotationless);
+    this.fileOutAndReportErrors(evt, null, avocado.transporter.module.filerOuters.annotationless);
   }, {category: ['user interface', 'commands', 'filing out']});
 
   add.method('printToConsole', function (evt) {
-    this.fileOutAndReportErrors(evt, transporter.repositories.console, transporter.module.filerOuters.annotationless);
+    this.fileOutAndReportErrors(evt, avocado.transporter.repositories.console, avocado.transporter.module.filerOuters.annotationless);
   }, {category: ['user interface', 'commands', 'filing out']});
 
   add.method('emailTheSource', function (evt) {
-    this.fileOutAndReportErrors(evt, this.repository().copyWithSavingScript(transporter.emailingScriptURL));
+    this.fileOutAndReportErrors(evt, this.repository().copyWithSavingScript(avocado.transporter.emailingScriptURL));
   }, {category: ['user interface', 'commands', 'filing out']});
 
 });
 
 
-thisModule.addSlots(transporter.module.filerOuters, function(add) {
+thisModule.addSlots(avocado.transporter.module.filerOuters, function(add) {
 
   add.creator('general', {}, {category: ['transporting']});
 
-  add.creator('normal', Object.create(transporter.module.filerOuters.general), {category: ['transporting']});
+  add.creator('normal', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
 
-  add.creator('justBody', Object.create(transporter.module.filerOuters.normal), {category: ['transporting']});
+  add.creator('justBody', Object.create(avocado.transporter.module.filerOuters.normal), {category: ['transporting']});
 
-  add.creator('annotationless', Object.create(transporter.module.filerOuters.general), {category: ['transporting']});
+  add.creator('annotationless', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
 
-  add.creator('json', Object.create(transporter.module.filerOuters.general), {category: ['transporting']});
+  add.creator('json', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
 
-  add.creator('mock', Object.create(transporter.module.filerOuters.general), {category: ['transporting']});
+  add.creator('mock', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
 
 });
 
 
-thisModule.addSlots(transporter.module.filerOuters.general, function(add) {
+thisModule.addSlots(avocado.transporter.module.filerOuters.general, function(add) {
 
   add.method('create', function () {
     var o = Object.create(this);
@@ -129,9 +129,9 @@ thisModule.addSlots(transporter.module.filerOuters.general, function(add) {
   add.method('nextSlotIsIn', function (holder, slot) {
     if (!this._currentHolder || ! holder.equals(this._currentHolder)) {
       this.doneWithThisObject();
-      transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
+      avocado.transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
         this.setCurrentHolder(holder);
-      }.bind(this), transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule.create(slot));
+      }.bind(this), avocado.transporter.reasonsForNeedingCreatorPath.objectContainsSlotInTheModule.create(slot));
       this.writeObjectStarter();
     }
   }, {category: ['writing']});
@@ -158,11 +158,11 @@ thisModule.addSlots(transporter.module.filerOuters.general, function(add) {
 });
 
 
-thisModule.addSlots(transporter.module.filerOuters.normal, function(add) {
+thisModule.addSlots(avocado.transporter.module.filerOuters.normal, function(add) {
 
   add.method('writeModule', function (name, reqs, bodyBlock) {
     //this._buffer.append("//@ sourceURL=").append(name).append(".js    so that the debugger shows the right file name when we load it using eval\n\n");
-    this._buffer.append("transporter.module.create(").append(name.inspect()).append(", function(requires) {\n\n");
+    this._buffer.append("avocado.transporter.module.create(").append(name.inspect()).append(", function(requires) {\n\n");
     
     if (reqs && reqs.length > 0) {
       reqs.each(function(req) {
@@ -218,7 +218,7 @@ thisModule.addSlots(transporter.module.filerOuters.normal, function(add) {
 });
 
 
-thisModule.addSlots(transporter.module.filerOuters.justBody, function(add) {
+thisModule.addSlots(avocado.transporter.module.filerOuters.justBody, function(add) {
 
   add.method('writeModule', function (name, reqs, bodyBlock) {
     this._buffer.append("function(thisModule) {\n\n\n");
@@ -231,7 +231,7 @@ thisModule.addSlots(transporter.module.filerOuters.justBody, function(add) {
 });
 
 
-thisModule.addSlots(transporter.module.filerOuters.annotationless, function(add) {
+thisModule.addSlots(avocado.transporter.module.filerOuters.annotationless, function(add) {
 
   add.method('writeModule', function (name, reqs, bodyBlock) {
     this._buffer.append("if (typeof(window.modules) === 'object') { modules[").append(name.inspect()).append("] = {}; }\n\n");
@@ -262,7 +262,7 @@ thisModule.addSlots(transporter.module.filerOuters.annotationless, function(add)
 });
 
 
-thisModule.addSlots(transporter.module.filerOuters.json, function(add) {
+thisModule.addSlots(avocado.transporter.module.filerOuters.json, function(add) {
 
   add.method('initialize', function ($super, db) {
     $super();
@@ -366,7 +366,7 @@ thisModule.addSlots(transporter.module.filerOuters.json, function(add) {
 });
 
 
-thisModule.addSlots(transporter.module.filerOuters.mock, function(add) {
+thisModule.addSlots(avocado.transporter.module.filerOuters.mock, function(add) {
 
   add.method('writeModule', function (name, reqs, bodyBlock) {
     this._buffer.append("start module ").append(name).append("\n");

@@ -1,4 +1,4 @@
-transporter.module.create('lk_programming_environment/mirror_morph', function(requires) {
+avocado.transporter.module.create('lk_programming_environment/mirror_morph', function(requires) {
 
 requires('reflection/reflection');
 requires('lk_programming_environment/category_morph');

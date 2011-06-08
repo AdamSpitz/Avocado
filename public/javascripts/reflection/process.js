@@ -1,4 +1,4 @@
-transporter.module.create('reflection/process', function(requires) {
+avocado.transporter.module.create('reflection/process', function(requires) {
 
 requires('core/testFramework');
 

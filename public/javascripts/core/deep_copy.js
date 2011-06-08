@@ -1,4 +1,4 @@
-transporter.module.create('core/deep_copy', function(requires) {
+avocado.transporter.module.create('core/deep_copy', function(requires) {
 
 }, function(thisModule) {
 

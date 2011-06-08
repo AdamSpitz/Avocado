@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/morph_factories', function(requires) {
+avocado.transporter.module.create('lk_ext/morph_factories', function(requires) {
 
 requires('lk_ext/core_sampler');
 

@@ -1,4 +1,4 @@
-transporter.module.create('reflection/organization', function(requires) {
+avocado.transporter.module.create('reflection/organization', function(requires) {
 
 requires('reflection/category');
 requires('core/hash_table');

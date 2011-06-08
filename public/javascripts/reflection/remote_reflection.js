@@ -1,4 +1,4 @@
-transporter.module.create('reflection/remote_reflection', function(requires) {
+avocado.transporter.module.create('reflection/remote_reflection', function(requires) {
 
 requires('reflection/mirror');
 

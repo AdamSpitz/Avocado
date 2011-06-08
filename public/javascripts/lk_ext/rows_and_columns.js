@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/rows_and_columns', function(requires) {
+avocado.transporter.module.create('lk_ext/rows_and_columns', function(requires) {
 
 requires('lk_ext/layout');
 

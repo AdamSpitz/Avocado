@@ -10,8 +10,9 @@
 <meta name="viewport" content="user-scalable=no, width=device-width" />
 
 <script>
-if (! window.hasOwnProperty('transporter')) { window.transporter = {}; }
-transporter.callWhenDoneLoadingAvocado = function(world) {
+if (! window.hasOwnProperty('avocado')) { window.avocado = {}; }
+if (! avocado.hasOwnProperty('transporter')) { avocado.transporter = {}; }
+avocado.transporter.callWhenDoneLoadingAvocado = function(world) {
   world.showMessage("Right-click the background to start");
 };
 </script>
@@ -20,7 +21,7 @@ transporter.callWhenDoneLoadingAvocado = function(world) {
 
 </head>
 
-<body id="body" style="margin: 0px" onload="transporter.doneLoadingWindow()">
+<body id="body" style="margin: 0px" onload="avocado.transporter.doneLoadingWindow()">
 
   <svg id="canvas"
        width="100%" height="800px"

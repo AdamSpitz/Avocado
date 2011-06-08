@@ -1,4 +1,4 @@
-transporter.module.create('reflection/vocabulary', function(requires) {
+avocado.transporter.module.create('reflection/vocabulary', function(requires) {
 
 requires('reflection/mirror');
 

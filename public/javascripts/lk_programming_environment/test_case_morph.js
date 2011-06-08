@@ -1,4 +1,4 @@
-transporter.module.create('lk_programming_environment/test_case_morph', function(requires) {
+avocado.transporter.module.create('lk_programming_environment/test_case_morph', function(requires) {
 
 requires('lk_ext/shortcuts');
 requires('lk_ext/rows_and_columns');

@@ -1,4 +1,4 @@
-transporter.module.create('lk_ext/highlighting', function(requires) {
+avocado.transporter.module.create('lk_ext/highlighting', function(requires) {
 
 }, function(thisModule) {
 

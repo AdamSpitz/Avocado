@@ -1,4 +1,4 @@
-transporter.module.create('core/sound', function(requires) {
+avocado.transporter.module.create('core/sound', function(requires) {
 
 }, function(thisModule) {
 

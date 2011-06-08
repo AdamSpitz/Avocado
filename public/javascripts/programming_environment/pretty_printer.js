@@ -1,4 +1,4 @@
-transporter.module.create('programming_environment/pretty_printer', function(requires) {
+avocado.transporter.module.create('programming_environment/pretty_printer', function(requires) {
 
 requires('narcissus/jsparse');
 requires('core/testFramework');

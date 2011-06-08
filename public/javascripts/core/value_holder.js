@@ -1,4 +1,4 @@
-transporter.module.create('core/value_holder', function(requires) {
+avocado.transporter.module.create('core/value_holder', function(requires) {
 
 }, function(thisModule) {
 

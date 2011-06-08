@@ -1,4 +1,4 @@
-transporter.module.create('reflection/annotation', function(requires) {
+avocado.transporter.module.create('reflection/annotation', function(requires) {
 
 }, function(thisModule) {
 
