@@ -1166,9 +1166,9 @@ thisModule.addSlots(avocado.transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAllOfAvocado', function () {
-    if (this.callWhenDoneLoadingAvocado) {
-      this.callWhenDoneLoadingAvocado(avocado.world);
-      delete this.callWhenDoneLoadingAvocado;
+    if (window.callWhenDoneLoadingAvocado) {
+      window.callWhenDoneLoadingAvocado(avocado.world);
+      delete window.callWhenDoneLoadingAvocado;
     }
   }, {category: ['bootstrapping']});
 
@@ -1179,7 +1179,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('startAvocado', function (callWhenDone) {
-    if (typeof(callWhenDone) !== 'undefined') { this.callWhenDoneLoadingAvocado = callWhenDone; }
+    if (typeof(callWhenDone) !== 'undefined') { window.callWhenDoneLoadingAvocado = callWhenDone; }
     
     this.doBootstrappingStep('initializeCallbackWaiters');
     this.doBootstrappingStep('initializeRepositories');
