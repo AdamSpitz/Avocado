@@ -17,17 +17,22 @@ thisModule.addSlots(avocado.transporter, function(add) {
 thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
 
   add.method('loadUserInterface', function (callWhenDone) {
+    avocado.transporter.callWhenDoneLoadingLivelyKernelCode = callWhenDone;
     if (document.body) {
       this.createCanvasIfNone();
-      this.loadLivelyKernelCode(callWhenDone);
+      this.loadLivelyKernelCodeIfReadyAndTheWindowIsLoaded();
     } else {
       if (this._debugmode) {
         console.log("document.body doesn't exist yet; setting window.onload."); // aaa - I have a feeling that this doesn't work, though, at least in some browsers. -- Adam, Nov. 2010
       }
       var that = this;
       window.onload = function() { that.createCanvasIfNone(); };
-      this.loadLivelyKernelCode(callWhenDone);
+      this.loadLivelyKernelCodeIfReadyAndTheWindowIsLoaded();
     }
+  }, {category: ['bootstrapping']});
+  
+  add.method('doneLoadingWindow', function () {
+    this.loadLivelyKernelCodeIfReadyAndTheWindowIsLoaded();
   }, {category: ['bootstrapping']});
   
   add.method('loadTopLevelEnvironment', function (callWhenDone) {
@@ -45,7 +50,7 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
     if (! canvas) {
       canvas = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
       canvas.setAttribute('id', 'canvas');
-      canvas.setAttribute('width',  '100%');
+      canvas.setAttribute('width',  '1000'); // aaa used to say 100% but that caused some weird bug that I don't understand -- Adam, June 2011
       canvas.setAttribute('height', '600');
       canvas.setAttribute('xmlns', "http://www.w3.org/2000/svg");
       canvas.setAttribute('xmlns:lively', "http://www.experimentalstuff.com/Lively");
@@ -71,7 +76,15 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
     return canvas;
   }, {category: ['bootstrapping']});
 
+  add.method('loadLivelyKernelCodeIfReadyAndTheWindowIsLoaded', function () {
+    if (avocado.transporter.callWhenDoneLoadingLivelyKernelCode && (document.body || avocado.transporter.isDoneLoadingWindow)) {
+      this.loadLivelyKernelCode(avocado.transporter.callWhenDoneLoadingLivelyKernelCode);
+    }
+  }, {category: ['bootstrapping']});
+
   add.method('loadLivelyKernelCode', function (callWhenDone) {
+    this.createCanvasIfNone();
+    
     // Loading LK modules dynamically, in the same order that they are loaded in the xhtml file.   
     avocado.transporter.loadExternal(
       ["prototype/prototype",
@@ -92,9 +105,7 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
        "lk/TouchSupport",
        "lk/cop/Layers",
        "jslint"
-      ], function() {
-        if (callWhenDone) { callWhenDone(); }
-      }
+      ], callWhenDone
     );
   }, {category: ['bootstrapping']});
 
@@ -102,7 +113,7 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
     Morph.prototype.suppressBalloonHelp = true; // balloons keep staying up when they shouldn't. Suppress until fixed.
     //Morph.suppressAllHandlesForever();  //disable handles if not doing much UI construction; probably annoying.
     
-    var canvas = document.getElementById("canvas");
+    var canvas = this.createCanvasIfNone();
     
     var baseColor = Color.rgb(0x53, 0x82, 0xC1);
   	DisplayThemes['lively'].world.fill = new lively.paint.LinearGradient([new lively.paint.Stop(0, baseColor.lighter()), new lively.paint.Stop(1, baseColor)]);

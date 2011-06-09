@@ -1152,6 +1152,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
 
   add.method('doneLoadingWindow', function () {
     avocado.transporter.isDoneLoadingWindow = true;
+    if (avocado.transporter.userInterfaceInitializer) { avocado.transporter.userInterfaceInitializer.doneLoadingWindow(); }
     avocado.transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
   }, {category: ['bootstrapping']});
 
