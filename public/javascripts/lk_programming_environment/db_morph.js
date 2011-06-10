@@ -27,7 +27,7 @@ thisModule.addSlots(avocado.db, function(add) {
 thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add) {
 
   add.method('newMorph', function () {
-    return new avocado.TreeNodeMorph(this).setShouldScaleContentsToFit(true).refreshContentOfMeAndSubmorphs().applyStyle({fill: new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth)});
+    return new avocado.TreeNodeMorph(this).setShouldScaleContentsToFit(true).refreshContentOfMeAndSubmorphs().applyStyle({fill: new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth), borderRadius: 10});
   }, {category: ['user interface']});
 
   add.method('morph', function () {
@@ -68,7 +68,9 @@ thisModule.addSlots(avocado.db.morphFactory, function(add) {
   add.data('enableDBExperiment', true);
 
   add.method('postFileIn', function () {
-    if (this.enableDBExperiment && avocado.morphFactories) {
+    // Not really much point in having a whole factory just for one morph.
+    // For now I've added a DB morph to the simple morphs factory.
+    if (false && this.enableDBExperiment && avocado.morphFactories) {
       avocado.morphFactories.globalFactories.push(this);
     }
   });
@@ -157,6 +159,7 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
 
   add.method('initialize', function ($super, container) {
     $super(container);
+    this.applyStyle(this.style);
     this.setShouldScaleContentsToFit(true);
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['creating']});
@@ -174,8 +177,14 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
       avocado.command.argumentSpec.create('attributeName').onlyAcceptsType(String)
     ]));
 
+    /* aaa just useful for debugging
     cmdList.addItem(avocado.command.create('update contents', function(evt) {
       this.updateContents();
+    }));
+    */
+    
+    cmdList.addItem(avocado.command.create('get container object', function(evt) {
+      avocado.ui.grab(reflect(this._model.containerObj()), evt);
     }));
 
     return cmdList;
@@ -210,7 +219,7 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
 
 thisModule.addSlots(avocado.couch.db.container.Morph.prototype.style, function(add) {
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.7, 0.6)), new lively.paint.Stop(1, new Color(1, 0.8, 0.8))], lively.paint.LinearGradient.SouthNorth));
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.7, 1, 0.6)), new lively.paint.Stop(1, new Color(0.8, 1, 0.8))], lively.paint.LinearGradient.SouthNorth));
   
   add.data('openForDragAndDrop', false);
   

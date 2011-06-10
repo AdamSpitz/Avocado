@@ -99,6 +99,49 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype, function(add) {
     return null;
   }, {category: ['events']});
 
+  add.method('keepOnlyItemsNamed', function (nameList) {
+    for (var i = 0; i < this._commands.length; ++i) {
+      var c = this._commands[i];
+      if (c) {
+        var n = c.labelString();
+        if (nameList.indexOf(n) < 0) {
+          this._commands[i] = null;
+        }
+      }
+    }
+    return this;
+  }, {category: ['filtering']});
+
+  add.method('removeItemNamed', function (name) {
+    for (var i = 0; i < this._commands.length; ++i) {
+      var c = this._commands[i];
+      if (c) {
+        var n = c.labelString();
+        if (name === n) {
+          this._commands[i] = null;
+        }
+      }
+    }
+    return this;
+  }, {category: ['filtering']});
+  
+  add.method('addLine', function () {
+    // No such thing, just here for compatibility with normal MenuMorphs.
+  }, {category: ['compatibility']});
+  
+  add.method('addItem', function (item) {
+    if (!item[0] || !item[1]) { return this; }
+    var newCmd = avocado.command.create(item[0], item[1]);
+    for (var i = 0; i < this._commands.length; ++i) {
+      var c = this._commands[i];
+      if (! c) {
+        this._commands[i] = newCmd;
+        return this;
+      }
+    }
+    throw new Error("Cannot add " + item[0] + " to wheel menu; no more room.");
+  }, {category: ['compatibility']});
+
   add.method('handlesMouseDown', function (evt) {
     return true;
   }, {category: ['events']});

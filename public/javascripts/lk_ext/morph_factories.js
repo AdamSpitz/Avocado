@@ -58,6 +58,8 @@ thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
 
     var container = new avocado.ContainerMorph();
 
+    var dbMorph = new avocado.db.Morph(null);
+
     ellipse.setFill(new Color(0.8, 0.5, 0.5)); // make it a different color than the rectangle
     
     var factory = Morph.makeRectangle(pt(0,0), pt(300, 560));
@@ -71,6 +73,7 @@ thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
     factory.addMorphAt(button,    pt( 20, 340));
     factory.addMorphAt(triangle,  pt(150, 340));
     factory.addMorphAt(container, pt( 20, 410));
+    factory.addMorphAt(dbMorph,   pt(190, 435));
     return factory;
   });
 

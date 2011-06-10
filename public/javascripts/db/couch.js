@@ -613,6 +613,8 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
   
   add.method('elementTypeMir', function () { return this._elementTypeMir; }, {category: ['accessing']});
   
+  add.method('nameOfAttributePointingToContainer', function () { return this._nameOfAttributePointingToContainer; }, {category: ['accessing']});
+  
   add.method('copyForAttribute', function (nameOfAttributePointingToContainer) {
     var c = Object.shallowCopy(this);
     c._nameOfAttributePointingToContainer = nameOfAttributePointingToContainer;
@@ -739,7 +741,8 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
   }, {category: ['updating']});
   
   add.method('toString', function () {
-    return "" + this._relationship + " of " + reflect(this.containerObj()).inspect();
+    var elementTypeName = this._relationship.elementTypeMir().name().withoutSuffix(".prototype");
+    return elementTypeName + "s whose " + this._relationship.nameOfAttributePointingToContainer() + " is " + reflect(this.containerObj()).inspect();
   }, {category: ['printing']});
   
   add.method('immediateSubnodes', function () {

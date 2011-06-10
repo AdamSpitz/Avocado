@@ -1616,7 +1616,7 @@ lively.data.Wrapper.subclass('Morph', {
 		this.copyActiveScriptsFrom(copier, other)
 		
 		// added by Adam to keep the world's _morphsByObject dictionary up-to-date
-		if (typeof(other._model) !== 'undefined') {
+		if (other._model !== null && typeof(other._model) !== 'undefined') {
 		  var world = this.world() || WorldMorph.current();
 		  if (world.existingMorphFor(other._model) === other) {
   		  world.rememberMorphFor(this._model, this);
