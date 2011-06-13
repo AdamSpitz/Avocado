@@ -294,13 +294,10 @@ thisModule.addSlots(avocado.project, function(add) {
     if (errors.length === 0) {
       var server = this.defaultServer();
       var format = this.defaultFormat();
-      server.save(mockRepo, format, function() {
+      server.save(mockRepo, format, true, function() {
         console.log("Successfully saved the project.");
     	  if (!this._shouldNotSaveCurrentWorld) { avocado.project.resetCurrentWorldStateModule(); }
         this.markAsUnchanged();
-        for (var moduleName in versionsToSave) {
-          modules[moduleName].markAsUnchanged();
-        }
       }.bind(this), function(failureReason) {
         console.log("Error saving " + this + ": " + failureReason);
       });
@@ -410,7 +407,11 @@ thisModule.addSlots(avocado.project.servers.savingScript, function(add) {
     this._url = url;
   }, {category: ['creating']});
 
-  add.method('save', function (moduleRepo, format, successBlock, failBlock) {
+  add.method('save', function (moduleRepo, format, shouldSaveAsSingleFile, successBlock, failBlock) {
+    // shouldSaveAsSingleFile is ignored because the server is smart enough to store the modules
+    // separately and recombine them as needed; the parameter is just here for compatibility with
+    // the webdav one. -- Adam, June 2011
+    
     var body = format.fileContentsFromProjectData(moduleRepo._projectData);
     console.log("About to save the project to URL " + this._url + ", sending:\n" + body);
     
@@ -458,64 +459,48 @@ thisModule.addSlots(avocado.project.servers.webdav, function(add) {
   add.method('initialize', function (repo) {
     this._repo = repo;
   }, {category: ['creating']});
+  
+  add.method('callbackThatAccumulatesErrorsIn', function (errors, callback) {
+    return function(errorMessage) {
+      errors.push(errorMessage);
+      callback();
+    };
+  }, {category: ['saving']});
 
-  add.method('save', function (moduleRepo, format, successBlock, failBlock) {
+  add.method('save', function (moduleRepo, format, shouldSaveAsSingleFile, successBlock, failBlock) {
     var project = moduleRepo._project;
     var projectData = moduleRepo._projectData;
     var modulesData = projectData.modules;
     projectData.modules = projectData.modules.map(function(moduleData) { return moduleData.module; });
-    var errors = [];
-    avocado.callbackWaiter.on(function(generateIntermediateCallback) {
+    if (shouldSaveAsSingleFile) {
+      var fileContents = [];
+      
       modulesData.forEach(function(moduleData) {
-        this.saveModuleData(moduleData, errors, generateIntermediateCallback());
-      }.bind(this));
-      this.saveProjectData(project, projectData, format, errors, generateIntermediateCallback());
-    }.bind(this), function() {
-      if (errors.length === 0) {
-        successBlock();
-      } else {
-        failBlock(errors.join(", "));
-      }
-    }, "saving a project");
-  }, {category: ['saving']});
-  
-  add.method('saveModuleData', function (moduleData, errors, callback) {
-    var module = modules[moduleData.module];
-    var moduleVersion = module.currentVersion();
-    if (moduleVersion.versionID() !== moduleData.version) { throw new Error("Assertion failure: trying to save the wrong version of a module?"); }
-    avocado.transporter.fileOut(moduleVersion, this._repo, moduleData.code, function() {
-      module.markAsUnchanged();
-      callback();
-    }, function(err) {
-      errors.push("Failed to file out module " + module + ": " + err);
-      callback();
-    });
-  }, {category: ['saving']});
-  
-  add.method('saveProjectData', function (project, projectData, format, errors, callback) {
-    var body = format.fileContentsFromProjectData(projectData);
-    var req = new XMLHttpRequest();
-    req.open('put', this._repo.url() + project.name() + "_project.js", true);
-    req.onreadystatechange = function() {
-      if (req.readyState === 4) {
-        try {
-          var status = req.status;
-          var success = !status || (status >= 200 && status < 300);
-          if (success) {
-            callback();
-          } else {
-            errors.push("Failed to file out project " + project + " to repository at " + this._repo.url() + "; HTTP status code was " + status);
-            callback();
-          }
-        } catch (e) {
-          errors.push("Failed to file out project " + project + " to repository at " + this._repo.url() + "; exception was " + e);
-          callback();
+        fileContents.push(moduleData.code, "\n\n");
+      });
+      
+      fileContents.push(format.fileContentsFromProjectData(projectData));
+      this._repo.saveFile(project.name() + "_project.js", fileContents.join(""), successBlock, failBlock);
+    } else {
+      var errors = [];
+      avocado.callbackWaiter.on(function(generateIntermediateCallback) {
+        modulesData.forEach(function(moduleData) {
+          var intermediateCallback = generateIntermediateCallback();
+          avocado.transporter.fileOut(modules[moduleData.module].currentVersion(), this._repo, moduleData.code, intermediateCallback, this.callbackThatAccumulatesErrorsIn(errors, intermediateCallback));
+        }.bind(this));
+
+        var intermediateCallback = generateIntermediateCallback();
+        var projectBody = format.fileContentsFromProjectData(projectData);
+        this._repo.saveFile(project.name() + "_project.js", projectBody, intermediateCallback, this.callbackThatAccumulatesErrorsIn(errors, intermediateCallback));
+      }.bind(this), function() {
+        if (errors.length === 0) {
+          successBlock();
+        } else {
+          failBlock(errors.join(", "));
         }
-      }
-    }.bind(this);
-    req.send(body);
+      }, "saving a project");
+    }
   }, {category: ['saving']});
-  
 
 });
 

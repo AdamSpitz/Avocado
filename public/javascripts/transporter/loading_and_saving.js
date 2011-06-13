@@ -9,7 +9,16 @@ thisModule.addSlots(avocado.transporter, function(add) {
     var m = moduleVersion.module();
     var r = repo || m._repository;
     if (!r) { throw new Error("Don't have a repository for: " + m); }
-    r.fileOutModuleVersion(moduleVersion, codeToFileOut.replace(/[\r]/g, "\n"), successBlock, failBlock);
+    r.fileOutModuleVersion(moduleVersion, codeToFileOut.replace(/[\r]/g, "\n"), function() {
+      m.markAsUnchanged();
+      if (successBlock) { successBlock(); }
+    }, function(errorMessage) {
+      if (failBlock) {
+        failBlock(errorMessage);
+      } else {
+        throw new Error(errorMessage);
+      }
+    });
   }, {category: ['saving']});
   
 });
@@ -86,22 +95,31 @@ thisModule.addSlots(avocado.transporter.repositories.http, function(add) {
 thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(add) {
 
   add.method('fileOutModuleVersion', function (moduleVersion, codeToFileOut, successBlock, failBlock) {
-    var m = moduleVersion.module();
-    var url = this.urlForModuleName(m.name());
+    var url = this.urlForModuleName(moduleVersion.module().name());
+    this.saveFile(url, codeToFileOut, successBlock, failBlock);
+  }, {category: ['saving']});
+  
+  add.method('saveFile', function (url, fileContents, successBlock, failBlock) {
+    var repoURL = this.url();
+    if (url.substring(0, repoURL.length) !== repoURL) { url = repoURL + url; }
     var isAsync = true;
     var req = new XMLHttpRequest();
     req.open("PUT", url, isAsync);
     req.onreadystatechange = function() {
       if (req.readyState === 4) {
-        if (req.status >= 200 && req.status < 300) {
-          console.log("Saved " + url);
-          successBlock();
-        } else {
-          failBlock("Failed to file out " + m + ", status is " + req.status + ", statusText is " + req.statusText);
+        try {
+          if (req.status >= 200 && req.status < 300) {
+            console.log("Saved " + url);
+            successBlock();
+          } else {
+            failBlock("Failed to save to " + url + ", HTTP status code is " + req.status + ", statusText is " + req.statusText);
+          }
+        } catch (e) {
+          failBlock("Failed to save to " + url + " --- exception was " + e);
         }
       }
     };
-    req.send(codeToFileOut);
+    req.send(fileContents);
   }, {category: ['saving']});
 
   add.data('canListDirectoryContents', true, {category: ['directories']});

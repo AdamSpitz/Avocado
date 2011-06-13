@@ -443,7 +443,7 @@ thisModule.addSlots(avocado.transporter.module.version, function(add) {
     } catch (ex) {
       return failBlock(ex, [ex]);
     }
-    avocado.transporter.fileOut(this, repo, codeToFileOut, function() {this.module().markAsUnchanged(); if (successBlock) { successBlock(); }}.bind(this), failBlock);
+    avocado.transporter.fileOut(this, repo, codeToFileOut, successBlock, failBlock);
   }, {category: ['transporting']});
 
 });

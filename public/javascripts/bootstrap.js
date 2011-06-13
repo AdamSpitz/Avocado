@@ -1260,9 +1260,11 @@ thisModule.addSlots(avocado.transporter.repositories.http, function(add) {
   }, {category: ['printing']});
 
   add.method('urlForModuleName', function (name) {
-    var url = this.url() + name;
-    if (name.substring(name.length - 3) !== '.js') { url += ".js"; }
-    return url;
+    return this.urlForFileName((name.substring(name.length - 3) !== '.js') ? name + ".js" : name);
+  }, {category: ['saving to WebDAV']});
+
+  add.method('urlForFileName', function (name) {
+    return this.url() + name;
   }, {category: ['saving to WebDAV']});
 
   add.method('loadModuleNamed', function (name, callWhenDone) {
