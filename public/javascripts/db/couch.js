@@ -317,6 +317,11 @@ thisModule.addSlots(avocado.couch.db, function(add) {
         }
         realContents = o;
       }
+
+      if (realName.endsWith('__id')) {
+        realName = realName.substr(0, realName.length - '__id'.length);
+        realContents = this.remoteRefForID(contents);
+      }
       
       var nameChanged = name !== realName;
       if (nameChanged) { delete dumbDataObj[name]; }
