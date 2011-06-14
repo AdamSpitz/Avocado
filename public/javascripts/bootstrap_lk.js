@@ -48,10 +48,19 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
   add.method('createCanvasIfNone', function () {
     var canvas = document.getElementById("canvas");
     if (! canvas) {
+      // Put the canvas inside a div, because for some reason FireFox isn't calculating
+      // offsetLeft and offsetTop for the canvas itself. Also, allow people to specify
+      // an 'avocadoDiv' element so they can control where Avocado goes on the page.
+      var avocadoDiv = document.getElementById('avocadoDiv');
+      if (! avocadoDiv) {
+        avocadoDiv = document.createElement('div');
+        document.body.appendChild(avocadoDiv);
+      }
+      
       canvas = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
       canvas.setAttribute('id', 'canvas');
-      canvas.setAttribute('width',  '1000'); // aaa used to say 100% but that caused some weird bug that I don't understand -- Adam, June 2011
-      canvas.setAttribute('height', '600');
+      canvas.setAttribute('width',  avocadoDiv.offsetWidth ? avocadoDiv.offsetWidth : '1000'); // aaa used to say 100% but that caused some weird bug that I don't understand -- Adam, June 2011
+      canvas.setAttribute('height', avocadoDiv.offsetHeight ? avocadoDiv.offsetHeight : '600');
       canvas.setAttribute('xmlns', "http://www.w3.org/2000/svg");
       canvas.setAttribute('xmlns:lively', "http://www.experimentalstuff.com/Lively");
       canvas.setAttribute('xmlns:xlink', "http://www.w3.org/1999/xlink");
@@ -63,14 +72,6 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
       title.appendChild(document.createTextNode('Lively canvas'));
       canvas.appendChild(title);
       
-      // Put the canvas inside a div, because for some reason FireFox isn't calculating
-      // offsetLeft and offsetTop for the canvas itself. Also, allow people to specify
-      // an 'avocadoDiv' element so they can control where Avocado goes on the page.
-      var avocadoDiv = document.getElementById('avocadoDiv');
-      if (! avocadoDiv) {
-        avocadoDiv = document.createElement('div');
-        document.body.appendChild(avocadoDiv);
-      }
       avocadoDiv.appendChild(canvas);
     }
     return canvas;

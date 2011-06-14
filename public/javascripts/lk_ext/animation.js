@@ -119,7 +119,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var owner = this.owner;
     if (w) {
       if (owner !== w) {
-        var initialLoc = (!owner || this.world() !== w) ? this.getExtent().scaleBy(-1.1).addXY(-100,-100) : owner.worldPoint(this.getPosition());
+        var initialLoc = (!owner || this.world() !== w) ? this.getExtent().scaleBy(-1.1).addXY(-200,-200) : owner.worldPoint(this.getPosition());
         if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
         this.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore(); // aaa - not sure this is a good idea, but maybe; it makes sure that a mirror will be updated as soon as it's visible, for one thing.
         w.addMorphAt(this, initialLoc);

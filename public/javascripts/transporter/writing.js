@@ -100,7 +100,7 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.general, function(add
   }, {category: ['writing']});
   
   add.method('fileOutSlotWithInfo', function (info) {
-    var slotAnno = info.RawAnnotation;
+    var slotAnno = info.rawAnnotation;
     var slotAnnoExpr = slotAnno ? reflect(slotAnno).expressionEvaluatingToMe() : '{}';
     var objectAnnoExpr = info.isCreator && info.contentsRawAnnotation ? reflect(info.contentsRawAnnotation).expressionEvaluatingToMe() : null;
     
