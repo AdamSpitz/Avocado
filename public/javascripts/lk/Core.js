@@ -813,7 +813,7 @@ var Event = (function() {
 			    	return false;
 				}
 		    };
-		    var canvas = Global.document.getElementById("canvas");
+		    var canvas = avocado.transporter.livelyKernelInitializer.createCanvasIfNone(); // aaa used to say Global.document.getElementById("canvas") but better to create it if it's not there yet. -- Adam
 			if (!canvas) return
 		    canvas.addEventListener("dragstart", disabler, true);
 		    canvas.addEventListener("selectstart", disabler, true);
