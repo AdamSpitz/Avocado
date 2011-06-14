@@ -3,6 +3,7 @@ avocado.transporter.module.create('lk_programming_environment/programming_enviro
 requires('avocado_lib');
 requires('lk_ext/core_sampler');
 requires('lk_ext/poses');
+requires('lk_ext/tags');
 requires('lk_ext/morph_factories');
 requires('transporter/snapshotter');
 requires('programming_environment/categorize_libraries');
@@ -50,7 +51,7 @@ thisModule.addSlots(avocado, function(add) {
 
   add.data('shouldMirrorsUseZooming', true, {category: ['zooming']});
 
-  add.data('debugMode', false, {category: ['debug mode']});
+  add.data('debugMode', true, {category: ['debug mode']});
 
   add.creator('menuItemContributors', [], {category: ['menu']});
 
@@ -107,6 +108,17 @@ thisModule.addSlots(avocado, function(add) {
         var morphs = [];
         for (var i = 1; i <= 100; ++i) { morphs.push(reflect(i).morph()); }
         WorldMorph.current().scatter(morphs);
+      }.bind(this)});
+
+      cmdList.addItem({label: "tag mod 2,3,5", go: function(evt) {
+        [2, 3, 5].forEach(function(modulus) {
+          var tagType = avocado.tag.createForModelsSatisfying(function(model) {
+            if (!model.reflectee) { return false; }
+            if (!model.isReflecteeNumber()) { return false; }
+            return model.reflectee() % modulus === 0;
+          });
+          WorldMorph.current().addTagType(tagType);
+        });
       }.bind(this)});
 
       cmdList.addItem({label: "walk annotations", go: function(evt) {
