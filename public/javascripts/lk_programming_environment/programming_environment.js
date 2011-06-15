@@ -111,14 +111,15 @@ thisModule.addSlots(avocado, function(add) {
       }.bind(this)});
 
       cmdList.addItem({label: "tag mod 2,3,5", go: function(evt) {
-        [2, 3, 5].forEach(function(modulus) {
-          var tagType = avocado.tag.createForModelsSatisfying(function(model) {
+        var cloud = avocado.tag.cloud.create("numbers mod 2, 3, 5", [2, 3, 5].map(function(modulus) {
+          return avocado.tag.create("numbers divsible by " + modulus, function(model) {
             if (!model.reflectee) { return false; }
             if (!model.isReflecteeNumber()) { return false; }
             return model.reflectee() % modulus === 0;
           });
-          WorldMorph.current().addTagType(tagType);
-        });
+        }), avocado.range.create(1, 50).map(function(i) { return reflect(i); }));
+        cloud.tagAllMorphsInWorld(evt.hand.world());
+        // cloud.newMorph().grabMe(evt);
       }.bind(this)});
 
       cmdList.addItem({label: "walk annotations", go: function(evt) {

@@ -102,4 +102,19 @@ thisModule.addSlots(MenuMorph.prototype, function(add) {
 });
 
 
+thisModule.addSlots(WorldMorph.prototype, function(add) {
+
+  add.method('promptForPoint', function (callback) {
+    var markerMorph = new Morph(new lively.scene.Ellipse(pt(0,0), 3));
+    markerMorph.wasJustDroppedOnWorld = function(w) {
+      var p = this.getPosition();
+      this.remove();
+      callback(p);
+    };
+    markerMorph.grabMeWithoutZoomingAroundFirst(Event.createFake());
+  }, {category: ['poses']});
+
+});
+
+
 });

@@ -32,6 +32,10 @@ thisModule.addSlots(Morph.prototype, function(add) {
     }
   }, {category: ['highlighting']});
 
+  add.method('isHighlighted', function () {
+    return !! this._styleBeforeHighlighting;
+  }, {category: ['highlighting']});
+
   add.method('setHighlighting', function (shouldBeOn) {
     if (shouldBeOn) {
       this.beHighlighted();

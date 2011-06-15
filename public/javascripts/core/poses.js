@@ -45,7 +45,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this.name();
   }, {category: ['printing']});
 
-  add.method('recreateInContainer', function (container) {
+  add.method('recreateInContainer', function (container, startingPos) {
     var originalScale = container.getScale();
     var originalSpace = container.getExtent().scaleBy(originalScale);
     
@@ -63,7 +63,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       } else {
         e.poser.ensureIsInWorld(container, e.position, true, true, true);
       }
-    }.bind(this));
+    }.bind(this), startingPos);
   
     
     if (this._shouldScaleToFitWithinCurrentSpace) {
@@ -128,8 +128,8 @@ thisModule.addSlots(avocado.poses.tree, function(add) {
     return ancestors;
   });
 
-  add.method('eachElement', function (f) {
-    var pos = pt(20,20);
+  add.method('eachElement', function (f, startingPos) {
+    var pos = (startingPos || pt(0,0)).addXY(20,20);
     this.ancestors().each(function(m) {
       f({poser: m, position: pos});
       pos = pos.addXY(this.indentation, m.getExtent().y + this.padding);
@@ -158,14 +158,14 @@ thisModule.addSlots(avocado.poses.list, function(add) {
     this._posers = posers;
   });
 
-  add.method('eachElement', function (f) {
+  add.method('eachElement', function (f, startingPos) {
     var sortedPosersToMove = this._posers.sort(function(m1, m2) {
       var n1 = m1.inspect();
       var n2 = m2.inspect();
       return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;
     });
 
-    var padding = pt(20,20);
+    var padding = (startingPos || pt(0,0)).addXY(20,20);
     var pos = padding;
     var widest = 0;
     var maxY = this._shouldBeSquarish ? null : this._container.getExtent().y - 30;
@@ -235,7 +235,7 @@ thisModule.addSlots(avocado.poses.snapshot, function(add) {
     this._elements.push(elem);
   });
 
-  add.method('eachElement', function (f) {
+  add.method('eachElement', function (f, startingPos) {
     this._elements.each(f);
   });
 
@@ -308,9 +308,9 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     pose.recreateInContainer(this.container());
   });
 
-  add.method('assumePose', function (pose) {
+  add.method('assumePose', function (pose, startingPos) {
     this.addToUndoPoseStack(this.createSnapshotOfCurrentPose(avocado.organization.current.findUnusedPoseName()));
-    pose.recreateInContainer(this.container());
+    pose.recreateInContainer(this.container(), startingPos);
   }, {category: ['poses']});
 
   add.method('createSnapshotOfCurrentPose', function (poseName) {
