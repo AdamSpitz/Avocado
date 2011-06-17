@@ -109,7 +109,7 @@ thisModule.addSlots(avocado.db.Morph.prototype, function(add) {
 		this.addMorphAt(this._labelMorph, this._labelMorph.getExtent().scaleBy(-0.5));
   }, {category: ['accessing']});
 
-  add.method('labelString', function () { return this.db() ? this.db().labelString() : 'DB'; }, {category: ['accessing']});
+  add.method('labelString', function () { return this.db() ? this.db().labelString() : 'CouchDB'; }, {category: ['accessing']});
 
   add.method('commands', function ($super) {
     if (this._model) {
@@ -175,6 +175,13 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
       this._model.updateContents(this.refreshContentOfMeAndSubmorphs.bind(this));
     }.bind(this)).setArgumentSpecs([
       avocado.command.argumentSpec.create('attributeName').onlyAcceptsType(String)
+    ]));
+
+    cmdList.addItem(avocado.command.create('rename', function(evt, containerName) {
+      this._model.setContainerName(containerName);
+      this.refreshContentOfMeAndSubmorphs();
+    }.bind(this)).setArgumentSpecs([
+      avocado.command.argumentSpec.create('containerName').onlyAcceptsType(String)
     ]));
 
     /* aaa just useful for debugging

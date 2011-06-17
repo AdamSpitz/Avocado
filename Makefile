@@ -1,6 +1,6 @@
 AUTO_GEN_DIR          := public/javascripts/auto_generated
-STATIC_JS_WITH_DEV    := $(AUTO_GEN_DIR)/avocado_static.with_dev.js
-STATIC_JS_WITHOUT_DEV := $(AUTO_GEN_DIR)/avocado_static.without_dev.js
+STATIC_JS_WITH_DEV    := $(AUTO_GEN_DIR)/avocado.js
+STATIC_JS_WITHOUT_DEV := $(AUTO_GEN_DIR)/avocado.without_dev.js
 
 all: $(STATIC_JS_WITH_DEV) $(STATIC_JS_WITHOUT_DEV)
 

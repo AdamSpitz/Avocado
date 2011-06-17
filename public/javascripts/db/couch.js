@@ -690,10 +690,11 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
     return Object.newChildOf(this, relationship, containerRef, design);
   }, {category: ['creating']});
 
-  add.method('initialize', function (relationship, containerRef, design) {
+  add.method('initialize', function (relationship, containerRef, design, optionalName) {
     this._relationship = relationship;
     this._containerRef = containerRef;
     this._design = design;
+    this._name = optionalName;
     this._contents = [];
   }, {category: ['creating']});
   
@@ -709,6 +710,10 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
   add.method('setAttributeName', function (n) {
     this._relationship = this._relationship.copyForAttribute(n);
     this._contents = [];
+  }, {category: ['accessing']});
+  
+  add.method('setContainerName', function (n) {
+    this._name = n;
   }, {category: ['accessing']});
   
   add.method('contents', function () {
@@ -746,6 +751,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
   }, {category: ['updating']});
   
   add.method('toString', function () {
+    if (this._name) { return this._name; }
     var elementTypeName = this._relationship.elementTypeMir().name().withoutSuffix(".prototype");
     return elementTypeName + "s whose " + this._relationship.nameOfAttributePointingToContainer() + " is " + reflect(this.containerObj()).inspect();
   }, {category: ['printing']});
@@ -789,7 +795,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
   }, {category: ['adding']});
   
   add.method('storeString', function () {
-    return ["avocado.couch.db.container.create(", this._relationship.storeString(), ", ", this._containerRef.expressionToRecreateRefAndFetchObject(), ", ", this._design.storeString(), ")"].join("");
+    return ["avocado.couch.db.container.create(", this._relationship.storeString(), ", ", this._containerRef.expressionToRecreateRefAndFetchObject(), ", ", this._design.storeString(), (this._name ? ", " + Object.inspect(this._name) : ""), ")"].join("");
   }, {category: ['transporting']});
 
 });

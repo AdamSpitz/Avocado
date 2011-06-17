@@ -10,6 +10,30 @@ thisModule.addSlots(avocado, function(add) {
 });
 
 
+thisModule.addSlots(WorldMorph.prototype, function(add) {
+
+  add.method('deployProjectFromFile', function (projectFileName, callback) {
+    avocado.transporter.availableRepositories[0].fileIn(projectFileName.withoutSuffix(".js"), function() {
+      this.deployProject(avocado.project.current(), callback);
+    }.bind(this));
+  }, {category: ['projects']});
+
+  add.method('deployProject', function (p, callback) {
+    var dm = p.deploymentMorph();
+    this.addMorphAt(dm, pt(0,0));
+    dm.grabsShouldFallThrough = true;
+    var desiredExtent = dm.getExtent().scaleBy(dm.getScale());
+    this.setExtent(desiredExtent);
+    var canvas = this.canvas();
+    canvas.setAttribute("width",  desiredExtent.x);
+    canvas.setAttribute("height", desiredExtent.y);
+    this.changed();
+    if (callback) { callback(); }
+  }, {category: ['projects']});
+  
+});
+
+
 thisModule.addSlots(avocado.project, function(add) {
   
   add.method('current', function () {
@@ -98,9 +122,12 @@ thisModule.addSlots(avocado.project, function(add) {
       morph.setBorderColor(Color.black);
       morph.switchEditModeOn();
       
+      /* aaa - I do want some sort of instructions for the programmer, but I don't want this
+       label to appear in the deployed project. -- Adam, June 2011
       var label = TextMorph.createLabel("Put things in this box to make them appear in the deployed project");
       label.fitText();
       morph.withoutAnimationAddMorphCentered(label);
+      */
       
       var slot = reflect(module).slotAt('_deploymentMorph');
       slot.beCreator();
