@@ -583,8 +583,10 @@ thisModule.addSlots(avocado.couch.db.relationships, function(add) {
 
 thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
 
-  add.method('create', function (containerType, elementType, nameOfAttributePointingToContainer) {
-    return Object.newChildOf(this, containerType, elementType, nameOfAttributePointingToContainer);
+  add.method('create', function () {
+    var c = Object.create(this);
+    c.initialize.apply(c, arguments);
+    return c;
   }, {category: ['creating']});
 
   add.method('createFromViewDocument', function (viewDoc, viewName) {
@@ -686,8 +688,10 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
 
 thisModule.addSlots(avocado.couch.db.container, function(add) {
 
-  add.method('create', function (relationship, containerRef, design) {
-    return Object.newChildOf(this, relationship, containerRef, design);
+  add.method('create', function () {
+    var c = Object.create(this);
+    c.initialize.apply(c, arguments);
+    return c;
   }, {category: ['creating']});
 
   add.method('initialize', function (relationship, containerRef, design, optionalName) {
