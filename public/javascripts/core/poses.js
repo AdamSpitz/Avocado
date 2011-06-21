@@ -45,9 +45,15 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this.name();
   }, {category: ['printing']});
 
+  add.method('inspect', function () {
+    return this.toString();
+  }, {category: ['printing']});
+
   add.method('recreateInContainer', function (container, startingPos) {
     var originalScale = container.getScale();
     var originalSpace = container.getExtent().scaleBy(originalScale);
+    
+    this._bounds = (startingPos || pt(0, 0)).extent(pt(0, 0));
     
     this.eachElement(function(e) {
       e.poser.isPartOfCurrentPose = true;
@@ -63,6 +69,11 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       } else {
         e.poser.ensureIsInWorld(container, e.position, true, true, true);
       }
+      
+      // Keep track of how much space the pose is taking up, so that the pose can answer getExtent(). -- Adam, June 2011
+      var poserExtent = e.poser.getExtent().scaleBy(e.poser.getScale());
+      var poserBounds = e.position.extent(poserExtent);
+      this._bounds = this._bounds.union(poserBounds);
     }.bind(this), startingPos);
   
     
@@ -100,6 +111,25 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     this._shouldBeUnobtrusive = true;
     return this;
   });
+
+  add.method('constructUIStateMemento', function () {
+    // for compatibility with morphs - want to be able to make a pose of poses
+    return null;
+  }, {category: ['acting like a morph']});
+
+  add.method('getExtent', function () {
+    // for compatibility with morphs - want to be able to make a pose of poses
+    return this._bounds.extent();
+  }, {category: ['acting like a morph']});
+
+  add.method('getScale', function () {
+    return 1;
+  }, {category: ['acting like a morph']});
+
+  add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
+    w.poseManager().assumePose(this, desiredLoc);
+    if (functionToCallWhenDone) { functionToCallWhenDone(); }
+  }, {category: ['acting like a morph']});
 
 });
 
@@ -323,8 +353,8 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     }.bind(this));
   }, {category: ['taking snapshots']});
 
-  add.method('cleaningUpPose', function (posers) {
-    return avocado.poses.list.create("clean up", this.container(), posers || this.container().posers()).beCollapsing();
+  add.method('cleaningUpPose', function (posers, name) {
+    return avocado.poses.list.create(name || "clean up", this.container(), posers || this.container().posers()).beCollapsing();
   }, {category: ['cleaning up']});
 
   add.method('listPoseOfMorphsFor', function (objects, name) {

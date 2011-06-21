@@ -104,10 +104,32 @@ thisModule.addSlots(avocado, function(add) {
         avocado.ui.grab(mir, evt)
       }.bind(this)});
 
-      cmdList.addItem({label: "scatter 1-100", go: function(evt) {
+      cmdList.addItem({label: "scatter 1-50", go: function(evt) {
         var morphs = [];
-        for (var i = 1; i <= 100; ++i) { morphs.push(reflect(i).morph()); }
+        for (var i = 1; i <= 50; ++i) { morphs.push(reflect(i).morph()); }
         WorldMorph.current().scatter(morphs);
+      }.bind(this)});
+
+      cmdList.addItem({label: "group by remainders mod 5", go: function(evt) {
+        var w = evt.hand.world();
+        var posersByGroupID = avocado.dictionary.copyRemoveAll();
+        w.submorphs.forEach(function(m) {
+          var poseName = "Other";
+          if ((m instanceof avocado.mirror.Morph) && m.mirror().isReflecteeNumber()) {
+            poseName = (m.mirror().primitiveReflectee() % 5).toString() + " mod 5";
+          }
+          var posers = posersByGroupID.getOrIfAbsentPut(poseName, function() { return []; });
+          posers.push(m);
+        });
+        
+        var poses = [];
+        posersByGroupID.eachKeyAndValue(function(poseName, posers) {
+          poses.push(w.poseManager().cleaningUpPose(posers, poseName.toString()));
+        });
+        poses.sort();
+        
+        var compositePose = w.poseManager().cleaningUpPose(poses).beSquarish();
+        w.poseManager().assumePose(compositePose);
       }.bind(this)});
 
       cmdList.addItem({label: "tag mod 2,3,5", go: function(evt) {
