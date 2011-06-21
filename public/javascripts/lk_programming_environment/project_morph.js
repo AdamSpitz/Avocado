@@ -22,7 +22,7 @@ thisModule.addSlots(avocado.project, function(add) {
     changeIndicator.setTextColor(Color.green.darker());
 
     var columns = [m.createNameLabel()];
-    columns.push(changeIndicator);
+    // columns.push(changeIndicator); // aaa just leave this out for now because it's not working right
     headerRow.setColumns(columns);
     
     /* Why isn't this working?

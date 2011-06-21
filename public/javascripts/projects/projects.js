@@ -143,24 +143,14 @@ thisModule.addSlots(avocado.project, function(add) {
   add.method('addGlobalCommandsTo', function (cmdList, evt) {
     cmdList.addLine();
     
-    var currentProject = avocado.project.current();
-    if (currentProject) {
-      cmdList.addItem(["current project...", [
-        ["get info", function(evt) {
-          avocado.ui.grab(currentProject, evt);
-        }],
-
-        ["show deployment area", function(evt) {
-          currentProject.grabDeploymentMorph(evt);
-        }]
-      ]]);
-    } else {
-      cmdList.addItem(["start new project", function(evt) {
+    cmdList.addItem(["project info", function(evt) {
+      var currentProject = avocado.project.current();
+      if (! currentProject) {
         avocado.transporter.module.named("thisProject");
         currentProject = avocado.project.current();
-        avocado.ui.grab(currentProject, evt);
-      }]);
-    }
+      }
+      avocado.ui.grab(currentProject, evt);
+    }]);
   }, {category: ['commands']});
 
   add.method('togglePrivacy', function (evt) {
