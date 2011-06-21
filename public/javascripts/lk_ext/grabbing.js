@@ -73,7 +73,7 @@ Morph.addMethods({
 
         // If no DnD check, then we have a hit (unless no handler in which case a miss)
         if (!checkForDnD) {
-          if (this.mouseHandler && (!this.grabsShouldFallThrough || !evt.isForGrabbing())) { // Modified to check grabsShouldFallThrough and isForGrabbing. -- Adam, March 2010
+          if (this.mouseHandler && (!this.grabsShouldFallThrough || !evt.isForGrabbing() || this.shouldAllowSelecting())) { // Modified to check grabsShouldFallThrough and isForGrabbing. -- Adam, March 2010;  and shouldAllowSelecting() -- Adam, June 2011
             //if (droppingMorph) {console.log(this.inspect() + ">>morphToGrabOrReceive has a mouseHandler");}
             return this;
           } else {
@@ -93,7 +93,7 @@ Morph.addMethods({
             // On grabs, can't pick up the world or morphs that handle mousedown
             // DI:  I think the world is adequately checked for now elsewhere
             // else return (!evt.isCommandKey() && this === this.world()) ? null : this;
-            return this.okToBeGrabbedBy(evt) ? this : null; // Modified to check okToBeGrabbedBy(evt) -- Adam, August 2008
+            return this.okToBeGrabbedBy(evt) ? this : null; // Modified to check okToBeGrabbedBy(evt) -- Adam, August 2008;  
         }
 
     },

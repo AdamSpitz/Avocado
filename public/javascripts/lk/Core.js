@@ -3027,12 +3027,14 @@ Morph.addMethods({
 
 	handlesMouseDown: function(evt) {
 		if (this.mouseHandler == null || evt.isCommandKey()) return false;	//default behavior
+		if (this.shouldAllowSelecting()) { return true; } // added by Adam
 		return this.mouseHandler.handlesMouseDown(); 
 	},
 
 	onMouseDown: function(evt) { 
 		if (UserAgent.isTouch && this.checkForDoubleClick(evt)) { return true; } // Added by Adam
 		this.hideHelp();
+		if (this.shouldAllowSelecting()) { this.makeSelection(evt); } // Added by Adam
 	}, //default behavior
 
 	onMouseMove: function(evt, hasFocus) { //default behavior
@@ -3281,9 +3283,10 @@ addAllHandles: function(evt) {
 			["reset scaling", this.setScale.curry(1)],
 			[((this.suppressGrabbing) ? "[] grabbing" : "[X] grabbing"), function(){this.suppressGrabbing = !this.suppressGrabbing}.bind(this)],
 			[((this.suppressHandles) ? "[] handles" : "[X] handles"), function(){this.suppressHandles = !this.suppressHandles}.bind(this)],
+			[((this._shouldAllowSelecting) ? "disallow selecting" : "allow selecting"), function(){this._shouldAllowSelecting = !this._shouldAllowSelecting; console.log("Just set _shouldAllowSelecting of " + reflect(this).inspect() + " to " + this._shouldAllowSelecting); }.bind(this)], // added by Adam
 			[((this.fishEye) ? "turn fisheye off" : "turn fisheye on"), this.toggleFisheye],
 			[(this.openForDragAndDrop ? "close DnD" : "open DnD"), this.toggleDnD.curry(evt.point())],
-			["add button behavior", function() { this.addMorph(new ButtonBehaviorMorph(this)); }],
+			// ["add button behavior", function() { this.addMorph(new ButtonBehaviorMorph(this)); }], // commented out by Adam - need the room in the menu
 			[(this.copySubmorphsOnGrab ? "unpalettize" :  "palettize"), function() { this.copySubmorphsOnGrab = !this.copySubmorphsOnGrab; }]
 		];
 		var windowItems = [
@@ -3297,7 +3300,7 @@ addAllHandles: function(evt) {
 		];
 		return [
 			['Properties', propertiesItems],
-			['Window and World', windowItems]
+			// ['Window and World', windowItems] // commented out by Adam - don't want this stuff, and need to make room in the menu
 		]
 	},
 

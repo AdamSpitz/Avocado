@@ -82,6 +82,27 @@ Morph.addMethods({
         this.showContextMenu(evt);
       }
     },
+
+    // Copied and adapted from PasteUpMorph - it's convenient to be able to allow any morph to do selecting. -- Adam, June 2011
+  	makeSelection: function(evt) {	//default behavior is to grab a submorph
+  		if (this.currentSelection != null) this.currentSelection.removeOnlyIt();
+
+      var p = this.localizePointFrom(evt.point(), this.world());
+  		var m = new SelectionMorph(p.asRectangle(), this);
+  		this.currentSelection = m;
+
+  		this.addMorph(m);
+  		var handle = new HandleMorph(pt(0,0), lively.scene.Rectangle, evt.hand, m, "bottomRight");
+  		handle.setExtent(pt(0, 0));
+  		handle.mode = 'reshape';
+  		m.addMorph(handle);
+  		evt.hand.setMouseFocus(handle);
+  		evt.hand.setKeyboardFocus(handle);
+  	},
+  	
+  	shouldAllowSelecting: function() {
+  	  return this._shouldAllowSelecting;
+  	},
     
     eachSubmorphRecursively: function(f) {
       this.submorphs.forEach(function(m) {
