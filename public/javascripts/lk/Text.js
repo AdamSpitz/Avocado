@@ -1567,7 +1567,7 @@ BoxMorph.subclass('TextMorph', {
 
 		var jRect = this.getCharBounds(0);
 		if (jRect == null) { 
-			console.log("fitWidth failure on TextMorph.getCharBounds");
+			// console.log("fitWidth failure on TextMorph.getCharBounds"); // commented out because it's very annoying -- Adam, June 2011
 			var s = this.shape;
 			s.setBounds(s.bounds().withHeight(this.lineHeight()));
 			return; 
