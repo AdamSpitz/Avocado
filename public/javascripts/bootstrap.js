@@ -626,6 +626,14 @@ var annotator = {
     return true;
   },
   
+  isMagicSlotNameOnFunction: function(o, n) {
+    if (typeof(o) !== 'function') { return false; }
+    if (this.LK_slotNamesAttachedToMethods.include(n)) { return true; }
+    var hasSuper = o.argumentNames && o.argumentNames().first() === '$super';
+    if (hasSuper && this.LK_slotNamesUsedForMakingSuperWork.include(n)) { return true; }
+    return false;
+  },
+  
   creatorSlotDeterminableFromTheObjectItself: function(o) {
     // Some very common kinds of objects have enough information in them to let us know the creator
     // slot without being explicitly told.
@@ -814,6 +822,7 @@ annotator.annotationOf(avocado.transporter).setCreatorSlot('transporter', avocad
 annotator.annotationOf(avocado).setSlotAnnotation('transporter', {category: ['transporter']});
 
 avocado.transporter.loadedURLs = {};
+annotator.annotationOf(avocado.transporter).slotAnnotation('loadedURLs').setInitializationExpression("{}");
 
 avocado.transporter.loadOrder = [];
 
@@ -826,8 +835,10 @@ avocado.transporter.module.version = {};
 annotator.annotationOf(avocado.transporter.module.version).setCreatorSlot('version', avocado.transporter.module);
 
 avocado.transporter.module.cache = {};
+annotator.annotationOf(avocado.transporter.module).slotAnnotation('cache').setInitializationExpression("{}");
 
 avocado.transporter.module.onLoadCallbacks = {};
+annotator.annotationOf(avocado.transporter.module).slotAnnotation('onLoadCallbacks').setInitializationExpression("{}");
 
 avocado.transporter.slotCollection = {};
 annotator.annotationOf(avocado.transporter.slotCollection).setCreatorSlot('slotCollection', avocado.transporter);
@@ -1130,6 +1141,8 @@ thisModule.addSlots(avocado.transporter, function(add) {
       }
     }).join("\n"));
   }, {category: ['bootstrapping']});
+  
+  add.data('whatHasAlreadyBeenLoaded', {}, {category: ['bootstrapping'], initializeTo: '{}'});
 
   add.method('createAvocadoWorld', function () {
     Event.prepareEventSystem();
@@ -1142,7 +1155,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded', function () {
-    if (avocado.transporter.isDoneLoadingAvocadoLib && avocado.transporter.isDoneLoadingWindow) {
+    if (avocado.transporter.whatHasAlreadyBeenLoaded.isDoneLoadingAvocadoLib && avocado.transporter.whatHasAlreadyBeenLoaded.isDoneLoadingWindow) {
       avocado.world = avocado.transporter.createAvocadoWorld();
       if (avocado.theApplication && avocado.world.addApplication) { avocado.world.addApplication(avocado.theApplication); }
       avocado.transporter.callWhenWorldIsCreated();
@@ -1151,13 +1164,13 @@ thisModule.addSlots(avocado.transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingWindow', function () {
-    avocado.transporter.isDoneLoadingWindow = true;
+    avocado.transporter.whatHasAlreadyBeenLoaded.isDoneLoadingWindow = true;
     if (avocado.transporter.userInterfaceInitializer) { avocado.transporter.userInterfaceInitializer.doneLoadingWindow(); }
     avocado.transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAvocadoLib', function () {
-    avocado.transporter.isDoneLoadingAvocadoLib = true;
+    avocado.transporter.whatHasAlreadyBeenLoaded.isDoneLoadingAvocadoLib = true;
     avocado.transporter.createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded();
   }, {category: ['bootstrapping']});
 

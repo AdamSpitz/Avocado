@@ -72,6 +72,7 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     var resultRows = results.map(function(o) { return o.createMorphsForSearchResults(); });
     this._resultsPanel.replaceContentWith(avocado.tableContents.createWithRows(resultRows));
     this.expander().expand();
+    return this;
   });
 
   add.method('partsOfUIState', function () {

@@ -320,7 +320,10 @@ thisModule.addSlots(avocado.unownedSlotFinder, function(add) {
   add.method('reachedSlot', function (holder, slotName, contents) {
     var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
     if (! slotAnno.getModule()) {
+      if (avocado.annotator.isMagicSlotNameOnFunction(holder, slotName)) { return; }
       var slot = reflect(holder).slotAt(slotName);
+      if (slot.isFromACopyDownParent()) { return; }
+      
       console.log("Found unowned slot: " + slot.holder().name() + "." + slot.name());
       this._results.push(slot);
     }

@@ -78,7 +78,7 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('loadLivelyKernelCodeIfReadyAndTheWindowIsLoaded', function () {
-    if (avocado.transporter.callWhenDoneLoadingLivelyKernelCode && (document.body || avocado.transporter.isDoneLoadingWindow)) {
+    if (avocado.transporter.callWhenDoneLoadingLivelyKernelCode && (document.body || avocado.transporter.whatHasAlreadyBeenLoaded.isDoneLoadingWindow)) {
       this.loadLivelyKernelCode(avocado.transporter.callWhenDoneLoadingLivelyKernelCode);
     }
   }, {category: ['bootstrapping']});
