@@ -646,9 +646,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return ! nonTrivialSlot;
   }, {category: ['testing']});
 
-  add.method('isReflecteeRemoteReference', function () {
-    if (! this.canHaveSlots()) { return false; }
-    return this.reflectee().isRemoteReference;
+  add.method('reflecteeDBReference', function () {
+    var anno = this.annotationForReading();
+    if (!anno) { return null; }
+    return anno.getDBRef();
   }, {category: ['testing']});
 
   add.method('isReflecteeDOMNode', function () {

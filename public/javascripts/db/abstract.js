@@ -28,8 +28,6 @@ thisModule.addSlots(avocado.remoteObjectReference, function(add) {
     this._id = id;
   }, {category: ['creating']});
 
-  add.data('isRemoteReference', true, {category: ['testing']});
-
   add.method('object', function () { return this._object; }, {category: ['accessing']});
 
   add.method('db', function () { return this._db; }, {category: ['accessing']});
@@ -78,11 +76,22 @@ thisModule.addSlots(avocado.remoteObjectReference, function(add) {
 });
 
 
+thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
+  
+  add.method('getDBRef', function () {
+    return this.dbRef;
+  }, {category: ['databases']});
+  
+  add.method('setDBRef', function (ref) {
+    this.dbRef = ref;
+  }, {category: ['databases']});
+  
+});
+
+
 thisModule.addSlots(avocado.remoteObjectReference.table, function(add) {
 
   add.data('databases', [], {initializeTo: '[]'});
-
-  add.data('refsByObject', avocado.dictionary.copyRemoveAll(avocado.dictionary.identityComparator), {initializeTo: 'avocado.dictionary.copyRemoveAll(avocado.dictionary.identityComparator)'});
 
   add.method('addDatabase', function (db) {
     if (! this.databases.include(db)) {
@@ -101,21 +110,25 @@ thisModule.addSlots(avocado.remoteObjectReference.table, function(add) {
   });
 
   add.method('rememberRefForObject', function (obj, ref) {
-    this.refsByObject.put(obj, ref);
+    avocado.annotator.annotationOf(obj).setDBRef(ref);
   });
 
   add.method('forgetRefForObject', function (obj) {
-    this.refsByObject.removeKey(obj);
-  });
-
-  add.method('refForObject', function (obj) {
-    return this.refsByObject.getOrIfAbsentPut(obj, function() {
-      return avocado.remoteObjectReference.create(obj);
-    });
+    avocado.annotator.annotationOf(obj).setDBRef(null);
   });
 
   add.method('existingRefForObject', function (obj) {
-    return this.refsByObject.get(obj);
+    return avocado.annotator.annotationOf(obj).getDBRef();
+  });
+
+  add.method('refForObject', function (obj) {
+    var anno = avocado.annotator.annotationOf(obj);
+    var ref = anno.getDBRef();
+    if (! ref) {
+      ref = avocado.remoteObjectReference.create(obj);
+      anno.setDBRef(ref);
+    }
+    return ref;
   });
 
   add.method('findDBReferredToAs', function (ref, callback) {

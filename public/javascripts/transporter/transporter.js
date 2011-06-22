@@ -475,9 +475,9 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
         info.contentsExpr = contents.expressionEvaluatingToMe();
       } else {
         var cs = contents.theCreatorSlot();
-        if (!cs && contents.isReflecteeRemoteReference()) {
-          info.isReferenceToRemoteObject = true;
-          info.remoteReference = contents.reflectee();
+        var dbRef = contents.reflecteeDBReference();
+        if (!cs && dbRef) {
+          info.remoteReference = dbRef;
         } else {
           if (!cs) {
             // console.log("Marking " + this.name() + " as a possible creator slot.");

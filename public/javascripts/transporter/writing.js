@@ -327,7 +327,7 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.json, function(add) {
       var slotNameToWrite = slotName;
       if (slotNameToWrite[0] === '_' && !info.isHardWired) { slotNameToWrite = 'underscoreReplacement' + slotNameToWrite; }
       if (info.isReferenceToWellKnownObjectThatIsCreatedElsewhere) { slotNameToWrite = slotNameToWrite + "__creatorPath"; }
-      if (info.isReferenceToRemoteObject) { slotNameToWrite = slotNameToWrite + "__id"; }
+      if (info.remoteReference) { slotNameToWrite = slotNameToWrite + "__id"; }
       this._buffer.append(slotNameToWrite.inspect(true)).append(": ");
     }
     
@@ -339,7 +339,7 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.json, function(add) {
       this.temporarilySwitchHolder(function() {
         this.fileOutSlots(reflect(info.isReferenceToWellKnownObjectThatIsCreatedElsewhere).normalSlots());
       }.bind(this));
-    } else if (info.isReferenceToRemoteObject) {
+    } else if (info.remoteReference) {
       var ref = info.remoteReference;
       if (! (ref.db() && typeof(ref.id()) !== 'undefined')) { throw new Error("Trying to file out a remote reference, but not sure where it lives. The object is " + ref.object()); }
       if (ref.db() === this._db) {

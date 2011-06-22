@@ -648,8 +648,10 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
     for (var i = 0, n = elementCreatorSlotChain.length; i < n; ++i) {
       s.push(" && p[", i, "] === ", elementCreatorSlotChain[n - 1 - i].name().inspect());
     }
-    s.push(" && doc.", this._nameOfAttributePointingToContainer, "__id !== undefined");
-    s.push(") { emit([doc.", this._nameOfAttributePointingToContainer, "__id, 1], doc); }");
+    var attrName = this._nameOfAttributePointingToContainer;
+    if (attrName[0] === '_') { attrName = 'underscoreReplacement' + attrName; }
+    s.push(" && doc.", attrName, "__id !== undefined");
+    s.push(") { emit([doc.", attrName, "__id, 1], doc); }");
     
     s.push(" }");
     return s.join("");
@@ -866,7 +868,7 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
     db.ensureDoesNotExist(function () {
       db.ensureExists(function () {
         var design = db.designWithName("queryTest");
-        var argleBargles = avocado.couch.db.relationships.oneToMany.create(avocado.couch.db.tests.argle, avocado.couch.db.tests.bargle, 'argle__ref');
+        var argleBargles = avocado.couch.db.relationships.oneToMany.create(avocado.couch.db.tests.argle, avocado.couch.db.tests.bargle, '_argle');
         design.addViewForRelationship(argleBargles);
         design.rawDoc().views.bFive = { map: "function(doc) { if (doc.b === 5) { emit(doc._id, doc); }}" };
         design.remove(function(responseObj) {
@@ -961,11 +963,12 @@ thisModule.addSlots(avocado.couch.db.tests.bargle, function(add) {
   });
 
   add.method('argle', function () {
-    return this.argle__ref.object();
+    return this._argle;
   });
 
   add.method('setArgle', function (argle) {
-    this.argle__ref = avocado.remoteObjectReference.table.refForObject(argle);
+    if (! reflect(argle).reflecteeDBReference()) { throw new Error("Must set argle to an object that is stored in a DB."); }
+    this._argle = argle;
   });
 
 });
