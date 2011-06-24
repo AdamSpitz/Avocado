@@ -320,7 +320,7 @@ thisModule.addSlots(avocado.couch.db, function(add) {
 
       if (realName.endsWith('__id')) {
         realName = realName.substr(0, realName.length - '__id'.length);
-        realContents = this.remoteRefForID(contents);
+        realContents = this.remoteRefForID(contents).object();
       }
       
       var nameChanged = name !== realName;
@@ -793,7 +793,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
   add.method('addObject', function (elementObj, callback) {
     this.db().addDocument(this.containerObj(), function(responseObj) { // aaa - figure out a better way to make sure the container obj is in the DB
       this._containerRef = responseObj.ref;
-      elementObj[this._relationship._nameOfAttributePointingToContainer] = responseObj.ref;
+      elementObj[this._relationship.nameOfAttributePointingToContainer()] = this.containerObj();
       this.db().addDocument(elementObj, function() {
         this.updateContents(callback);
       }.bind(this));
