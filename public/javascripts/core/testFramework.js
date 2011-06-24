@@ -30,16 +30,22 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('tearDown', function () {});
 
+  add.method('createAssertionFailureException', function (msg) {
+    var e = new Error(msg);
+    e.isAssertion = true;
+    return e;
+  });
+  
   add.method('assert', function (bool, msg) {
-        if (bool) return;
-        msg = " assert failed " + msg ? '(' + msg + ')' : '';
+    if (bool) { return; }
+    msg = " assert failed " + (msg ? '(' + msg + ')' : '');
 		this.show(this.id() + msg);
-        throw {isAssertion: true, message: msg, toString: function() { return msg }}
-    });
+    throw this.createAssertionFailureException(msg);
+  });
 
   add.method('assertEqual', function (firstValue, secondValue, msg) {
     if (! this.areEqual(firstValue, secondValue)) {
-      throw {isAssertion: true, message: (msg ? msg	 : "") + " (" + firstValue + " != " + secondValue + ") "};
+      throw this.createAssertionFailureException((msg || "") + " (" + firstValue + " != " + secondValue + ") ");
     }
   });
 
@@ -165,7 +171,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('assertNotEqual', function (firstValue, secondValue, msg) {
     if (this.areEqual(firstValue, secondValue)) {
-      throw {isAssertion: true, message: (msg ? msg	 : "") + " (" + firstValue + " == " + secondValue + ") "};
+      throw this.createAssertionFailureException((msg || "") + " (" + firstValue + " == " + secondValue + ") ");
     }
   });
 
