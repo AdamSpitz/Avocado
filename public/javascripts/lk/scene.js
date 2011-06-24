@@ -2006,10 +2006,39 @@ this.Shape.subclass('lively.scene.Path', {
 
 
 	containsPoint: function(p) {
+	  /*
 		var verts = this.vertices();
 		//if (UserAgent.webKitVersion >= 525)
 		return Rectangle.unionPts(verts).containsPoint(p);
 		//else return this.nativeContainsWorldPoint(p);
+		*/
+
+  	// aaa - Copied from the Polygon code, works better, important for wheel menus because
+  	// otherwise multiple wedges can be highlighted at a time -- Adam, June 2011
+		var counter = 0;
+		var vertices = this.vertices();
+		var p1 = vertices[0];
+		for (var i = 1; i <= vertices.length; i++) {
+			var p2 = vertices[i % vertices.length];
+			if (p.y > Math.min(p1.y, p2.y)) {
+				if (p.y <= Math.max(p1.y, p2.y)) {
+					if (p.x <= Math.max(p1.x, p2.x)) {
+						if (p1.y != p2.y) {
+							var xinters = (p.y-p1.y)*(p2.x-p1.x)/(p2.y-p1.y)+p1.x;
+							if (p1.x == p2.x || p.x <= xinters)
+								counter ++;
+						}
+					}
+				}
+			}
+			p1 = p2;
+		}
+
+		if (counter % 2 == 0) {
+			return false;
+		} else {
+			return true;
+		}
 	},
 
 	bounds: function() {
