@@ -354,12 +354,16 @@ var annotator = {
       return c.parts();
     },
     
-    getModule: function() {
+    getModuleAssignedToMeExplicitly: function() {
       return this.module;
     },
     
     setModule: function(m) {
       this.module = m;
+    },
+    
+    forgetModule: function() {
+      delete this.module;
     },
     
     getComment: function() {
@@ -583,10 +587,19 @@ var annotator = {
       if (!cs) { return null; }
       var slotAnno = this.existingSlotAnnotation(cs.holder, cs.name);
       if (slotAnno) {
-        var m = slotAnno.getModule();
+        var m = slotAnno.getModuleAssignedToMeExplicitly();
         if (m) { return m; }
       }
       p = cs.holder;
+    }
+  },
+  
+  setModuleIfNecessary: function(slotAnno, holder, desiredModule) {
+    var implicitModule = this.moduleOfAnyCreatorInChainFor(holder);
+    if ((implicitModule || null) === (desiredModule || null)) {
+      slotAnno.forgetModule();
+    } else {
+      slotAnno.setModule(desiredModule);
     }
   },
   
@@ -958,7 +971,7 @@ avocado.transporter.module.slotAdder = {
     if (! slotAnnotation) { slotAnnotation = Object.create(annotator.slotAnnotationPrototype); }
     slotAnnotation = holderAnno.asSlotAnnotation(slotAnnotation, name);
     this.holder[name] = contents;
-    slotAnnotation.setModule(this.module);
+    annotator.setModuleIfNecessary(slotAnnotation, this.holder, this.module);
     holderAnno.setSlotAnnotation(name, slotAnnotation);
     if (contentsAnnotation) { // used for creator slots
       annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);

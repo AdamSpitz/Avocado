@@ -739,7 +739,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('makeSureArrayIndexablesGetFiledOut', function (s) {
     if (this.canHaveIndexableSlots()) {
-      var module = s.module();
+      var module = s.getModuleAssignedToMeExplicitlyOrImplicitly();
       if (module) { module.slotCollection().addPossibleHolder(this.reflectee()); }
     }
   }, {category: ['annotations', 'creator slot']});
@@ -790,11 +790,23 @@ thisModule.addSlots(avocado.mirror, function(add) {
     
     return this.normalSlots().select(function(slot) { return filterizer.matchesSlot(slot); });
   }, {category: ['annotations', 'module']});
+  
+  add.method('getModuleAssignedToMeImplicitly', function () {
+    // For now, only implicit. Later, maybe we'll want a mechanism for explicitly
+    // saying "the slots on this object should belong to module M." But maybe not.
+    // Maybe it'll be enough that we can set it for the object's creator slot.
+    // -- Adam, June 2011
+    var cs = this.probableCreatorSlot();
+    if (cs && this.equals(cs.contents())) { return cs.getModuleAssignedToMeExplicitlyOrImplicitly(); }
+    return undefined;
+  }, {category: ['annotations', 'module']});
 
   add.method('modules', function () {
     var modules = [];
+    var implicitModule = this.getModuleAssignedToMeImplicitly();
     this.normalNonCopiedDownSlots().each(function(s) {
-      var m = s.module();
+      var m = s.getModuleAssignedToMeExplicitly();
+      if (!m) { m = implicitModule; }
       if (! modules.include(m)) { modules.push(m); }
     });
     return modules.sort();
@@ -1483,7 +1495,7 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     s3.setModule(m1);
     s5.setModule(m1);
     s2.setModule(m2);
-    this.assertEqual([null, m1, m2], mir.modules());
+    this.assertEqual([m1, m2, null], mir.modules().sort());
     this.assertEqual([s1, s2, s3, s4, s5], mir.slotsInModuleNamed({}          ).sort());
     this.assertEqual([s1,         s4    ], mir.slotsInModuleNamed(null        ).sort());
     this.assertEqual([        s3,     s5], mir.slotsInModuleNamed('temp_mod_1').sort());

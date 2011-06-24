@@ -319,7 +319,7 @@ thisModule.addSlots(avocado.unownedSlotFinder, function(add) {
 
   add.method('reachedSlot', function (holder, slotName, contents) {
     var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
-    if (! slotAnno.getModule()) {
+    if (! slotAnno.getModuleAssignedToMeExplicitly()) {
       if (avocado.annotator.isMagicSlotNameOnFunction(holder, slotName)) { return; }
       var slot = reflect(holder).slotAt(slotName);
       if (slot.isFromACopyDownParent()) { return; }
@@ -375,7 +375,7 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
 
   add.method('alsoAssignUnownedSlotsToModule', function (moduleOrFn) {
     return this.alsoAssignSlotsToModule(function(holder, slotName, contents, slotAnno) {
-      if (slotAnno.getModule()) {
+      if (slotAnno.getModuleAssignedToMeExplicitly()) {
         return undefined;
       } else {
         if (typeof(moduleOrFn) === 'function') {
@@ -452,7 +452,7 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
     
     if (module) {
       if (this._debugMode) { console.log("Setting module of " + slotName + " to " + module); }
-      slotAnno.setModule(module);
+      avocado.annotator.setModuleIfNecessary(slotAnno, holder, module);
       module.slotCollection().addPossibleHolder(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
       avocado.transporter.makeSureArrayIndexablesGetFiledOut(contents, module);
     } else {

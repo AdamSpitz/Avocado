@@ -166,11 +166,17 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
     return {oldCat: oldCat, newCat: this, numberOfRenamedSlots: slotCount};
   }, {category: ['renaming']});
 
+  add.method('getModuleAssignedToMeImplicitly', function () {
+    return this.mirror().getModuleAssignedToMeImplicitly();
+  }, {category: ['modules']});
+  
   add.method('modules', function () {
     var modules = [];
+    var implicitModule = this.getModuleAssignedToMeImplicitly();
     this.normalSlotsInMeAndSubcategories().each(function(s) {
       if (! s.isFromACopyDownParent()) {
-        var m = s.module();
+        var m = s.getModuleAssignedToMeExplicitly();
+        if (!m) { m = implicitModule; }
         if (! modules.include(m)) { modules.push(m); }
       }
     });

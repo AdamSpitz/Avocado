@@ -90,16 +90,26 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     return ! isNaN(i);
   }, {category: ['testing']});
 
+  add.method('getModuleAssignedToMeImplicitly', function () {
+    if (this.isFromACopyDownParent()) { return null; }
+    return this.holder().getModuleAssignedToMeImplicitly();
+  }, {category: ['accessing annotation', 'module']});
+
+  add.method('getModuleAssignedToMeExplicitlyOrImplicitly', function () {
+    return this.getModuleAssignedToMeExplicitly() || this.getModuleAssignedToMeImplicitly();
+  }, {category: ['accessing annotation', 'module']});
+
   add.method('isIncludedInModule', function (m) {
+    var myModule = this.getModuleAssignedToMeExplicitlyOrImplicitly();
     if (m) {
-      return this.module() === m;
+      return myModule === m;
     } else {
-      return !this.module();
+      return !myModule;
     }
   }, {category: ['accessing annotation', 'module']});
 
   add.method('markModuleAsChanged', function () {
-    var module = this.module();
+    var module = this.getModuleAssignedToMeExplicitlyOrImplicitly();
     if (module) { module.markAsChanged(); }
   }, {category: ['accessing annotation', 'module']});
 
@@ -185,14 +195,6 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
           avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(avocado.transporter.module)
         ]));
       }
-
-      if (isModifiable && this.setModuleRecursively) {
-        cmdList.addItem(avocado.command.create("set module recursively", function(evt, module) {
-          this.setModuleRecursively(module);
-        }).setArgumentSpecs([
-          avocado.command.argumentSpec.create("To which module?").onlyAcceptsType(avocado.transporter.module)
-        ]));
-      }
     }
 
     cmdList.addLine();
@@ -249,7 +251,7 @@ thisModule.addSlots(avocado.slots['abstract'].filterizer, function(add) {
   add.method('matchesSlot', function (slot) {
     if (this._shouldExcludeCopyDowns && slot.isFromACopyDownParent()) { return false; }
     
-    var m = slot.module();
+    var m = slot.getModuleAssignedToMeExplicitlyOrImplicitly();
     if (this._wantOnlyUnowned) { return !m; }
     if (this._moduleName) { return m && m.name() === this._moduleName; }
     
@@ -343,9 +345,9 @@ thisModule.addSlots(avocado.slots.parent, function(add) {
     return this.mirror().rootCategory();
   }, {category: ['accessing annotation', 'category']});
 
-  add.method('module', function () {
+  add.method('getModuleAssignedToMeExplicitly', function () {
     var cs = this.mirror().theCreatorSlot();
-    return cs ? cs.module() : null;
+    return cs ? cs.getModuleAssignedToMeExplicitly() : null;
   }, {category: ['accessing annotation', 'module']});
 
   add.method('initializationExpression', function () {
@@ -467,19 +469,19 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     return this;
   }, {category: ['creator slots']});
 
-  add.method('module', function () {
-    if (! this.hasAnnotation()) { return null; }
-    return this.annotationForWriting().getModule();
+  add.method('getModuleAssignedToMeExplicitly', function () {
+    if (! this.hasAnnotation()) { return undefined; }
+    return this.annotationForWriting().getModuleAssignedToMeExplicitly();
   }, {category: ['accessing annotation', 'module']});
 
   add.method('setModule', function (m) {
     var a = this.annotationForWriting();
-    var oldModule = a.getModule();
-    var holder = this.holder();
-    a.setModule(m);
+    var oldModule = this.getModuleAssignedToMeExplicitlyOrImplicitly();
+    var holderObj = this.holder().reflectee();
+    avocado.annotator.setModuleIfNecessary(a, holderObj, m);
     
     if (m)         {
-      m.slotCollection().addPossibleHolder(holder.reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
+      m.slotCollection().addPossibleHolder(holderObj); // aaa - there'll be a lot of duplicates; fix the performance later;
       m.markAsChanged();
     }
     
@@ -504,7 +506,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['accessing annotation', 'module']});
 
   add.method('moduleName', function () {
-    var module = this.module();
+    var module = this.getModuleAssignedToMeExplicitlyOrImplicitly();
     return module ? module.name() : "";
   }, {category: ['user interface', 'accessing annotation', 'module']});
 

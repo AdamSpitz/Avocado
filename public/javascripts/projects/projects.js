@@ -239,9 +239,10 @@ thisModule.addSlots(avocado.project, function(add) {
         // depend on it.
         var mMir = reflect(m);
         var cs = mMir.theCreatorSlot();
-        if (cs && cs.contents().equals(mMir) && cs.module() && !cs.holder().equals(currentWorldSubmorphsMir) && mMir.creatorSlotChain()) {
-          if (cs.module() !== currentWorldStateModule) {
-            currentWorldStateModule.addRequirement(cs.module().name());
+        var csModule;
+        if (cs && cs.contents().equals(mMir) && (csModule = cs.getModuleAssignedToMeExplicitlyOrImplicitly()) && !cs.holder().equals(currentWorldSubmorphsMir) && mMir.creatorSlotChain()) {
+          if (csModule !== currentWorldStateModule) {
+            currentWorldStateModule.addRequirement(csModule.name());
           }
         } else {
           morphsArrayMir.slotAt(currentWorldStateModule.morphs.length - 1).beCreator();

@@ -69,7 +69,7 @@ thisModule.addSlots(avocado.snapshotter, function(add) {
     var holderAnno = annotator.existingAnnotationOf(holder);
     if (holderAnno) {
       var slotAnno = holderAnno.existingSlotAnnotation(slotName);
-      if (slotAnno && slotAnno.getModule() === modules.init) { return; }
+      if (slotAnno && slotAnno.getModuleAssignedToMeExplicitly() === modules.init) { return; }
     }
     if (slotName === 'currentWorld') { return; } // aaa hack
     if (contents && contents.hasOwnProperty('rawNode') && contents !== contents.constructor.prototype) {
