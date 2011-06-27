@@ -81,7 +81,9 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
         var pathToTypePrototype = { previous: pathToType, slotHolder:   type, slotName: 'prototype' };
         walker.markObject(type, pathToType, true);
         walker.markObject(type.prototype, pathToTypePrototype, true);
+        walker.walk(type);
         walker.walk(type.prototype);
+        walker.reachedSlot(window, typeName, type); // aaa - if I do this, maybe I don't need the above line where I walk the type?
     });
     
     // another special case, I think
@@ -319,7 +321,7 @@ thisModule.addSlots(avocado.unownedSlotFinder, function(add) {
 
   add.method('reachedSlot', function (holder, slotName, contents) {
     var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
-    if (! slotAnno.getModuleAssignedToMeExplicitly()) {
+    if (! avocado.annotator.getModuleAssignedExplicitlyOrImplicitlyTo(slotAnno, holder)) {
       if (avocado.annotator.isMagicSlotNameOnFunction(holder, slotName)) { return; }
       var slot = reflect(holder).slotAt(slotName);
       if (slot.isFromACopyDownParent()) { return; }
@@ -366,16 +368,25 @@ thisModule.addSlots(avocado.referenceFinder, function(add) {
 
 thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
 
-  add.method('initialize', function ($super, shouldMakeCreatorSlots, shouldAlsoWalkSpecialUnreachableObjects, shouldBuildListsOfUsedIdentifiers) {
-    $super();
-    this.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
-    this.shouldAlsoWalkSpecialUnreachableObjects = shouldAlsoWalkSpecialUnreachableObjects;
-    this.shouldBuildListsOfUsedIdentifiers = shouldBuildListsOfUsedIdentifiers;
+  add.method('alsoMakeCreatorSlots', function () {
+    this.shouldMakeCreatorSlots = true;
+    return this;
+  });
+
+  add.method('alsoWalkSpecialUnreachableObjects', function () {
+    this.shouldAlsoWalkSpecialUnreachableObjects = true;
+    return this;
+  });
+
+  add.method('alsoBuildListsOfUsedIdentifiers', function () {
+    this.shouldBuildListsOfUsedIdentifiers = true;
+    return this;
   });
 
   add.method('alsoAssignUnownedSlotsToModule', function (moduleOrFn) {
     return this.alsoAssignSlotsToModule(function(holder, slotName, contents, slotAnno) {
-      if (slotAnno.getModuleAssignedToMeExplicitly()) {
+      var alreadyAssignedToModule = avocado.annotator.getModuleAssignedExplicitlyOrImplicitlyTo(slotAnno, holder);
+      if (alreadyAssignedToModule) {
         return undefined;
       } else {
         if (typeof(moduleOrFn) === 'function') {
@@ -452,7 +463,7 @@ thisModule.addSlots(avocado.objectGraphAnnotator, function(add) {
     
     if (module) {
       if (this._debugMode) { console.log("Setting module of " + slotName + " to " + module); }
-      avocado.annotator.setModuleIfNecessary(slotAnno, holder, module);
+      avocado.annotator.setModuleIfNecessary(slotAnno, holder, slotName, module);
       module.slotCollection().addPossibleHolder(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
       avocado.transporter.makeSureArrayIndexablesGetFiledOut(contents, module);
     } else {

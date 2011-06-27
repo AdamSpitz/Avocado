@@ -7,6 +7,8 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
   add.creator('morphIdentityComparator', {}, {category: ['one morph per object']});
 
+  add.data('_morphsByObject', null, {category: ['one morph per object'], initializeTo: 'null'});
+  
   add.method('morphsByObject', function () {
     return this._morphsByObject || (this._morphsByObject = avocado.dictionary.copyRemoveAll(this.morphIdentityComparator));
   }, {category: ['one morph per object']});

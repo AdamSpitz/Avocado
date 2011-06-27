@@ -52,3 +52,4 @@ DisplayThemes['lively'].expander = {
   fill: new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.75, 0.75, 0.95)),
                                          new lively.paint.Stop(1, new Color(0.5, 0.5, 0.9))])
 };
+avocado.annotator.annotationOf(DisplayThemes['lively'].expander).setCreatorSlot('expander', DisplayThemes['lively']);

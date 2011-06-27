@@ -259,7 +259,9 @@ thisModule.addSlots(avocado.project, function(add) {
   	};
   	reflect(currentWorldStateModule).slotAt('postFileIn').beCreator();
   	
-  	var walker = avocado.objectGraphAnnotator.create(true /* aaa - not sure this is a good idea */).setShouldWalkIndexables(true);
+  	var walker = avocado.objectGraphAnnotator.create();
+  	walker.alsoMakeCreatorSlots(); // aaa - not sure this is a good idea
+  	walker.setShouldWalkIndexables(true);
   	walker.alsoAssignUnownedSlotsToModule(function(holder, slotName, slotContents, slotAnno) {
   	  if (holder === currentWorldStateModule) { return currentWorldStateModule; }
   	  return avocado.annotator.moduleOfAnyCreatorInChainFor(holder);

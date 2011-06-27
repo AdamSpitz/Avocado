@@ -238,6 +238,34 @@ var annotator = {
       if (! (ss instanceof Array)) { return ss; }
       return ss && ss.length === 1 ? ss[0] : null;
     },
+
+    theCreatorSlot: function () {
+      // aaa - I think I should just make this call probableCreatorSlot
+      return this.explicitlySpecifiedCreatorSlot() || this.onlyPossibleCreatorSlot();
+    },
+
+    probableCreatorSlot: function () {
+      var cs = this.explicitlySpecifiedCreatorSlot();
+      if (cs) { return cs; }
+      var count = this.numberOfPossibleCreatorSlots();
+      if (count === 0) { return null;     }
+      if (count === 1) { return this.onlyPossibleCreatorSlot(); }
+      var slots = this.arrayOfPossibleCreatorSlots();
+      var shortest = null;
+      var shortestLength;
+      for (var i = 0, n = slots.length; i < n; ++i) {
+        var s = slots[i];
+        var sLength = avocado.annotator.creatorChainLength(s.holder);
+        if (typeof(sLength) === 'number') {
+          if (!shortest || sLength < shortestLength) {
+            // This one's shorter, so probably better; use it instead.
+            shortest = s;
+            shortestLength = sLength;
+          }
+        }
+      }
+      return shortest;
+    },
     
     arrayOfPossibleCreatorSlots: function () {
       var ss = this.possibleCreatorSlots;
@@ -594,12 +622,23 @@ var annotator = {
     }
   },
   
-  setModuleIfNecessary: function(slotAnno, holder, desiredModule) {
+  getModuleAssignedExplicitlyOrImplicitlyTo: function(slotAnno, holder) {
+    return slotAnno.getModuleAssignedToMeExplicitly() || this.moduleOfAnyCreatorInChainFor(holder);
+  },
+  
+  setModuleIfNecessary: function(slotAnno, holder, slotName, desiredModule) {
     var implicitModule = this.moduleOfAnyCreatorInChainFor(holder);
     if ((implicitModule || null) === (desiredModule || null)) {
       slotAnno.forgetModule();
     } else {
       slotAnno.setModule(desiredModule);
+      
+      var shouldLogModules = false;
+      if (shouldLogModules) {
+        var chain = this.creatorSlotChainOf(holder);
+        chain.push(slotName);
+        console.log("Setting module of " + chain.join(".") + " to " + desiredModule._name);
+      }
     }
   },
   
@@ -673,7 +712,32 @@ var annotator = {
     if (cs) { return cs; }
     var a = this.existingAnnotationOf(o);
     if (!a) { return null; }
-    return a.explicitlySpecifiedCreatorSlot() || a.onlyPossibleCreatorSlot();
+    return a.probableCreatorSlot();
+  },
+  
+  creatorSlotChainOf: function(o) {
+    var chain = [];
+    var h = o;
+    while (true) {
+      var cs = this.theCreatorSlotOf(h);
+      if (! cs) { break; }
+      chain.unshift(cs.name);
+      h = cs.holder;
+    }
+    return chain;
+  },
+
+  creatorChainLength: function (o) {
+    var len = 0;
+    while (o !== window) {
+      var anno = this.existingAnnotationOf(o);
+      if (!anno) { return null; }
+      var cs = anno.theCreatorSlot(); // aaa wrong - should be probableCreatorSlot, I think, but gotta avoid infinite loop
+      if (!cs) { return null; }
+      len += 1;
+      o = cs.holder;
+    }
+    return len;
   },
   
   canonicalCategoryParts: [],
@@ -971,7 +1035,7 @@ avocado.transporter.module.slotAdder = {
     if (! slotAnnotation) { slotAnnotation = Object.create(annotator.slotAnnotationPrototype); }
     slotAnnotation = holderAnno.asSlotAnnotation(slotAnnotation, name);
     this.holder[name] = contents;
-    annotator.setModuleIfNecessary(slotAnnotation, this.holder, this.module);
+    annotator.setModuleIfNecessary(slotAnnotation, this.holder, name, this.module);
     holderAnno.setSlotAnnotation(name, slotAnnotation);
     if (contentsAnnotation) { // used for creator slots
       annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);
@@ -1137,7 +1201,12 @@ thisModule.addSlots(avocado.transporter, function(add) {
     // The right solution in the long run, I think, is to have some clear way of specifying
     // whether the programming-environment stuff should be loaded. -- Adam
     if (!UserAgent.isIPhone) {
-      avocado.objectGraphAnnotator.create(true, true, true).alsoAssignUnownedSlotsToModule(initModule).go();
+      var annotator = avocado.objectGraphAnnotator.create();
+      annotator.alsoMakeCreatorSlots();
+      annotator.alsoWalkSpecialUnreachableObjects();
+      annotator.alsoBuildListsOfUsedIdentifiers();
+      annotator.alsoAssignUnownedSlotsToModule(initModule);
+      annotator.go();
     }
   }, {category: ['bootstrapping']});
 

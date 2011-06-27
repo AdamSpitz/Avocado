@@ -478,7 +478,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     var a = this.annotationForWriting();
     var oldModule = this.getModuleAssignedToMeExplicitlyOrImplicitly();
     var holderObj = this.holder().reflectee();
-    avocado.annotator.setModuleIfNecessary(a, holderObj, m);
+    avocado.annotator.setModuleIfNecessary(a, holderObj, this.name(), m);
     
     if (m)         {
       m.slotCollection().addPossibleHolder(holderObj); // aaa - there'll be a lot of duplicates; fix the performance later;

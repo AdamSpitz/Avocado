@@ -80,7 +80,6 @@ newModule('transporter/writing');
 newModule('lk_ext/carrying_hand');
 newModule('transporter/loading_and_saving');
 newModule('transporter/ordering');
-newModule('reflection/annotation');
 newModule('reflection/process');
 newModule('core/identity_hash');
 newModule('core/hash_table');

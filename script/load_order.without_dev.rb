@@ -38,7 +38,6 @@ newModule('core/string_extensions');
 newModule('core/dependencies');
 newModule('core/sound');
 newModule('core/types');
-newModule('reflection/annotation');
 newModule('core/math');
 newModule('core/linked_list');
 newModule('reflection/process');

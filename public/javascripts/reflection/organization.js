@@ -138,6 +138,8 @@ thisModule.addSlots(avocado.organizationUsingAnnotations, function(add) {
     s.annotationForWriting().setComment(c);
   }, {category: ['comments']});
 
+  add.data('_rememberedPosesByName', null, {category: ['poses'], initializeTo: 'null'});
+  
   add.method('poses', function () {
     return this._rememberedPosesByName || (this._rememberedPosesByName = avocado.dictionary.copyRemoveAll());
   }, {category: ['poses']});
