@@ -454,7 +454,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
       name: this.name(),
       creationMethod: "data",
       contentsExpr: undefined,
-      rawAnnotation: this.annotationForReading && this.annotationForReading() && this.annotationForReading().asRawDataObject(),
+      rawAnnotation: this.annotationIfAny && this.annotationIfAny() && this.annotationIfAny().asRawDataObject(),
       contentsRawAnnotation: contents.annotationForReading() && contents.annotationForReading().asRawDataObject(),
       isCreator: false,
       isReferenceToWellKnownObjectThatIsCreatedElsewhere: false,

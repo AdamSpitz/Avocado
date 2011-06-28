@@ -399,26 +399,6 @@ thisModule.addSlots(avocado.mirror, function(add) {
     });
   }, {category: ['iterating']});
 
-  add.method('aaa_old_eachImmediateSubcategoryOf', function (c, f) {
-    // aaaaaaaaaaaaaaaaa remove this if the new way works.
-    var subcats = {};
-    this.normalSlots().each(function(s) {
-      var sc = s.category();
-      if (sc.isSubcategoryOf(c)) {
-        var subcatName = sc.part(c.parts().length);
-        if (! subcats.hasOwnProperty(subcatName)) {
-          subcats[subcatName] = c.subcategory(subcatName);
-        }
-      }
-    });
-
-    for (var name in subcats) {
-      if (subcats.hasOwnProperty(name)) {
-        f(subcats[name]);
-      }
-    }
-  }, {category: ['iterating']});
-
   add.method('immediateSubcategoriesOf', function (c) {
     return avocado.enumerator.create(this, 'eachImmediateSubcategoryOf', c);
   }, {category: ['iterating']});
@@ -1561,6 +1541,40 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     this.assertIdentity('undefined', d.get(reflect(undefined)));
     this.assertIdentity('an object', d.get(reflect(o1)));
     this.assertIdentity('another object', d.get(reflect(o2)));
+  });
+
+  add.method('testInheritingSlotAnnotations', function () {
+    var o1 = {};
+    var o2 = Object.create(o1);
+    var o3 = Object.create(o2);
+    var s1_a = reflect(o1).addData('a', 1).setComment('comment 1a');
+    var s1_b = reflect(o1).addData('b', 1).setComment('comment 1b');
+    var s2_a = reflect(o2).addData('a', 2).setComment('comment 2a');
+    var s2_c = reflect(o2).addData('c', 2).setComment('comment 2c');
+    var s2_d = reflect(o2).addData('d', 2).setComment('comment 2d');
+    
+    this.assertIdentity('comment 2a', reflect(o3).slotAt('a').comment());
+    this.assertIdentity('comment 1b', reflect(o3).slotAt('b').comment());
+    this.assertIdentity('comment 2c', reflect(o3).slotAt('c').comment());
+    this.assertIdentity('comment 2d', reflect(o3).slotAt('d').comment());
+    this.assert(! reflect(o3).slotAt('e').comment());
+    
+    var s3_a = reflect(o3).addData('a', 3).setComment('comment 3a');
+    var s3_b = reflect(o3).addData('b', 3).setComment('comment 3b');
+    var s3_c = reflect(o3).addData('c', 3).setComment('comment 3c');
+    var s3_e = reflect(o3).addData('e', 3).setComment('comment 3e');
+    
+    this.assertIdentity('comment 3a', reflect(o3).slotAt('a').comment());
+    this.assertIdentity('comment 3b', reflect(o3).slotAt('b').comment());
+    this.assertIdentity('comment 3c', reflect(o3).slotAt('c').comment());
+    this.assertIdentity('comment 2d', reflect(o3).slotAt('d').comment());
+    this.assertIdentity('comment 3e', reflect(o3).slotAt('e').comment());
+    
+    this.assertIdentity('comment 2a', reflect(o3).slotAt('a').inheritedAnnotation().getComment());
+    this.assertIdentity('comment 1b', reflect(o3).slotAt('b').inheritedAnnotation().getComment());
+    this.assertIdentity('comment 2c', reflect(o3).slotAt('c').inheritedAnnotation().getComment());
+    this.assertIdentity('comment 2d', reflect(o3).slotAt('d').inheritedAnnotation().getComment());
+    this.assert(! reflect(o3).slotAt('e').inheritedAnnotation());
   });
 
 });

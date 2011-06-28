@@ -60,7 +60,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     this.applyAppropriateStyles();
 
     var optionalCommentButtonMorph, buttonChooserMorph;
-    if (slot.annotationForReading) {
+    if (slot.annotationIfAny) {
       if (this.shouldUseZooming()) {
         this._annotationToggler = avocado.scaleBasedMorphHider.create(this, this.createRow(function() { return this.annotationMorph(); }.bind(this)), this, 4, pt(50,25)); // aaa made-up space-holder-size number
       } else {
@@ -379,7 +379,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       if (! this.shouldUseZooming()) {
         if (this._sourceToggler) { cmdList.addItem(this._sourceToggler.commandForToggling("contents")); }
         if (this._commentToggler) { cmdList.addItem(this._commentToggler.commandForToggling("comment").onlyApplicableIf(function() {return this.slot().comment; }.bind(this))); }
-        if (this._annotationToggler) { cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this.slot().annotationForReading; }.bind(this))); }
+        if (this._annotationToggler) { cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this.slot().annotationIfAny; }.bind(this))); }
       }
     }
     

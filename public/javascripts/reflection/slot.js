@@ -438,7 +438,13 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     return newSlot;
   }, {category: ['accessing']});
 
-  add.method('hasAnnotation', function () {
+  add.method('hasInheritedOrUninheritedAnnotation', function () {
+    var hasUninheritedOne = this.hasUninheritedAnnotation();
+    if (hasUninheritedOne) { return hasUninheritedOne; }
+    return this.inheritedAnnotation();
+  }, {category: ['accessing annotation']});
+
+  add.method('hasUninheritedAnnotation', function () {
     return this.holder().hasAnnotation() && this.holder().annotationForReading().existingSlotAnnotation(this.name());
   }, {category: ['accessing annotation']});
 
@@ -455,12 +461,25 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['accessing annotation']});
 
   add.method('annotationIfAny', function () {
-    return this.annotationForReading();
+    if (! this.holder().hasAnnotation()) { return null; }
+    return this.holder().annotationForWriting().existingSlotAnnotation(this.name());
   }, {category: ['accessing annotation']});
 
   add.method('annotationForReading', function () {
-    if (! this.holder().hasAnnotation()) { return null; }
-    return this.holder().annotationForWriting().existingSlotAnnotation(this.name());
+    return this.annotationIfAny() || this.inheritedAnnotation();
+  }, {category: ['accessing annotation']});
+
+  add.method('inheritedAnnotation', function () {
+    var h = this.holder();
+    while (true) {
+      h = h.parentOrNull();
+      if (!h) { return null; }
+      var s = h.slotAt(this.name());
+      if (s) {
+        var a = s.annotationIfAny();
+        if (a) { return a; }
+      }
+    }
   }, {category: ['accessing annotation']});
 
   add.method('beCreator', function () {
@@ -470,7 +489,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['creator slots']});
 
   add.method('getModuleAssignedToMeExplicitly', function () {
-    if (! this.hasAnnotation()) { return undefined; }
+    if (! this.hasUninheritedAnnotation()) { return undefined; }
     return this.annotationForWriting().getModuleAssignedToMeExplicitly();
   }, {category: ['accessing annotation', 'module']});
 
@@ -492,10 +511,11 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     this.contents().makeSureArrayIndexablesGetFiledOut(this);
     
     avocado.ui.justChanged(this);
+    return this;
   }, {category: ['accessing annotation', 'module']});
 
   add.method('setModuleRecursively', function (m) {
-    if (this.isFromACopyDownParent()) { return; }
+    if (this.isFromACopyDownParent()) { return this; }
     this.setModule(m);
     var c = this.contents();
     if (!c.reflecteeStoreString() && !c.isReflecteeSimpleMethod() && !c.isReflecteeDOMNode() && !this.initializationExpression()) { // no need if we're not going to be filing in the object slot-by-slot anyway
@@ -503,6 +523,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
         c.setModuleRecursively(m);
       }
     }
+    return this;
   }, {category: ['accessing annotation', 'module']});
 
   add.method('moduleName', function () {
@@ -521,12 +542,13 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['user interface', 'accessing annotation', 'module']});
 
   add.method('initializationExpression', function () {
-    if (! this.hasAnnotation()) { return ""; }
+    if (! this.hasInheritedOrUninheritedAnnotation()) { return ""; }
     return this.annotationForReading().initializationExpression() || "";
   }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('setInitializationExpression', function (e) {
     this.annotationForWriting().setInitializationExpression(e);
+    return this;
   }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('comment', function () {
@@ -535,6 +557,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('setComment', function (c) {
     avocado.organization.current.setCommentForSlot(this, c);
+    return this;
   }, {category: ['accessing annotation', 'comment']});
 
   add.method('category', function () {
@@ -546,6 +569,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
 
   add.method('setCategory', function (c) {
     avocado.organization.current.setCategoryForSlot(this, c.parts());
+    return this;
   }, {category: ['accessing annotation', 'category']});
 
   add.method('copyDownParentThatIAmFrom', function () {

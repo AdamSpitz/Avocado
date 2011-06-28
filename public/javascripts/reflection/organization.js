@@ -106,8 +106,8 @@ thisModule.addSlots(avocado.organizationUsingAnnotations, function(add) {
   }, {category: ['copying']});
 
   add.method('categoryOrNullForSlot', function (s) {
-    if (! s.hasAnnotation()) { return null; }
-    return s.annotationForWriting().categoryParts();
+    if (! s.hasInheritedOrUninheritedAnnotation()) { return null; }
+    return s.annotationForReading().categoryParts();
   }, {category: ['categories']});
 
   add.method('setCategoryForSlot', function (s, catParts) {
@@ -127,8 +127,8 @@ thisModule.addSlots(avocado.organizationUsingAnnotations, function(add) {
   }, {category: ['comments']});
 
   add.method('commentOrNullForSlot', function (s) {
-    if (! s.hasAnnotation()) { return null; }
-    var a = s.annotationForWriting();
+    if (! s.hasInheritedOrUninheritedAnnotation()) { return null; }
+    var a = s.annotationForReading();
     var c = a.getComment();
     if (c === undefined) { return null; }
     return c;
