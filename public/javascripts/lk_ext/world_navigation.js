@@ -10,6 +10,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       var factor = Math.pow(1.2, (evt.rawEvent.wheelDeltaY / -600));
       this.zoomBy(factor, evt.point());
       this.refreshContentIfOnScreenOfMeAndSubmorphs(); // I hope this isn't too slow
+      // this.staySameSizeAndSmoothlyScaleTo(this.getScale() * factor, evt.point(), 200, 80, this.refreshContentIfOnScreenOfMeAndSubmorphs.bind(this));
       return true;
     }
   }, {category: ['navigation']});
@@ -53,71 +54,65 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       // m.startZoomingInAStraightLineTo(m.position().addPt(delta), false, false, true);
       m.moveBy(delta);
     });
-    
+  }, {category: ['navigation']});
+  
+  add.method('smoothlySlideBy', function (p, functionToCallWhenDone) {
+    var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
+    var a = avocado.animation.newMovement(worldNavigator, avocado.animation.straightPath, p, p.r() * this.getScale() / 400, false, false, true);
+    worldNavigator.startZoomAnimation(a, functionToCallWhenDone);
   }, {category: ['navigation']});
   
   add.method('zoomBy', function (factor, pointerPosition) {
+    this.zoomTo(this.getScale() * factor, pointerPosition);
+  }, {category: ['navigation']});
+  
+  add.method('zoomTo', function (scale, pointerPosition) {
     var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
     
-    worldNavigator.staySameSizeAndScaleTo(this.getScale() * factor, pointerPosition);
+    worldNavigator.staySameSizeAndScaleTo(scale, pointerPosition);
   }, {category: ['navigation']});
 
   add.method('stickyMorphs', function (f) {
     return this.submorphs.select(function(m) { return m.shouldStickToScreen; });
   });
 
-  add.method('staySameSizeAndSmoothlyScaleTo', function (desiredScale, currentPointerPos, functionToCallWhenDone) {
-    
-    throw new Error("This code is just broken, replace it with something that repeatedly calls staySameSizeAndScaleTo instead.");
-    
-    var originalViewableArea = this.getExtent();
-    var originalScale = this.getScale();
-    var scalingFactor = desiredScale / originalScale;
-    var newViewableArea = originalViewableArea.scaleBy(1 / scalingFactor);
-    
-    var newPointerPos = currentPointerPos.scaleBy(scalingFactor);
-    var pointerDelta = currentPointerPos.subPt(newPointerPos);
-    
-    var newPos = pointerDelta;
-    
-    /*
-    var currentCenterPos = this.getExtent().scaleBy(0.5);
-    var desiredDelta = desiredCenterPos.subPt(currentCenterPos);
-    var maxDelta = originalViewableArea.subPt(originalViewableArea.scaleBy(1 / scalingFactor)).abs();
-    var delta = desiredDelta.minMaxPt(maxDelta, maxDelta.negated());
-    //console.log("Scaling by " + scalingFactor + ", translating by " + delta + ", max was " + maxDelta);
-    var newCenterPos = currentCenterPos.addPt(delta);
-    var newTopLeft = newCenterPos.subPt(newViewableArea.scaleBy(0.5));
-    var newPos = newTopLeft.negated();
-    */
-    
-    var desiredSize = this.getExtent().scaleBy(this.getScale());
-    var accessor = {
-      getValue: function(m) {return m.getScale();},
-      setValue: function(m, v) {
-        var os = m.getScale();
-        var sf = v / os;
-        
-        m.setScale(v);
-        m.setExtent(desiredSize.scaleBy(1 / v));
-        m.hands().forEach(function(h) {
-          h.setScale(1 / v);
-          
-          var hnp = h.getPosition();
-          var hop = hnp.scaleBy(sf);
-          var d = hop.subPt(hnp);
-          h.moveBy(d);
-        });
-      }
-    };
-    
-    var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
-    var scaler   = avocado.animation.newSpeedStepper(worldNavigator, desiredScale, accessor, 200, 80);
-    var mover    = avocado.animation.newMovement(worldNavigator, avocado.animation.straightPath, newPos, 2, false, false, true);
-    var animator = avocado.animation.simultaneous.create("scaler and mover", [scaler, mover]);
-    animator.whenDoneCall(functionToCallWhenDone);
-    animator.startAnimating(worldNavigator);
+  add.method('startZoomAnimation', function (animation, functionToCallWhenDone) {
+    if (this._zoomAnimation) { this._zoomAnimation.stopAnimating(); }
+    this._zoomAnimation = animation;
+    this.startAnimating(this._zoomAnimation, function() {
+      delete this._zoomAnimation;
+      if (functionToCallWhenDone) { functionToCallWhenDone(); }
+    }.bind(this));
   }, {category: ['scaling']});
+
+  add.method('staySameSizeAndSmoothlyScaleTo', function (desiredScale, currentPointerPosFn, mainDuration, accelOrDecelDuration, functionToCallWhenDone) {
+    var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
+    this.startZoomAnimation(avocado.animation.newSpeedStepper(worldNavigator, desiredScale, {
+      getValue: function(m   ) { return worldNavigator.getScale();                                       },
+      setValue: function(m, v) {        worldNavigator.staySameSizeAndScaleTo(v, currentPointerPosFn()); }
+    }, mainDuration, accelOrDecelDuration), functionToCallWhenDone);
+  }, {category: ['scaling']});
+
+  add.method('staySameSizeAndSmoothlySlideAndScaleTo', function (desiredPosition, desiredScale, targetMorph, functionToCallWhenDone) {
+    var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
+    
+    var currentScale = worldNavigator.getScale();
+    var totalDistance = worldNavigator.getPosition().subPt(desiredPosition).r();
+    var cruisingScale = currentScale / ((0.001 * totalDistance) + 1);
+    
+    //console.log("totalDistance is " + totalDistance + ", using cruisingScale " + cruisingScale);
+
+    this.staySameSizeAndSmoothlyScaleTo(cruisingScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, 400, function() {
+      var targetMorphCenterPos = targetMorph.getPosition().addPt(targetMorph.getExtent().scaleBy(targetMorph.getScale() * 0.5));
+      var cruisingEndPosition = targetMorphCenterPos.subPt(this.getExtent().scaleBy(0.5));
+      
+      //console.log("cruisingEndPosition: " + cruisingEndPosition);
+      this.smoothlySlideBy(cruisingEndPosition.negated(), function() {
+        //console.log("desiredScale: " + desiredScale);
+        this.staySameSizeAndSmoothlyScaleTo(desiredScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, 400, functionToCallWhenDone);
+      }.bind(this));
+    }.bind(this));
+  }, {category: ['navigation']});
 
 });
 
@@ -144,7 +139,7 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     return this._position;
   });
 
-  add.method('setPositionAndDoMotionBlurIfNecessary', function (newPos, blurTime) {
+  add.method('setPositionAndDoMotionBlurIfNecessary', function (newPos) {
     var delta = newPos.subPt(this.getPosition());
     this._world.slideBy(delta);
     this._position = newPos;
@@ -172,7 +167,7 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     var desiredSize = this.getExtent().scaleBy(oldScale);
     this.setScale(s);
     this.setExtent(desiredSize.scaleBy(1 / s));
-    var delta = currentPointerPos.translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor);
+    var delta = (currentPointerPos || pt(0,0)).translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor);
     this._world.slideBy(delta);
     this._world.hands.each(function(m) { m.setScale(1 / s); });
     this._world.stickyMorphs().each(function(m) { m.setScale(1 / s); m.moveBy(m.origin.translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor)); });
@@ -191,6 +186,22 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     return this._world.hands;
   });
 
+  add.method('startAnimating', function (animator, functionToCallWhenDone) {
+    animator.stopAnimating();
+    animator.whenDoneCall(functionToCallWhenDone);
+    animator.startAnimating(this);
+    return animator;
+  });
+
+  add.method('startZoomAnimation', function (animation, functionToCallWhenDone) {
+    if (this._world._zoomAnimation) { this._world._zoomAnimation.stopAnimating(); }
+    this._world._zoomAnimation = animation;
+    this.startAnimating(this._world._zoomAnimation, function() {
+      delete this._world._zoomAnimation;
+      if (functionToCallWhenDone) { functionToCallWhenDone(); }
+    }.bind(this));
+  });
+
 });
 
   
@@ -203,8 +214,11 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var myHeight = myBounds.height;
     var worldSize = world.getExtent();
     var scalingFactor = Math.min(worldSize.x / myWidth, worldSize.y / myHeight);
-    world.slideBy(myBounds.topLeft().negated());
-    world.zoomBy(scalingFactor, pt(0,0));
+    var desiredPosition = myBounds.topLeft();
+    // Old way that just jumps straight there without animating:
+    // world.slideBy(desiredPosition.negated());
+    // world.zoomBy(scalingFactor, pt(0,0));
+    world.staySameSizeAndSmoothlySlideAndScaleTo(desiredPosition, scalingFactor * world.getScale(), this);
   }, {category: ['navigating']});
 
 });
