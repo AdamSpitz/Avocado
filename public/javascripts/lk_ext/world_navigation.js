@@ -55,7 +55,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     });
     
   }, {category: ['navigation']});
-
+  
   add.method('zoomBy', function (factor, pointerPosition) {
     var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
     
@@ -190,6 +190,22 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
   add.method('hands', function () {
     return this._world.hands;
   });
+
+});
+
+  
+thisModule.addSlots(Morph.prototype, function(add) {
+
+  add.method('navigateToMe', function (evt) {
+    var world = this.world();
+    var myBounds = this.bounds();
+    var myWidth = myBounds.width;
+    var myHeight = myBounds.height;
+    var worldSize = world.getExtent();
+    var scalingFactor = Math.min(worldSize.x / myWidth, worldSize.y / myHeight);
+    world.slideBy(myBounds.topLeft().negated());
+    world.zoomBy(scalingFactor, pt(0,0));
+  }, {category: ['navigating']});
 
 });
 

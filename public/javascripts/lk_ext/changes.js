@@ -229,6 +229,7 @@ Morph.addMethods({
                                     : null, // aaa - Shoot, leaving a null currently doesn't leave a hole in the menu; I want it to, so that the layout doesn't change around.
             ["remove", function() { this.startZoomingOuttaHere(); }.bind(this)], // so much cooler this way -- Adam
             this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
+            ["zoom to me", this.navigateToMe.curry(evt)], // Added by Adam
             // ["drill", this.showOwnerChain.curry(evt)], // not needed now that we have core samplers. -- Adam
             // ["drag", this.dragMe.curry(evt)], // This menu has too much stuff in it. -- Adam
             this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
