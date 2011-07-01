@@ -177,6 +177,7 @@ BoxMorph.subclass('ButtonMorph', {
 			// when themes are applied before the widget is hooked up to the model
 			this.changeAppearanceFor(this.getValue());
 		}
+		return this; // added by Adam
 	},
 
 	updateView: function(aspect, controller) {
@@ -2429,6 +2430,7 @@ BoxMorph.subclass("SliderMorph", {
 			this.adjustForNewBounds(); 
 			this.adjustFill();
 		}
+		return this; // added by Adam
 	},
 	
 	adjustForNewBounds: function($super) {

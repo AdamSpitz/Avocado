@@ -2791,12 +2791,13 @@ TextMorph.addMethods({
 
 	setFontSize: function(newSize) {
 		if (newSize == this.fontSize && this.font)	// make sure this.font is inited
-			return;
+			return this; // make it return this -- Adam
 		this.fontSize = newSize;
 		this.font = thisModule.Font.forFamily(this.fontFamily, newSize);
 		this.padding = Rectangle.inset(newSize/2 + 2, newSize/3);
 		this.layoutChanged();
 		this.changed();
+		return this; // added by Adam
 	},
 	
 	pvtReplaceBadControlCharactersInString: function(string) {

@@ -103,7 +103,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     //console.log("totalDistance is " + totalDistance + ", using cruisingScale " + cruisingScale);
 
     this.staySameSizeAndSmoothlyScaleTo(cruisingScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, 400, function() {
-      var targetMorphCenterPos = targetMorph.getPosition().addPt(targetMorph.getExtent().scaleBy(targetMorph.getScale() * 0.5));
+      var targetMorphCenterPos = targetMorph.owner.worldPoint(targetMorph.getPosition().addPt(targetMorph.getExtent().scaleBy(targetMorph.getScale() * 0.5)));
       var cruisingEndPosition = targetMorphCenterPos.subPt(this.getExtent().scaleBy(0.5));
       
       //console.log("cruisingEndPosition: " + cruisingEndPosition);
@@ -214,11 +214,22 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var myHeight = myBounds.height;
     var worldSize = world.getExtent();
     var scalingFactor = Math.min(worldSize.x / myWidth, worldSize.y / myHeight);
-    var desiredPosition = myBounds.topLeft();
-    // Old way that just jumps straight there without animating:
-    // world.slideBy(desiredPosition.negated());
-    // world.zoomBy(scalingFactor, pt(0,0));
+    var desiredPosition = this.owner.worldPoint(myBounds.topLeft());
+    
     world.staySameSizeAndSmoothlySlideAndScaleTo(desiredPosition, scalingFactor * world.getScale(), this);
+  }, {category: ['navigating']});
+
+  add.method('navigateToMeImmediately', function (evt) {
+    var world = this.world();
+    var myBounds = this.bounds();
+    var myWidth = myBounds.width;
+    var myHeight = myBounds.height;
+    var worldSize = world.getExtent();
+    var scalingFactor = Math.min(worldSize.x / myWidth, worldSize.y / myHeight);
+    var desiredPosition = myBounds.topLeft().subPt(worldSize.subPt(this.owner.worldPoint(pt(myWidth, myHeight))).scaleBy(0.5));
+    
+    world.slideBy(desiredPosition.negated());
+    world.zoomBy(scalingFactor, pt(0,0));
   }, {category: ['navigating']});
 
 });
