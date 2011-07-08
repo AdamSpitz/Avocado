@@ -557,6 +557,7 @@ thisModule.addSlots(Number.prototype, function(add) {
 
   add.method('doNotGoPast', function (targetValue, originalValue) {
     var originalDifference = targetValue - originalValue;
+    if (originalDifference === 0) { return targetValue; }
     var      newDifference = targetValue - this;
     if (newDifference.sign() !== originalDifference.sign()) {return targetValue;}
     return this;
