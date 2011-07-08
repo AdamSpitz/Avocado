@@ -443,7 +443,7 @@ BoxMorph.subclass("ImageMorph", {
 			this.image.setWidth(extent.x)
 			this.image.setHeight(extent.y)
 		}
-		$super(extent)
+		return $super(extent); // "return" added by Adam
 	},
 
 	reshape: function($super, partName, newPoint, lastCall){

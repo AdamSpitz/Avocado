@@ -1937,6 +1937,7 @@ Morph.addMethods({
 	setFill: function(fill) {
 		this.shape.setFill(fill);
 		this.changed();
+		return this; // added by Adam
 	},
 
 	getFill: function() {
@@ -1985,6 +1986,7 @@ Morph.addMethods({
     setFillOpacity: function(op) {
 	this.shape.setFillOpacity(op);
 	this.changed(); // FIXME better use specific update
+	return this; // added by Adam
 },
 
     setStrokeOpacity: function(op) { 
@@ -2317,6 +2319,7 @@ Morph.addMethods({
 
 	setExtent: function(newExtent) {
 		this.layoutManager.setExtent(this, newExtent);
+		return this; // added by Adam;
 	},
 
 	getExtent: function(newRect) { return this.shape.bounds().extent() },
@@ -3863,6 +3866,7 @@ Morph.addMethods({
 
 	setPosition: function(newPosition) {
 		this.layoutManager.setPosition(this, newPosition);
+		return this; // added by Adam
 	},
 	
 	// Hack by Adam to allow avoiding creating new Points. -- Adam

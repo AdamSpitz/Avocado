@@ -192,6 +192,10 @@ thisModule.addSlots(Morph.prototype, function(add) {
       this.startAnimating(avocado.animation.newScaler(this, desiredScale), functionToCallWhenDone);
     }, {category: ['scaling']});
 
+  add.method('smoothlyScaleHorizontallyTo', function (desiredScale, functionToCallWhenDone) {
+      this.startAnimating(avocado.animation.newHorizontalScaler(this, desiredScale), functionToCallWhenDone);
+    }, {category: ['scaling']});
+
   add.method('smoothlyScaleVerticallyTo', function (desiredScale, functionToCallWhenDone) {
       this.startAnimating(avocado.animation.newVerticalScaler(this, desiredScale), functionToCallWhenDone);
     }, {category: ['scaling']});

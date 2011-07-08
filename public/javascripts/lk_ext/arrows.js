@@ -200,7 +200,6 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
   }, {category: ['scaling']});
     
   add.method('justScaledWorld', function (worldScale) {
-    console.log("justScaledWorld to " + worldScale);
     this.adjustScaleBasedOnWorldScale(worldScale);
     this.putVerticesInTheRightPlace();
   }, {category: ['scaling']});

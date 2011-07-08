@@ -156,6 +156,13 @@ thisModule.addSlots(avocado.animation, function(add) {
     }, 200, 80);
   });
 
+  add.method('newHorizontalScaler', function (morph, endingScale) {
+    return this.newSpeedStepper(morph, endingScale, {
+      getValue: function(m   ) { return m.scalePoint.x; },
+      setValue: function(m, v) {        m.setScalePoint(pt(v, m.scalePoint.y)); }
+    }, 200, 80);
+  });
+
   add.method('newVerticalScaler', function (morph, endingScale) {
     return this.newSpeedStepper(morph, endingScale, {
       getValue: function(m   ) { return m.scalePoint.y; },
