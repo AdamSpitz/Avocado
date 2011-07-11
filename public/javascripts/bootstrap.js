@@ -920,12 +920,9 @@ annotator.annotationOf(avocado.transporter.module).slotAnnotation('onLoadCallbac
 avocado.transporter.slotCollection = {};
 annotator.annotationOf(avocado.transporter.slotCollection).setCreatorSlot('slotCollection', avocado.transporter);
 
-avocado.transporter.slotCollection.initialize = function() {
+avocado.transporter.slotCollection.initialize = function(shouldIncludeSubObjectsOfCreatorSlot) {
   this._possibleHolders = [];
-};
-
-avocado.transporter.slotCollection.possibleHolders = function() {
-  return this._possibleHolders;
+  this._shouldIncludeSubObjectsOfCreatorSlot = shouldIncludeSubObjectsOfCreatorSlot;
 };
 
 avocado.transporter.slotCollection.addPossibleHolder = function(h) {
@@ -939,7 +936,10 @@ avocado.transporter.module.named = function(n) {
   m = modules[n] = Object.create(this);
   m._name = n;
   annotator.annotationOf(m).setCreatorSlot(n, modules);
-  avocado.transporter.module.cache[n] = Object.newChildOf(avocado.transporter.slotCollection);
+  avocado.transporter.module.cache[n] = Object.newChildOf(avocado.transporter.slotCollection, function(s) {
+    var sm = s.getModuleAssignedToMeExplicitlyOrImplicitly();
+    return m === sm || !sm;
+  });
   return m;
 };
 
