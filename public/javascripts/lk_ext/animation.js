@@ -24,7 +24,8 @@ thisModule.addSlots(Morph.prototype, function(add) {
       var w = this.world();
       if (w) {
         this.becomeDirectSubmorphOfWorld(w);
-        this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {
+        var howFarOutside = 300 / w.getScale();
+        this.startZoomingTo(pt(w.getExtent().x + howFarOutside, -howFarOutside), true, false, function() {
           this.remove();
           if (functionToCallWhenDone) { functionToCallWhenDone(); }
         }.bind(this));
