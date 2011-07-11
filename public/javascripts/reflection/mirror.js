@@ -266,7 +266,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('slots', function () {
     return avocado.enumerator.create(this, 'eachSlot');
-  }, {category: ['accessing']});
+  }, {category: ['iterating']});
 
   add.method('eachFakeSlot', function (f) {
     if (this.isReflecteeFunction()) { f(this.functionBodySlot()); }
@@ -324,15 +324,21 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('canHaveIndexableSlots', function () {
     return this.isReflecteeArray() || this.isReflecteeDOMNode();
   }, {category: ['testing']});
-  
+
   add.method('eachIndexableSlot', function (f) {
     if (this.isReflecteeArray()) {
       for (var i = 0, n = this.reflecteeLength(); i < n; ++i) {
         f(this.slotAt(i.toString()));
       }
-    } else if (this.isReflecteeDOMNode()) {
+    } else {
       // I'm not completely sure it makes sense to treat DOM nodes as indexable, but
       // for now let's try it. -- Adam, March 2011
+      this.eachDOMChildNode(f);
+    }
+  }, {category: ['iterating']});
+
+  add.method('eachDOMChildNode', function (f) {
+    if (this.isReflecteeDOMNode()) {
       var parentNode = this.reflectee();
       var childNodes = parentNode.childNodes;
       for (var i = 0, n = childNodes.length; i < n; ++i) {
@@ -555,7 +561,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
     // aaa - try something like Self's 1 _AsObject, except of course in JS it'll have to be a hack;
   }, {category: ['naming']});
-  
+
   add.method('reflecteeStoreString', function () {
     if (! this.canHaveSlots()) { return null; }
     var o = this.reflectee();
@@ -635,7 +641,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('isReflecteeDOMNode', function () {
     return avocado.DOMStuff.isDOMNode(this.reflectee());
   }, {category: ['testing']});
-  
+
   add.method('reflecteeLength', function () {
     return this.primitiveContentsAt('length');
   }, {category: ['arrays']});
@@ -770,7 +776,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
     
     return this.normalSlots().select(function(slot) { return filterizer.matchesSlot(slot); });
   }, {category: ['annotations', 'module']});
-  
+
   add.method('getModuleAssignedToMeImplicitly', function () {
     // For now, only implicit. Later, maybe we'll want a mechanism for explicitly
     // saying "the slots on this object should belong to module M." But maybe not.
