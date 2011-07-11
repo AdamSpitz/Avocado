@@ -165,19 +165,27 @@ thisModule.addSlots(avocado.poses.tree, function(add) {
   });
 
   add.method('eachElement', function (f, startingPos) {
-    var pos = (startingPos || pt(0,0)).addXY(20,20);
+    var worldScale = WorldMorph.current().getScale();
+    var indentation = this.indentation / worldScale;
+    var padding     = this.padding     / worldScale;
+    var pos = (startingPos || pt(0,0)).addXY(indentation, indentation);
     this.ancestors().each(function(m) {
       f({poser: m, position: pos});
-      pos = pos.addXY(this.indentation, m.getExtent().y + this.padding);
-    }.bind(this));
+      var mSpace = m.getExtent().scaleBy(m.getScale());
+      pos = pos.addXY(indentation, mSpace.y + padding);
+    });
     
     this.eachChildElement(this._focus, pos, f);
   });
 
   add.method('eachChildElement', function (m, pos, f) {
+    var worldScale = WorldMorph.current().getScale();
+    var indentation = this.indentation / worldScale;
+    var padding     = this.padding     / worldScale;
     this.childrenOf(m).each(function(child) {
       f({poser: child, position: pos});
-      var newY = this.eachChildElement(child, pos.addXY(this.indentation, m.getExtent().y + this.padding), f);
+      var childSpace = child.getExtent().scaleBy(m.getScale());
+      var newY = this.eachChildElement(child, pos.addXY(indentation, childSpace.y + padding), f);
       pos = pos.withY(newY);
     }.bind(this));
     return pos.y;
