@@ -241,6 +241,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var w = this.world();
     var mir = this.slot().contents();
     var mirMorph = w.morphFor(mir);
+    mirMorph.smoothlyScaleTo(1 / w.getScale()); // aaa - not sure this is a good idea, but maybe
     mirMorph.ensureIsInWorld(w, this._contentsPointer.worldPoint(pt(150,0)), false, true, true, callWhenContentsAreVisible);
   }, {category: ['contents']});
 

@@ -67,6 +67,12 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
         }
         container.addMorphAt(poserOrPlaceholder, e.position);
       } else {
+        
+        if (! e.poser.world()) {
+          // aaa - Not sure at all that this is a good idea. But it might be.
+          e.poser.setScale(1 / container.world().getScale());
+        }
+        
         e.poser.ensureIsInWorld(container, e.position, true, true, true);
       }
       
