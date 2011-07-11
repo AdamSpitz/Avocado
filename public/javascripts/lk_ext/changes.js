@@ -405,6 +405,18 @@ ImageMorph.addMethods({
     suppressGrabbing: true,
     shouldIgnoreEvents: true,
     openForDragAndDrop: false
+  },
+  
+  keepAspectRatioAndResizeToAtMost: function(desiredExtent) {
+    var originalImageSize = this.originalImageSize(this.getURL());
+    var yIfWeUseTheDesiredX = desiredExtent.x * originalImageSize.y / originalImageSize.x;
+    var xIfWeUseTheDesiredY = desiredExtent.y * originalImageSize.x / originalImageSize.y;
+    if (yIfWeUseTheDesiredX > desiredExtent.y) {
+      this.setExtent(pt(xIfWeUseTheDesiredY, desiredExtent.y));
+    } else {
+      this.setExtent(pt(desiredExtent.x, yIfWeUseTheDesiredX));
+    }
+    return this;
   }
 });
 
