@@ -58,7 +58,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   
   add.method('smoothlySlideBy', function (p, functionToCallWhenDone) {
     var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
-    var a = avocado.animation.newMovement(worldNavigator, avocado.animation.straightPath, p, p.r() * this.getScale() / 400, false, false, true);
+    var a = avocado.animation.newMovement(worldNavigator, avocado.animation.straightPath, p, p.r() / 400, false, false, true);
     worldNavigator.startZoomAnimation(a, functionToCallWhenDone);
   }, {category: ['navigation']});
   
@@ -97,10 +97,23 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
     
     var currentScale = worldNavigator.getScale();
-    var totalDistance = worldNavigator.getPosition().subPt(desiredPosition).r();
-    var cruisingScale = currentScale / ((0.001 * totalDistance) + 1);
+    var currentPosition = worldNavigator.getPosition();
+    var totalDistance = currentPosition.subPt(desiredPosition).r();
     
-    //console.log("totalDistance is " + totalDistance + ", using cruisingScale " + cruisingScale);
+    var cruisingScale = currentScale / ((0.001 * totalDistance * currentScale) + 1);
+    
+    // Trying to improve on the above way, but so far I don't like this better.
+    /*
+    var cruisingScale = 800 / totalDistance;
+    if (desiredScale > cruisingScale && cruisingScale > currentScale) {
+      cruisingScale = currentScale; // no sense doing a zoom-in + slide + zoom-in; just slide and zoom-in
+    } else if (desiredScale < cruisingScale) {
+      cruisingScale = desiredScale; // no sense doing a zoom-out + slide + zoom-out; just zoom-out and slide
+    }
+    */
+    
+    
+    // console.log("desiredPosition is " + desiredPosition + ", currentPosition is " + currentPosition + ", totalDistance is " + totalDistance + ", currentScale is " + currentScale + ", using cruisingScale " + cruisingScale + ", desiredScale is " + desiredScale);
 
     this.staySameSizeAndSmoothlyScaleTo(cruisingScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, 400, function() {
       var targetMorphCenterPos = targetMorph.owner.worldPoint(targetMorph.getPosition().addPt(targetMorph.getExtent().scaleBy(targetMorph.getScale() * 0.5)));
@@ -226,7 +239,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var myHeight = myBounds.height;
     var worldSize = world.getExtent();
     var scalingFactor = Math.min(worldSize.x / myWidth, worldSize.y / myHeight);
-    var desiredPosition = myBounds.topLeft().subPt(worldSize.subPt(this.owner.worldPoint(pt(myWidth, myHeight))).scaleBy(0.5));
+    var desiredPosition = this.owner.worldPoint(myBounds.topLeft());
     
     world.slideBy(desiredPosition.negated());
     world.zoomBy(scalingFactor, pt(0,0));
