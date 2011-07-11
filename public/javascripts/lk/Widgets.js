@@ -2264,9 +2264,15 @@ Morph.subclass("MenuMorph", {
 
     // Added by Adam
     startOpeningAnimation: function() {
-      var desiredScale = (Config.fatFingers ? 1.5 : 1) / this.world().getScale();
-      this.setScale(desiredScale * 0.01);
-      this.smoothlyScaleTo(desiredScale);
+      var world = this.world();
+      var desiredScale = Config.fatFingers ? 1.5 : 1;
+      if (world) {
+        desiredScale = desiredScale / world.getScale();
+        this.setScale(desiredScale * 0.01);
+        this.smoothlyScaleTo(desiredScale);
+      } else {
+        this.setScale(desiredScale);
+      }
     },
     
     selectedItemIndex: function(evt) {
