@@ -249,6 +249,30 @@ thisModule.addSlots(avocado.mirror, function(add) {
     }
   }, {category: ['annotations', 'creator slot']});
 
+  add.method('partialCreatorSlotChain', function (kindOfCreatorSlot) {
+    if (! this.canHaveCreatorSlot()) {return null;}
+
+    var chain = [];
+    var windowMir = reflect(window);
+    var mir = this;
+    var cs;
+    kindOfCreatorSlot = kindOfCreatorSlot || 'explicitlySpecifiedCreatorSlot';
+
+    for (var i = 0; true; ++i) {
+      if (mir.equals(windowMir)) { return chain; }
+      cs = mir[kindOfCreatorSlot].call(mir);
+      if (! cs) { return chain; }
+      if (! cs.contents().equals(mir)) { return chain; } // probably obsolete or something
+      chain.push(cs);
+      if (i >= 100) {
+        console.log("WARNING: Really long (" + i + " so far) chain of creator slots; giving up because it's probably a loop. " +
+                    "Here it is so far, starting from the end: " + chain.map(function(s) { return s.name(); }).join(", "));
+        return chain;
+      }
+      mir = cs.holder();
+    }
+  }, {category: ['annotations', 'creator slot']});
+
   add.method('creatorSlotChainOfMeOrAnAncestor', function (kindOfCreatorSlot) {
     var mir = this;
     while (true) {
@@ -632,10 +656,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return ! nonTrivialSlot;
   }, {category: ['testing']});
 
-  add.method('reflecteeDBReference', function () {
+  add.method('reflecteeRemoteReference', function () {
     var anno = this.annotationForReading();
     if (!anno) { return null; }
-    return anno.getDBRef();
+    return anno.getRemoteRef();
   }, {category: ['testing']});
 
   add.method('isReflecteeDOMNode', function () {

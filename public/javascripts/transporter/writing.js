@@ -341,8 +341,8 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.json, function(add) {
       }.bind(this));
     } else if (info.remoteReference) {
       var ref = info.remoteReference;
-      if (! (ref.db() && typeof(ref.id()) !== 'undefined')) { throw new Error("Trying to file out a remote reference, but not sure where it lives. The object is " + ref.object()); }
-      if (ref.db() === this._db) {
+      if (! (ref.realm() && typeof(ref.id()) !== 'undefined')) { throw new Error("Trying to file out a remote reference, but not sure where it lives. The object is " + ref.object()); }
+      if (ref.realm() === this._db) {
         this._buffer.append(("" + ref.id()).inspect(true));
       } else {
         throw new Error("Not implemented yet: how do we file out a remote ref to an object in a whole nother DB?");

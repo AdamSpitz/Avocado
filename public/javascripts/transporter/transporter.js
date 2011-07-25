@@ -507,14 +507,15 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
       } else if (! contents.canHaveCreatorSlot()) {
         info.contentsExpr = contents.expressionEvaluatingToMe();
       } else {
-        var cs = contents.theCreatorSlot();
-        var dbRef = contents.reflecteeDBReference();
-        if (!cs && dbRef) {
-          info.remoteReference = dbRef;
+        var chain = contents.creatorSlotChain('probableCreatorSlot');
+        var cs = chain ? chain[0] : null;
+        var remoteRef = contents.reflecteeRemoteReference();
+        if (!chain && remoteRef) {
+          info.remoteReference = remoteRef;
         } else {
-          if (!cs) {
+          if (!chain) {
             // console.log("Marking " + this.name() + " as a possible creator slot.");
-            contents.addPossibleCreatorSlot(this); // aaa - not sure this is a good idea, but maybe
+            this.beCreator(); // aaa - not sure this is a good idea, but maybe
             cs = contents.theCreatorSlot();
             if (!cs) {
               var error = new Error("Why is there no creator? Something is wrong.");
@@ -533,9 +534,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
           
           if (! cs.equals(this)) {
             avocado.transporter.reasonsForNeedingCreatorPath.recordIfExceptionDuring(function() {
-              var chain = contents.creatorSlotChain('probableCreatorSlot');
               info.contentsExpr = contents.expressionForCreatorSlotChain(chain);
-              info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = chain.reverse().map(function(s) { return s.name(); });
+              info.isReferenceToWellKnownObjectThatIsCreatedElsewhere = chain.map(function(s) { return s.name(); }).reverse();
               if (this.isDOMChildNode()) { info.creationMethod = 'domChildNode'; } // hack to let us transport morphs
             }.bind(this), avocado.transporter.reasonsForNeedingCreatorPath.referencedBySlotInTheModule.create(this));
           } else {
@@ -650,7 +650,7 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
     this.assertEqual([s1, s2], m.slots().sort());
 
     var s3 = this.addSlot(m, this.someObject, 'zubObj', {}).beCreator();
-    this.assertEqual([reflect(this.someObject)], m.slotCollection().possibleHolderMirrors().toArray().sort());
+    this.assertEqual([reflect(this.someObject), reflect(this.someObject.zubObj)], m.slotCollection().possibleHolderMirrors().toArray().sort());
     this.assertEqual([s1, s2, s3], m.slots().sort());
 
     var s31 = this.addSlot(m, this.someObject.zubObj, 'zzz', 5);

@@ -73,12 +73,12 @@ thisModule.addSlots(avocado.couch.dbServer, function(add) {
     } else {
       urlForTheImmediateRequest = fullURL;
     }
-    console.log("About to doRequest: " + httpMethod + " " + urlForTheImmediateRequest + "\n" + body);
+    //console.log("About to doRequest: " + httpMethod + " " + urlForTheImmediateRequest + "\n" + body);
     req.open(httpMethod, urlForTheImmediateRequest, true);
     req.setRequestHeader("Content-Type", "application/json");
     req.onreadystatechange = function() {
       if (req.readyState === 4) {
-        console.log("Received response from CouchDB: " + req.responseText);
+        //console.log("Received response from CouchDB: " + req.responseText);
         obj = JSON.parse(req.responseText);
         callback(obj);
       }
@@ -187,7 +187,7 @@ thisModule.addSlots(avocado.couch.db, function(add) {
   add.method('addDocument', function (obj, callback) {
     var ref = avocado.remoteObjectReference.table.refForObject(obj);
 
-    var alreadyInDB = ref.db();
+    var alreadyInDB = ref.realm();
     if (alreadyInDB) {
       if (alreadyInDB === this) {
         this.putDocumentAt(ref.id(), obj, callback);
@@ -211,17 +211,17 @@ thisModule.addSlots(avocado.couch.db, function(add) {
   add.method('putDocumentAt', function (id, obj, callback) {
     var ref = avocado.remoteObjectReference.table.refForObject(obj);
     
-    var alreadyInDB = ref.db();
+    var alreadyInDB = ref.realm();
     if (alreadyInDB && alreadyInDB !== this) {
       throw new Error("That object is already in a different DB: " + alreadyInDB);
     } else if (alreadyInDB && ref.id() !== id) {
       throw new Error("That object is already in this DB under a different ID: " + ref.id());
     } else {
-      var extraSlots = ref.rev() ? { _rev: ref.rev() } : {};
+      var extraSlots = ref._rev ? { _rev: ref._rev } : {};
       var json = this.convertRealObjectToJSON(obj, extraSlots);
       this.doRequest("PUT", "/" + id, "", json, function(responseObj) {
         if (responseObj.ok) {
-          ref.setRev(responseObj.rev);
+          ref._rev = responseObj.rev;
           responseObj.ref = ref;
           callback(responseObj);
         } else {
@@ -849,7 +849,7 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
                 ref2.forgetMe();
                 db2.getDocument(id2, function(obj2, id2Again) {
                   this.assertEqual("onetwothree", obj2.toString());
-                  avocado.remoteObjectReference.table.findObjectReferredToAs('{"db": ' + db2.textualReference().inspect(true) + ', "id": ' + id2.inspect(true) + '}', function(obj2Again) {
+                  avocado.remoteObjectReference.table.findObjectReferredToAs('{"realm": ' + db2.textualReference().inspect(true) + ', "id": ' + id2.inspect(true) + '}', function(obj2Again) {
                     this.assertEqual("onetwothree", obj2Again.toString());
                     callIfSuccessful();
                   }.bind(this));
@@ -967,7 +967,7 @@ thisModule.addSlots(avocado.couch.db.tests.bargle, function(add) {
   });
 
   add.method('setArgle', function (argle) {
-    if (! reflect(argle).reflecteeDBReference()) { throw new Error("Must set argle to an object that is stored in a DB."); }
+    if (! reflect(argle).reflecteeRemoteReference()) { throw new Error("Must set argle to an object that is stored in a DB."); }
     this._argle = argle;
   });
 
