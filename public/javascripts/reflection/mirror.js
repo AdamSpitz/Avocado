@@ -895,7 +895,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
     cmdList.addItem(["find", [
       avocado.command.create("well-known references", function(evt) {
-        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.referenceFinder.create(this.reflectee()), evt)).redo();
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.objectGraphWalker.visitors.referenceFinder.create(this.reflectee()).createWalker(), evt)).redo();
       }, this),
       avocado.command.create("well-known children", function(evt) {
         avocado.ui.showObjects(this.wellKnownChildren().map(reflect), "well-known children of " + this.name(), evt);
@@ -979,11 +979,11 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['evaluating']});
 
   add.method('wellKnownChildren', function () {
-    return avocado.childFinder.create(this.reflectee()).go();
+    return avocado.objectGraphWalker.visitors.childFinder.create(this.reflectee()).createWalker().go();
   }, {category: ['searching']});
 
   add.method('wellKnownReferences', function () {
-    return avocado.referenceFinder.create(this.reflectee()).go().toArray();
+    return avocado.objectGraphWalker.visitors.referenceFinder.create(this.reflectee()).createWalker().go().toArray();
   }, {category: ['searching']});
 
   add.method('categorizeUncategorizedSlotsAlphabetically', function () {

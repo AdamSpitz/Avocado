@@ -145,7 +145,7 @@ thisModule.addSlots(avocado, function(add) {
       }.bind(this)});
 
       cmdList.addItem({label: "walk annotations", go: function(evt) {
-        var walker = avocado.annotationWalker.create();
+        var walker = avocado.objectGraphWalker.visitors.annotationWalker.create().createWalker();
         walker.go();
         reflect(walker).morph().grabMe(evt);
       }.bind(this)});

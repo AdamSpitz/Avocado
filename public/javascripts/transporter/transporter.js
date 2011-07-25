@@ -24,7 +24,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
         var changedOnes = avocado.transporter.module.changedOnes().toArray();
         
         // Include the Unowned Attributes if there are any.
-        var unownedSlotsMorph = avocado.ui.worldFor(evt).morphFor(avocado.searchResultsPresenter.create(avocado.unownedSlotFinder.create(), evt)).redo();
+        var unownedSlotsMorph = avocado.ui.worldFor(evt).morphFor(avocado.searchResultsPresenter.create(avocado.objectGraphWalker.visitors.unownedSlotFinder.create().createWalker(), evt)).redo();
         if (unownedSlotsMorph().searcher().results().size() > 0) {
           changedOnes.unshift(unownedSlotsMorph().searcher());
         }
@@ -601,7 +601,7 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
     
     modules['transporter/transporter'].modificationFlag(); // make sure it exists before running this test, since adding slots to someObject will end up creating it
     
-    var w1 = avocado.testingObjectGraphWalker.create();
+    var w1 = avocado.objectGraphWalker.visitors.testingObjectGraphWalker.create().createWalker();
     w1.go();
     
     var m = avocado.transporter.module.named('blah');
@@ -610,7 +610,7 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
     
     m.uninstall();
 
-    var w2 = avocado.testingObjectGraphWalker.create();
+    var w2 = avocado.objectGraphWalker.visitors.testingObjectGraphWalker.create().createWalker();
     w2.go();
 
     /* Useful for finding out which objects are left over, if the test below fails.
@@ -632,7 +632,7 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
     */
     
     this.assertEqual(w1.objectCount(), w2.objectCount(), "leftover objects after destroying a module");
-    this.assertEqual(w1.  slotCount(), w2.  slotCount(), "leftover slots after destroying a module");
+    this.assertEqual(w1.visitor().slotCount(), w2.visitor.slotCount(), "leftover slots after destroying a module");
   });
 
   add.method('testModuleCache', function () {

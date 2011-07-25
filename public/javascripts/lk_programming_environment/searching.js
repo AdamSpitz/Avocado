@@ -9,7 +9,7 @@ requires('programming_environment/searching');
 thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
 
   add.method('newMorph', function () {
-    if (this._searcher.resultsAreSlots) {
+    if (this._searcher.resultsAreSlots()) {
       return new avocado.SearchResultsMorph(this);
     } else {
       throw new Error("What kind of morph should we make for " + this.inspect() + "?");

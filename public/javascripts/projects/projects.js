@@ -259,15 +259,16 @@ thisModule.addSlots(avocado.project, function(add) {
   	};
   	reflect(currentWorldStateModule).slotAt('postFileIn').beCreator();
   	
-  	var walker = avocado.objectGraphAnnotator.create();
-  	walker.alsoMakeCreatorSlots(); // aaa - not sure this is a good idea
-  	walker.setShouldWalkIndexables(true);
-  	walker.alsoAssignUnownedSlotsToModule(function(holder, slotName, slotContents, slotAnno) {
+  	var annotator = avocado.objectGraphWalker.visitors.objectGraphAnnotator.create();
+  	annotator.alsoMakeCreatorSlots(); // aaa - not sure this is a good idea
+  	annotator.alsoAssignUnownedSlotsToModule(function(holder, slotName, slotContents, slotAnno) {
   	  if (holder === currentWorldStateModule) { return currentWorldStateModule; }
   	  return avocado.annotator.moduleOfAnyCreatorInChainFor(holder);
   	});
+  	var walker = annotator.createWalker();
+  	walker.setShouldWalkIndexables(true);
   	
-    walker.shouldContinueRecursingIntoObject = function (object, objectAnno, howDidWeGetHere) {
+    annotator.shouldContinueRecursingIntoObject = function (object, objectAnno, howDidWeGetHere) {
       if (object === currentWorldStateModule) { return true; }
       if (typeof(object.storeString) === 'function') { return false; }
       var cs = objectAnno.explicitlySpecifiedCreatorSlot();
@@ -275,7 +276,7 @@ thisModule.addSlots(avocado.project, function(add) {
       return cs.name === howDidWeGetHere.slotName && cs.holder === howDidWeGetHere.slotHolder;
     };
   	
-    walker.shouldContinueRecursingIntoSlot = function (holder, slotName, howDidWeGetHere) {
+    annotator.shouldContinueRecursingIntoSlot = function (holder, slotName, howDidWeGetHere) {
       // aaa - hack; really these slots should be annotated with an initializeTo: 'undefined' or something like that
       if (['pvtCachedTransform', 'fullBounds', '_currentVersion', '_requirements', '_modificationFlag'].include(slotName)) { return false; }
       

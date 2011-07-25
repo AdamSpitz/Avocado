@@ -201,7 +201,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     
     if (this.wellKnownImplementors) {
       cmdList.addItem({label: "implementors", go: function(evt) {
-        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.implementorsFinder.create(this.name()), evt)).redo();
+        avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.objectGraphWalker.visitors.implementorsFinder.create(this.name()).createWalker(), evt)).redo();
       }});
     }
 
@@ -593,7 +593,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['copy-down parents']});
 
   add.method('wellKnownImplementors', function () {
-    return avocado.implementorsFinder.create(this.name()).go();
+    return avocado.objectGraphWalker.visitors.implementorsFinder.create(this.name()).createWalker().go();
   }, {category: ['searching']});
 
   add.method('wellKnownSenders', function () {

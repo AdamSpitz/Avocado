@@ -29,7 +29,7 @@ thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
   }, {category: ['searching']});
 
   add.method('sortingCriteriaForSearchResults', function () {
-    if (this._searcher.resultsAreSlots) { // aaa hack
+    if (this._searcher.resultsAreSlots()) { // aaa hack
       return function(s) { return s.holder().name().toUpperCase(); };
     } else {
       console.log("Trying to sort " + this.inspect() + " but don't know how.");
