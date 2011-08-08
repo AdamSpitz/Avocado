@@ -117,7 +117,7 @@ thisModule.addSlots(avocado.project, function(add) {
     var module = this.currentWorldStateModule();
     var morph = module._deploymentMorph;
     if (! morph) {
-      morph = module._deploymentMorph = new Morph(new lively.scene.Rectangle(pt(0,0).extent(pt(400,300))));
+      morph = module._deploymentMorph = new Morph(new lively.scene.Rectangle(pt(0,0).extent(pt(600,450))));
       morph.setFill(Color.white);
       morph.setBorderColor(Color.black);
       morph.switchEditModeOn();
@@ -258,6 +258,7 @@ thisModule.addSlots(avocado.project, function(add) {
   	  avocado.project.resetCurrentWorldStateModule();
   	};
   	reflect(currentWorldStateModule).slotAt('postFileIn').beCreator();
+  	reflect(currentWorldStateModule).normalSlots().each(function(s) { s.setModule(currentWorldStateModule); });
   	
   	var annotator = avocado.objectGraphWalker.visitors.objectGraphAnnotator.create();
   	annotator.alsoMakeCreatorSlots(); // aaa - not sure this is a good idea
@@ -303,8 +304,8 @@ thisModule.addSlots(avocado.project, function(add) {
     
     // Check to make sure there aren't any *other* changes in the image that aren't part of this project.
     var allChangedModules = avocado.transporter.module.changedOnes();
-    var changedModulesNotInThisProject = allChangedModules.select(function(m) { return ! versionsToSave[m.name()]; }).toArray();
-    if (changedModulesNotInThisProject.size() > 0) {
+    var changedModulesNotInThisProject = allChangedModules.select(function(m) { return !versionsToSave[m.name()] && m !== modules.init; }).toArray(); // AAAAAAAAAAAA
+    if (changedModulesNotInThisProject.size() > 0) { // aaaaaaaaaaaaaaaaaaaaa
       avocado.ui.showObjects(changedModulesNotInThisProject, "changed modules not in this project", evt);
       avocado.MessageNotifierMorph.showError("WARNING: You have modified modules that are not part of your project; they will not be saved.", evt, Color.orange);
     }
