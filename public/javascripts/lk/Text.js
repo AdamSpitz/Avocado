@@ -459,6 +459,7 @@ Object.subclass('lively.Text.TextLine', {
 	this.spaceWidth = font.getCharWidth(' ');
         this.tabWidth = this.spaceWidth * 4;
         this.chunks = null;  //  Will be an array after compose
+        reflect(this).slotAt('chunks').setInitializationExpression('null'); // added by Adam, needed for morph-saving
     },
     
 	adjustAfterEdits: function(newTextString, newTextStyle, delta, Ydelta) {
@@ -579,8 +580,11 @@ Object.subclass('lively.Text.TextLine', {
 	lastBounds = c.bounds;
 	}
 	this.overallStopIndex = runningStartIndex - 1;
-	this.chunks.makeAllCreatorSlots(); // aaa hack for morph-saving -- Adam
-	reflect(this).slotAt('chunks').beCreator(); // aaa hack for morph-saving -- Adam
+	
+	// aaa hack for morph-saving; use the annotator directly because this is called often so don't want to make a bunch of unnecessary mirrors -- Adam
+	//this.chunks.makeAllCreatorSlots();
+  //annotator.annotationOf(this.chunks).setCreatorSlot('chunks', this);
+  // aaa this whole thing is slow, maybe we don't need it?
     },
     
     adoptStyle: function(emph, charIx) {

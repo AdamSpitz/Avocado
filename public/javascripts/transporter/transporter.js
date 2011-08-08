@@ -41,10 +41,23 @@ thisModule.addSlots(avocado.transporter, function(add) {
       }]
     ]]);
 
-    if (avocado.transporter.availableRepositories.any(function(repo) { return repo.canListDirectoryContents; })) {
+    var reposThatCanListFiles = avocado.transporter.availableRepositories.select(function(repo) { return repo.canListDirectoryContents; });
+    if (reposThatCanListFiles.size() > 0) {
+      /* aaa - delete this once the new file-browser way works -- Adam, July 2011
       cmdList.addItem(["load JS file...", function(evt) {
         var cmdList = avocado.transporter.repositories.prompter.commandListForRepositories(function(repo) { return repo.menuItemsForLoadMenu(); });
         avocado.ui.showMenu(cmdList, evt.hand.world(), "From where?", evt);
+      }]);
+      */
+      
+      cmdList.addItem(["browse files...", function(evt) {
+        /* AAAAAAAAAAA
+        reposThatCanListFiles.forEach(function(repo) {
+          avocado.ui.grab(repo, evt);
+        });
+        */
+        
+        var fileMorph = WorldMorph.current().addMorphAt(Object.newChildOf(avocado.webdav.file, new URL("http://localhost/~adam/avocado/javascripts/reflection/slot.js")).morph(), pt(100,100));
       }]);
     }
   }, {category: ['user interface', 'commands']});
