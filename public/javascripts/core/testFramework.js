@@ -278,7 +278,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
       avocado.dependencies.tests,
       avocado.list.tests,
       avocado.graphs.tests,
-      avocado.prettyPrinter.tests,
+      //avocado.prettyPrinter.tests, // aaa - not yet working on Safari, jsparse uses regex(input) instead of regex.exec(input)
       avocado.organization.tests,
       // avocado.process.tests, // aaa - not working yet on Chrome, overflows the stack, not sure why
       avocado.remoteMirror.tests,
