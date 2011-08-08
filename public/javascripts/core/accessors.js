@@ -48,12 +48,16 @@ thisModule.addSlots(avocado.methodAccessors, function(add) {
 
   add.method('get', function () {
     var obj = this._object;
-    return obj[this._getterName].call(obj);
+    var getter = obj[this._getterName];
+    if (!getter) { throw new Error("No attribute named " + this._getterName + " on " + obj); }
+    return getter.call(obj);
   }, {category: ['accessing']});
 
   add.method('set', function (v) {
     var obj = this._object;
-    obj[this._setterName].call(obj, v);
+    var setter = obj[this._setterName];
+    if (!setter) { throw new Error("No attribute named " + this._setterName + " on " + obj); }
+    setter.call(obj, v);
   }, {category: ['accessing']});
 
 });
