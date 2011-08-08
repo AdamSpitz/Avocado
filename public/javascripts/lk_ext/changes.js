@@ -235,12 +235,16 @@ Morph.addMethods({
             this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
                                 : ["turn on edit mode" , function() { this.switchEditModeOn (); }.bind(this)],
             ["edit style", function() { new StylePanel(this).open()}],
-            ["inspect", function(evt) { this.world().morphFor(reflect(this)).grabMe(evt); }], // OK, I just couldn't resist. -- Adam
+            this._model ? ["inspect",       function(evt) { this.world().morphFor(reflect(this._model)).grabMe(evt); }] : ["", function() {}],
+            ["inspect morph", function(evt) { this.world().morphFor(reflect(this)).grabMe(evt); }], // OK, I just couldn't resist. -- Adam
+            /* Meh, I'm not using this right now, and I need the space in the menu. -- Adam
             ["script me", function(evt) {
               var mir = reflect(avocado.morphScripter.create(this));
               var mirMorph = this.world().morphFor(mir);
               mirMorph.openEvaluator(evt);
+              mirMorph.grabMe(evt);
             }], // simple scripting interface -- Adam
+            */
             /* No browser, mirrors are enough, plus this menu has too much stuff in it. -- Adam
             ["show class in browser", function(evt) { var browser = new SimpleBrowser(this);
                                               browser.openIn(this.world(), evt.point());

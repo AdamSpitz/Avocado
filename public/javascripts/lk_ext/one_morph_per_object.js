@@ -32,7 +32,9 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     if (typeof(obj.newMorph) === 'function') {
       return obj.newMorph();
     } else {
-      return new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
+      var m = new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
+      m._model = obj;
+      return m;
     }
   }, {category: ['one morph per object']});
 
