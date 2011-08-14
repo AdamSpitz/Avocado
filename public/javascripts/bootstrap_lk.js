@@ -59,8 +59,8 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
       
       canvas = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
       canvas.setAttribute('id', 'canvas');
-      canvas.setAttribute('width',  avocadoDiv.offsetWidth ? avocadoDiv.offsetWidth : '1000'); // aaa used to say 100% but that caused some weird bug that I don't understand -- Adam, June 2011
-      canvas.setAttribute('height', avocadoDiv.offsetHeight ? avocadoDiv.offsetHeight : '850');
+      canvas.setAttribute('width',  avocadoDiv.offsetWidth ? avocadoDiv.offsetWidth : '800'); // aaa used to say 100% but that caused some weird bug that I don't understand -- Adam, June 2011
+      canvas.setAttribute('height', avocadoDiv.offsetHeight ? avocadoDiv.offsetHeight : '620');
       canvas.setAttribute('xmlns', "http://www.w3.org/2000/svg");
       canvas.setAttribute('xmlns:lively', "http://www.experimentalstuff.com/Lively");
       canvas.setAttribute('xmlns:xlink', "http://www.w3.org/1999/xlink");

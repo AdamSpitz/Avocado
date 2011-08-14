@@ -160,7 +160,7 @@ var annotator = {
       } else {
         var cs = this.explicitlySpecifiedCreatorSlot();
         if (cs) { name = cs.name; }
-        name = name || 'something';
+        if (!name || name === '__proto__') { name = 'something'; }
       }
       var constr = eval(this.constructorTemplate.replace(/CONSTRUCTOR_FUNCTION/g, name));
       constr.prototype = parent;
