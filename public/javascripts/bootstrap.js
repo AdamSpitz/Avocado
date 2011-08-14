@@ -632,6 +632,7 @@ var annotator = {
       slotAnno.forgetModule();
     } else {
       slotAnno.setModule(desiredModule);
+      if (desiredModule) { desiredModule.slotCollection().add(holder, slotName); }
       
       var shouldLogModules = false;
       if (shouldLogModules) {
@@ -923,10 +924,17 @@ annotator.annotationOf(avocado.transporter.slotCollection).setCreatorSlot('slotC
 avocado.transporter.slotCollection.initialize = function(shouldIncludeSubObjectsOfCreatorSlot) {
   this._possibleHolders = [];
   this._shouldIncludeSubObjectsOfCreatorSlot = shouldIncludeSubObjectsOfCreatorSlot;
+  
+  // aaaaaaaa get rid of the _possibleHolders stuff after this new way is working properly
+  this._explicitlyIncluded = [];
 };
 
 avocado.transporter.slotCollection.addPossibleHolder = function(h) {
   this._possibleHolders.push(h);
+};
+
+avocado.transporter.slotCollection.add = function(holder, name) {
+  this._explicitlyIncluded.push(Object.newChildOf(avocado.annotator.slotSpecifierPrototype, name, holder));
 };
 
 avocado.transporter.module.named = function(n) {

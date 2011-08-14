@@ -29,17 +29,13 @@ thisModule.addSlots(avocado.transporter.module.slotOrderizer, function(add) {
 
   add.method('buildDictionaryOfRemainingSlotsByMirror', function () {
     var d = avocado.dictionary.copyRemoveAll();
-    this._module.slotCollection().eachPossibleHolderMirror(function(mir) {
-      var slots = avocado.set.copyRemoveAll();
-      this._module.slotsInMirror(mir).each(function(s) {
-        slots.add(s);
-        if (s.equals(s.contents().theCreatorSlot())) { slots.add(s.contents().parentSlot()); }
-        // aaa what about the parent's parent?
-      });
-      if (! slots.isEmpty()) {
-        d.put(mir, slots);
-      }
-    }.bind(this));
+    this._module.eachSlot(function(s) {
+      var holder = s.holder();
+      var slots = d.getOrIfAbsentPut(holder, function() { return avocado.set.copyRemoveAll(); });
+      slots.add(s);
+      if (s.equals(s.contents().theCreatorSlot())) { slots.add(s.contents().parentSlot()); }
+      // aaa what about the parent's parent?
+    });
     return d;
   }, {category: ['dependencies']});
 

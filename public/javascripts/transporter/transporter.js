@@ -316,7 +316,9 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
 
   add.method('showAllObjects', function (evt) {
     var objectsToShow = [this];
-    this.slotCollection().eachPossibleHolderMirror(function(mir) { objectsToShow.push(mir); });
+    var holderMirrors = avocado.set.copyRemoveAll();
+    this.eachSlot(function(s) { holderMirrors.add(s.holder()); });
+    holderMirrors.toArray().sort().each(function(mir) { objectsToShow.push(mir); });
     avocado.ui.showObjects(objectsToShow, "objects in module " + this.name(), evt);
   }, {category: ['user interface', 'commands']});
 
@@ -362,18 +364,6 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
 
 thisModule.addSlots(avocado.transporter.slotCollection, function(add) {
   
-  add.method('explicitlySpecifiedPossibleHolders', function() {
-    return this._possibleHolders;
-  }, {category: ['accessing']});
-  
-  add.method('possibleHolders', function() {
-    return this.possibleHolderMirrors().map(function(mir) { return mir.reflectee(); });
-  }, {category: ['accessing']});
-  
-  add.method('possibleHolderMirrors', function() {
-    return avocado.enumerator.create(this, 'eachPossibleHolderMirror');
-  }, {category: ['accessing']});
-  
   add.method('eachPossibleHolderMirror', function (f) {
     var alreadySeen = avocado.set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
     var objs = [];
@@ -399,6 +389,8 @@ thisModule.addSlots(avocado.transporter.slotCollection, function(add) {
       }
     }
   }, {category: ['iterating']});
+  
+  add.method('explicitlyIncluded', function () { return this._explicitlyIncluded; }, {category: ['accessing']});
   
 });
 
@@ -639,22 +631,17 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
     var m = avocado.transporter.module.named('test_blah');
 
     this.assertEqual([], m.slots().sort());
-    this.assertEqual(0, m.slotCollection().possibleHolderMirrors().size());
 
     var s1 = this.addSlot(m, this.someObject, 'qwerty', 3);
-    this.assertEqual([reflect(this.someObject)], m.slotCollection().possibleHolderMirrors().sort());
     this.assertEqual([s1], m.slots().sort());
 
     var s2 = this.addSlot(m, this.someObject, 'uiop', 4);
-    this.assertEqual([reflect(this.someObject)], m.slotCollection().possibleHolderMirrors().toArray().sort());
     this.assertEqual([s1, s2], m.slots().sort());
 
     var s3 = this.addSlot(m, this.someObject, 'zubObj', {}).beCreator();
-    this.assertEqual([reflect(this.someObject), reflect(this.someObject.zubObj)], m.slotCollection().possibleHolderMirrors().toArray().sort());
     this.assertEqual([s1, s2, s3], m.slots().sort());
 
     var s31 = this.addSlot(m, this.someObject.zubObj, 'zzz', 5);
-    this.assertEqual([reflect(this.someObject), reflect(this.someObject.zubObj)], m.slotCollection().possibleHolderMirrors().toArray().sort());
     this.assertEqual([s1, s2, s3, s31], m.slots().sort());
     
     // Try creating a slot but *not* explicitly assigning it a module; it should still be in the module, because its holder's creator slot is.
@@ -680,8 +667,6 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
     var n2 = n1.firstChild;
     var s4 = this.addSlot(m, this.someObject, 'node1', n1);
     var s5 = this.addSlot(m, this.someObject, 'node2', n2);
-    this.assertEqual([reflect(n1), reflect(n2), reflect(this.someObject), reflect(this.someObject.zubObj), reflect(this.someObject.zubObj.zubObj2)],
-                      m.slotCollection().possibleHolderMirrors().toArray().sort());
     this.assertEqual([s4, s5, s1, s2, s3, s6, s31, s32, s61], m.slots().sort());
 
     m.uninstall();
@@ -776,9 +761,6 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
     var s1 = this.addSlot(m, this.someObject, 'anArrayToFileOut', ['a', 2, 'three']);
     s1.beCreator();
     var a = s1.contents();
-    var holders = m.slotCollection().possibleHolders();
-    this.assert(holders.include(this.someObject), "the creator slot should be in the module");
-    this.assert(holders.include(a.reflectee()), "the indexable slots should be in the module");
     var indexables = [a.slotAt('0'), a.slotAt('1'), a.slotAt('2')];
     this.assertEqual([s1].concat(indexables), m.slotsInOrderForFilingOut());
     this.assertEqual([s1], m.slotsInMirror(reflect(this.someObject)).toArray());
