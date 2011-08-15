@@ -735,7 +735,6 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('setCreatorSlot', function (s) {
     if (s) {
-      this.makeSureArrayIndexablesGetFiledOut(s);
       this.annotationForWriting().setCreatorSlot(s.name(), s.holder().reflectee());
     } else {
       this.annotationForWriting().setCreatorSlot(undefined, undefined);
@@ -743,15 +742,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['annotations', 'creator slot']});
 
   add.method('addPossibleCreatorSlot', function (s) {
-    this.makeSureArrayIndexablesGetFiledOut(s);
     this.annotationForWriting().addPossibleCreatorSlot(s.name(), s.holder().reflectee());
-  }, {category: ['annotations', 'creator slot']});
-
-  add.method('makeSureArrayIndexablesGetFiledOut', function (s) {
-    if (this.canHaveIndexableSlots()) {
-      var module = s.getModuleAssignedToMeExplicitlyOrImplicitly();
-      if (module) { module.slotCollection().addPossibleHolder(this.reflectee()); }
-    }
   }, {category: ['annotations', 'creator slot']});
 
   add.method('comment', function () {

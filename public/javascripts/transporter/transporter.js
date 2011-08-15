@@ -422,32 +422,6 @@ thisModule.addSlots(avocado.transporter.module.slotFinder, function(add) {
 
 thisModule.addSlots(avocado.transporter.slotCollection, function(add) {
   
-  add.method('eachPossibleHolderMirror', function (f) {
-    var alreadySeen = avocado.set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
-    var objs = [];
-    this._possibleHolders.each(function(obj) { objs.push(obj); });
-    while (objs.length > 0) {
-      var obj = objs.shift();
-      var mir = reflect(obj);
-      if (! alreadySeen.includes(mir)) {
-        alreadySeen.add(mir);
-        f(mir);
-        var shouldIncludeSubObjectsOfCreatorSlot = this._shouldIncludeSubObjectsOfCreatorSlot;
-        if (typeof(shouldIncludeSubObjectsOfCreatorSlot) === 'function') {
-          mir.normalSlots().each(function(s) {
-            var contents = s.contents();
-            var cs = contents.theCreatorSlot();
-            if (cs && cs.equals(s)) {
-              if (shouldIncludeSubObjectsOfCreatorSlot(s)) {
-                objs.push(contents.reflectee());
-              }
-            }
-          });
-        }
-      }
-    }
-  }, {category: ['iterating']});
-  
   add.method('explicitlyIncludedSlots', function () {
     return this._explicitlyIncluded.map(function(slotSpec) { return reflect(slotSpec.holder).slotAt(slotSpec.name); });
   }, {category: ['accessing']});

@@ -626,8 +626,6 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, fun
     if (module) {
       if (this._debugMode) { console.log("Setting module of " + slotName + " to " + module); }
       avocado.annotator.setModuleIfNecessary(slotAnno, holder, slotName, module);
-      module.slotCollection().addPossibleHolder(holder); // aaa - there'll be a lot of duplicates; fix the performance later;
-      avocado.transporter.makeSureArrayIndexablesGetFiledOut(contents, module);
     } else {
       if (this._debugMode) { console.log("NOT setting module of " + slotName); }
     }

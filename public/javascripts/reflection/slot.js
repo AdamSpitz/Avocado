@@ -499,17 +499,9 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     var holderObj = this.holder().reflectee();
     avocado.annotator.setModuleIfNecessary(a, holderObj, this.name(), m);
     
-    if (m)         {
-      m.slotCollection().addPossibleHolder(holderObj); // aaa - there'll be a lot of duplicates; fix the performance later;
-      m.markAsChanged();
-    }
-    
-    if (oldModule) {
-      oldModule.markAsChanged();
-    }
+    if (m)         {         m.markAsChanged(); }
+    if (oldModule) { oldModule.markAsChanged(); }
 
-    this.contents().makeSureArrayIndexablesGetFiledOut(this);
-    
     avocado.ui.justChanged(this);
     return this;
   }, {category: ['accessing annotation', 'module']});

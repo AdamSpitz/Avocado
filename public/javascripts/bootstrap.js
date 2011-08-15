@@ -922,15 +922,7 @@ avocado.transporter.slotCollection = {};
 annotator.annotationOf(avocado.transporter.slotCollection).setCreatorSlot('slotCollection', avocado.transporter);
 
 avocado.transporter.slotCollection.initialize = function(shouldIncludeSubObjectsOfCreatorSlot) {
-  this._possibleHolders = [];
-  this._shouldIncludeSubObjectsOfCreatorSlot = shouldIncludeSubObjectsOfCreatorSlot;
-  
-  // aaaaaaaa get rid of the _possibleHolders stuff after this new way is working properly
   this._explicitlyIncluded = [];
-};
-
-avocado.transporter.slotCollection.addPossibleHolder = function(h) {
-  this._possibleHolders.push(h);
 };
 
 avocado.transporter.slotCollection.add = function(holder, name) {
@@ -1029,14 +1021,6 @@ avocado.transporter.module.slotCollection = function() {
   return avocado.transporter.module.cache[this._name];
 };
 
-avocado.transporter.makeSureArrayIndexablesGetFiledOut = function (contents, module) {
-  // aaa see makeSureArrayIndexablesGetFiledOut in the slot object
-  if (! module) { return; }
-  if (typeof contents === 'object' && ((contents instanceof Array) || (contents instanceof Node))) {
-    module.slotCollection().addPossibleHolder(contents);
-  }
-};
-
 avocado.transporter.module.slotAdder = {
   data: function(name, contents, slotAnnotation, contentsAnnotation) {
     var holderAnno = annotator.annotationOf(this.holder);
@@ -1049,8 +1033,6 @@ avocado.transporter.module.slotAdder = {
       annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);
     }
     
-    avocado.transporter.makeSureArrayIndexablesGetFiledOut(contents, this.module);
-
     if (name === 'postFileIn') {
       this.module.objectsWithAPostFileInMethod = this.module.objectsWithAPostFileInMethod || [];
       this.module.objectsWithAPostFileInMethod.push(this.holder);
@@ -1086,7 +1068,6 @@ avocado.transporter.module.slotAdder = {
 };
 
 avocado.transporter.module.addSlots = function(holder, block) {
-  this.slotCollection().addPossibleHolder(holder);
   var slotAdder = Object.create(this.slotAdder);
   slotAdder.module = this;
   slotAdder.holder = holder;
