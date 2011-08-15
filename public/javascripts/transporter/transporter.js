@@ -25,8 +25,8 @@ thisModule.addSlots(avocado.transporter, function(add) {
         
         // Include the Unowned Attributes if there are any.
         var unownedSlotsMorph = avocado.ui.worldFor(evt).morphFor(avocado.searchResultsPresenter.create(avocado.objectGraphWalker.visitors.unownedSlotFinder.create().createWalker(), evt)).redo();
-        if (unownedSlotsMorph().searcher().results().size() > 0) {
-          changedOnes.unshift(unownedSlotsMorph().searcher());
+        if (unownedSlotsMorph.searcher().results().size() > 0) {
+          changedOnes.unshift(unownedSlotsMorph.searcher());
         }
         
         if (changedOnes.size() > 0) {

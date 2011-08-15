@@ -28,6 +28,10 @@ thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
     return this._searcher.go();
   }, {category: ['searching']});
 
+  add.method('results', function () {
+    return this._searcher.results();
+  }, {category: ['accessing']});
+
   add.method('sortingCriteriaForSearchResults', function () {
     if (this._searcher.resultsAreSlots()) { // aaa hack
       return function(s) { return s.holder().name().toUpperCase(); };
