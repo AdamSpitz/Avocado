@@ -214,7 +214,7 @@ thisModule.addSlots(avocado.project, function(add) {
     var morphs = modules.currentWorldState.morphs;
   	var morphsArrayMir = reflect(morphs);
     // Need to take the slots in the "morphs" array out of the module whenever we reset the
-    // array to an empty, so that the transporter doesn't gripe about the old array not
+    // array to an empty one, so that the transporter doesn't gripe about the old array not
     // being well-known.
     morphs.forEach(function(m, i) { morphsArrayMir.slotAt(i).setModule(null); });
 	  modules.currentWorldState.morphs = [];
@@ -225,7 +225,7 @@ thisModule.addSlots(avocado.project, function(add) {
   	var currentWorldStateModule = this.currentWorldStateModule();
   	
   	currentWorldStateModule.morphs = [];
-  	// reflect(currentWorldStateModule).slotAt('morphs').beCreator().setInitializationExpression('[]'); // aaa I don't understand why this was here, it just seems broken
+  	reflect(currentWorldStateModule).slotAt('morphs').beCreator(); // .setInitializationExpression('[]'); // aaa I don't understand why this was here, it just seems broken
   	var morphsArrayMir = reflect(currentWorldStateModule.morphs);
   	
     var currentWorldSubmorphs = WorldMorph.current().submorphs;
@@ -260,34 +260,10 @@ thisModule.addSlots(avocado.project, function(add) {
   	reflect(currentWorldStateModule).slotAt('postFileIn').beCreator();
   	reflect(currentWorldStateModule).normalSlots().each(function(s) { s.setModule(currentWorldStateModule); });
   	
-  	var annotator = avocado.objectGraphWalker.visitors.objectGraphAnnotator.create();
-  	annotator.alsoMakeCreatorSlots(); // aaa - not sure this is a good idea
-  	annotator.alsoAssignUnownedSlotsToModule(function(holder, slotName, slotContents, slotAnno) {
-  	  if (holder === currentWorldStateModule) { return currentWorldStateModule; }
-  	  return avocado.annotator.moduleOfAnyCreatorInChainFor(holder);
-  	});
-  	var walker = annotator.createWalker();
-  	walker.setShouldWalkIndexables(true);
-  	
-    annotator.shouldContinueRecursingIntoObject = function (object, objectAnno, howDidWeGetHere) {
-      if (object === currentWorldStateModule) { return true; }
-      if (typeof(object.storeString) === 'function') { return false; }
-      var cs = objectAnno.explicitlySpecifiedCreatorSlot();
-      if (!cs) { return true; }
-      return cs.name === howDidWeGetHere.slotName && cs.holder === howDidWeGetHere.slotHolder;
-    };
-  	
-    annotator.shouldIgnoreSlot = function (holder, slotName, howDidWeGetHere) {
-      // aaa - hack; really these slots should be annotated with an initializeTo: 'undefined' or something like that
-      if (['pvtCachedTransform', 'fullBounds', '_currentVersion', '_requirements', '_modificationFlag'].include(slotName)) { return false; }
-      
-      var slotAnno = avocado.annotator.existingSlotAnnotation(holder, slotName);
-      if (slotAnno && slotAnno.initializationExpression()) { return false; }
-      
-      return true;
-    };
+    // aaa - hack; really these slots should be annotated with an initializeTo: 'undefined' or something like that
+    // AAAAAAAAAA - we're not actually walking anymore, now that we have the new module slotFinder, so I think I've gotta do the initializeTo thing now
+  	// walker.namesToIgnore = walker.namesToIgnore.concat(['pvtCachedTransform', 'fullBounds', '_currentVersion', '_requirements', '_modificationFlag']);
 
-  	walker.go(currentWorldStateModule);
     currentWorldStateModule.markAsChanged();
     
   });

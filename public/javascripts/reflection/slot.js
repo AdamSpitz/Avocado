@@ -74,6 +74,10 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('isParent', function () { return false; }, {category: ['testing']});
 
+  add.method('isSimpleMethod', function () {
+    return this.contents().isReflecteeSimpleMethod();
+  }, {category: ['testing']});
+
   add.data('isAvocadoSlot', true, {category: ['testing']});
 
   add.method('doesTypeMatch', function (obj) { return obj && obj.isAvocadoSlot; }, {category: ['testing']});
@@ -303,6 +307,10 @@ thisModule.addSlots(avocado.slots.hardWiredContents, function(add) {
     return this.name().hashCode() + this.mirror().hashCode();
   }, {category: ['comparing']});
 
+  add.method('category', function () {
+    return this.mirror().rootCategory();
+  }, {category: ['accessing annotation', 'category']});
+
 });
 
 
@@ -411,10 +419,6 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     this.mirror().removeSlotAt(this.name());
     this.removeAnnotation();
   }, {category: ['removing']});
-
-  add.method('isSimpleMethod', function () {
-    return this.contents().isReflecteeSimpleMethod();
-  }, {category: ['testing']});
 
   add.method('rename', function (newName) {
     var oldName = this.name();

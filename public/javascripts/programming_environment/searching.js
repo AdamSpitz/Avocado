@@ -16,6 +16,15 @@ thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
     return Object.newChildOf(this, searcher);
   }, {category: ['creating']});
 
+  add.method('createForSlots', function (slots, description) {
+    return this.create({
+      inspect: function() { return description; },
+      go: function() { return slots; },
+      results: function() { return slots; },
+      resultsAreSlots: function() { return true; }
+    });
+  }, {category: ['creating']});
+
   add.method('initialize', function (searcher) {
     this._searcher = searcher;
   }, {category: ['creating']});

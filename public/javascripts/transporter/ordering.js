@@ -164,7 +164,11 @@ thisModule.addSlots(avocado.transporter.module.slotOrderizer, function(add) {
   add.method('insertCycleBreakerSlot', function () {
     // aaa - This code hasn't been properly tested; I don't trust it yet.
     var slot = this.chooseSlotToTryToBreakCycle();
-    if (!slot) { throw new Error("there is a cycle in the slot dependency graph; could not find a slot to use as a cycle-breaker"); }
+    if (!slot) {
+      var err = new Error("there is a cycle in the slot dependency graph; could not find a slot to use as a cycle-breaker");
+      err.objectsToShow = [avocado.searchResultsPresenter.createForSlots(this.allRemainingSlots().toArray(), "Slots containing cycle")];
+      throw err;
+    }
     var cycleBreakerSlot = slot.copyTo(this._cycleBreakersMir.rootCategory()).rename(this._cycleBreakersMir.findUnusedSlotName('breaker'));
     var initExpr = slot.initializationExpression();
     if (initExpr) { cycleBreakerSlot.setInitializationExpression(initExpr); }
