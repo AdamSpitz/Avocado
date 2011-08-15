@@ -82,6 +82,11 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.method('shouldUseZooming', function () {
     return avocado.shouldMirrorsUseZooming;
   }, {category: ['zooming']});
+
+  add.method('refreshContent', function ($super) {
+    this.mirror().updateCategoryCache();
+    return $super();
+  }, {category: ['updating']});
   
   add.method('headerRow', function () {
     if (! this._headerRow) {

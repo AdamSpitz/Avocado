@@ -384,38 +384,50 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return this.category([]);
   }, {category: ['categories']});
 
-  add.method('slotsInCategory', function (c) {
-    if (c.isRoot()) {
-      // aaa - This is the old slow way. The problem is that slots can be added to the object
-      // (even just by doing "obj.x = 3") without there being any way for the category
-      // cache to know about it. I think we should be safe when using the cache to list
-      // slots *not* in the root category, though.
-      //
-      // Maybe keep a timestamp on the cache and refresh it with this list every so
-      // often? I dunno. -- Adam, Apr. 2011
-      return this.normalSlots().select(function(s) { return c.equals(s.category()); });
-    } else {
-      var anno = this.annotationForReading();
-      if (!anno) { return []; }
+  add.method('updateCategoryCache', function () {
+    // This is the old slow way. The problem is that slots can be added to the object
+    // (e.g. by doing "obj.x = 3") without there being any way for the category
+    // cache to know about it. Also, since slots can now inherit their category from
+    // a parent, even slots in a non-root category might not have their category
+    // stored correctly in this object's category cache. So this method can be used
+    // to make sure that this object's category cache is up-to-date.
+    
+    var anno;
+    this.normalSlots().each(function(s) {
+      var c = s.category();
+      anno = anno || this.annotationForWriting();
       var catCache = anno.getCategoryCache(c.parts());
-      var thisMirror = this;
-      return avocado.enumerator.create(catCache, 'eachSlotName').map(function(n) { return thisMirror.slotAt(n); });
-    }
+      catCache.addSlotName(s.name());
+    }.bind(this));
+  }, {category: ['categories']});
+
+  add.method('possiblyStaleSlotsInCategory', function (c) {
+    var anno = this.annotationForReading();
+    if (!anno) { return []; }
+    var catCache = anno.getCategoryCache(c.parts());
+    var thisMirror = this;
+    var slots = [];
+    catCache.eachSlotName(function(n) {
+      if (thisMirror.reflecteeHasOwnProperty(n)) {
+        slots.push(thisMirror.slotAt(n));
+      }
+    });
+    return slots;
   }, {category: ['iterating']});
 
-  add.method('slotsNestedSomewhereUnderCategory', function (c) {
+  add.method('possiblyStaleSlotsNestedSomewhereUnderCategory', function (c) {
     // aaa old way, remove this once the new way works:
     // return this.normalSlots().select(function(s) { return s.category().isEqualToOrSubcategoryOf(c); });
-    return avocado.enumerator.create(this, 'eachSlotNestedSomewhereUnderCategory', c);
+    return avocado.enumerator.create(this, 'possiblyStaleEachSlotNestedSomewhereUnderCategory', c);
   }, {category: ['iterating']});
 
-  add.method('eachSlotNestedSomewhereUnderCategory', function (c, f) {
+  add.method('possiblyStaleEachSlotNestedSomewhereUnderCategory', function (c, f) {
     if (c.isRoot()) {
       this.eachNormalSlot(f);
     } else {
-      this.slotsInCategory(c).each(f);
+      this.possiblyStaleSlotsInCategory(c).each(f);
       this.eachImmediateSubcategoryOf(c, function(subcat) {
-        this.eachSlotNestedSomewhereUnderCategory(subcat, f);
+        this.possiblyStaleEachSlotNestedSomewhereUnderCategory(subcat, f);
       }.bind(this));
     }
   }, {category: ['iterating']});
@@ -1373,12 +1385,12 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
       this.assertEqual('letters consonants, letters vowels', mir.immediateSubcategoriesOf(root.subcategory('letters')).sort().join(', '));
       this.assertEqual('', mir.immediateSubcategoriesOf(root.subcategory('letters').subcategory('vowels')).sort().join(', '));
       
-      this.assertEqual('', mir.slotsInCategory(root).sort().join(', '));
-      this.assertEqual('y', mir.slotsInCategory(root.subcategory('letters')).sort().join(', '));
-      this.assertEqual('a, e', mir.slotsInCategory(root.subcategory('letters').subcategory('vowels')).sort().join(', '));
+      this.assertEqual('', root.possiblyStaleSlots().sort().join(', '));
+      this.assertEqual('y', root.subcategory('letters').possiblyStaleSlots().sort().join(', '));
+      this.assertEqual('a, e', root.subcategory('letters').subcategory('vowels').possiblyStaleSlots().sort().join(', '));
       
-      this.assertEqual('b, c, d', mir.slotsNestedSomewhereUnderCategory(root.subcategory('letters').subcategory('consonants')).sort().join(', '));
-      this.assertEqual('a, b, c, d, e, y', mir.slotsNestedSomewhereUnderCategory(root).sort().join(', '));
+      this.assertEqual('b, c, d', root.subcategory('letters').subcategory('consonants').possiblyStaleNormalSlotsInMeAndSubcategories().sort().join(', '));
+      this.assertEqual('a, b, c, d, e, y', root.possiblyStaleNormalSlotsInMeAndSubcategories().sort().join(', '));
       
       var o2 = {};
       var mir2 = reflect(o2);

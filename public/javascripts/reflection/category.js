@@ -127,26 +127,26 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
     return true;
   }, {category: ['comparing']});
 
-  add.method('eachSlot', function (f) {
+  add.method('possiblyStaleEachSlot', function (f) {
     if (this.isRoot()) {
       this.mirror().eachFakeSlot(f);
     }
-    this.mirror().slotsInCategory(this).each(f);
+    this.mirror().possiblyStaleSlotsInCategory(this).each(f);
   }, {category: ['iterating']});
 
-  add.method('slots', function () {
-    return avocado.enumerator.create(this, 'eachSlot');
+  add.method('possiblyStaleSlots', function () {
+    return avocado.enumerator.create(this, 'possiblyStaleEachSlot');
   }, {category: ['accessing']});
 
-  add.method('normalSlotsInMeAndSubcategories', function () {
-    return this.mirror().slotsNestedSomewhereUnderCategory(this);
+  add.method('possiblyStaleNormalSlotsInMeAndSubcategories', function () {
+    return this.mirror().possiblyStaleSlotsNestedSomewhereUnderCategory(this);
   }, {category: ['accessing']});
 
   add.method('rename', function (newName) {
     var oldCat = this.copy();
     var oldCatPrefixParts = oldCat.parts().map(function(p) {return p;});
     var slotCount = 0;
-    this.normalSlotsInMeAndSubcategories().each(function(s) {
+    this.possiblyStaleNormalSlotsInMeAndSubcategories().each(function(s) {
       slotCount += 1;
       var newCatParts = s.category().parts().map(function(p) {return p;});
       
@@ -173,7 +173,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.method('modules', function () {
     var modules = [];
     var implicitModule = this.getModuleAssignedToMeImplicitly();
-    this.normalSlotsInMeAndSubcategories().each(function(s) {
+    this.possiblyStaleNormalSlotsInMeAndSubcategories().each(function(s) {
       if (! s.isFromACopyDownParent()) {
         var m = s.getModuleAssignedToMeExplicitly();
         if (!m) { m = implicitModule; }
@@ -203,7 +203,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['user interface']});
 
   add.method('nonNodeContents', function () {
-    return this.slots().sortBy(function(s) { return s.sortOrder(); });
+    return this.possiblyStaleSlots().sortBy(function(s) { return s.sortOrder(); });
   }, {category: ['user interface']});
 
   add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
@@ -213,7 +213,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['iterating']});
 
   add.method('removeSlots', function () {
-    this.mirror().slotsNestedSomewhereUnderCategory(this).each(function(slot) {
+    this.possiblyStaleNormalSlotsInMeAndSubcategories().each(function(slot) {
       slot.remove();
     });
   }, {category: ['removing']});
@@ -226,7 +226,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.method('copyContentsInto', function (target) {
     var numPartsToLopOffTheBeginning = this.parts().length;
 
-    this.normalSlotsInMeAndSubcategories().each(function(slot) {
+    this.possiblyStaleNormalSlotsInMeAndSubcategories().each(function(slot) {
       slot.copyTo(target.concat(slot.category().withoutFirstParts(numPartsToLopOffTheBeginning)));
     });
     return target;

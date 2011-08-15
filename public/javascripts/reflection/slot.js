@@ -556,7 +556,8 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     var cds = this.slotThatIAmCopiedDownFrom();
     if (cds) { return cds.category(); }
     
-    return this.holder().category(avocado.organization.current.categoryForSlot(this));
+    var catParts = avocado.organization.current.categoryForSlot(this);
+    return this.holder().category(catParts);
   }, {category: ['accessing annotation', 'category']});
 
   add.method('setCategory', function (c) {
