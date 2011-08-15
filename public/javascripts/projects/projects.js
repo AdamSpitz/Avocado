@@ -277,7 +277,7 @@ thisModule.addSlots(avocado.project, function(add) {
       return cs.name === howDidWeGetHere.slotName && cs.holder === howDidWeGetHere.slotHolder;
     };
   	
-    annotator.shouldContinueRecursingIntoSlot = function (holder, slotName, howDidWeGetHere) {
+    annotator.shouldIgnoreSlot = function (holder, slotName, howDidWeGetHere) {
       // aaa - hack; really these slots should be annotated with an initializeTo: 'undefined' or something like that
       if (['pvtCachedTransform', 'fullBounds', '_currentVersion', '_requirements', '_modificationFlag'].include(slotName)) { return false; }
       

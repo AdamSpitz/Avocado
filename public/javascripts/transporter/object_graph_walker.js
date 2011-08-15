@@ -49,6 +49,17 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     return this.results();
   });
 
+  add.method('goStartingAtRootSlots', function (rootSlots) {
+    this.reset();
+    this._startTime = new Date().getTime();
+    rootSlots.each(function(rootSlot) {
+      this.walkAttribute(rootSlot.holder().reflectee(), rootSlot.name());
+    }.bind(this));
+    if (this._shouldAlsoWalkSpecialUnreachableObjects) { this.walkSpecialUnreachableObjects(); }
+    if (!this._shouldNotUndoMarkingsWhenDone) { this.undoAllMarkings(); }
+    return this.results();
+  });
+  
   add.method('reset', function () {
     // children can override
     this._marked = [];
@@ -83,6 +94,12 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
 
   add.method('doNotIgnoreDOMObjects', function () {
     this._shouldNotIgnoreDOMObjects = true;
+    return this;
+  });
+  
+  add.method('useDOMChildNodePseudoSlots', function () {
+    this.doNotIgnoreDOMObjects();
+    this._shouldUseDOMChildNodePseudoSlots = true;
     return this;
   });
 
@@ -123,7 +140,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
   });
 
   add.method('setShouldWalkIndexables', function (b) {
-    this.shouldWalkIndexables = true;
+    this.shouldWalkIndexables = b;
     return this;
   });
 
@@ -216,39 +233,60 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
 
     if (typeof(currentObj.hasOwnProperty) === 'function') {
       if (this._debugMode) { console.log("About to walk through the properties of object " + this.nameOfObjectWithPath(howDidWeGetHere)); }
-      for (var name in currentObj) {
-        if (currentObj.hasOwnProperty(name) && ! this.namesToIgnore.include(name) && this._visitor.shouldContinueRecursingIntoSlot(currentObj, name, howDidWeGetHere)) {
-          this.walkAttribute(currentObj, name, howDidWeGetHere);
+      
+      if (this._shouldUseDOMChildNodePseudoSlots && (avocado.DOMStuff.isDOMNode(currentObj) || avocado.DOMStuff.isDOMElement(currentObj))) {
+        // Treat DOM nodes specially because the DOM is a nightmare.
+        var childNodes = currentObj.childNodes;
+        for (var i = 0, n = childNodes.length; i < n; ++i) {
+          this.walkDOMChildNode(currentObj, i, childNodes[i], howDidWeGetHere);
         }
-      }
+      } else {
+        for (var name in currentObj) {
+          if (currentObj.hasOwnProperty(name) && ! this.namesToIgnore.include(name) && !this._visitor.shouldIgnoreSlot(currentObj, name, howDidWeGetHere)) {
+            this.walkAttribute(currentObj, name, howDidWeGetHere);
+          }
+        }
+        
+        if (currentObj !== null && typeof(currentObj) !== 'undefined') {
+          this.walkAttribute(currentObj, '__proto__', howDidWeGetHere);
+        }
 
-      // Workaround for Chrome bug. -- Adam
-      if (! avocado.javascript.prototypeAttributeIsEnumerable) {
-        if (currentObj.hasOwnProperty("prototype")) {
-          this.walkAttribute(currentObj, "prototype", howDidWeGetHere);
+        // Workaround for Chrome. -- Adam
+        if (! avocado.javascript.prototypeAttributeIsEnumerable) {
+          if (currentObj.hasOwnProperty("prototype")) {
+            this.walkAttribute(currentObj, "prototype", howDidWeGetHere);
+          }
         }
       }
     }
   });
 
   add.method('walkAttribute', function (currentObj, name, howDidWeGetHere) {
+    if (this._debugMode) { console.log("About to walk attribute " + name + " of " + this.nameOfObjectWithPath(howDidWeGetHere)); }
     var contents;
     var encounteredFirefoxBug = false;
     try { contents = currentObj[name]; } catch (ex) { encounteredFirefoxBug = true; }
     if (! encounteredFirefoxBug) {
       this._visitor.reachedSlot(currentObj, name, contents);
-      if (this.canHaveSlots(contents)) {
-        var shouldWalkContents;
-        // aaa - this isn't right. But I don't wanna walk all the indexables.
-        try { shouldWalkContents = contents.constructor !== Array || this.shouldWalkIndexables; }
-        catch (ex) { shouldWalkContents = true; } // another FireFox problem?
-        if (shouldWalkContents) {
-          this.walk(contents, avocado.objectGraphWalker.path.create(currentObj, name, howDidWeGetHere));
+      if (this._visitor.shouldContinueRecursingIntoSlot(currentObj, name, howDidWeGetHere)) {
+        if (this.canHaveSlots(contents)) {
+          var shouldWalkContents;
+          // aaa - this isn't right. But I don't wanna walk all the indexables.
+          try { shouldWalkContents = contents.constructor !== Array || this.shouldWalkIndexables; }
+          catch (ex) { shouldWalkContents = true; } // another FireFox problem?
+          if (shouldWalkContents) {
+            this.walk(contents, avocado.objectGraphWalker.path.create(currentObj, name, howDidWeGetHere));
+          }
         }
       }
     }
   });
 
+  add.method('walkDOMChildNode', function (parentNode, index, childNode, howDidWeGetHere) {
+    this._visitor.reachedDOMChildNode(parentNode, index, childNode);
+    
+    this.walk(childNode, avocado.objectGraphWalker.path.create(parentNode, "childnode" + index, howDidWeGetHere));
+  });
 });
 
 
@@ -336,11 +374,20 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.general, function(add) {
     return true;
   });
 
+  add.method('shouldIgnoreSlot', function (holder, slotName, contents) {
+    // children can override;
+    return false;
+  });
+
   add.method('reachedObject', function (o) {
     // children can override;
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
+    // children can override;
+  });
+
+  add.method('reachedDOMChildNode', function (parentNode, index, childNode) {
     // children can override;
   });
   
@@ -433,13 +480,14 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.unownedSlotFinder, functi
     return true;
   });
 
-  add.method('shouldContinueRecursingIntoSlot', function (holder, slotName, howDidWeGetHere) {
+  add.method('shouldIgnoreSlot', function (holder, slotName, howDidWeGetHere) {
     var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
     if (slotAnno.initializationExpression()) { return false; }
     return true;
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
+    if (slotName === '__proto__') { return; }
     var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
     if (! avocado.annotator.getModuleAssignedExplicitlyOrImplicitlyTo(slotAnno, holder)) {
       if (avocado.annotator.isMagicSlotNameOnFunction(holder, slotName)) { return; }
@@ -522,33 +570,39 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, fun
     return this;
   });
 
-  add.method('reachedObject', function (contents, howDidWeGetHere, shouldExplicitlySetIt) {
-    if (this._shouldMakeCreatorSlots) {
-      if (! howDidWeGetHere) { return; }
-      if (contents === window) { return; }
-      var contentsAnno;
-      var slotHolder = howDidWeGetHere.slotHolder;
-      var slotName   = howDidWeGetHere.slotName;
+  add.method('makeCreatorSlotIfNecessary', function (contents, howDidWeGetHere, shouldExplicitlySetIt) {
+    if (! howDidWeGetHere) { return; }
+    if (contents === window) { return; }
+    var contentsAnno;
+    var slotHolder = howDidWeGetHere.slotHolder;
+    var slotName   = howDidWeGetHere.slotName;
+    
+    if (slotName === '__proto__') { return; } // not sure this is the right thing to do, but for now let's go with it
 
-      // Optimization: don't bother creating an annotation just to set its creator slot if that creator
-      // slot is already determinable from the object itself.
-      var implicitCS = avocado.annotator.creatorSlotDeterminableFromTheObjectItself(contents);
-      if (implicitCS && implicitCS.holder === slotHolder && implicitCS.name === slotName) {
-        // no need to do anything
+    // Optimization: don't bother creating an annotation just to set its creator slot if that creator
+    // slot is already determinable from the object itself.
+    var implicitCS = avocado.annotator.creatorSlotDeterminableFromTheObjectItself(contents);
+    if (implicitCS && implicitCS.holder === slotHolder && implicitCS.name === slotName) {
+      // no need to do anything
+    } else {
+      try { contentsAnno = avocado.annotator.annotationOf(contents); } catch (ex) { return; } // FireFox bug
+
+      if (shouldExplicitlySetIt) {
+        contentsAnno.setCreatorSlot(slotName, slotHolder);
       } else {
-        try { contentsAnno = avocado.annotator.annotationOf(contents); } catch (ex) { return false; } // FireFox bug
-
-        if (shouldExplicitlySetIt) {
-          contentsAnno.setCreatorSlot(slotName, slotHolder);
+        var existingCS = contentsAnno.explicitlySpecifiedCreatorSlot();
+        if (existingCS && existingCS.contentsObject() === contents) {
+          // no need to do anything
         } else {
-          var existingCS = contentsAnno.explicitlySpecifiedCreatorSlot();
-          if (existingCS && existingCS.contentsObject() === contents) {
-            // no need to do anything
-          } else {
-            contentsAnno.addPossibleCreatorSlot(slotName, slotHolder);
-          }
+          contentsAnno.addPossibleCreatorSlot(slotName, slotHolder);
         }
       }
+    }
+  });
+  
+  add.method('reachedObject', function (contents, howDidWeGetHere, shouldExplicitlySetIt) {
+    if (this._shouldMakeCreatorSlots) {
+      this.makeCreatorSlotIfNecessary(contents, howDidWeGetHere, shouldExplicitlySetIt);
     }
     
     if (this.shouldBuildListsOfUsedIdentifiers) {
@@ -559,6 +613,8 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, fun
 
   add.method('reachedSlot', function (holder, slotName, contents) {
     if (! this.moduleToAssignSlotsTo) { return; }
+    if (slotName === '__proto__') { return; }
+    
     var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
     var module;
     if (typeof(this.moduleToAssignSlotsTo) === 'function') {

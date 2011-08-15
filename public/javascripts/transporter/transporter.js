@@ -301,9 +301,9 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
   }, {category: ['accessing']});
 
   add.method('eachSlot', function (f) {
-    this.slotCollection().eachPossibleHolderMirror(function(mir) {
-      this.slotsInMirror(mir).each(f);
-    }.bind(this));
+    var walker = avocado.transporter.module.slotFinder.create(this).createWalker();
+    walker.goStartingAtRootSlots(this.slotCollection().explicitlyIncludedSlots());
+    walker.results().each(f);
   }, {category: ['iterating']});
 
   add.method('interactiveRename', function (evt) {
@@ -359,6 +359,64 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
     return this.allModules().select(function(m) { return m.modificationFlag().hasJustThisOneChanged(); });
   }, {category: ['keeping track of changes']});
 
+  add.creator('slotFinder', Object.create(avocado.objectGraphWalker.visitors.general), {category: ['finding all slots']});
+  
+});
+
+
+thisModule.addSlots(avocado.transporter.module.slotFinder, function(add) {
+  
+  add.method('initialize', function ($super, module) {
+    $super();
+    this._module = module;
+  });
+
+  add.method('createWalker', function ($super) {
+    return $super().setShouldWalkIndexables(true).useDOMChildNodePseudoSlots();
+  });
+
+  add.data('_resultsAreSlots', true);
+
+  add.method('shouldContinueRecursingIntoObject', function (object, objectAnno, howDidWeGetHere) {
+    var mir = reflect(object);
+    if (mir.reflecteeStoreString()) { return false; }
+    if (mir.isReflecteeSimpleMethod()) { return false; }
+
+    var cs = mir.theCreatorSlot();
+    if (!cs) { return false; }
+    if (howDidWeGetHere.slotName !== cs.name() || howDidWeGetHere.slotHolder !== cs.holder().reflectee()) { return false; }
+
+    return true;
+  });
+
+  add.method('shouldIgnoreSlot', function (holder, slotName, howDidWeGetHere) {
+    var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
+    var alreadyInModule = slotAnno.getModuleAssignedToMeExplicitly();
+    if (alreadyInModule && alreadyInModule !== this._module) { return true; }
+    
+    var slot = reflect(holder).slotAt(slotName);
+    if (slot.isFromACopyDownParent()) { return true; }
+    
+    return false;
+  });
+  
+  add.method('shouldContinueRecursingIntoSlot', function (holder, slotName, howDidWeGetHere) {
+    var slot = reflect(holder).slotAt(slotName);
+    if (slot.initializationExpression()) { return false; }
+    
+    return true;
+  });
+
+  add.method('reachedSlot', function (holder, slotName, contents) {
+    if (slotName !== '__proto__') {
+      this._results.push(reflect(holder).slotAt(slotName));
+    }
+  });
+
+  add.method('reachedDOMChildNode', function (parentNode, index, childNode) {
+    this._results.push(avocado.slots.domChildNode.create(reflect(parentNode), "childnode" + index, reflect(childNode)));
+  });
+  
 });
 
 
@@ -390,7 +448,9 @@ thisModule.addSlots(avocado.transporter.slotCollection, function(add) {
     }
   }, {category: ['iterating']});
   
-  add.method('explicitlyIncluded', function () { return this._explicitlyIncluded; }, {category: ['accessing']});
+  add.method('explicitlyIncludedSlots', function () {
+    return this._explicitlyIncluded.map(function(slotSpec) { return reflect(slotSpec.holder).slotAt(slotSpec.name); });
+  }, {category: ['accessing']});
   
 });
 
@@ -758,8 +818,7 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
   add.method('testFilingOutArrays', function () {
     var m = avocado.transporter.module.named('test_array_fileout');
 
-    var s1 = this.addSlot(m, this.someObject, 'anArrayToFileOut', ['a', 2, 'three']);
-    s1.beCreator();
+    var s1 = this.addSlot(m, this.someObject, 'anArrayToFileOut', ['a', 2, 'three']).beCreator();
     var a = s1.contents();
     var indexables = [a.slotAt('0'), a.slotAt('1'), a.slotAt('2')];
     this.assertEqual([s1].concat(indexables), m.slotsInOrderForFilingOut());
