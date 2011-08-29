@@ -101,11 +101,7 @@ thisModule.addSlots(avocado.ContainerMorph.prototype.modelUsingWhicheverMorphsHa
   
   add.method('toString', function () { return "morphs of " + this._morph; });
   
-  add.method('immediateSubnodes', function () {
-    return [];
-  }, {category: ['accessing']});
-  
-  add.method('nonNodeContents', function () {
+  add.method('immediateContents', function () {
     return this._morph.contentsPanel().submorphs.map(function(m) { return typeof(m._model) !== 'undefined' ? m._model : { newMorph: function() { return m; }}; });
   }, {category: ['accessing']});
 

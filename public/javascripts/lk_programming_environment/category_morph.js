@@ -111,14 +111,14 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     return parts;
   }, {category: ['UI state']});
 
-  add.method('subnodeMorphsInOrder', function () {
+  add.method('contentMorphsInOrder', function () {
     // Overriding the one in the parent, so we can do this UI state stuff.
     // aaa - Blecch, I hate this whole thing where the categories don't really exist until they've got a slot in them.
     // Maybe make categories a bit more real, part of the object annotation or something, instead of just having them
     // live inside the slot annotations?
     
-    var subnodeMorphs = this.immediateSubnodeMorphs().toArray();
-    subnodeMorphs = subnodeMorphs.concat(this._contentsPanel.submorphs.select(function(m) {
+    var contentMorphs = this.immediateContentMorphs().toArray();
+    contentMorphs = contentMorphs.concat(this._contentsPanel.submorphs.select(function(m) {
       if (m.isNewCategory) {
         var realCatMorph = this.mirrorMorph().existingCategoryMorphFor(m.category());
         if (realCatMorph) {
@@ -131,7 +131,8 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
         return false;
       }
     }.bind(this)));
-    return subnodeMorphs.sortBy(function(scm) { return scm.treeNode().sortOrder(); });
+
+    return contentMorphs.sortBy(function(cm) { return cm._model && cm._model.sortOrder ? cm._model.sortOrder() : ''; });
   }, {category: ['contents panel']});
 
   add.method('commands', function () {

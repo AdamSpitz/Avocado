@@ -424,11 +424,7 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
     }.bind(this));
   }, {category: ['updating']})
   
-  add.method('immediateSubnodes', function () {
-    return [];
-  }, {category: ['accessing']});
-  
-  add.method('nonNodeContents', function () {
+  add.method('immediateContents', function () {
     return this._containerPrototypes;
   }, {category: ['accessing']});
 
@@ -762,11 +758,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
     return elementTypeName + "s whose " + this._relationship.nameOfAttributePointingToContainer() + " is " + reflect(this.containerObj()).inspect();
   }, {category: ['printing']});
   
-  add.method('immediateSubnodes', function () {
-    return [];
-  }, {category: ['accessing']});
-  
-  add.method('nonNodeContents', function () {
+  add.method('immediateContents', function () {
     return this._contents;
   }, {category: ['accessing']});
 

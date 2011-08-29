@@ -35,10 +35,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     this._model = treeNode;
     this.applyStyle(this.nodeStyle());
 
-    this._subnodeMorphs = [];
-    this._nonNodeContentMorphs = [];
-    reflect(this).slotAt('_subnodeMorphs').beCreator();
-    reflect(this).slotAt('_nonNodeContentMorphs').beCreator();
+    this._contentMorphs = [];
+    reflect(this).slotAt('_contentMorphs').beCreator();
     
     if (! this.shouldUseZooming()) {
       this._expander = new ExpanderMorph(this);
@@ -86,15 +84,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.method('partsOfUIState', function () {
     return {
       isExpanded: this.expander(),
-      nodes: {
-        collection: this._subnodeMorphs.toArray(),
+      contents: {
+        collection: this._contentMorphs,
         keyOf: function(cm) { return cm._model; },
-        getPartWithKey: function(morph, node) { return WorldMorph.current().morphFor(node); }
-      },
-      nonNodes: {
-        collection: this._nonNodeContentMorphs,
-        keyOf: function(cm) { return cm._model; },
-        getPartWithKey: function(morph, nonNode) { return WorldMorph.current().morphFor(nonNode); }
+        getPartWithKey: function(morph, c) { return WorldMorph.current().morphFor(c); }
       }
     };
   }, {category: ['UI state']});
@@ -217,47 +210,33 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     return this._contentsSummaryMorph;
   }, {category: ['contents panel']});
 
-  add.method('nonNodeContentMorphsInOrder', function () {
+  add.method('contentMorphsInOrder', function () {
     // can be overridden in children, if desired
-    return this.treeNode().nonNodeContents().map(function(s) { return this.nonNodeMorphFor(s); }.bind(this));
-  }, {category: ['contents panel']});
-
-  add.method('subnodeMorphsInOrder', function () {
-    var subnodeMorphs = this.immediateSubnodeMorphs().toArray();
-    return subnodeMorphs.sortBy(function(m) { return m.treeNode().sortOrder(); });
+    return this.immediateContentMorphs().toArray().sortBy(function(m) { return m._model && m._model.sortOrder ? m._model.sortOrder() : ''; });
   }, {category: ['contents panel']});
     
-  add.method('nodeMorphFor', function (subnode) {
-    // can be overridden in children, if desired
-    return subnode.morph ? subnode.morph() : WorldMorph.current().morphFor(subnode);
-  }, {category: ['contents panel']});
-
-  add.method('nonNodeMorphFor', function (content) {
+  add.method('contentMorphFor', function (content) {
     // can be overridden in children, if desired
     return content.morph ? content.morph() : WorldMorph.current().morphFor(content);
   }, {category: ['contents panel']});
   
   add.method('allContentMorphs', function () {
-    this._nonNodeContentMorphs = this.nonNodeContentMorphsInOrder();
-    this._subnodeMorphs = this.subnodeMorphsInOrder();
-    return avocado.compositeCollection.create([this._nonNodeContentMorphs, this._subnodeMorphs]);
+    this._contentMorphs = this.contentMorphsInOrder();
+    return this._contentMorphs;
   }, {category: ['contents panel']});
 
   add.method('supernodeMorph', function () {
     if (this.treeNode().isRoot()) { return null; }
     var sn = this.treeNode().supernode();
-    return this.ownerSatisfying(function(o) { return o.constructor === this.constructor && o.treeNode().equals(sn); }.bind(this)) || this.nodeMorphFor(sn);
+    return this.ownerSatisfying(function(o) { return o.constructor === this.constructor && o.treeNode().equals(sn); }.bind(this)) || this.contentMorphFor(sn);
   }, {category: ['contents panel']});
 
-  add.method('immediateSubnodeMorphs', function () {
-    return this.treeNode().immediateSubnodes().map(function(sn) { return this.nodeMorphFor(sn); }.bind(this));
+  add.method('immediateContentMorphs', function () {
+    return this.treeNode().immediateContents().map(function(sn) { return this.contentMorphFor(sn); }.bind(this));
   }, {category: ['contents panel']});
 
   add.method('contentsCount', function () {
-    var tn = this.treeNode();
-    var subnodeCount = typeof(tn.immediateSubnodeCount) === 'function' ? tn.immediateSubnodeCount() : tn.immediateSubnodes().size();
-    var nonNodeCount = typeof(tn. nonNodeContentsCount) === 'function' ? tn. nonNodeContentsCount() : tn.  nonNodeContents().size();
-    return subnodeCount + nonNodeCount;
+    return this.treeNode().immediateContents().size();
   }, {category: ['contents panel']});
 
   add.method('potentialContentsOfContentsPanel', function () {

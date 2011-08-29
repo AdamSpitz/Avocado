@@ -38,7 +38,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
   add.method('fullName', function () { return this._parts.join(" "); }, {category: ['accessing']});
 
-  add.method('sortOrder', function () { return this.isRoot() ? '' : this.lastPart().toUpperCase(); }, {category: ['sorting']});
+  add.method('sortOrder', function () { return this.isRoot() ? '' : this.lastPart().toLowerCase(); }, {category: ['sorting']});
 
   add.method('part', function (i) {
     if (this.isRoot()) { return ""; }
@@ -202,15 +202,14 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
     return this.isRoot() || this.contentsSummaryString() !== this.supernode().contentsSummaryString();
   }, {category: ['user interface']});
 
-  add.method('nonNodeContents', function () {
-    return this.possiblyStaleSlots().sortBy(function(s) { return s.sortOrder(); });
-  }, {category: ['user interface']});
+  add.method('immediateContents', function () {
+    return avocado.compositeCollection.create([
+      this.mirror().immediateSubcategoriesOf(this),
+      this.possiblyStaleSlots().sortBy(function(s) { return s.sortOrder(); })
+    ]);
+  }, {category: ['iterating']});
 
   add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
-
-  add.method('immediateSubnodes', function () {
-    return this.mirror().immediateSubcategoriesOf(this);
-  }, {category: ['iterating']});
 
   add.method('removeSlots', function () {
     this.possiblyStaleNormalSlotsInMeAndSubcategories().each(function(slot) {

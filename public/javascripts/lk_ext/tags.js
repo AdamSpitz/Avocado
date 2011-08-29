@@ -74,11 +74,7 @@ thisModule.addSlots(avocado.tag.cloud, function(add) {
     return this._name || "";
   }, {category: ['printing']});
 
-  add.method('immediateSubnodes', function () {
-    return [];
-  });
-
-  add.method('nonNodeContents', function () {
+  add.method('immediateContents', function () {
     return this.allElements();
   });
 
@@ -151,15 +147,11 @@ thisModule.addSlots(avocado.tag.cloud.element, function(add) {
     return this.tagType().toString();
   }, {category: ['printing']});
 
-  add.method('immediateSubnodes', function () {
-    return [];
-  });
-
-  add.method('nonNodeContents', function () {
+  add.method('immediateContents', function () {
     return this.cloud().allPossibleObjects().select(function(o) { return this._tagType.matches(o); }.bind(this));
   });
   
-  add.method('nonNodeMorphFor', function ($super, m) {
+  add.method('contentMorphFor', function ($super, m) {
     var realMorph = $super(m);
     realMorph.refreshContentOfMeAndSubmorphs();
     return new avocado.PlaceholderMorph(realMorph).refreshContentOfMeAndSubmorphs();

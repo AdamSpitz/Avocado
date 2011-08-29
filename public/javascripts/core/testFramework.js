@@ -242,15 +242,11 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
   
   add.method('inspect', function () { return this.toString(); });
 
-  add.method('immediateSubnodes', function () {
-    return [];
-  });
-
-  add.method('nonNodeContents', function () {
+  add.method('immediateContents', function () {
     return this.testCasePrototypes();
   });
 
-  add.method('nonNodeContentMorphsInOrder', function () {
+  add.method('contentMorphsInOrder', function () {
     return this.testCasePrototypes();
   });
   
