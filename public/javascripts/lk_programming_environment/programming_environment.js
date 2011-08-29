@@ -49,7 +49,7 @@ thisModule.addSlots(avocado, function(add) {
 
   add.data('isZoomingEnabled', true, {category: ['zooming']});
 
-  add.data('shouldMirrorsUseZooming', true, {category: ['zooming']});
+  add.data('shouldMirrorsUseZooming', false, {category: ['zooming']});
 
   add.data('debugMode', false, {category: ['debug mode']});
 

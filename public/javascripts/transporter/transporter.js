@@ -814,6 +814,35 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
     m.uninstall();
   });
 
+  add.method('aaa_testFilingOutReferencesToInternalsOfIntensionallySavedObjects', function () {
+    // aaa - Not working yet. -- August 29, 2011
+    
+    
+    var m1 = avocado.transporter.module.named('test_refs_to_intensional_internals_1');
+    var m2 = avocado.transporter.module.named('test_refs_to_intensional_internals_2');
+
+    this.addSlot(m1, this.someObject, 'objWithStoreString', {}).beCreator();
+    this.addSlot(m1, this.someObject.objWithStoreString, 'initialize', function(x) { this._internalObj = {x: x}; reflect(this).slotAt('_internalObj').beCreator(); }).beCreator();
+    this.addSlot(m1, this.someObject.objWithStoreString, 'storeString', function() { return 'Object.newChildOf(avocado.transporter.tests.someObject.objWithStoreString, this._internalObj.x)'; }).beCreator();
+    this.addSlot(m1, this.someObject.objWithStoreString, 'storeStringNeeds', function() { return avocado.transporter.tests.someObject.objWithStoreString; }).beCreator();
+    
+    this.addSlot(m2, this.someObject, 'childOfObjWithStoreString', Object.newChildOf(avocado.transporter.tests.someObject.objWithStoreString, 33));
+    this.addSlot(m2, this.someObject, 'refToInternalObj', avocado.transporter.tests.someObject.childOfObjWithStoreString._internalObj);
+    
+    var code = m2.codeOfMockFileOut();
+    console.log(code);
+    this.assertEqual(
+"start module test_refs_to_intensional_internals_2\n" +
+"  start object avocado.transporter.tests.someObject\n" +
+"    slot childOfObjWithStoreString: Object.newChildOf(avocado.transporter.tests.someObject.objWithStoreString, this._internalObj.x)\n" +
+"    slot refToInternalObj: avocado.transporter.tests.someObject.childOfObjWithStoreString._internalObj\n" +
+"  end object avocado.transporter.tests.someObject\n",
+    code);
+
+    m2.uninstall();
+    m1.uninstall();
+  });
+
   add.method('obsolete_testObjectsWithNoCreatorPath', function () {
     // aaa - This test is obsolete, but we should do something similar to test the trash-can warning, once we've implemented that. -- Adam, Mar. 2011
     var m = avocado.transporter.module.named('test_non_well_known_objects');
@@ -856,22 +885,22 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
   });
 
   add.method('testFilingOutToJSON', function () {
-      var m = avocado.transporter.module.named('test_JSON_fileout');
+    var m = avocado.transporter.module.named('test_JSON_fileout');
+    
+    this.addSlot(m, this.someObject, 'x', 123);
+    this.addSlot(m, this.someObject, 'a', ['a', 2, 'three', false]).beCreator();
+    this.addSlot(m, this.someObject, 's', 'pleh');
+    this.addSlot(m, this.someObject, 'b', true);
+    this.addSlot(m, this.someObject, 'o', {n: 456}).beCreator();
+    this.addSlot(m, this.someObject, 'r', avocado.transporter.tests);
+    
+    var fo = avocado.transporter.module.filerOuters.json.create();
+    fo.fileOutSlots(reflect(this.someObject).normalSlots());
+    this.assertEqual([], fo.errors());
+    this.assertEqual('{\n  "x": 123,\n  "a": [\n    "a",\n    2,\n    "three",\n    false\n  ],\n  "s": "pleh",\n  "b": true,\n  "o": {\n    "n": 456\n  },\n  "r__creatorPath": [\n    "avocado",\n    "transporter",\n    "tests"\n  ]\n}', fo.fullText());
 
-      this.addSlot(m, this.someObject, 'x', 123);
-      this.addSlot(m, this.someObject, 'a', ['a', 2, 'three', false]).beCreator();
-      this.addSlot(m, this.someObject, 's', 'pleh');
-      this.addSlot(m, this.someObject, 'b', true);
-      this.addSlot(m, this.someObject, 'o', {n: 456}).beCreator();
-      this.addSlot(m, this.someObject, 'r', avocado.transporter.tests);
-      
-      var fo = avocado.transporter.module.filerOuters.json.create();
-      fo.fileOutSlots(reflect(this.someObject).normalSlots());
-      this.assertEqual([], fo.errors());
-      this.assertEqual('{\n  "x": 123,\n  "a": [\n    "a",\n    2,\n    "three",\n    false\n  ],\n  "s": "pleh",\n  "b": true,\n  "o": {\n    "n": 456\n  },\n  "r__creatorPath": [\n    "avocado",\n    "transporter",\n    "tests"\n  ]\n}', fo.fullText());
-
-      m.uninstall();
-    });
+    m.uninstall();
+  });
 
 });
 

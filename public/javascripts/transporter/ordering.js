@@ -166,7 +166,9 @@ thisModule.addSlots(avocado.transporter.module.slotOrderizer, function(add) {
     var slot = this.chooseSlotToTryToBreakCycle();
     if (!slot) {
       var err = new Error("there is a cycle in the slot dependency graph; could not find a slot to use as a cycle-breaker");
-      err.objectsToShow = [avocado.searchResultsPresenter.createForSlots(this.allRemainingSlots().toArray(), "Slots containing cycle")];
+      var remainingSlots = this.allRemainingSlots().toArray();
+      var deps = remainingSlots.map(function(s) { return this._slotDeps.contentDeps.dependeesOf(s) }.bind(this));
+      err.objectsToShow = [avocado.searchResultsPresenter.createForSlots(remainingSlots, "Slots containing cycle"), reflect(deps)];
       throw err;
     }
     var cycleBreakerSlot = slot.copyTo(this._cycleBreakersMir.rootCategory()).rename(this._cycleBreakersMir.findUnusedSlotName('breaker'));
@@ -237,7 +239,7 @@ thisModule.addSlots(avocado.transporter.module.slotOrderizer, function(add) {
       } else {
         var nextSlotToFileOut = this.chooseASlotWithThisManyDependees(0);
         if (nextSlotToFileOut) {
-          if (this._debugMode) { console.log("Ain't no mirror with no dependees; choosing slot " + nextSlotToFileOut + " because it has no dependees."); }
+          if (this._debugMode) { console.log("There is no mirror with no dependees; choosing slot " + nextSlotToFileOut + " because it has no dependees."); }
           this.nextSlotIs(nextSlotToFileOut, true);
         } else {
           this.insertCycleBreakerSlot();
