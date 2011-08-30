@@ -58,14 +58,14 @@ thisModule.addSlots(ButtonMorph, function(add) {
   
   add.creator('simpleModelPlug', {}, {category: ['shortcuts']});
 
-  add.method('createButton', function (contents, f, padding) {
+  add.method('createButton', function (contents, f, padding, labelPos) {
     var contentsMorph = (typeof contents === 'string' || typeof contents === 'function') ? TextMorph.createLabel(contents) : contents;
     var p = (padding !== null && padding !== undefined) ? padding : 5;
     if (Config.fatFingers) { p = Math.max(p, 10); }
     var b = new ButtonMorph(pt(0,0).extent(contentsMorph.bounds().extent().addXY(p * 2, p * 2)));
     b.run = f;
     reflect(b).slotAt('run').beCreator();
-    b.addMorphAt(contentsMorph, pt(p, p));
+    b.addMorphAt(contentsMorph, labelPos || pt(p, p));
 
     var plugSpec = {
       model: Object.newChildOf(ButtonMorph.simpleModelPlug, b),

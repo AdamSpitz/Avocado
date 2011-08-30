@@ -148,7 +148,11 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['contents']});
 
   add.method('sourceButton', function () {
-    return this._sourceButton || (this._sourceButton = this._sourceToggler.commandForToggling("code").newMorph(this.createIconForButton("images/icon-method-slot.gif")));
+    // Let's try making the icon as a polygon morph rather than using the old GIF image.
+    // var sourceIcon = this.createIconForButton("images/icon-method-slot.gif");
+    var sourceIcon = Morph.makePolygon([pt(0,0), pt(8,0), pt(8,8), pt(0,8), pt(0,0), pt(0,2), pt(8,2), pt(0,2)], 1, Color.black, null).ignoreEvents();
+    
+    return this._sourceButton || (this._sourceButton = this._sourceToggler.commandForToggling("code").newMorph(sourceIcon, 1, pt(3,3)));
   }, {category: ['source']});
 
   add.method('createIconForButton', function (path) {
@@ -484,7 +488,11 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.pointer, function(add) {
 
   add.method('setTarget', function (targetMorph) { this._associationMorph.setContents(targetMorph.mirror()); }, {category: ['setting']});
 
-  add.method('labelMorph', function () { return this._associationMorph.createIconForButton("images/icon-data-slot.gif"); }, {category: ['creating a morph']});
+  add.method('labelMorph', function () {
+    // Make an "arrow" icon (rather than the old two-dots thing, which was a Self-ism). -- Adam
+    // return this._associationMorph.createIconForButton("images/icon-data-slot.gif");
+    return Morph.makePolygon([pt(0,5), pt(10,5), pt(5,0), pt(10,5), pt(5,10), pt(10,5)], 1, Color.black, Color.black).ignoreEvents();
+  }, {category: ['creating a morph']});
 
   add.method('inspect', function () { return this.association().name() + " contents"; }, {category: ['printing']});
 

@@ -24,7 +24,7 @@ thisModule.addSlots(avocado.ArrowMorph, function(add) {
     // aaa - This is still a bit of a mess.
 
     var arrow;
-    var m = avocado.command.create("Toggle arrow", function() { arrow.toggleVisibility(); }).newMorph(pointer.labelMorph());
+    var m = avocado.command.create("Toggle arrow", function() { arrow.toggleVisibility(); }).newMorph(pointer.labelMorph(), 0, pt(2,2));
     m.beArrowEndpoint();
 
     arrow = m.arrow = new avocado.ArrowMorph(pointer.association(), m, null);

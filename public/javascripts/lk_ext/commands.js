@@ -8,8 +8,8 @@ requires('lk_ext/wheel_menus');
 
 thisModule.addSlots(avocado.command, function(add) {
 
-  add.method('newMorph', function (optionalLabelMorph) {
-    var m = ButtonMorph.createButton(optionalLabelMorph || this.label, this.go.bind(this), 2);
+  add.method('newMorph', function (optionalLabelMorph, optionalPadding, optionalLabelPos) {
+    var m = ButtonMorph.createButton(optionalLabelMorph || this.label, this.go.bind(this), typeof(optionalPadding) === 'number' ? optionalPadding : 2, optionalLabelPos);
     
     var ht = this.helpText();
     if (typeof(ht) === 'function') {
