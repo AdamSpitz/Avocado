@@ -273,7 +273,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['drag and drop']});
   
   add.method('dragAndDropCommandsForTreeContents', function () {
-    return this.treeNode().dragAndDropCommands().wrapForMorph(this);
+    if (typeof(this.treeNode().dragAndDropCommands) === 'function') {
+      return this.treeNode().dragAndDropCommands().wrapForMorph(this);
+    } else {
+      return null;
+    }
   }, {category: ['drag and drop']});
 
 });
