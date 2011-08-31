@@ -102,7 +102,7 @@ thisModule.addSlots(avocado.tag.cloud, function(add) {
   add.method('tagAllMorphsInWorld', function (w) {
     w = w || WorldMorph.current();
     this.allElements().forEach(function(e) {
-      w.addTagType(e.tagType(), e.fill());
+      w.tagSubmorphsWithNewTag(e.tagType(), e.fill());
     });
   }, {category: ['user interface']});
   
@@ -232,19 +232,32 @@ thisModule.addSlots(Morph.prototype, function(add) {
     return this._tagColorsByType;
   }, {category: ['tagging']});
   
-  add.method('addTagType', function (tagType, color) {
-    this.tagColorsByType().put(tagType, color || Color.random());
+  add.method('getOrCreateColorForTagType', function (tagType, preferredColor) {
+    return this.tagColorsByType().getOrIfAbsentPut(tagType, function() { return preferredColor || Color.random(); });
+  }, {category: ['tagging']});
+  
+  add.method('tagSubmorphsWithNewTag', function (tagType, color) {
+    this.getOrCreateColorForTagType(tagType, color);
     this.tagSubmorphsWithTag(tagType);
   }, {category: ['tagging']});
   
   add.method('tagSubmorphsWithTag', function (tagType) {
-    var color = this.tagColorsByType().get(tagType);
+    var color = this.getOrCreateColorForTagType(tagType);
     this.submorphs.forEach(function(m) {
       if (tagType.matchesMorph(m)) {
-        var tm = new avocado.tag.Morph(tagType, color);
-        m.addMorphAt(tm, pt(5,5));
+        m.addTag(tagType, color);
       }
     });
+  }, {category: ['tagging']});
+
+  add.method('currentTags', function () {
+    return this.submorphs.select(function(m) { return m instanceof avocado.tag.Morph; });
+  }, {category: ['tagging']});
+  
+  add.method('addTag', function (tagType, color) {
+    color = color || this.getOrCreateColorForTagType(tagType);
+    var tm = new avocado.tag.Morph(tagType, color);
+    this.addMorphAt(tm, pt(this.currentTags().length * 20 + 5, 5)); // aaa - this is a lousy way of determining where to place them
   }, {category: ['tagging']});
 
 });

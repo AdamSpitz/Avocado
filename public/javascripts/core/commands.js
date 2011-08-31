@@ -164,14 +164,14 @@ thisModule.addSlots(avocado.command, function(add) {
       var rcvr = c.contextOrDefault();
       var args = [evt];
       var promptForArg = function(i) {
-        if (i < argSpecs.length) {
-          argSpecs[i].prompt(rcvr, evt, function(arg) {
-            args.push(arg);
-            promptForArg(i + 1);
-          });
-        } else {
-          return oldFunctionToRun.apply(rcvr, args);
-        }
+        if (i >= argSpecs.length) { return oldFunctionToRun.apply(rcvr, args); }
+        
+        var argSpec = argSpecs[i];
+        
+        argSpec.findArgOrPrompt(rcvr, evt, function(arg) {
+          args.push(arg);
+          promptForArg(i + 1);
+        });
       };
       promptForArg(0);
     });
@@ -197,18 +197,23 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
   add.method('onlyAccepts', function (f) {
     this._acceptanceFunction = f;
     return this;
-  }, {category: ['accessing']});
+  }, {category: ['filtering']});
 
   add.method('onlyAcceptsType', function (t) {
     this._type = t;
     this.onlyAccepts(function(o) { return t.doesTypeMatch(o); });
     return this;
-  }, {category: ['accessing']});
+  }, {category: ['filtering']});
 
   add.method('setPrompter', function (p) {
     this._prompter = p;
     return this;
-  }, {category: ['accessing']});
+  }, {category: ['prompting']});
+
+  add.method('setArgFinder', function (f) {
+    this._argFinder = f;
+    return this;
+  }, {category: ['prompting']});
 
   add.method('canAccept', function (arg) {
     if (! this._acceptanceFunction) { return true; }
@@ -224,13 +229,30 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
       if (typeof(t.prompter) === 'object'  ) { return t.prompter;   }
     }
     return null;
-  }, {category: ['accessing']});
+  }, {category: ['prompting']});
 
   add.method('prompt', function (context, evt, callback) {
     var p = this.prompter();
     if (!p) { throw new Error('Cannot prompt for the "' + this._name + '" argument without a prompter'); }
     return p.prompt(this._name, context, evt, callback);
-  }, {category: ['accessing']});
+  }, {category: ['prompting']});
+  
+  add.method('findArgOrPrompt', function (context, evt, callback) {
+    var arg = this.findArg(context, evt, callback);
+    if (typeof(arg) !== 'undefined') {
+      callback(arg);
+    } else {
+      this.prompt(context, evt, callback);
+    }
+  }, {category: ['prompting']});
+  
+  add.method('findArg', function (context, evt) {
+    if (this._argFinder) {
+      return this._argFinder(context, evt);
+    } else {
+      return undefined;
+    }
+  }, {category: ['prompting']});
 
 });
 

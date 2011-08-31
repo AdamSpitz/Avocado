@@ -1,5 +1,7 @@
 avocado.transporter.module.create('lk_ext/carrying_hand', function(requires) {
 
+requires("core/hash_table");
+
 }, function(thisModule) {
 
 
@@ -35,6 +37,7 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
     $super(new lively.scene.Ellipse(pt(0,0), 70));
     this._world = w;
     this.applyStyle(this.defaultStyle);
+    this._originalPositions = Object.newChildOf(avocado.dictionary, avocado.dictionary.identityComparator);
   }, {category: ['creating']});
 
   add.creator('defaultStyle', {}, {category: ['styles']});
@@ -71,8 +74,23 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
     return targetMorph.applicableCommandForDropping(carriedMorph);
   }, {category: ['accessing']});
 
+  add.method('rememberOriginalPositionOf', function (m) {
+    this._originalPositions.put(m, { owner: m.owner, position: m.getPosition(), scale: m.getScale() });
+  }, {category: ['original positions']});
+
+  add.method('putBackInOriginalPosition', function (m, evt, callWhenDone) {
+    var originalInfo = this._originalPositions.removeKey(m);
+    m.smoothlyScaleTo(originalInfo.scale);
+    m.ensureIsInWorld(this._world, originalInfo.owner.worldPoint(originalInfo.position), true, false, false, function() {
+      originalInfo.owner.addMorphAt(m, originalInfo.position);
+	    this.hideIfEmpty();
+      if (callWhenDone) { callWhenDone(); }
+    }.bind(this));
+  }, {category: ['original positions']});
+  
   add.method('pickUp', function (m, evt, callWhenDone) {
     this.ensureVisible(function() {
+      this.rememberOriginalPositionOf(m);
       var extent = m.getExtent();
       var desiredSize = pt(80,80);
       var scales = pt(desiredSize.x / extent.x, desiredSize.y / extent.y);

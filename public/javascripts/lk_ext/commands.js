@@ -71,6 +71,32 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
     
     return argSpecForMorphCommand;
   }, {category: ['user interface']});
+  
+  add.method('useMorphicContextualArgFinder', function () {
+    var thisArgSpec = this;
+    return this.setArgFinder(function(context, evt) {
+      var carryingHand = avocado.CarryingHandMorph.forWorld(evt.hand.world());
+      
+      var allAvailableMorphs = carryingHand.submorphs;
+      var possibleArgMorphs = [];
+      
+      console.log("About to try allAvailableMorphs");
+      allAvailableMorphs.forEach(function(morph) {
+        if (thisArgSpec.canAccept(morph)) {
+          console.log("Hey, this one should work: " + morph);
+          possibleArgMorphs.push(morph);
+        } else {
+          console.log("Nope, can't use: " + morph);
+        }
+      });
+      
+      if (possibleArgMorphs.length === 1) {
+        return possibleArgMorphs[0];
+      } else {
+        return undefined;
+      }
+    });
+  }, {category: ['user interface']});
 
 });
 

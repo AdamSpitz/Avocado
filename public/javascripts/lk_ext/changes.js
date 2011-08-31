@@ -220,13 +220,13 @@ Morph.addMethods({
         var carryingHand = avocado.CarryingHandMorph.forWorld(this.world());
         var dropCmd = carryingHand.applicableCommandForDroppingOn(this);
         var handEmpty = !carryingHand.carriedMorph();
-        var disablePickUpAndDropExperiment = true;
+        var disablePickUpAndDropExperiment = false;
         var items = [
             disablePickUpAndDropExperiment ?
               ["grab", this.pickMeUpLeavingPlaceholderIfNecessary.curry(evt)] // need the placeholders -- Adam  // not needed now that we have "pick up"
               : dropCmd ? ["drop",    function() { carryingHand.dropOn(this, evt); }.bind(this)]
                         : handEmpty ? ["pick up", function() { carryingHand.pickUp(this, evt); }.bind(this)]
-                                    : null, // aaa - Shoot, leaving a null currently doesn't leave a hole in the menu; I want it to, so that the layout doesn't change around.
+                                    : ["",        function() { }],
             ["remove", function() { this.startZoomingOuttaHere(); }.bind(this)], // so much cooler this way -- Adam
             this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
             ["zoom to me", this.navigateToMe.curry(evt)], // Added by Adam
@@ -235,8 +235,12 @@ Morph.addMethods({
             this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
                                 : ["turn on edit mode" , function() { this.switchEditModeOn (); }.bind(this)],
             ["edit style", function() { new StylePanel(this).open()}],
-            this._model ? ["inspect",       function(evt) { this.world().morphFor(reflect(this._model)).grabMe(evt); }] : ["", function() {}],
-            ["inspect morph", function(evt) { this.world().morphFor(reflect(this)).grabMe(evt); }], // OK, I just couldn't resist. -- Adam
+            ["inspect...",
+             [
+               this._model ? ["object",       function(evt) { this.world().morphFor(reflect(this._model)).grabMe(evt); }] : ["", function() {}],
+               ["morph", function(evt) { this.world().morphFor(reflect(this)).grabMe(evt); }], // OK, I just couldn't resist. -- Adam
+             ]
+            ],
             /* Meh, I'm not using this right now, and I need the space in the menu. -- Adam
             ["script me", function(evt) {
               var mir = reflect(avocado.morphScripter.create(this));
@@ -257,6 +261,12 @@ Morph.addMethods({
             items.push( ["show Model dump", this.addModelInspector.curry(this)]);
 
         var cmdList = avocado.command.list.create(this, items);
+        cmdList.addItem(avocado.command.create("add tag", function(evt, targetMorph) {
+          this.addTag(targetMorph);
+          carryingHand.putBackInOriginalPosition(targetMorph, evt);
+        }).setArgumentSpecs([
+          avocado.command.argumentSpec.create('target').onlyAcceptsType(avocado.morphWithAModel).useMorphicContextualArgFinder()
+        ]));
         cmdList.addLine();
         cmdList.addItems(this.subMenuItems(evt));
         var menu = cmdList.createMenu(this);
@@ -287,6 +297,18 @@ Morph.addMethods({
       return ""; // the default behaviour is annoying - makes morph mirrors very wide
     }
 });
+
+avocado.morphWithAModel = {
+  prompter: {
+    prompt: function (caption, context, evt, callback) {
+      evt.hand.world().showMessage("Must pick up a target object first.", Color.red); // aaa let the user just click on the target
+    }
+  },
+  
+  doesTypeMatch: function (obj) {
+    return obj && typeof(obj._model) !== 'undefined' && obj instanceof Morph;
+  }
+};
 
 Morph.addMethods({
   setHelpText: function(t) {
