@@ -4,9 +4,34 @@ avocado.transporter.module.create('lk_ext/placeholder_morph', function(requires)
 
 
 thisModule.addSlots(avocado, function(add) {
+  
+  add.creator('placeholder', {});
 
   add.method('PlaceholderMorph', function PlaceholderMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
 
+});
+
+
+thisModule.addSlots(avocado.placeholder, function(add) {
+  
+  add.method('create', function () {
+    var p = Object.create(this);
+    p.initialize.apply(p, arguments);
+    return p;
+  }, {category: ['creating']});
+
+  add.method('initialize', function (o) {
+    this._realObject = o;
+  }, {category: ['creating']});
+
+  add.method('toString', function () {
+    return this._realObject.toString();
+  }, {category: ['printing']});
+  
+  add.method('newMorph', function () {
+    return new avocado.PlaceholderMorph(WorldMorph.current().morphFor(this._realObject)).setModel(this);
+  }, {category: ['user interface']});
+  
 });
 
 
@@ -78,9 +103,7 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
 
 thisModule.addSlots(avocado.PlaceholderMorph.prototype.defaultStyle, function(add) {
 
-  add.data('fill', new Color(0, 0, 0));
-
-  add.data('fillOpacity', 0.1);
+  add.data('fillOpacity', 0.2);
 
   add.data('openForDragAndDrop', false);
 

@@ -261,12 +261,8 @@ Morph.addMethods({
             items.push( ["show Model dump", this.addModelInspector.curry(this)]);
 
         var cmdList = avocado.command.list.create(this, items);
-        cmdList.addItem(avocado.command.create("add tag", function(evt, targetMorph) {
-          this.addTag(targetMorph);
-          carryingHand.putBackInOriginalPosition(targetMorph, evt);
-        }).setArgumentSpecs([
-          avocado.command.argumentSpec.create('target').onlyAcceptsType(avocado.morphWithAModel).useMorphicContextualArgFinder()
-        ]));
+        cmdList.addItem(["tagging...", this.taggingCommands()]);
+        
         cmdList.addLine();
         cmdList.addItems(this.subMenuItems(evt));
         var menu = cmdList.createMenu(this);

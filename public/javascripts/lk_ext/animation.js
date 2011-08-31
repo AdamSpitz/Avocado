@@ -110,6 +110,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var originalOwner = this.owner;
     this.becomeDirectSubmorphOfWorld(w);
     if (originalOwner !== w || shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
+      if (typeof(desiredLoc.desiredScale) !== 'undefined') { this.smoothlyScaleTo(desiredLoc.desiredScale); } // aaa hack
       this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
     } else {
       if (functionToCallWhenDone) { functionToCallWhenDone(); }
@@ -135,23 +136,25 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('animatedAddMorphAt', function (m, p, callWhenDone) {
-    this.summonMorphToPosition(m, p, function() {
+    this.summonMorphToPosition(m, p, m.getScale(), function() {
       this.addMorphAt(m, p);
     }.bind(this));
   }, {category: ['adding and removing']});
 
   add.method('animatedReplaceMorph', function (currentSubmorph, newSubmorph, callWhenDone) {
-    this.summonMorphToPosition(newSubmorph, currentSubmorph.getPosition(), function() {
+    this.summonMorphToPosition(newSubmorph, currentSubmorph.getPosition(), currentSubmorph.overallScale(currentSubmorph.world()), function() {
       this.replaceMorph(currentSubmorph, newSubmorph);
       if (callWhenDone) { callWhenDone(); }
     }.bind(this));
   }, {category: ['adding and removing']});
 
-  add.method('summonMorphToPosition', function (m, p, callWhenDone) {
+  add.method('summonMorphToPosition', function (m, pos, scale, callWhenDone) {
     var w = this.world();
     m.becomeDirectSubmorphOfWorld(w);
     if (w) {
-      m.ensureIsInWorld(w, this.worldPoint(p), true, true, false, function() {
+      var desiredWorldPos = this.worldPoint(pos);
+      desiredWorldPos.desiredScale = scale;
+      m.ensureIsInWorld(w, desiredWorldPos, true, true, false, function() {
         if (callWhenDone) { callWhenDone(); }
       }.bind(this));
     } else {

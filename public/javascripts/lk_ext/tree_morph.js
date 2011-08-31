@@ -6,6 +6,15 @@ requires('lk_ext/expander');
 }, function(thisModule) {
 
 
+thisModule.addSlots(avocado.treeNode, function(add) {
+  
+  add.method('newMorph', function () {
+    return new avocado.TreeNodeMorph(this).setShouldScaleContentsToFit(true).refreshContentOfMeAndSubmorphs().applyStyle({borderRadius: 10});
+  }, {category: ['user interface']});
+  
+});
+
+
 thisModule.addSlots(avocado, function(add) {
 
   add.method('TreeNodeMorph', function TreeNodeMorph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
@@ -91,6 +100,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       }
     };
   }, {category: ['UI state']});
+  
+  add.method('setContentsThreshold', function (t) {
+    this._contentsThreshold = t;
+    return this;
+  }, {category: ['contents panel']});
 
   add.method('headerRowContents', function () {
     if (! this._headerRowContents) {
@@ -107,8 +121,9 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.method('potentialContent', function () {
     if (this.shouldUseZooming()) {
       if (! this._potentialContent) {
+        var contentsThreshold = this._contentsThreshold || 0.25;
         var thresholdMultiplier = this._shouldOmitHeaderRow ? 0.25 : 0.7;
-        var contentsPanelHider = this._shouldNotHideContentsEvenIfTooSmall ? this.contentsPanel() : avocado.scaleBasedMorphHider.create(this, this.contentsPanel.bind(this), this, function() { return thresholdMultiplier * Math.sqrt(this.contentsCount()); }.bind(this), this._contentsPanelSize);
+        var contentsPanelHider = this._shouldNotHideContentsEvenIfTooSmall ? this.contentsPanel() : avocado.scaleBasedMorphHider.create(this, this.contentsPanel.bind(this), this, function() { return contentsThreshold * thresholdMultiplier * Math.sqrt(this.contentsCount()); }.bind(this), this._contentsPanelSize);
         var rows = this._shouldOmitHeaderRow ? [contentsPanelHider] : [this.headerRow(), contentsPanelHider];
         this._potentialContent = avocado.tableContents.createWithColumns([rows]);
       }

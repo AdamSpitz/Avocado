@@ -196,34 +196,48 @@ thisModule.addSlots(avocado.tag.Morph.prototype, function(add) {
 
   add.data('suppressHandles', true);
   
-  add.method('allLikeMe', function () {
-    return this.owner.owner.submorphs.select(function(morph) { return this._model.matchesMorph(morph); }.bind(this));
-  }, {category: ['finding others']});
-  
-  add.method('commands', function () {
-    var cmdList = avocado.command.list.create(this);
-    
-    if (this.owner.isHighlighted()) {
-      cmdList.addItem(avocado.command.create('unhighlight all', function(evt) { this.allLikeMe().forEach(function(tm) { tm.beUnhighlighted(); }); }));
-    } else {
-      cmdList.addItem(avocado.command.create('highlight all', function(evt) { this.allLikeMe().forEach(function(tm) { tm.beHighlighted(); }); }));
-    }
-    
-    cmdList.addItem(avocado.command.create('gather all', function(evt) {
-      var container = this.owner.owner;
-      var pose = avocado.poses.list.create("all tagged " + this._model, container, this.allLikeMe());
-      evt.hand.world().promptForPoint(function(startingPos) {
-        container.poseManager().assumePose(pose, startingPos);
-      });
-    }));
-    
-    return cmdList;
-  }, {category: ['matching']});
-  
 });
 
 
 thisModule.addSlots(Morph.prototype, function(add) {
+  
+  add.method('allLikeMe', function () {
+    // aaa - Flesh this out, make it smart about finding related objects.
+    if (typeof(this._model) === 'undefined') { return []; }
+    if (typeof(this._model.matchesMorph) !== 'function') { return []; }
+    return this.owner.owner.submorphs.select(function(morph) { return this._model.matchesMorph(morph); }.bind(this));
+  }, {category: ['finding related objects']});
+  
+  add.method('taggingCommands', function () {
+    var items = [];
+
+    items.push(avocado.command.create("add tag", function(evt, targetMorph) {
+      this.addTagMorph(new avocado.PlaceholderMorph(targetMorph));
+      carryingHand.putBackInOriginalPosition(targetMorph, evt);
+    }).setArgumentSpecs([
+      avocado.command.argumentSpec.create('target').onlyAcceptsType(avocado.morphWithAModel).useMorphicContextualArgFinder()
+    ]));
+    
+    if (false) { // aaa - I think we need something like this but I'm not sure of the details yet.
+
+      if (this.owner.isHighlighted()) {
+        items.push(avocado.command.create('unhighlight related objects', function(evt) { this.allLikeMe().forEach(function(tm) { tm.beUnhighlighted(); }); }));
+      } else {
+        items.push(avocado.command.create('highlight related objects', function(evt) { this.allLikeMe().forEach(function(tm) { tm.beHighlighted(); }); }));
+      }
+    
+      items.push(avocado.command.create('gather related objects', function(evt) {
+        var container = this.owner.owner;
+        var pose = avocado.poses.list.create("all tagged " + this._model, container, this.allLikeMe());
+        evt.hand.world().promptForPoint(function(startingPos) {
+          container.poseManager().assumePose(pose, startingPos);
+        });
+      }));
+    
+    }
+    
+    return items;
+  }, {category: ['tagging']});
 
   add.method('tagColorsByType', function () {
     if (! this._tagColorsByType) {
@@ -254,10 +268,24 @@ thisModule.addSlots(Morph.prototype, function(add) {
     return this.submorphs.select(function(m) { return m instanceof avocado.tag.Morph; });
   }, {category: ['tagging']});
   
-  add.method('addTag', function (tagType, color) {
-    color = color || this.getOrCreateColorForTagType(tagType);
-    var tm = new avocado.tag.Morph(tagType, color);
-    this.addMorphAt(tm, pt(this.currentTags().length * 20 + 5, 5)); // aaa - this is a lousy way of determining where to place them
+  add.method('addTag', function (tagType, tagColorOrMorph) {
+    var tagMorph;
+    if (tagColorOrMorph instanceof Morph) {
+      tagMorph = tagColorOrMorph;
+    } else {
+      var color = tagColorOrMorph || this.getOrCreateColorForTagType(tagType);
+      tagMorph = new avocado.tag.Morph(tagType, color);
+    }
+    
+    this.addTagMorph(tagMorph);
+  }, {category: ['tagging']});
+  
+  add.method('addTagMorph', function (tagMorph) {
+    // Children should feel free to override this if they want to specify exactly where to place tags.
+    
+    // aaa - this is a lousy way of determining where to place them
+    var currentTags = this.currentTags();
+    this.addMorphAt(tagMorph, currentTags.length === 0 ? pt(5,5) : currentTags[currentTags.length - 1].bounds().topRight().addXY(5, 5));
   }, {category: ['tagging']});
 
 });

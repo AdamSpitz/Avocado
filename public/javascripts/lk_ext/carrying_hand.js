@@ -80,8 +80,9 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
 
   add.method('putBackInOriginalPosition', function (m, evt, callWhenDone) {
     var originalInfo = this._originalPositions.removeKey(m);
-    m.smoothlyScaleTo(originalInfo.scale);
-    m.ensureIsInWorld(this._world, originalInfo.owner.worldPoint(originalInfo.position), true, false, false, function() {
+    var originalWorldPos = originalInfo.owner.worldPoint(originalInfo.position);
+    originalWorldPos.desiredScale = originalInfo.scale;
+    m.ensureIsInWorld(this._world, originalWorldPos, true, false, false, function() {
       originalInfo.owner.addMorphAt(m, originalInfo.position);
 	    this.hideIfEmpty();
       if (callWhenDone) { callWhenDone(); }
@@ -96,8 +97,9 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
       var scales = pt(desiredSize.x / extent.x, desiredSize.y / extent.y);
       var desiredScale = Math.min(scales.x, scales.y);
       var finalSize = extent.scaleBy(desiredScale);
-      m.smoothlyScaleTo(desiredScale);
-      m.ensureIsInWorld(this._world, this.origin.subPt(finalSize.scaleBy(0.5)), true, false, false, function() {
+      var desiredPos = this.origin.subPt(finalSize.scaleBy(0.5));
+      desiredPos.desiredScale = desiredScale;
+      m.ensureIsInWorld(this._world, desiredPos, true, false, false, function() {
         this.addMorphAt(m, finalSize.scaleBy(-0.5));
         if (callWhenDone) { callWhenDone(); }
       }.bind(this));
@@ -110,8 +112,9 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
     var c = targetMorph.applicableCommandForDropping(carriedMorph);
     if (!c) { throw new Error("Cannot drop " + carriedMorph + " on " + targetMorph); }
     
-    carriedMorph.smoothlyScaleTo(1);
-    carriedMorph.ensureIsInWorld(this._world, evt.point().subPt(carriedMorph.getExtent().scaleBy(0.5)), true, false, false, function() {
+    var desiredPos = evt.point().subPt(carriedMorph.getExtent().scaleBy(0.5));
+    desiredPos.desiredScale = 1;
+    carriedMorph.ensureIsInWorld(this._world, desiredPos, true, false, false, function() {
 	    c.go(evt, carriedMorph);
 	    this.hideIfEmpty();
       if (callWhenDone) { callWhenDone(); }
