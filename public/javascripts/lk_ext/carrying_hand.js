@@ -49,6 +49,7 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
       if (callWhenDone) { callWhenDone(); }
     } else {
       this.setFillOpacity(0);
+      this.setScale(1 / this._world.getScale());
       this._world.addMorphAt(this, pt(0,0));
       this.smoothlyFadeTo(0.1);
       if (callWhenDone) { callWhenDone(); }
@@ -81,7 +82,7 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
   add.method('putBackInOriginalPosition', function (m, evt, callWhenDone) {
     var originalInfo = this._originalPositions.removeKey(m);
     var originalWorldPos = originalInfo.owner.worldPoint(originalInfo.position);
-    originalWorldPos.desiredScale = originalInfo.scale;
+    originalWorldPos.desiredScale = originalInfo.owner.overallScale(this._world) * originalInfo.scale;
     m.ensureIsInWorld(this._world, originalWorldPos, true, false, false, function() {
       originalInfo.owner.addMorphAt(m, originalInfo.position);
 	    this.hideIfEmpty();

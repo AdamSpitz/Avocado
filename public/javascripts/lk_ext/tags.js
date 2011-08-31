@@ -212,8 +212,12 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var items = [];
 
     items.push(avocado.command.create("add tag", function(evt, targetMorph) {
-      this.addTagMorph(new avocado.PlaceholderMorph(targetMorph));
-      carryingHand.putBackInOriginalPosition(targetMorph, evt);
+      var tagMorph = new avocado.PlaceholderMorph(targetMorph);
+      this.aboutToReceiveDrop(tagMorph);
+      this.addTagMorph(tagMorph);
+      if (targetMorph.owner instanceof avocado.CarryingHandMorph) {
+        targetMorph.owner.putBackInOriginalPosition(targetMorph, evt);
+      }
     }).setArgumentSpecs([
       avocado.command.argumentSpec.create('target').onlyAcceptsType(avocado.morphWithAModel).useMorphicContextualArgFinder()
     ]));
@@ -259,7 +263,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var color = this.getOrCreateColorForTagType(tagType);
     this.submorphs.forEach(function(m) {
       if (tagType.matchesMorph(m)) {
-        m.addTag(tagType, color);
+        m.addTagMorph(new avocado.PlaceholderMorph(tagType));
       }
     });
   }, {category: ['tagging']});
@@ -268,24 +272,13 @@ thisModule.addSlots(Morph.prototype, function(add) {
     return this.submorphs.select(function(m) { return m instanceof avocado.tag.Morph; });
   }, {category: ['tagging']});
   
-  add.method('addTag', function (tagType, tagColorOrMorph) {
-    var tagMorph;
-    if (tagColorOrMorph instanceof Morph) {
-      tagMorph = tagColorOrMorph;
-    } else {
-      var color = tagColorOrMorph || this.getOrCreateColorForTagType(tagType);
-      tagMorph = new avocado.tag.Morph(tagType, color);
-    }
-    
-    this.addTagMorph(tagMorph);
-  }, {category: ['tagging']});
-  
   add.method('addTagMorph', function (tagMorph) {
     // Children should feel free to override this if they want to specify exactly where to place tags.
     
     // aaa - this is a lousy way of determining where to place them
     var currentTags = this.currentTags();
     this.addMorphAt(tagMorph, currentTags.length === 0 ? pt(5,5) : currentTags[currentTags.length - 1].bounds().topRight().addXY(5, 5));
+    return this;
   }, {category: ['tagging']});
 
 });

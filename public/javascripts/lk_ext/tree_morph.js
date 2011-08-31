@@ -294,6 +294,20 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       return null;
     }
   }, {category: ['drag and drop']});
+  
+  add.method('useContentsPanelToDisplayTags', function () {
+    this._shouldUseContentsPanelToDisplayTags = true;
+    return this;
+  }, {category: ['tagging']})
+  
+  add.method('addTagMorph', function ($super, tagMorph) {
+    // aaa - not sure this is a good idea
+    if (this._shouldUseContentsPanelToDisplayTags) {
+      this.contentsPanel().addMorphAt(tagMorph, pt(5,5));
+    } else {
+      $super(tagMorph);
+    }
+  }, {category: ['tagging']})
 
 });
 

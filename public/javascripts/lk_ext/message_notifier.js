@@ -73,7 +73,9 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
   add.method('showMessage', function (msg, color, heading) {
     // By default, zoom away after a short while, unless the user touches it.
-    new avocado.MessageNotifierMorph(msg, color || Color.green, heading).showTemporarilyInCenterOfWorld(this);
+    var morph = new avocado.MessageNotifierMorph(msg, color || Color.green, heading);
+    morph.setScale(1 / this.getScale());
+    morph.showTemporarilyInCenterOfWorld(this);
   }, {category: ['showing messages']});
 
 });

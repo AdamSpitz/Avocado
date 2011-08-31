@@ -113,6 +113,18 @@ Morph.addMethods({
     
     submorphsRecursively: function() {
       return avocado.enumerator.create(this, 'eachSubmorphRecursively');
+    },
+    
+    eachOwnerRecursively: function(f) {
+      var o = this.owner;
+      while (o) {
+        f(o);
+        o = o.owner;
+      }
+    },
+    
+    ownersRecursively: function() {
+      return avocado.enumerator.create(this, 'eachOwnerRecursively');
     }
 });
 

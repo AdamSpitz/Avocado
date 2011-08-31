@@ -201,7 +201,7 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
 
   add.method('onlyAcceptsType', function (t) {
     this._type = t;
-    this.onlyAccepts(function(o) { return t.doesTypeMatch(o); });
+    this.onlyAccepts(function(o) { return typeof(t.doesTypeMatch) === 'function' ? t.doesTypeMatch(o) : Object.inheritsFrom(t, o); });
     return this;
   }, {category: ['filtering']});
 
