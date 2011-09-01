@@ -31,21 +31,8 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
     $super();
     this._model = Object.newChildOf(this.modelUsingWhicheverMorphsHappenToBeThere, this);
     reflect(this).slotAt('_model').beCreator();
-
-    this.contentsPanel().acceptsDropping = function(m) {
-      return this.owner.isOKToAdd(m);
-    };
-      
-    this.contentsPanel().aboutToReceiveDrop = function(m) {
-      var tfm = m.transformForNewOwner(this);
-			m.scaleBy(1 / tfm.getScale());
-			this.owner.aboutToAdd(m);
-    };
     
-    this.contentsPanel().justReceivedDrop = function(m) {
-      this.owner.cleanUpContentsPanel();
-      this.owner.justAdded(m);
-    };
+    this.contentsPanel().setShouldAutoOrganize(true).setShouldScaleSubmorphsToFit(true);
     
     this.refreshContentOfMeAndSubmorphs();
     
@@ -77,19 +64,6 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
     return cmdList;
   }, {category: ['commands']});
   
-  add.method('isOKToAdd', function (m) {
-    // children can override
-    return true;
-  }, {category: ['events']});
-  
-  add.method('aboutToAdd', function (m) {
-    // children can override
-  }, {category: ['events']});
-  
-  add.method('justAdded', function (m) {
-    // children can override
-  }, {category: ['events']});
-
 });
 
 

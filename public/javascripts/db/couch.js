@@ -437,7 +437,7 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
         design.put(function(responseObj) {
           this.updateContainerTypes(function() {
             avocado.ui.justChanged(this, evt);
-            this.morph().cleanUpContentsPanel(); // aaa hack, tangles up the model and morph
+            this.morph().contentsPanel().cleanUp(); // aaa hack, tangles up the model and morph
           }.bind(this));
         }.bind(this));
       }.bind(this), function(err) {
@@ -769,7 +769,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
       this.addObject(mir.reflectee(), function(responseObj) {
         var ref = responseObj.ref;
         avocado.ui.justChanged(this, evt);
-        this.morph().cleanUpContentsPanel(); // aaa hack, tangles up the model and morph
+        this.morph().contentsPanel().cleanUp(); // aaa hack, tangles up the model and morph
         console.log("Successfully added " + mir.name() + " to " + this);
       }.bind(this));
     }).setArgumentSpecs([avocado.command.argumentSpec.create('mir').onlyAccepts(function(mir) {

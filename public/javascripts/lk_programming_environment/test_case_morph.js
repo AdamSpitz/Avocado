@@ -77,11 +77,11 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     };
     
     m.createAndRunAndUpdateAppearance = function(callback) {
-      m.allContentMorphs().each(function(cm) { cm._latestResult = null; });
+      m.immediateContentMorphs().each(function(cm) { cm._latestResult = null; });
       m.refreshContentOfMeAndSubmorphs();
       
       avocado.callbackWaiter.on(function(finalCallback) {
-        m.allContentMorphs().each(function(cm) {
+        m.immediateContentMorphs().each(function(cm) {
           var callbackForThisOne = finalCallback();
           cm.createAndRunAndUpdateAppearance(function() {
             m.refreshContentOfMeAndSubmorphs();
@@ -96,7 +96,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     
     m.anyFailedOrNull = function() {
       var r = false;
-      m.allContentMorphs().each(function(cm) {
+      m.immediateContentMorphs().each(function(cm) {
         var mr = cm.anyFailedOrNull();
         if (mr === null) { r = null; throw $break; }
         if (mr === true) { r = true; throw $break; }

@@ -209,7 +209,7 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
   add.method('updateContents', function (callback) {
     this._model.updateContents(function(contents) {
       contents.forEach(function(c) { this.contentMorphFor(c).refreshContentOfMeAndSubmorphs(); }.bind(this));
-      this.cleanUpContentsPanel();
+      this.contentsPanel().cleanUp();
       this.refreshContentOfMeAndSubmorphs();
       if (callback) { callback(contents); }
     }.bind(this));

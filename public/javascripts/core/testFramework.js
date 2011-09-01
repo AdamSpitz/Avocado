@@ -246,10 +246,6 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     return this.testCasePrototypes();
   });
 
-  add.method('contentMorphsInOrder', function () {
-    return this.testCasePrototypes();
-  });
-  
   add.method('requiresContentsSummary', function () {
     return false;
   }, {category: ['user interface']});
