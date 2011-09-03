@@ -1,5 +1,7 @@
 avocado.transporter.module.create('core/testFramework', function(requires) {
 
+requires("core/history");
+
 }, function(thisModule) {
 
 
@@ -205,11 +207,33 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.creator('resultProto', {}, {category: ['results']});
 
+  add.method('resultHistory', function () {
+    if (! this._resultHistory) {
+      this._resultHistory = avocado.history.create(this.name());
+    }
+    return this._resultHistory;
+  }, {category: ['results']});
+  
   add.method('createAndRunAndShowResult', function () {
     this.createAndRun(function(result) {
       avocado.ui.showNextTo(this, result, this);
     }.bind(this));
   }, {category: ['user interface', 'commands']});
+
+  add.method('createAndRunAndUpdateAppearance', function (callback) {
+    this.resultHistory().clearLatest();
+    avocado.ui.justChanged(this);
+    this.createAndRun(function(result) {
+      this.resultHistory().addLatest(result);
+      avocado.ui.justChanged(this);
+      if (callback) { callback(result); }
+    }.bind(this));
+  }, {category: ['user interface', 'commands']});
+    
+  add.method('anyFailedOrNull', function () {
+    var r = this.resultHistory().latest();
+    return r ? r.anyFailed() : null;
+  }, {category: ['results']});
 
   add.method('getTestCaseObject', function (evt) {
     avocado.ui.grab(reflect(this), evt);
@@ -217,7 +241,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
-    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: this.createAndRunAndShowResult});
+    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: function(evt) { this.createAndRunAndUpdateAppearance(); }});
     cmdList.addLine();
     cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject});
     return cmdList;
@@ -277,12 +301,48 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
       avocado.couch.db.tests
     ];
   });
+    
+  add.method('anyFailedOrNull', function () {
+    var r = false;
+    this.immediateContents().each(function(t) {
+      var b = t.anyFailedOrNull();
+      if (b === null) { r = null; throw $break; }
+      if (b === true) { r = true; throw $break; }
+    });
+    return r;
+  }, {category: ['results']});
 
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: function() {
+      this.createAndRunAndUpdateAppearance();
+    }});
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
+  
   add.method('dragAndDropCommands', function () {
     var cmdList = avocado.command.list.create(this);
     // aaa - allow adding and removing from the list of tests?
     return cmdList;
   }, {category: ['user interface', 'drag and drop']});
+
+  add.method('createAndRunAndUpdateAppearance', function (callback) {
+    this.immediateContents().each(function(t) { t.resultHistory().clearLatest(); });
+    avocado.ui.justChanged(this);
+    
+    avocado.callbackWaiter.on(function(finalCallback) {
+      this.immediateContents().each(function(t) {
+        var callbackForThisOne = finalCallback();
+        t.createAndRunAndUpdateAppearance(function() {
+          avocado.ui.justChanged(this);
+          callbackForThisOne();
+        }.bind(this));
+      }.bind(this));
+    }.bind(this), function() {
+      avocado.ui.justChanged(this);
+      if (callback) { callback(); }
+    }.bind(this), "running test suite");
+  }, {category: ['running']});
   
 });
 

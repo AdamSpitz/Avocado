@@ -32,11 +32,22 @@ thisModule.addSlots(avocado.history, function(add) {
   }, {category: ['printing']});
 
   add.method('latest', function () {
+    if (this._versions.length === 0) { return null; }
     return this._versions[this._versions.length - 1];
   }, {category: ['accessing']});
 
   add.method('addLatest', function (v) {
-    this._versions.push(v);
+    if (this._versions.length > 0 && this.latest() === null) {
+      this._versions[this._versions.length - 1] = v;
+    } else {
+      this._versions.push(v);
+    }
+  }, {category: ['accessing']});
+
+  add.method('clearLatest', function () {
+    if (this.latest() !== null) {
+      this.addLatest(null);
+    }
   }, {category: ['accessing']});
 
 });

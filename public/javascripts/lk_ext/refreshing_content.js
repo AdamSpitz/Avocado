@@ -30,6 +30,9 @@ Morph.addMethods({
 
   updateFill: function() {
     // children can override
+    if (this._model && typeof(this._model.updateFillOfMorph) === 'function') {
+      this._model.updateFillOfMorph(this);
+    }
   },
 
   startPeriodicallyUpdating: function (frequency) {

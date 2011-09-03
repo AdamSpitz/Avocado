@@ -14,33 +14,6 @@ thisModule.addSlots(avocado.testCase, function(add) {
     m.typeName = 'test case';
     m.setColumns([m.createNameLabel()]);
     
-    m.commands = function() {
-      var cmdList = this.commands().wrapForMorph(m);
-      
-      cmdList.itemWith("label", "run").wrapFunction(function(oldFunctionToRun, evt) {
-        m.createAndRunAndUpdateAppearance();
-      });
-      
-      return cmdList;
-    }.bind(this);
-    
-    m.createAndRunAndUpdateAppearance = function(callback) {
-      m._latestResult = null;
-      m.refreshContentOfMeAndSubmorphs();
-      this.createAndRun(function(result) {
-        m._latestResult = result;
-        m.refreshContentOfMeAndSubmorphs();
-        if (callback) { callback(result); }
-      });
-    }.bind(this);
-    
-    m.anyFailedOrNull = function() {
-      var r = m._latestResult;
-      return r ? r.anyFailed() : null;
-    };
-    
-    m.updateFill = function() { avocado.testCase.updateFillOfMorph(m); };
-    
     m.refreshContentOfMeAndSubmorphs();
     m.startPeriodicallyUpdating();
     return m;
@@ -49,7 +22,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
   
   add.method('updateFillOfMorph', function (m) {
-    var r = m.anyFailedOrNull();
+    var r = m._model.anyFailedOrNull();
     if (r === true) {
       m.setFill(avocado.testCase.resultProto.failedMorphStyle.fill);
     } else if (r === false) {
@@ -68,53 +41,16 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     var m = new avocado.TreeNodeMorph(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'test suite';
     
-    m.commands = function() {
-      var cmdList = avocado.command.list.create(this);
-      cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: function() {
-        m.createAndRunAndUpdateAppearance();
-      }});
-      return cmdList;
-    };
-    
-    m.createAndRunAndUpdateAppearance = function(callback) {
-      m.immediateContentMorphs().each(function(cm) { cm._latestResult = null; });
-      m.refreshContentOfMeAndSubmorphs();
-      
-      avocado.callbackWaiter.on(function(finalCallback) {
-        m.immediateContentMorphs().each(function(cm) {
-          var callbackForThisOne = finalCallback();
-          cm.createAndRunAndUpdateAppearance(function() {
-            m.refreshContentOfMeAndSubmorphs();
-            callbackForThisOne();
-          });
-        });
-      }, function() {
-        m.refreshContentOfMeAndSubmorphs();
-        if (callback) { callback(); }
-      }, "running test suite");
-    };
-    
-    m.anyFailedOrNull = function() {
-      var r = false;
-      m.immediateContentMorphs().each(function(cm) {
-        var mr = cm.anyFailedOrNull();
-        if (mr === null) { r = null; throw $break; }
-        if (mr === true) { r = true; throw $break; }
-      });
-      return r;
-    };
-    
-    m.updateFill = function() { avocado.testCase.updateFillOfMorph(m); };
-    
     m.refreshContentOfMeAndSubmorphs();
     m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});
 
   add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
-
-  add.method('commands', function () {
-  }, {category: ['user interface', 'commands']});
+  
+  add.method('updateFillOfMorph', function (m) {
+    avocado.testCase.updateFillOfMorph(m);
+  }, {category: ['user interface']});
 
 });
 
