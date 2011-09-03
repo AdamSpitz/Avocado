@@ -761,6 +761,31 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
   add.method('immediateContents', function () {
     return this._contents;
   }, {category: ['accessing']});
+  
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+
+    cmdList.addItem(avocado.command.create('change attribute', function(evt, attributeName) {
+      this.setAttributeName(attributeName);
+      avocado.ui.justChanged(this, evt);
+      this.updateContents(function() { avocado.ui.justChanged(this, evt); }.bind(this));
+    }.bind(this)).setArgumentSpecs([
+      avocado.command.argumentSpec.create('attributeName').onlyAcceptsType(String)
+    ]));
+
+    cmdList.addItem(avocado.command.create('rename', function(evt, containerName) {
+      this.setContainerName(containerName);
+      avocado.ui.justChanged(this, evt);
+    }.bind(this)).setArgumentSpecs([
+      avocado.command.argumentSpec.create('containerName').onlyAcceptsType(String)
+    ]));
+
+    cmdList.addItem(avocado.command.create('get container object', function(evt) {
+      avocado.ui.grab(reflect(this.containerObj()), evt);
+    }));
+
+    return cmdList;
+  }, {category: ['commands']});
 
   add.method('dragAndDropCommands', function () {
     var cmdList = avocado.command.list.create(this);

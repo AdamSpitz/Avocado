@@ -166,37 +166,6 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
 
   add.creator('style', {}, {category: ['styles']});
   
-  add.method('commands', function () {
-    var cmdList = avocado.command.list.create(this);
-
-    cmdList.addItem(avocado.command.create('change attribute', function(evt, attributeName) {
-      this._model.setAttributeName(attributeName);
-      this.refreshContentOfMeAndSubmorphs();
-      this._model.updateContents(this.refreshContentOfMeAndSubmorphs.bind(this));
-    }.bind(this)).setArgumentSpecs([
-      avocado.command.argumentSpec.create('attributeName').onlyAcceptsType(String)
-    ]));
-
-    cmdList.addItem(avocado.command.create('rename', function(evt, containerName) {
-      this._model.setContainerName(containerName);
-      this.refreshContentOfMeAndSubmorphs();
-    }.bind(this)).setArgumentSpecs([
-      avocado.command.argumentSpec.create('containerName').onlyAcceptsType(String)
-    ]));
-
-    /* aaa just useful for debugging
-    cmdList.addItem(avocado.command.create('update contents', function(evt) {
-      this.updateContents();
-    }));
-    */
-    
-    cmdList.addItem(avocado.command.create('get container object', function(evt) {
-      avocado.ui.grab(reflect(this._model.containerObj()), evt);
-    }));
-
-    return cmdList;
-  }, {category: ['commands']});
-  
   add.method('copyAttributesFrom', function ($super, copier, other) {
     // aaa - this is kind of a hack, but for now I just want a custom copy; in the
     // long run make this work with the general copying mechanism
@@ -210,7 +179,7 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
     this._model.updateContents(function(contents) {
       contents.forEach(function(c) { this.contentMorphFor(c).refreshContentOfMeAndSubmorphs(); }.bind(this));
       this.contentsPanel().cleanUp();
-      this.refreshContentOfMeAndSubmorphs();
+      avocado.ui.justChanged(this._model, evt);
       if (callback) { callback(contents); }
     }.bind(this));
     return this;
