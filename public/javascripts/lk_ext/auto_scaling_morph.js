@@ -94,6 +94,11 @@ thisModule.addSlots(avocado.AutoScalingMorph.prototype, function(add) {
     }
   });
 
+  add.method('potentialContentsCount', function () {
+    // aaa - this is kind of a hack
+    return this.recalculateContentModels ? this.recalculateContentModels().size() : this.submorphs.length;
+  });
+
 });
 
 

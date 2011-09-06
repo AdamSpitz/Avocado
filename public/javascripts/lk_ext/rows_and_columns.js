@@ -438,6 +438,11 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     this.setPotentialContent(avocado.tableContents.createWithRows([ms]));
   });
 
+  add.method('potentialContentsCount', function () {
+    // aaa - this is kind of a hack - should really just be one clear intensional mechanism and one clear extensional one.
+    return this.recalculateContentModels ? this.recalculateContentModels().size() : (this.potentialContent ? this.potentialContent().primaryLines().size() : this.submorphs.length);
+  });
+
   add.method('addRow', function (m) {
     if (this._tableContent && this._tableContent.primaryLines().length > 0) {
       this.makeSurePrimaryDirectionIs(avocado.directions.horizontal);

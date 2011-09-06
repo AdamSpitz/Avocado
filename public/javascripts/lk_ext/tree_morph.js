@@ -124,7 +124,14 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       if (! this._potentialContent) {
         var contentsThreshold = this._contentsThreshold || 0.25;
         var thresholdMultiplier = this._shouldOmitHeaderRow ? 0.25 : 0.7;
-        var contentsPanelHider = this._shouldNotHideContentsEvenIfTooSmall ? this.contentsPanel() : avocado.scaleBasedMorphHider.create(this, this.contentsPanel.bind(this), this, function() { return contentsThreshold * thresholdMultiplier * Math.sqrt(this.contentsCount()); }.bind(this), this._contentsPanelSize);
+        var contentsPanelHider;
+        if (this._shouldNotHideContentsEvenIfTooSmall) {
+          contentsPanelHider = this.contentsPanel();
+        } else {
+          contentsPanelHider = avocado.scaleBasedMorphHider.create(this, this.contentsPanel.bind(this), this, function() {
+            return contentsThreshold * thresholdMultiplier * Math.sqrt(this.contentsCount());
+          }.bind(this), this._contentsPanelSize); 
+        }
         var rows = this._shouldOmitHeaderRow ? [contentsPanelHider] : [this.headerRow(), contentsPanelHider];
         this._potentialContent = avocado.tableContents.createWithColumns([rows]);
       }
@@ -153,7 +160,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       cp = this._contentsPanel = new avocado.AutoScalingMorph(new lively.scene.Rectangle(pt(0,0).extent(this._contentsPanelSize))).applyStyle(this.contentsPanelStyle());
       cp.typeName = 'tree node contents panel'; // just for debugging purposes
       if (this._shouldScaleContentsPanelSubmorphsToFit) { cp.setShouldScaleSubmorphsToFit(true); }
+      
+      // aaa - eventually should only need one of these, probably recalculateContentModels, and it shouldn't have anything to do with TreeNodeMorph
       cp.recalculateContentMorphs = function() { return this.owner.recalculateAndRememberContentMorphsInOrder(); };
+      
       // var thisToString = this.toString(); cp.toString = function() { return thisToString + " contents panel"; } // aaa just for debugging
       // aaa - do this more cleanly; for now, just wanna see if this can work
       
@@ -165,6 +175,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       cp.potentialContent = this.potentialContentsOfContentsPanel.bind(this);
       // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
     }
+    cp.recalculateContentModels = function() { return this.owner.treeNode && this.owner.treeNode().immediateContents(); };
     return cp;
   }, {category: ['contents panel']});
   
@@ -179,6 +190,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     // can be overridden in children, if desired
     return content.morph ? content.morph() : WorldMorph.current().morphFor(content);
   }, {category: ['contents panel']});
+
+  add.method('immediateContentMorphs', function () {
+    // can be overridden in children, if desired
+    return this.treeNode().immediateContents().map(function(sn) { return this.contentMorphFor(sn); }.bind(this));
+  }, {category: ['contents panel']});
   
   add.method('recalculateAndRememberContentMorphsInOrder', function () {
     this._contentMorphs = this.immediateContentMorphs().toArray().sortBy(function(m) { return m._model && m._model.sortOrder ? m._model.sortOrder() : ''; });
@@ -189,11 +205,6 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     if (this.treeNode().isRoot()) { return null; }
     var sn = this.treeNode().supernode();
     return this.ownerSatisfying(function(o) { return o.constructor === this.constructor && o.treeNode().equals(sn); }.bind(this)) || this.contentMorphFor(sn);
-  }, {category: ['contents panel']});
-
-  add.method('immediateContentMorphs', function () {
-    // can be overridden in children, if desired
-    return this.treeNode().immediateContents().map(function(sn) { return this.contentMorphFor(sn); }.bind(this));
   }, {category: ['contents panel']});
 
   add.method('contentsCount', function () {
