@@ -17,7 +17,7 @@ thisModule.addSlots(avocado.history, function(add) {
     m.potentialContent = function() {
       var rows = [nameLabel];
       var latest = m._model.latest();
-      if (typeof(latest) !== 'undefined') { rows.push(WorldMorph.current().morphFor(latest)); }
+      if (latest !== null && typeof(latest) !== 'undefined') { rows.push(WorldMorph.current().morphFor(latest)); }
       return avocado.tableContents.createWithColumns([rows]);
     };
     
