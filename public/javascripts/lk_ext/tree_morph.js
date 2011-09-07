@@ -132,13 +132,16 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
             return contentsThreshold * thresholdMultiplier * Math.sqrt(this.contentsCount());
           }.bind(this), this._contentsPanelSize); 
         }
-        var rows = this._shouldOmitHeaderRow ? [contentsPanelHider] : [this.headerRow(), contentsPanelHider];
+        var rows = this._shouldOmitHeaderRow ? [] : [this.headerRow()];
+        if (this._shouldShowTagsWithinBox) { rows.push(this.tagHolderMorph()); }
+        rows.push(contentsPanelHider);
         this._potentialContent = avocado.tableContents.createWithColumns([rows]);
       }
       return this._potentialContent;
     } else {
       var rows = [];
       if (! this._shouldOmitHeaderRow)  { rows.push(this.headerRow()); }
+      if (this._shouldShowTagsWithinBox) { rows.push(this.tagHolderMorph()); }
       if (this.expander().isExpanded()) { rows.push(this.contentsPanel()); }
       return avocado.tableContents.createWithColumns([rows]);
     }
@@ -254,6 +257,12 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   
   add.method('useContentsPanelToDisplayTags', function () {
     this._shouldUseContentsPanelToDisplayTags = true;
+    return this;
+  }, {category: ['tagging']})
+  
+  add.method('showTagsWithinBox', function () {
+    // aaa this is a hack, need to create a general-purpose way to put tags on any morph
+    this._shouldShowTagsWithinBox = true;
     return this;
   }, {category: ['tagging']})
   

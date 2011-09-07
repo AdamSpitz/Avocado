@@ -269,16 +269,31 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['tagging']});
 
   add.method('currentTags', function () {
-    return this.submorphs.select(function(m) { return m instanceof avocado.tag.Morph; });
+    if (! this._tagHolderMorph) { return []; }
+    return this.tagHolderMorph().submorphs;
   }, {category: ['tagging']});
   
   add.method('addTagMorph', function (tagMorph) {
-    // Children should feel free to override this if they want to specify exactly where to place tags.
-    
-    // aaa - this is a lousy way of determining where to place them
-    var currentTags = this.currentTags();
-    this.addMorphAt(tagMorph, currentTags.length === 0 ? pt(5,5) : currentTags[currentTags.length - 1].bounds().topRight().addXY(5, 5));
+    this.ensureTagHolderMorphIsVisible().addRow(tagMorph);
     return this;
+  }, {category: ['tagging']});
+
+  add.method('ensureTagHolderMorphIsVisible', function () {
+    // Children should feel free to override this if they want to specify exactly where to place tags.
+    var m = this.tagHolderMorph();
+    if (! m.owner) { this.addMorphAt(m, pt(20,0)); }
+    return m;
+  }, {category: ['tagging']});
+
+  add.method('tagHolderMorph', function () {
+    if (! this._tagHolderMorph) {
+      this._tagHolderMorph = this.createTagHolderMorph();
+    }
+    return this._tagHolderMorph;
+  }, {category: ['tagging']});
+
+  add.method('createTagHolderMorph', function () {
+    return avocado.TableMorph.newColumn().applyStyle({fill: null}).ignoreEvents();
   }, {category: ['tagging']});
 
 });
