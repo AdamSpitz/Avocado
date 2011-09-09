@@ -63,7 +63,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       if (this._shouldBeUnobtrusive) {
         var poserOrPlaceholder = e.poser;
         if (e.poser.owner !== container && e.poser.world()) { // aaa what's going on here?
-          poserOrPlaceholder = new avocado.PlaceholderMorph(e.poser);
+          poserOrPlaceholder = container.placeholderForMorph(e.poser);
         }
         container.addMorphAt(poserOrPlaceholder, e.position);
       } else {

@@ -331,15 +331,15 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     if (this.slot().isFromACopyDownParent()) { this.applyStyle(this.copyDownStyle); }
   }, {category: ['updating']});
 
-  add.method('potentialContent', function () {
-    if (! this._potentialContent) {
+  add.method('potentialContentMorphs', function () {
+    if (! this._potentialContentMorphs) {
       if (this.shouldUseZooming()) {
-        this._potentialContent = avocado.tableContents.createWithColumns([[this.signatureRow, this._buttonChooserMorph]]);
+        this._potentialContentMorphs = avocado.tableContents.createWithColumns([[this.signatureRow, this._buttonChooserMorph]]);
       } else {
-        this._potentialContent = avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler].compact()]);
+        this._potentialContentMorphs = avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler].compact()]);
       }
     }
-    return this._potentialContent;
+    return this._potentialContentMorphs;
   }, {category: ['updating']});
 
   add.method('wasJustDroppedOnWorld', function (world) {

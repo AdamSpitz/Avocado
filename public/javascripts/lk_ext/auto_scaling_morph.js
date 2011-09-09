@@ -25,11 +25,6 @@ thisModule.addSlots(avocado.AutoScalingMorph.prototype, function(add) {
 
   add.data('constructor', avocado.AutoScalingMorph);
   
-  add.method('recalculateContentMorphs', function () {
-    // users should feel free to overwrite this function
-    return this.submorphs;
-  }, {category: ['content']});
-
   add.method('setShouldScaleSubmorphsToFit', function (b) {
     this._shouldScaleSubmorphsToFit = b;
     return this;
@@ -41,7 +36,7 @@ thisModule.addSlots(avocado.AutoScalingMorph.prototype, function(add) {
   }, {category: ['organizing']});
 
   add.method('cleanUp', function (contentMorphsOrNull) {
-    var contentMorphs = contentMorphsOrNull || this.recalculateContentMorphs();
+    var contentMorphs = contentMorphsOrNull || this.recalculateActualContentMorphs();
     this._hasAlreadyBeenLaidOutAtLeastOnce = true;
     var pose = this.poseManager().cleaningUpPose(contentMorphs).beUnobtrusive().beSquarish().whenDoneScaleToFitWithinCurrentSpace();
     this.poseManager().assumePose(pose);
@@ -62,16 +57,49 @@ thisModule.addSlots(avocado.AutoScalingMorph.prototype, function(add) {
       this.cleanUp();
     }
   }, {category: ['drag and drop']});
+
+  add.method('recalculateActualContentMorphs', function () {
+    // aaa - duplicated from TableMorph
+    var context = this;
+    if (typeof(this.potentialContentMorphs) === 'function') {
+      var potentialContentMorphs = this.potentialContentMorphs();
+      var actualContentMorphs = potentialContentMorphs.selectThenMap(function(morphOrToggler) {
+        return !!morphOrToggler.actualMorphToShow(context);
+      }, function(morphOrToggler) {
+        return morphOrToggler.actualMorphToShow(context);
+      });
+      return actualContentMorphs;
+    } else {
+      return this.submorphs;
+    }
+  }, {category: ['updating']});
+
+  add.method('setPotentialContentMorphs', function (content) {
+    // aaa - duplicated from TableMorph
+    this.setPotentialContentMorphsFunction(function() { return content; });
+  }, {category: ['updating']});
+
+  add.method('setPotentialContentMorphsFunction', function (contentFunction) {
+    // aaa - duplicated from TableMorph
+    this.potentialContentMorphs = contentFunction;
+  }, {category: ['updating']});
   
   add.method('refreshContent', function () {
-    var contentMorphs = this.recalculateContentMorphs();
+    var contentMorphs = this.recalculateActualContentMorphs();
+    this.removeMorphsNotIncludedIn(contentMorphs);
+    this.refreshLayoutIfNecessary(contentMorphs);
+  });
+
+  add.method('removeMorphsNotIncludedIn', function (contentMorphs) {
     // aaa - find a more efficient way to do this
     this.submorphs.forEach(function(m) {
       if (! contentMorphs.include(m)) {
         this.removeMorph(m);
       }
     }.bind(this));
-    
+  });
+  
+  add.method('refreshLayoutIfNecessary', function (contentMorphs) {
     if (!this._hasAlreadyBeenLaidOutAtLeastOnce) {
       this.cleanUp(contentMorphs);
     } else {
@@ -93,7 +121,7 @@ thisModule.addSlots(avocado.AutoScalingMorph.prototype, function(add) {
       }.bind(this));
     }
   });
-
+  
   add.method('potentialContentsCount', function () {
     // aaa - this is kind of a hack
     return this.recalculateContentModels ? this.recalculateContentModels().size() : this.submorphs.length;

@@ -96,7 +96,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
     }.bind(this));
   }, {category: ['content']});
 
-  add.method('potentialContent', function () {
+  add.method('potentialContentMorphs', function () {
     return avocado.tableContents.createWithRows([this._headerRow].concat(this._collection.map(function(o) {
       return this.rowOfCellMorphsFor(o);
     }.bind(this))));
@@ -108,7 +108,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
 
   add.method('showPotentialDrops', function (potentialDrops, evt) {
     this._potentialDropInsertionIndex = this.determineIndexForPotentialDrops(evt);
-    var content = this.potentialContent();
+    var content = this.potentialContentMorphs();
     for (var j = potentialDrops.length - 1; j >= 0; --j) {
       var o = potentialDrops[j].associatedObjectSatisfying(this._dropCriteria);
       var row = this.rowOfCellMorphsFor(o);

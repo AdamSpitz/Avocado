@@ -38,7 +38,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.data('constructor', avocado.TreeNodeMorph);
 
-	add.data('noShallowCopyProperties', Morph.prototype.noShallowCopyProperties.concat(["_potentialContent", "_headerRow", "_headerRowContents", "_containerName"]), {initializeTo: 'Morph.prototype.noShallowCopyProperties.concat(["_potentialContent", "_headerRow", "_headerRowContents", "_containerName"])'});
+	add.data('noShallowCopyProperties', Morph.prototype.noShallowCopyProperties.concat(["_potentialContentMorphs", "_headerRow", "_headerRowContents", "_containerName"]), {initializeTo: 'Morph.prototype.noShallowCopyProperties.concat(["_potentialContentMorphs", "_headerRow", "_headerRowContents", "_containerName"])'});
 	
   add.method('initialize', function ($super, treeNode) {
     $super();
@@ -119,9 +119,9 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     return this;
   }, {category: ['contents panel']});
 
-  add.method('potentialContent', function () {
+  add.method('potentialContentMorphs', function () {
     if (this.shouldUseZooming()) {
-      if (! this._potentialContent) {
+      if (! this._potentialContentMorphs) {
         var contentsThreshold = this._contentsThreshold || 0.25;
         var thresholdMultiplier = this._shouldOmitHeaderRow ? 0.25 : 0.7;
         var contentsPanelHider;
@@ -135,9 +135,9 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
         var rows = this._shouldOmitHeaderRow ? [] : [this.headerRow()];
         if (this._shouldShowTagsWithinBox) { rows.push(this.tagHolderMorph()); }
         rows.push(contentsPanelHider);
-        this._potentialContent = avocado.tableContents.createWithColumns([rows]);
+        this._potentialContentMorphs = avocado.tableContents.createWithColumns([rows]);
       }
-      return this._potentialContent;
+      return this._potentialContentMorphs;
     } else {
       var rows = [];
       if (! this._shouldOmitHeaderRow)  { rows.push(this.headerRow()); }
@@ -165,7 +165,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       if (this._shouldScaleContentsPanelSubmorphsToFit) { cp.setShouldScaleSubmorphsToFit(true); }
       
       // aaa - eventually should only need one of these, probably recalculateContentModels, and it shouldn't have anything to do with TreeNodeMorph
-      cp.recalculateContentMorphs = function() { return this.owner.recalculateAndRememberContentMorphsInOrder(); };
+      cp.setPotentialContentMorphsFunction(function() { return this.owner.recalculateAndRememberContentMorphsInOrder(); });
       
       // var thisToString = this.toString(); cp.toString = function() { return thisToString + " contents panel"; } // aaa just for debugging
       // aaa - do this more cleanly; for now, just wanna see if this can work
@@ -175,7 +175,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       };
     } else {
       cp = this._contentsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.contentsPanelStyle());
-      cp.potentialContent = this.potentialContentsOfContentsPanel.bind(this);
+      cp.setPotentialContentMorphsFunction(this.potentialContentMorphsOfContentsPanel.bind(this));
       // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
     }
     cp.recalculateContentModels = function() { return this.owner.treeNode && this.owner.treeNode().immediateContents(); };
@@ -214,7 +214,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     return this.treeNode().immediateContents().size();
   }, {category: ['contents panel']});
 
-  add.method('potentialContentsOfContentsPanel', function () {
+  add.method('potentialContentMorphsOfContentsPanel', function () {
     var allSubmorphs = [];
     if (this.treeNode().requiresContentsSummary()) { allSubmorphs.push(this.contentsSummaryMorph()); }
     var contentMorphs = this.recalculateAndRememberContentMorphsInOrder();

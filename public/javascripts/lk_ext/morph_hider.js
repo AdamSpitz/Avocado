@@ -33,9 +33,10 @@ thisModule.addSlots(avocado.morphHider, function(add) {
     return this.shouldMorph1BeShown() ? this._morph1 : this._morph2;
   });
 
-  add.method('actualMorphToShow', function () {
+  add.method('actualMorphToShow', function (context) {
     var m = this.morphOrFunctionToShow();
-    return typeof(m) === 'function' ? m() : m;
+    if (typeof(m) === 'function') { m = m(); }
+    return m && m.actualMorphToShow(context);
   });
 
   add.method('constructUIStateMemento', function () {

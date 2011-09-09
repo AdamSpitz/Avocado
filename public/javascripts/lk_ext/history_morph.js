@@ -14,7 +14,7 @@ thisModule.addSlots(avocado.history, function(add) {
 
     var nameLabel = m.createNameLabel();
     
-    m.potentialContent = function() {
+    m.potentialContentMorphs = function() {
       var rows = [nameLabel];
       var latest = m._model.latest();
       if (latest !== null && typeof(latest) !== 'undefined') { rows.push(WorldMorph.current().morphFor(latest)); }

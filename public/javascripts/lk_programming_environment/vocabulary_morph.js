@@ -45,8 +45,10 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     this._evaluatorsPanel = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     this._mirrorsPanel    = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     
+    
     var mirs = this.mirror().meAndAncestors().toArray();
-    this._mirrorsPanel.setRows(mirs.map(function(mir) { return new avocado.PlaceholderMorph(mir.morph()); }));
+    var mirrorsPanel = this._mirrorsPanel;
+    this._mirrorsPanel.setRows(mirs.map(function(mir) { return mirrorsPanel.placeholderForMorph(mir.morph()); }));
     
     this._expander = new ExpanderMorph(this);
     this._titleLabel = this.createNameLabel();
@@ -75,7 +77,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['updating']});
 
-  add.method('potentialContent', function () {
+  add.method('potentialContentMorphs', function () {
     var rows = [this._headerRow];
     if (this._expander.isExpanded()) { rows.push(this._mirrorsPanel); }
     rows.push(this._evaluatorsPanel);

@@ -18,7 +18,7 @@ thisModule.addSlots(avocado.process, function(add) {
     
     var world = WorldMorph.current();
     var contentColumn = avocado.TableMorph.newColumn().beInvisible();
-    contentColumn.potentialContent = function () {
+    contentColumn.setPotentialContentMorphsFunction(function () {
       var rows = [];
       var c = m._model.leafContext();
       for (var i = 0, n = m._numberToShow; c && i < n; ++i) {
@@ -28,7 +28,7 @@ thisModule.addSlots(avocado.process, function(add) {
       m._hasMore = !!c;
       moreOrLessRow.refreshContentOfMeAndSubmorphs();
       return avocado.tableContents.createWithColumns([rows]);
-    };
+    });
     
     var moreButton = avocado.command.create('More', function(evt) { m._numberToShow += 10; contentColumn.refreshContent(); }).newMorph();
     var moreOrLessRow = avocado.RowMorph.createSpaceFilling([

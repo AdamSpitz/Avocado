@@ -72,7 +72,7 @@ thisModule.addSlots(avocado.RowMorph, function(add) {
     direction.setLayoutModeOf(m, avocado.LayoutModes.SpaceFill);
     
     if (typeof(content) === 'function') {
-      m.potentialContent = function() { return avocado.tableContents.create([content()], direction.sideways); };
+      m.setPotentialContentMorphsFunction(function() { return avocado.tableContents.create([content()], direction.sideways); });
       m.refreshContent();
     } else {
       // default to left-justifying the contents
@@ -407,40 +407,57 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
 
   add.method('refreshContent', function ($super) {
     $super();
-    if (typeof(this.potentialContent) === 'function') {
-      var potentialContent = this.potentialContent();
-      var actualContent = potentialContent.selectThenMap(function(morphOrToggler) {
-        return !!morphOrToggler.actualMorphToShow();
-      }, function(morphOrToggler) {
-        return morphOrToggler.actualMorphToShow();
-      });
-      this.replaceContentWith(actualContent);
+    var recalculatedActualContentMorphs = this.recalculateActualContentMorphs();
+    if (recalculatedActualContentMorphs) {
+      this.replaceContentWith(recalculatedActualContentMorphs);
     }
-  }, {category: ['adding and removing']});
+  }, {category: ['updating']});
 
-  add.method('setPotentialContent', function (c) {
-    this.potentialContent = function() { return c; };
-  }, {category: ['adding and removing']});
+  add.method('recalculateActualContentMorphs', function () {
+    // aaa - duplicated in AutoScalingMorph
+    var context = this;
+    if (typeof(this.potentialContentMorphs) === 'function') {
+      var potentialContentMorphs = this.potentialContentMorphs();
+      var actualContentMorphs = potentialContentMorphs.selectThenMap(function(morphOrToggler) {
+        return !!morphOrToggler.actualMorphToShow(context);
+      }, function(morphOrToggler) {
+        return morphOrToggler.actualMorphToShow(context);
+      });
+      return actualContentMorphs;
+    } else {
+      return null;
+    }
+  }, {category: ['updating']});
+
+  add.method('setPotentialContentMorphs', function (content) {
+    // aaa - duplicated in AutoScalingMorph
+    this.setPotentialContentMorphsFunction(function() { return content; });
+  }, {category: ['updating']});
+
+  add.method('setPotentialContentMorphsFunction', function (contentFunction) {
+    // aaa - duplicated in AutoScalingMorph
+    this.potentialContentMorphs = contentFunction;
+  }, {category: ['updating']});
 
   add.method('setRows', function (ms) {
     this.replaceContentWith(avocado.tableContents.createWithColumns([ms]));
-  });
+  }, {category: ['adding and removing']});
 
   add.method('setPotentialRows', function (ms) {
-    this.setPotentialContent(avocado.tableContents.createWithColumns([ms]));
-  });
+    this.setPotentialContentMorphs(avocado.tableContents.createWithColumns([ms]));
+  }, {category: ['adding and removing']});
 
   add.method('setColumns', function (ms) {
     this.replaceContentWith(avocado.tableContents.createWithRows([ms]));
-  });
+  }, {category: ['adding and removing']});
 
   add.method('setPotentialColumns', function (ms) {
-    this.setPotentialContent(avocado.tableContents.createWithRows([ms]));
-  });
+    this.setPotentialContentMorphs(avocado.tableContents.createWithRows([ms]));
+  }, {category: ['adding and removing']});
 
   add.method('potentialContentsCount', function () {
     // aaa - this is kind of a hack - should really just be one clear intensional mechanism and one clear extensional one.
-    return this.recalculateContentModels ? this.recalculateContentModels().size() : (this.potentialContent ? this.potentialContent().primaryLines().size() : this.submorphs.length);
+    return this.recalculateContentModels ? this.recalculateContentModels().size() : (this.potentialContentMorphs ? this.potentialContentMorphs().primaryLines().size() : this.submorphs.length);
   });
 
   add.method('addRow', function (m) {
@@ -452,12 +469,12 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     } else {
       this.setRows([m]);
     }
-  });
+  }, {category: ['adding and removing']});
 
   add.method('removeRow', function (m) {
     this.makeSurePrimaryDirectionIs(avocado.directions.horizontal);
     this.setRows(this._tableContent.primaryLine(0).reject(function(mm) { return m === mm; }));
-  });
+  }, {category: ['adding and removing']});
 
   add.method('addColumn', function (m) {
     if (this._tableContent && this._tableContent.primaryLines().length > 0) {
@@ -468,18 +485,18 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     } else {
       this.setColumns([m]);
     }
-  });
+  }, {category: ['adding and removing']});
 
   add.method('removeColumn', function (m) {
     this.makeSurePrimaryDirectionIs(avocado.directions.vertical);
     this.setColumns(this._tableContent.primaryLines(0).reject(function(mm) { return m === mm; }));
-  });
+  }, {category: ['adding and removing']});
 
   add.method('addCell', function (m) {
     if (! this._tableContent) { return this.addColumn(m); }
     if (this._tableContent._direction1 === avocado.directions.vertical) { return this.addColumn(m); }
     return this.addRow(m);
-  });
+  }, {category: ['adding and removing']});
 
   add.method('makeSurePrimaryDirectionIs', function (dir) {
     if (this._tableContent && this._tableContent._direction1 !== dir) {
@@ -764,13 +781,6 @@ thisModule.addSlots(avocado.RowMorph.prototype, function(add) {
   add.data('constructor', avocado.RowMorph);
 
   add.data('direction', avocado.directions.horizontal);
-
-});
-
-
-thisModule.addSlots(Morph.prototype, function(add) {
-
-  add.method('actualMorphToShow', function () { return this; });
 
 });
 

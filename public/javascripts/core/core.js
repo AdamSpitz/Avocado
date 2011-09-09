@@ -12,6 +12,7 @@ requires('core/hash_table');
 requires('core/notifier');
 requires('core/string_buffer');
 requires('core/string_extensions');
+requires('core/array_extensions');
 requires('core/value_holder');
 requires('core/dependencies');
 requires('core/little_profiler');

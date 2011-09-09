@@ -39,6 +39,7 @@ newModule('core/deep_copy');
 newModule('core/range');
 newModule('core/string_buffer');
 newModule('core/string_extensions');
+newModule('core/array_extensions');
 newModule('core/value_holder');
 newModule('core/dependencies');
 newModule('core/little_profiler');

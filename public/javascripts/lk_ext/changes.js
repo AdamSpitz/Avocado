@@ -115,6 +115,15 @@ Morph.addMethods({
       return avocado.enumerator.create(this, 'eachSubmorphRecursively');
     },
     
+    ownerChainIncludes: function(m) {
+      var o = this.owner;
+      while (o) {
+        if (o === m) { return true; }
+        o = o.owner;
+      }
+      return false;
+    },
+    
     eachOwnerRecursively: function(f) {
       var o = this.owner;
       while (o) {

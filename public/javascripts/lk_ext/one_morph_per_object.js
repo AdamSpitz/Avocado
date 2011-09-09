@@ -61,4 +61,27 @@ thisModule.addSlots(WorldMorph.prototype.morphIdentityComparator, function(add) 
 });
 
 
+thisModule.addSlots(Morph.prototype, function(add) {
+
+  add.method('actualMorphToShow', function (context) {
+    // If this morph is already elsewhere in the world, don't yank it from there, just show a placeholder.
+    var thisMorph = this;
+    if (typeof(this._model) !== 'undefined' && (!this.ownerChainIncludes(context)) && this.world()) {
+      return context.placeholderForMorph(thisMorph);
+    }
+    
+    return this;
+  });
+  
+  add.method('placeholdersByMorph', function () {
+    return this._placeholdersByMorph || (this._placeholdersByMorph = avocado.dictionary.copyRemoveAll(avocado.dictionary.identityComparator));
+  }, {category: ['one morph per object']});
+  
+  add.method('placeholderForMorph', function (morph) {
+    return this.placeholdersByMorph().getOrIfAbsentPut(morph, function() { console.log("Showing placeholder instead of " + morph); return new avocado.PlaceholderMorph(morph); });
+  }, {category: ['one morph per object']});
+
+});
+
+
 });
