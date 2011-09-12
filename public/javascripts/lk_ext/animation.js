@@ -35,11 +35,11 @@ thisModule.addSlots(Morph.prototype, function(add) {
     }, {category: ['zooming around']});
 
   add.method('startZoomingTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-      return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.arcPath, loc, 3, shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
+      return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.arcPath, loc, 3 / WorldMorph.current().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
     }, {category: ['zooming around']});
 
   add.method('startZoomingInAStraightLineTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
-      return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.straightPath, loc, 2, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
+      return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.straightPath, loc, 2 / WorldMorph.current().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
     }, {category: ['zooming around']});
 
   add.method('zoomAwayAfter', function (ms) {
@@ -78,15 +78,15 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('setPositionAndDoMotionBlurIfNecessary', function (newPos, blurTime) {
       var world = this.world();
       if (world) {
-        var extent = this.getExtent();
+  			var scaledExtent = this.getExtent().scaleBy(this.overallScale(world));
         var oldPos = this.getPosition();
         var difference = newPos.subPt(oldPos);
-        var ratio = Math.max(Math.abs(difference.x) / extent.x, Math.abs(difference.y) / extent.y);
+        var ratio = Math.max(Math.abs(difference.x) / scaledExtent.x, Math.abs(difference.y) / scaledExtent.y);
+        // console.log("Do we want motion blur? difference is " + difference + ", scaledExtent is " + scaledExtent + ", so ratio is " + ratio);
         if (ratio > 0.5) {
           // aaa - I am sure that there's a more elegant way to get the globalBounds.
           // aaa - And I don't even think this works right.
     			var topLeft = this.owner.worldPoint(this.getPosition());
-    			var scaledExtent = this.getExtent().scaleBy(this.overallScale(world));
     			var globalBounds = topLeft.extent(scaledExtent);
     			
           var allVertices = globalBounds.vertices().concat(globalBounds.translatedBy(difference).vertices());
@@ -177,7 +177,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['adding and removing']});
   
   add.method('setFillOpacityRecursively', function (a) {
-    console.log("setFillOpacityRecursively: " + a);
+    // console.log("setFillOpacityRecursively: " + a);
     this.setFillOpacity(a);
     for (var i = 0, n = this.submorphs.length; i < n; ++i) {
       this.submorphs[i].setFillOpacityRecursively(a);

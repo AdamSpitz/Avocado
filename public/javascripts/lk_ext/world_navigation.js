@@ -58,7 +58,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   
   add.method('smoothlySlideBy', function (p, functionToCallWhenDone) {
     var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
-    var a = avocado.animation.newMovement(worldNavigator, avocado.animation.straightPath, p, p.r() / 400, false, false, true);
+    var a = avocado.animation.newMovement(worldNavigator, avocado.animation.straightPath, p, p.r() / (400 * this.getScale()), false, false, true);
     worldNavigator.startZoomAnimation(a, functionToCallWhenDone);
   }, {category: ['navigation']});
   
