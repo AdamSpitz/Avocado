@@ -87,15 +87,14 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
       
       var tryMorphs = function(availableMorphs) {
         var possibleArgMorphs = [];
-        console.log("About to try some availableMorphs");
         availableMorphs.forEach(function(morph) {
           var morphAndRelatedMorphs = typeof(morph.relatedMorphs) === 'function' ? [morph].concat(morph.relatedMorphs()) : [morph];
           morphAndRelatedMorphs.forEach(function(morphOrRelatedMorph) {
             if (thisArgSpec.canAccept(morphOrRelatedMorph)) {
-              console.log("Hey, this one should work: " + morphOrRelatedMorph);
+              // console.log("Found an argument: " + morphOrRelatedMorph);
               possibleArgMorphs.push(morphOrRelatedMorph);
             } else {
-              console.log("Nope, can't use: " + morphOrRelatedMorph);
+              // console.log("Can't use as argument: " + morphOrRelatedMorph);
             }
           });
         });

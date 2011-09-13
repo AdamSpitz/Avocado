@@ -349,6 +349,16 @@ Morph.addMethods({
   ownerWithAModel: function() {
     if (typeof(this._model) !== 'undefined') { return this; }
     return this.ownerSatisfying(function(m) { return typeof(m._model) !== 'undefined'; });
+  },
+  
+  outermostOwner: function() {
+    var m = this;
+    while (m) {
+      var o = m.owner;
+      if (!o || o instanceof WorldMorph) { return m; }
+      m = o;
+    }
+    throw new Error("Should never get here.");
   }
 });
 

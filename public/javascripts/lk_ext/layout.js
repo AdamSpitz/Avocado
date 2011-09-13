@@ -51,7 +51,15 @@ thisModule.addSlots(Morph.prototype, function(add) {
     return e.scaleBy(this.getScale());
   }, {category: ['layout']});
 
-  add.method('rejiggerTheLayout', function (availableSpace) {
+  add.method('rejiggerTheLayoutOfMySubmorphs', function () {
+    this.submorphs.forEach(function(m) {
+      m.rejiggerTheLayout(m.getExtent().scaleBy(m.getScale()));
+    });
+  }, {category: ['layout']});
+
+  add.method('rejiggerJustMyLayout', function (availableSpace) {
+    // can be overridden by morphs that want to do special layout stuff, like TableMorph
+    
     var availableSpaceToUse = availableSpace.scaleBy(1 / this.getScale());
     
     var oldExtent = this.getExtent();
@@ -69,6 +77,12 @@ thisModule.addSlots(Morph.prototype, function(add) {
     }
     return newExtent.scaleBy(this.getScale());
   }, {category: ['layout']});
+  
+  add.method('rejiggerTheLayout', function (availableSpace) {
+    // can be overridden by morphs that want to do special layout stuff, like TableMorph
+    this.rejiggerTheLayoutOfMySubmorphs();
+    return this.rejiggerJustMyLayout(availableSpace);
+  }, {category: ['layout']});
 
   add.method('hasMinimumExtentActuallyChanged', function () {
     var old_cachedMinimumExtent = this._cachedMinimumExtent;
@@ -84,6 +98,12 @@ thisModule.addSlots(Morph.prototype, function(add) {
     return true;
   }, {category: ['layout']});
 
+  add.method('possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged', function () {
+    // can be overridden by morphs that want to trigger a higher-level rejiggering;
+    // return true to tell the caller not to bother with the lower-level rejiggering
+    return false;
+  }, {category: ['layout']});
+
   add.method('forceLayoutRejiggering', function (isMinimumExtentKnownToHaveChanged) {
     this._layoutIsStillValid = false;
 
@@ -94,7 +114,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return;
     }
     if (doesMyOwnerNeedToKnow) { 
-      var layoutRejiggeringHasBeenTriggeredHigherUp = o.minimumExtentMayHaveChanged();
+      var layoutRejiggeringHasBeenTriggeredHigherUp = o.possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged();
       if (layoutRejiggeringHasBeenTriggeredHigherUp) { return; }
     }
     if (this._spaceUsedLastTime) {
