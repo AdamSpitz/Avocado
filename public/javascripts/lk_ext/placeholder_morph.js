@@ -65,6 +65,10 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
   add.method('originalMorph', function () { return this._originalMorph; }, {category: ['accessing']});
   
   add.method('relatedMorphs', function () { return [this.originalMorph()]; });
+  
+  add.method('toString', function () {
+    return "placeholder for " + this._originalMorph;
+  }, {category: ['printing']});
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);

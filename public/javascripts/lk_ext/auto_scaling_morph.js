@@ -83,6 +83,12 @@ thisModule.addSlots(avocado.AutoScalingMorph.prototype, function(add) {
     // aaa - duplicated from TableMorph
     this.potentialContentMorphs = contentFunction;
   }, {category: ['updating']});
+
+  add.method('doIWantToLeaveAPlaceholderWhenRemoving', function (m) {
+    // aaa - probably need to actually determine whether the submorph is part of
+    // this morph's potential content (rather than just some transient thing)
+    return true;
+  }, {category: ['placeholders']});
   
   add.method('refreshContent', function () {
     var contentMorphs = this.recalculateActualContentMorphs();

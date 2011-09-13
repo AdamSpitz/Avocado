@@ -415,7 +415,10 @@ Morph.addMethods({
 		}
 		
 		// cleanup, move to ?
+		// Gotta make sure to leave the replaced morph at the right scale, so that if we then add it back to the world it'll look right. -- Adam
+		var mScale = m.overallScale(this.world());
 		m.owner = null;
+		m.setScale(mScale);
 		m.setHasKeyboardFocus(false);
 		this.layoutManager.removeMorph(this, m);
 

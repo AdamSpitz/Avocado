@@ -373,8 +373,14 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   add.method('replaceMorph', function (m, newSubmorph) {
     if (!this._tableContent) { throw new Error("How do I do replaceMorph if there's no _tableContent?"); }
     
+		// Gotta make sure to leave the replaced morph at the right scale, so that if we then add it back to the world it'll look right. -- Adam
+		var mScale = m.overallScale(this.world());
+		
     this._tableContent.replaceElement(m, newSubmorph);
     this.setSubmorphsFromTableContent();
+    
+		m.setScale(mScale);
+		
     this.forceLayoutRejiggering();
   }, {category: ['adding and removing']});
 
