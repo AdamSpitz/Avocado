@@ -1,7 +1,5 @@
 avocado.transporter.module.create('core/testFramework', function(requires) {
 
-requires("core/history");
-
 }, function(thisModule) {
 
 
@@ -14,20 +12,44 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.testCase, function(add) {
 
-  add.data('shouldRun', true);
-
-  add.method('initialize', function (testResult, optTestSelector) {
-		this.result = testResult || Object.newChildOf(this.resultProto);
+  add.method('initialize', function (optTestSelector) {
 		this.currentSelector = optTestSelector;
 		this.statusUpdateFunc = null;
+		this.clearResults();
 	});
 
   add.method('log', function (aString) {
     console.log(aString);
-	});
+  }, {category: ['logging']});
 
-  add.method('id', function () { return this.name() + '>>' + this.currentSelector; });
+  add.method('name', function () {
+    return this.currentSelector || this.wholeTestCaseName();
+  }, {category: ['accessing']});
 
+  add.method('wholeTestCaseName', function () {
+    return reflect(this).name();
+  }, {category: ['accessing']});
+
+  add.method('id', function () {
+    return this.wholeTestCaseName() + '>>' + this.currentSelector;
+  }, {category: ['accessing']});
+
+  add.method('toString', function ($super) {
+    return this.name();
+  }, {category: ['printing']});
+
+  add.method('inspect', function () {
+    return this.name();
+  }, {category: ['printing']});
+
+  add.method('immediateContents', function () {
+    if (this.result().hasStarted() && this.result().anyFailed()) {
+      return [this.result()];
+    } else {
+      return [];
+    }
+  }, {category: ['contents']});
+  
   add.method('setUp', function () {});
 
   add.method('tearDown', function () {});
@@ -36,29 +58,54 @@ thisModule.addSlots(avocado.testCase, function(add) {
     var e = new Error(msg);
     e.isAssertion = true;
     return e;
-  });
-  
+  }, {category: ['assertions']});
+
   add.method('assert', function (bool, msg) {
     if (bool) { return; }
     msg = " assert failed " + (msg ? '(' + msg + ')' : '');
 		this.show(this.id() + msg);
     throw this.createAssertionFailureException(msg);
-  });
+  }, {category: ['assertions']});
 
   add.method('assertEqual', function (firstValue, secondValue, msg) {
     if (! this.areEqual(firstValue, secondValue)) {
       throw this.createAssertionFailureException((msg || "") + " (" + firstValue + " != " + secondValue + ") ");
     }
-  });
+  }, {category: ['assertions']});
 
   add.method('assertIdentity', function (firstValue, secondValue, msg) {
 		if (firstValue === secondValue) { return; }
 		this.assert(false, (msg ? msg : '') + ' (' + firstValue +' !== ' + secondValue +')');
-	});
+  }, {category: ['assertions']});
 
   add.method('assertEqualJSON', function (firstValue, secondValue, msg) {
     this.assertEqual(JSON.stringify(firstValue), JSON.stringify(secondValue), msg);
-  });
+  }, {category: ['assertions']});
+
+  add.method('areEqual', function (firstValue, secondValue) {
+    if (firstValue === secondValue) { return true; }
+    if (firstValue && firstValue.equals && firstValue.equals(secondValue)) { return true; } // changed this to check a general 'equals' method. -- Adam
+    if (firstValue == secondValue) { return true; }
+    return false;
+  }, {category: ['assertions']});
+
+  add.method('assertNotEqual', function (firstValue, secondValue, msg) {
+    if (this.areEqual(firstValue, secondValue)) {
+      throw this.createAssertionFailureException((msg || "") + " (" + firstValue + " == " + secondValue + ") ");
+    }
+  }, {category: ['assertions']});
+
+  add.method('assertThrowsException', function (func, msg) {
+    var thrown = false;
+    try {
+      func();
+    } catch (ex) {
+      thrown = true;
+    }
+    this.assert(thrown, msg); // can't put this inside the try because it works by throwing an exception;
+  }, {category: ['assertions']});
+
+  add.method('show', function (string) { this.log(string); }, {category: ['logging']});
 
   add.method('allTestSelectors', function () {
     var functionNames = [];
@@ -68,71 +115,30 @@ thisModule.addSlots(avocado.testCase, function(add) {
       }
     }
     return functionNames;
-  });
+  }, {category: ['finding test methods']});
 
-  add.method('toString', function ($super) {
-	    return $super() + "(" + this.timeToRun +")";
-	});
-
-  add.method('show', function (string) { this.log(string); });
-
-  add.method('running', function () {
-		// this.show('Running ' + this.id()); // this is annoying -- Adam
-		this.statusUpdateFunc && this.statusUpdateFunc(this, 'running');
-	});
-
-  add.method('success', function () {
-		// this.show(this.id()+ ' done', 'color: green;'); // -- also annoying -- Adam
-		this.statusUpdateFunc && this.statusUpdateFunc(this, 'success');
-	});
-
-  add.method('failure', function (error) {
-		this._errorOccured = true; 
-		var message = error.toString();
-		var file = error.sourceURL || error.fileName;
-		var line = error.line || error.lineNumber;
-		message += ' (' + file + ':' + line + ')';
-		message += ' in ' + this.id();
-		this.show(message , 'color: red;');
-		this.statusUpdateFunc && this.statusUpdateFunc(this, 'failure', message);
-	});
-
-  add.method('createTests', function () {
-    return this.allTestSelectors().collect(function(sel) {
-      return this.create(this.result, sel);
-    }, this);
-  });
-
-  add.method('name', function () {
-    return reflect(this).name();
-  });
-
-  add.method('create', function (testResult, optTestSelector) {
-    return Object.newChildOf(this, testResult, optTestSelector);
-  });
-
-  add.method('createAndRun', function (callback) {
-    var testCase = this.create();
-    testCase.runAll(function() {
-      var result = testCase.result;
-      result.testCase = testCase;
-      callback(result);
-    });
+  add.method('copyForTestSelector', function (optTestSelector) {
+    return Object.newChildOf(this, optTestSelector);
   });
 
   add.method('runTest', function (callback) {
-    if (!this.shouldRun) return;
-
-		this.running();
+    this.clearResults();
+    this._result.recordStarted();
+		var t1 = new Date().getTime();
 		try {
 			this.setUp();
 			this.runTestFunction(function() {
-  			this.result.addSuccess(this.name(), this.currentSelector); // fixed by Adam to say this.name() instead of this.constructor.type
-  			this.success();
+    		var t2 = new Date().getTime();
+  			this._result.recordFinished(null, t2 - t1);
   			callback();
+			}.bind(this), function(e) {
+    		var t2 = new Date().getTime();
+  			this._result.recordFinished(e, t2 - t1);
+  		  callback();
 			}.bind(this));
 		} catch (e) {
-			this.result.addFailure(this.name(), this.currentSelector, e); // fixed by Adam to say this.name() instead of this.constructor.type
+  		var t2 = new Date().getTime();
+			this._result.recordFinished(e, t2 - t1);
 			this.failure(e);
 		  callback();
 		} finally {
@@ -140,13 +146,13 @@ thisModule.addSlots(avocado.testCase, function(add) {
 		}
 	});
 
-  add.method('runTestFunction', function (callback) {
+  add.method('runTestFunction', function (successCallback, failureCallback) {
 		var testFn = this[this.currentSelector];
 		if (this.currentSelector.startsWith('asynchronouslyTest')) {
-		  testFn.call(this, callback);
+		  testFn.call(this, successCallback, failureCallback);
 	  } else {
 	    testFn.call(this);
-	    callback();
+	    successCallback();
 	  }
   });
 
@@ -160,80 +166,25 @@ thisModule.addSlots(avocado.testCase, function(add) {
 		}
   });
 
-  add.method('inspect', function () {
-    return this.name();
-  });
-
-  add.method('areEqual', function (firstValue, secondValue) {
-    if (firstValue === secondValue) { return true; }
-    if (firstValue && firstValue.equals && firstValue.equals(secondValue)) { return true; } // changed this to check a general 'equals' method. -- Adam
-    if (firstValue == secondValue) { return true; }
-    return false;
-  });
-
-  add.method('assertNotEqual', function (firstValue, secondValue, msg) {
-    if (this.areEqual(firstValue, secondValue)) {
-      throw this.createAssertionFailureException((msg || "") + " (" + firstValue + " == " + secondValue + ") ");
-    }
-  });
-
-  add.method('assertThrowsException', function (func, msg) {
-    var thrown = false;
-    try {
-      func();
-    } catch (ex) {
-      thrown = true;
-    }
-    this.assert(thrown, msg); // can't put this inside the try because it works by throwing an exception;
-  });
-
-  add.method('runAll', function (callback) {
-		var tests = this.createTests();
-		var totalTime = 0;
-
-    avocado.callbackWaiter.on(function(finalCallback) {
-  		tests.forEach(function(test) {
-    		var t1 = new Date().getTime();
-  			var callbackForThisTest = finalCallback();
-  			test.runTest(function() {
-      		var t2 = new Date().getTime();
-      		this.result.incrementTimeToRun(this.name(), t2 - t1);
-      		callbackForThisTest();
-  			}.bind(this));
-  		}.bind(this));
-    }.bind(this), callback, "running tests");
-
-	});
-
-  add.creator('resultProto', {}, {category: ['results']});
-
-  add.method('resultHistory', function () {
-    if (! this._resultHistory) {
-      this._resultHistory = avocado.history.create(this.name());
-    }
-    return this._resultHistory;
-  }, {category: ['results']});
-  
-  add.method('createAndRunAndShowResult', function () {
-    this.createAndRun(function(result) {
-      avocado.ui.showNextTo(this, result, this);
-    }.bind(this));
-  }, {category: ['user interface', 'commands']});
-
   add.method('createAndRunAndUpdateAppearance', function (callback) {
-    this.resultHistory().clearLatest();
     avocado.ui.justChanged(this);
-    this.createAndRun(function(result) {
-      this.resultHistory().addLatest(result);
+		this.runTest(function() {
       avocado.ui.justChanged(this);
-      if (callback) { callback(result); }
-    }.bind(this));
+  		if (callback) { callback(this._result); }
+		}.bind(this));
   }, {category: ['user interface', 'commands']});
-    
-  add.method('anyFailedOrNull', function () {
-    var r = this.resultHistory().latest();
-    return r ? r.anyFailed() : null;
-  }, {category: ['results']});
+
+  add.creator('singleResult', {}, {category: ['results']});
+  
+  add.creator('compositeResult', {}, {category: ['results']});
+
+  add.method('clearResults', function () {
+		this._result = Object.newChildOf(avocado.testCase.singleResult, this);
+  }, {category: ['running']});
+
+  add.method('result', function () {
+    return this._result;
+  }, {category: ['accessing']});
 
   add.method('getTestCaseObject', function (evt) {
     avocado.ui.grab(reflect(this), evt);
@@ -241,7 +192,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
-    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: function(evt) { this.createAndRunAndUpdateAppearance(); }});
+    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: function(evt) { this.runAndTimeTest(); }});
     cmdList.addLine();
     cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject});
     return cmdList;
@@ -251,31 +202,165 @@ thisModule.addSlots(avocado.testCase, function(add) {
     cmdList.addLine();
 
     cmdList.addItem(["get tests", function(evt) {
-      avocado.ui.grab(this.suite, evt);
+      avocado.ui.grab(this.suite.forTestingAvocado(), evt);
     }.bind(this)]);
   }, {category: ['user interface', 'commands']});
-  
+
   add.creator('suite', {}, {category: ['suites']});
 
 });
 
 
-thisModule.addSlots(avocado.testCase.suite, function(add) {
+thisModule.addSlots(avocado.testCase.singleResult, function(add) {
   
-  add.method('toString', function () { return "Avocado tests"; });
-  
-  add.method('inspect', function () { return this.toString(); });
+  add.method('initialize', function (test) {
+		this._test = test;
+	}, {category: ['creating']});
 
-  add.method('immediateContents', function () {
-    return this.testCasePrototypes();
+  add.method('result', function () {
+    // for setting the morph's fill
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('hasStarted', function () {
+    return this._hasStarted;
+  }, {category: ['accessing']});
+
+  add.method('hasFinished', function () {
+    return this._hasFinished;
+  }, {category: ['accessing']});
+
+  add.method('allPassed', function () {
+    return this.hasFinished() && ! this._error;
+  }, {category: ['accessing']});
+
+  add.method('anyFailed', function () {
+    return this.hasFinished() && ! this.allPassed();
+  }, {category: ['accessing']});
+
+  add.method('timeToRun', function () {
+    return this._timeToRun;
+  }, {category: ['accessing']});
+
+  add.method('recordStarted', function () {
+    this._hasStarted = true;
+  }, {category: ['accessing']});
+
+  add.method('recordFinished', function (error, time) {
+    this._error = error;
+    this._timeToRun = time;
+    this._hasFinished = true;
+  }, {category: ['accessing']});
+  
+  add.method('toString', function () {
+    if (! this.hasStarted()) {
+      return "";
+    } else if (! this.hasFinished()) {
+      return "running...";
+    } else if (this.allPassed()) {
+      return "passed";
+    } else {
+      var s = ["failed "];
+      if (this._error.sourceURL !== undefined) {
+        s.push("(", this.getFileNameFromError(this._error));
+        if (this._error.line !== undefined) {
+          s.push(":", this._error.line);
+        }
+        s.push("): ");
+      }
+      s.push(typeof(this._error.message) !== 'undefined' ? this._error.message : this._error);
+      return s.join("");
+    }
+  }, {category: ['printing']});
+
+  add.method('getFileNameFromError', function (err) {
+    if (!err.sourceURL) { return ""; }
+    var path = err.sourceURL.split("/");
+    return path[path.length - 1].split("?")[0];
+	});
+
+});
+
+
+thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
+
+  add.method('initialize', function (test) {
+		this._test = test;
+	}, {category: ['creating']});
+
+  add.method('timeToRun', function () {
+    var total = 0;
+    this._test.subtests().forEach(function(subtest) {
+      var r = subtest.result();
+      total += (r && r.hasFinished() ? r.timeToRun() : 0);
+    });
+    return total;
+	}, {category: ['accessing']});
+	
+  add.method('hasFinished', function () {
+    return this._test.subtests().all(function(t) { return t.result() && t.result().hasFinished(); });
+  });
+	
+  add.method('allPassed', function () {
+    return this._test.subtests().all(function(t) { return t.result() && t.result().allPassed(); });
   });
 
+  add.method('anyFailed', function () {
+    return this._test.subtests().any(function(t) { return t.result() && t.result().anyFailed(); });
+  });
+  
+});
+
+
+thisModule.addSlots(avocado.testCase.suite, function(add) {
+  
+  add.method('create', function () {
+    var s = Object.create(this);
+    s.initialize.apply(s, arguments);
+    return s;
+  }, {category: ['creating']});
+  
+  add.method('createForTestCasePrototypes', function (testCasePrototypes, name) {
+    return this.create(testCasePrototypes.map(function(t) { return avocado.testCase.suite.createForAppropriatelyPrefixedMethodsOf(t); }), name);
+  }, {category: ['creating']});
+  
+  add.method('createForAppropriatelyPrefixedMethodsOf', function (testCasePrototype) {
+    var testCases = testCasePrototype.allTestSelectors().map(function(sel) { return testCasePrototype.copyForTestSelector(sel); });
+    return this.create(testCases, testCasePrototype.wholeTestCaseName());
+  }, {category: ['creating']});
+  
+  add.method('initialize', function (subtests, name) {
+    this._subtests = subtests;
+    this._name = name || "some tests";
+    this._result = Object.newChildOf(avocado.testCase.compositeResult, this);
+  }, {category: ['creating']});
+  
+  add.method('subtests', function () { return this._subtests; }, {category: ['accessing']});
+
+  add.method('result', function () { return this._result; }, {category: ['accessing']});
+  
+  add.method('name', function () { return this._name; }, {category: ['accessing']});
+
+  add.method('toString', function () { return this.name(); }, {category: ['printing']});
+
+  add.method('inspect', function () { return this.toString(); }, {category: ['printing']});
+
+  add.method('immediateContents', function () {
+    return this._subtests;
+  }, {category: ['contents']});
+  
   add.method('requiresContentsSummary', function () {
     return false;
   }, {category: ['user interface']});
+  
+  add.data('_forTestingAvocado', null, {category: ['Avocado tests'], initializeTo: 'null'});
 
-  add.method('testCasePrototypes', function () {
+  add.method('forTestingAvocado', function () {
     // aaa - This should be replaced with a more general mechanism for finding tests.
+    return this._forTestingAvocado || (this._forTestingAvocado = this.createForTestCasePrototypes(this.testCasePrototypesForTestingAvocado(), "Avocado tests"));
+  }, {category: ['Avocado tests']});
+
+  add.method('testCasePrototypesForTestingAvocado', function () {
     return [
       avocado.dictionary.tests,
       avocado.set.tests,
@@ -300,17 +385,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
       avocado.remoteMirror.tests,
       avocado.couch.db.tests
     ];
-  });
-    
-  add.method('anyFailedOrNull', function () {
-    var r = false;
-    this.immediateContents().each(function(t) {
-      var b = t.anyFailedOrNull();
-      if (b === null) { r = null; throw $break; }
-      if (b === true) { r = true; throw $break; }
-    });
-    return r;
-  }, {category: ['results']});
+  }, {category: ['Avocado tests']});
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
@@ -319,149 +394,36 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     }});
     return cmdList;
   }, {category: ['user interface', 'commands']});
-  
+
   add.method('dragAndDropCommands', function () {
     var cmdList = avocado.command.list.create(this);
     // aaa - allow adding and removing from the list of tests?
     return cmdList;
   }, {category: ['user interface', 'drag and drop']});
 
+  add.method('clearResults', function () {
+    this._subtests.forEach(function(t) { t.clearResults(); });
+  }, {category: ['running']});
+
   add.method('createAndRunAndUpdateAppearance', function (callback) {
-    this.immediateContents().each(function(t) { t.resultHistory().clearLatest(); });
+    var thisSuite = this;
+    
+    this.clearResults();
     avocado.ui.justChanged(this);
     
     avocado.callbackWaiter.on(function(finalCallback) {
-      this.immediateContents().each(function(t) {
+      thisSuite.immediateContents().each(function(t) {
         var callbackForThisOne = finalCallback();
         t.createAndRunAndUpdateAppearance(function() {
-          avocado.ui.justChanged(this);
+          avocado.ui.justChanged(thisSuite);
           callbackForThisOne();
-        }.bind(this));
-      }.bind(this));
-    }.bind(this), function() {
-      avocado.ui.justChanged(this);
+        });
+      });
+    }, function() {
+      avocado.ui.justChanged(thisSuite);
       if (callback) { callback(); }
-    }.bind(this), "running test suite");
+    }, "running test suite");
   }, {category: ['running']});
-  
-});
-
-
-thisModule.addSlots(avocado.testCase.resultProto, function(add) {
-
-  add.method('initialize', function () {
-		this.failed = [];
-		this.succeeded = [];
-		this.timeToRun = {};
-	});
-
-  add.method('incrementTimeToRun', function (testCaseName, time) {
-	    return this.timeToRun[testCaseName] = (this.timeToRun[testCaseName] || 0) + time;
-	});
-
-  add.method('setTimeToRun', function (testCaseName, time) {
-	    return this.timeToRun[testCaseName] = time;
-	});
-
-  add.method('getTimeToRun', function (testCaseName) {
-	    return this.timeToRun[testCaseName];
-	});
-
-  add.method('addSuccess', function (className, selector) {
-		this.succeeded.push({
-				classname: className,
-				selector: selector});
-	});
-
-  add.method('addFailure', function (className, selector, error) {
-	  // Better error message than the standard LK one.
-	  var failure = {
-				classname: className,
-				selector: selector,
-				err: error
-		};
-		failure.toString = this.failureDescription.bind(this, failure);
-		this.failed.push(failure);
-  });
-
-  add.method('failureDescription', function (failure) {
-    var s = avocado.stringBuffer.create(failure.selector).append(" failed ");
-    if (failure.err.sourceURL !== undefined) {
-      s.append("(").append(this.getFileNameFromError(failure.err));
-      if (failure.err.line !== undefined) {
-        s.append(":").append(failure.err.line);
-      }
-      s.append("): ");
-    }
-    s.append(typeof(failure.err.message) !== 'undefined' ? failure.err.message : failure.err);
-    return s.toString();
-  });
-
-  add.method('runs', function () {
-		if (!this.failed) 
-			return 0; 
-		return this.failed.length + this.succeeded.length;
-	});
-
-  add.method('toString', function () {
-    return this.inspect();
-	});
-
-  add.method('getFileNameFromError', function (err) {
-    if (!err.sourceURL) { return ""; }
-    var path = err.sourceURL.split("/");
-    return path[path.length - 1].split("?")[0];
-	});
-
-  add.method('failureList', function () {
-		var result = this.failed.collect(function(ea) {
-			return ea.classname + '.' + ea.selector + '\n  -->' + ea.err.constructor.name + ":" + ea.err.message  +
-	            ' in ' + this.getFileNameFromError(ea.err) + 
-	            (ea.err.line ? ' ( Line '+ ea.err.line + ')' : "");
-		}, this);
-		return result;
-	});
-
-  add.method('successList', function () {
-		return this.succeeded.collect(function(ea) { return ea.classname + '.' + ea.selector });
-	});
-
-  add.method('totalTimeToRun', function () {
-    var total = 0;
-    for (var name in this.timeToRun) {
-      if (this.timeToRun.hasOwnProperty(name)) {
-        var t = this.timeToRun[name];
-        if (typeof(t) === 'number') {
-          total += t;
-        }
-      }
-    }
-    return total;
-  });
-
-  add.method('inspect', function () {
-    return this.testCase.name() + "(" + this.totalTimeToRun() + " ms)";
-  });
-
-  add.method('allPassed', function () {
-    return this.failed.length === 0;
-  });
-
-  add.method('anyFailed', function () {
-    return ! this.allPassed();
-  });
-
-  add.method('getErrorObjects', function (evt) {
-    this.failed.each(function(f) {
-      avocado.ui.grab(reflect(f.err), evt);
-    });
-  }, {category: ['user interface', 'commands']});
-
-  add.method('commands', function () {
-    var cmdList = avocado.command.list.create();
-    cmdList.addItem({label: 'get error objects', go: this.getErrorObjects.bind(this), isApplicable: this.anyFailed.bind(this)});
-    return cmdList;
-  }, {category: ['user interface', 'commands']});
 
 });
 

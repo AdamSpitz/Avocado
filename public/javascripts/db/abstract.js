@@ -131,7 +131,7 @@ thisModule.addSlots(avocado.remoteObjectReference.table, function(add) {
         throw new Error("No realm named " + restOfID);
       }
     } else if (realmType === "couch") {
-      avocado.couch.db.findDBAtURL(restOfID, callback);
+      avocado.couch.db.findDBAtURL(restOfID, callback, function(err) { throw err; });
       return;
     }
     throw new Error("What kind of realm is this? " + realmID);

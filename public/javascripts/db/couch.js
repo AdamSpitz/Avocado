@@ -54,10 +54,10 @@ thisModule.addSlots(avocado.couch.dbServer, function(add) {
     return paramsMir.normalSlots().map(function(s) { return encodeURIComponent(s.name()) + "=" + encodeURIComponent(s.contents().reflectee()); }).toArray().join("&");
   }, {category: ['requests']});
 
-  add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback) {
+  add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback, errback) {
     // See http://wiki.apache.org/couchdb/Complete_HTTP_API_Reference for a list of possible requests.
     
-    if (typeof(callback) !== 'function') { throw new Error("Need to pass in a callback to doRequest."); }
+    if (typeof(callback) !== 'function' || typeof(errback) !== 'function') { throw new Error("Need to pass in a callback and errback to doRequest."); }
     
     var fullURL = this._baseURL + url;
     var paramsString = this.paramsStringFrom(paramsStringOrObject);
@@ -79,8 +79,12 @@ thisModule.addSlots(avocado.couch.dbServer, function(add) {
     req.onreadystatechange = function() {
       if (req.readyState === 4) {
         //console.log("Received response from CouchDB: " + req.responseText);
-        obj = JSON.parse(req.responseText);
-        callback(obj);
+        try {
+          obj = JSON.parse(req.responseText);
+          callback(obj);
+        } catch (e) {
+          errback(e);
+        }
       }
     };
     req.send(body);
@@ -99,12 +103,12 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     return baseURL + "cgi/proxy.cgi";
   });
 
-  add.method('findDBAtURL', function (url, callback) {
+  add.method('findDBAtURL', function (url, callback, errback) {
     var i = url.lastIndexOf("/");
-    if (i < 0 || i === url.length - 1) { throw new Error("A CouchDB URL should be of the form http://server:5984/db"); }
+    if (i < 0 || i === url.length - 1) { errback(new Error("A CouchDB URL should be of the form http://server:5984/db")); return; }
     var server = avocado.couch.dbServer.atURL(url.substr(0, i), this.proxyURL());
     var db = server.dbNamed(url.substr(i + 1));
-    db.ensureExists(callback);
+    db.ensureExists(callback, errback);
   }, {category: ['creating']});
 
   add.creator('prompter', {}, {category: ['user interface']});
@@ -132,11 +136,11 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     return ["(", this._server.storeString(), ").dbNamed(", this._name.inspect(), ")"].join("");
   }, {category: ['transporting']});
 
-  add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback) {
-    this._server.doRequest(httpMethod, "/" + this.name() + url, paramsStringOrObject, body, callback);
+  add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback, errback) {
+    this._server.doRequest(httpMethod, "/" + this.name() + url, paramsStringOrObject, body, callback, errback);
   }, {category: ['requests']});
 
-  add.method('ensureExists', function (callback) {
+  add.method('ensureExists', function (callback, errback) {
     if (this._isKnownToExist) { callback(this); return; }
     
     this.doRequest("PUT", "", "", "", function (responseObj) {
@@ -144,17 +148,17 @@ thisModule.addSlots(avocado.couch.db, function(add) {
         this._isKnownToExist = true;
         callback(this);
       } else {
-        this.error(responseObj);
+        errback(responseObj);
       }
-    }.bind(this));
+    }.bind(this), errback);
   }, {category: ['creating']});
 
-  add.method('ensureDoesNotExist', function (callback) {
+  add.method('ensureDoesNotExist', function (callback, errback) {
     this.doRequest("DELETE", "", "", "", function (responseObj) {
       delete this._isKnownToExist;
       this._refsByID = {};
       callback(this);
-    }.bind(this));
+    }.bind(this), errback);
   }, {category: ['creating']});
 
   add.method('error', function (responseObj) {
@@ -184,15 +188,15 @@ thisModule.addSlots(avocado.couch.db, function(add) {
     return ref;
   }, {category: ['documents']});
 
-  add.method('addDocument', function (obj, callback) {
+  add.method('addDocument', function (obj, callback, errback) {
     var ref = avocado.remoteObjectReference.table.refForObject(obj);
 
     var alreadyInDB = ref.realm();
     if (alreadyInDB) {
       if (alreadyInDB === this) {
-        this.putDocumentAt(ref.id(), obj, callback);
+        this.putDocumentAt(ref.id(), obj, callback, errback);
       } else {
-        throw new Error("That object is already in a different DB: " + alreadyInDB);
+        errback(new Error("That object is already in a different DB: " + alreadyInDB));
       }
     } else {
       var json = this.convertRealObjectToJSON(obj);
@@ -202,20 +206,20 @@ thisModule.addSlots(avocado.couch.db, function(add) {
           responseObj.ref = ref;
           callback(responseObj);
         } else {
-          this.error(responseObj);
+          errback(responseObj);
         }
-      }.bind(this));
+      }.bind(this), errback);
     }
   }, {category: ['documents']});
 
-  add.method('putDocumentAt', function (id, obj, callback) {
+  add.method('putDocumentAt', function (id, obj, callback, errback) {
     var ref = avocado.remoteObjectReference.table.refForObject(obj);
     
     var alreadyInDB = ref.realm();
     if (alreadyInDB && alreadyInDB !== this) {
-      throw new Error("That object is already in a different DB: " + alreadyInDB);
+      errback(new Error("That object is already in a different DB: " + alreadyInDB));
     } else if (alreadyInDB && ref.id() !== id) {
-      throw new Error("That object is already in this DB under a different ID: " + ref.id());
+      errback(new Error("That object is already in this DB under a different ID: " + ref.id()));
     } else {
       var extraSlots = ref._rev ? { _rev: ref._rev } : {};
       var json = this.convertRealObjectToJSON(obj, extraSlots);
@@ -225,19 +229,19 @@ thisModule.addSlots(avocado.couch.db, function(add) {
           responseObj.ref = ref;
           callback(responseObj);
         } else {
-          this.error(responseObj);
+          errback(responseObj);
         }
-      }.bind(this));
+      }.bind(this), errback);
     }
   }, {category: ['documents']});
 
-  add.method('deleteDocumentAt', function (id, callback) {
+  add.method('deleteDocumentAt', function (id, callback, errback) {
     var ref = this.existingRemoteRefForID(id);
     if (! ref) { callback(); return; } // aaa - this is probably not the right thing to do, but right now I just want to say "delete the object if it's there, otherwise don't worry about it"
     var rev = ref._rev;
     this.doRequest("DELETE", "/" + id, "rev=" + rev, null, function(responseObj) {
       callback(responseObj);
-    }.bind(this));
+    }.bind(this), errback);
   }, {category: ['documents']});
 
   add.method('getDocument', function (id, callback, errback) {
@@ -247,17 +251,11 @@ thisModule.addSlots(avocado.couch.db, function(add) {
         var errorObj;
         if (typeof(responseObj.error) !== 'undefined') {
           errorObj = responseObj;
-          errorMessage = "Error getting document: " + responseObj.error + ", " + responseObj.reason;
         } else {
           errorObj = { error: "The document that came back from the DB has a different ID from the one we asked for.", reason: "unknown" };
-          errorMessage = "Why does the document that came back from the DB have a different ID than the one we asked for?";
         }
         
-        if (errback) {
-          errback(errorObj);
-        } else {
-          throw new Error(errorMessage);
-        }
+        errback(errorObj);
       } else {
         var ref = this.updateRealObjectFromDumbDataObject(responseObj);
         if (callback) { callback(ref.object(), ref.id(), ref); }
@@ -372,6 +370,8 @@ thisModule.addSlots(avocado.couch.db, function(add) {
       this.addDocument(mir.reflectee(), function(responseObj) {
         var ref = responseObj.ref;
         // anything to do here?
+      }, function(err) {
+        throw err; // aaa or display it in a better way
       });
     }).setArgumentSpecs([avocado.command.argumentSpec.create('mir').onlyAccepts(function(o) {
       return o && typeof(o.reflectee) === 'function' && o.reflectee();
@@ -420,7 +420,7 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
       design.put(function(responseObj) {
         this.setContainerPrototypes([relationship.containerFor({}, design)]);
         if (callback) { callback(); }
-      }.bind(this));
+      }.bind(this), function(err) { throw err; });
     }.bind(this));
   }, {category: ['updating']})
   
@@ -439,7 +439,9 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
             avocado.ui.justChanged(this, evt);
             this.morph().contentsPanel().cleanUp(); // aaa hack, tangles up the model and morph
           }.bind(this));
-        }.bind(this));
+        }.bind(this), function(err) {
+          console.error("Error setting the DB design: " + err.error + ", reason: " + err.reason);
+        });
       }.bind(this), function(err) {
         console.error("Error getting the DB design: " + err.error + ", reason: " + err.reason);
       }.bind(this));
@@ -469,8 +471,8 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
 
   add.method('id', function () { return this.rawDoc()._id; }, {category: ['accessing']});
 
-  add.method('remove', function (callback) {
-    this._db.deleteDocumentAt(this.id(), callback);
+  add.method('remove', function (callback, errback) {
+    this._db.deleteDocumentAt(this.id(), callback, errback);
   }, {category: ['adding and removing']});
 
   add.method('get', function (callback, errback) {
@@ -487,16 +489,16 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
     }.bind(this));
   }, {category: ['views']});
 
-  add.method('put', function (callback) {
+  add.method('put', function (callback, errback) {
     this._db.putDocumentAt(this.id(), this._rawDoc, function(responseObj) {
       this._ref = responseObj.ref;
       this._rawDoc = responseObj.ref.object();
       if (callback) { callback(responseObj); }
-    });
+    }, errback);
   }, {category: ['adding and removing']});
 
-  add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback) {
-    this._db.doRequest(httpMethod, "/" + this.id() + url, paramsStringOrObject, body, callback);
+  add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback, errback) {
+    this._db.doRequest(httpMethod, "/" + this.id() + url, paramsStringOrObject, body, callback, errback);
   }, {category: ['requests']});
 
   add.method('viewNamed', function (viewName) {
@@ -553,7 +555,7 @@ thisModule.addSlots(avocado.couch.db.query, function(add) {
 
   add.method('options', function () { return this._options; }, {category: ['accessing']});
 
-  add.method('getResults', function (callback) {
+  add.method('getResults', function (callback, errback) {
     // aaa - implement other kinds of queries, not just "get all results"
     var db = this.view().design().db();
     var viewName = this.view().name();
@@ -561,10 +563,10 @@ thisModule.addSlots(avocado.couch.db.query, function(add) {
       if (responseObj.rows) {
         responseObj.refs = responseObj.rows.map(function(row) { return db.updateRealObjectFromDumbDataObject(row.value); });
       } else {
-        // Should we throw an exception here? Or have a separate error callback? Or is passing the responseObj into the normal callback good enough?
+        errback(responseObj);
       }
       callback(responseObj);
-    }.bind(this));
+    }.bind(this), errback);
   }, {category: ['views']});
 
 });
@@ -748,7 +750,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
         }
       }
       if (callback) { callback(this._contents); }
-    }.bind(this));
+    }.bind(this), function(err) { throw err; });
     return this;
   }, {category: ['updating']});
   
@@ -796,7 +798,9 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
         avocado.ui.justChanged(this, evt);
         this.morph().contentsPanel().cleanUp(); // aaa hack, tangles up the model and morph
         console.log("Successfully added " + mir.name() + " to " + this);
-      }.bind(this));
+      }.bind(this), function(err) {
+        throw err; // aaa or display it in a better way
+      });
     }).setArgumentSpecs([avocado.command.argumentSpec.create('mir').onlyAccepts(function(mir) {
       if (!mir) { return false; }
       if (typeof(mir.reflectee) !== 'function') { return false; }
@@ -807,14 +811,14 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
     return cmdList;
   }, {category: ['commands']});
   
-  add.method('addObject', function (elementObj, callback) {
+  add.method('addObject', function (elementObj, callback, errback) {
     this.db().addDocument(this.containerObj(), function(responseObj) { // aaa - figure out a better way to make sure the container obj is in the DB
       this._containerRef = responseObj.ref;
       elementObj[this._relationship.nameOfAttributePointingToContainer()] = this.containerObj();
       this.db().addDocument(elementObj, function() {
         this.updateContents(callback);
-      }.bind(this));
-    }.bind(this));
+      }.bind(this), errback);
+    }.bind(this), errback);
   }, {category: ['adding']});
   
   add.method('storeString', function () {
@@ -829,7 +833,7 @@ thisModule.addSlots(avocado.couch.db.prompter, function(add) {
   add.method('prompt', function (caption, context, evt, callback) {
     WorldMorph.current().prompt('CouchDB URL?', function(url) {
       if (url) {
-        avocado.couch.db.findDBAtURL(url, callback);
+        avocado.couch.db.findDBAtURL(url, callback, function(err) { throw err; });
       }
     }, 'http://localhost:5984/dbname');
   }, {category: ['prompting']});
@@ -843,7 +847,7 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
 
   add.creator('bargle', {});
 
-  add.method('asynchronouslyTestBasicStuff', function (callIfSuccessful) {
+  add.method('asynchronouslyTestBasicStuff', function (callback, errback) {
     var server = avocado.couch.dbServer.atURL('http://localhost:5984', avocado.couch.db.proxyURL());
     server.doRequest("GET", "/", "", null, function (responseObj) {
       this.assertEqual(responseObj.couchdb, 'Welcome');
@@ -868,18 +872,18 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
                   this.assertEqual("onetwothree", obj2.toString());
                   avocado.remoteObjectReference.table.findObjectReferredToAs('{"realm": ' + db2.textualReference().inspect(true) + ', "id": ' + id2.inspect(true) + '}', function(obj2Again) {
                     this.assertEqual("onetwothree", obj2Again.toString());
-                    callIfSuccessful();
-                  }.bind(this));
-                }.bind(this));
-              }.bind(this));
-            }.bind(this));
-          }.bind(this));
-        }.bind(this));
-      }.bind(this));
-    }.bind(this));
+                    callback();
+                  }.bind(this), errback);
+                }.bind(this), errback);
+              }.bind(this), errback);
+            }.bind(this), errback);
+          }.bind(this), errback);
+        }.bind(this), errback);
+      }.bind(this), errback);
+    }.bind(this), errback);
   });
 
-  add.method('asynchronouslyTestQuerying', function (callIfSuccessful) {
+  add.method('asynchronouslyTestQuerying', function (callback, errback) {
     var server = avocado.couch.dbServer.atURL('http://localhost:5984', avocado.couch.db.proxyURL());
     var db = server.dbNamed('avocado_querying_tests');
     db.ensureDoesNotExist(function () {
@@ -930,23 +934,23 @@ thisModule.addSlots(avocado.couch.db.tests, function(add) {
                                   this.assertEqual(argle2,   argle2BarglesResults[0].object());
                                   this.assertEqual(bargle21, argle2BarglesResults[1].object());
                                   this.assertEqual(bargle22, argle2BarglesResults[2].object());
-                                  callIfSuccessful();
-                                }.bind(this));
-                              }.bind(this));
-                            }.bind(this));
-                          }.bind(this));
-                        }.bind(this));
-                      }.bind(this));
-                    }.bind(this));
-                  }.bind(this));
+                                  callback();
+                                }.bind(this), errback);
+                              }.bind(this), errback);
+                            }.bind(this), errback);
+                          }.bind(this), errback);
+                        }.bind(this), errback);
+                      }.bind(this), errback);
+                    }.bind(this), errback);
+                  }.bind(this)), errback;
 
-                }.bind(this));
-              }.bind(this));
-            }.bind(this));
-          }.bind(this));
-        }.bind(this));
-      }.bind(this));
-    }.bind(this));
+                }.bind(this), errback);
+              }.bind(this), errback);
+            }.bind(this), errback);
+          }.bind(this), errback);
+        }.bind(this), errback);
+      }.bind(this), errback);
+    }.bind(this), errback);
   });
 
 });
