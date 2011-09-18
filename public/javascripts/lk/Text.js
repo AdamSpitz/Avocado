@@ -867,7 +867,7 @@ Object.subclass('lively.Text.ChunkStream', {
 
     documentation: "Parses a string with style into chunks of text or white space",
     
-    whiteSpaceDict: {' ': true, '\t': true, '\r': true, '\n': true},
+    whiteSpaceDict: {/* aaa slow? ' ': true, '\t': true, */ '\r': true, '\n': true},
 
     initialize: function(str, style, stringIndex) {
 		this.str = str;
@@ -2838,7 +2838,11 @@ TextMorph.addMethods({
 		var sp = this.enclosingScrollPane();
 		if (! sp) return;
 		var selRect = this.getCharBounds(this.selectionRange[this.hasNullSelection() ? 0 : 1]);
-		sp.scrollRectIntoView(selRect); 
+
+    // added the scaling code -- Adam
+    var scale = this.getScale();
+    var scaledSelRect = new Rectangle(selRect.x * scale, selRect.y * scale, selRect.width * scale, selRect.height * scale);
+    sp.scrollRectIntoView(scaledSelRect);
 	},
 	
 	enclosingScrollPane: function() { 

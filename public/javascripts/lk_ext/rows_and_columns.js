@@ -139,10 +139,14 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   }, {category: ['layout']});
 
   add.method('minimumExtent', function () {
+    return this.adjustForRigidityAndScale(this.internalMinimumExtent());
+  }, {category: ['layout']});
+
+  add.method('internalMinimumExtent', function () {
     if (! this._cachedMinimumExtent) {
       this._cachedMinimumExtent = this.calculateOverallMinimumExtent(this.calculateMinimumExtentsForRowsAndColumns());
     }
-    return this.adjustForRigidityAndScale(this._cachedMinimumExtent);
+    return this._cachedMinimumExtent;
   }, {category: ['layout']});
 
   add.method('adjustForRigidityAndScale', function (e) {
@@ -255,10 +259,10 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   add.method('calculateSpaceToUseOutOf', function (availableSpace, thisExtent) {
     var availableSpaceToUse = pt(null, null);
     
-    if (this.horizontalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.x =          this._cachedMinimumExtent.x;                }
-    if (this.horizontalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.x = Math.max(this._cachedMinimumExtent.x, thisExtent.x); }
-    if (this.  verticalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.y =          this._cachedMinimumExtent.y;                }
-    if (this.  verticalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.y = Math.max(this._cachedMinimumExtent.y, thisExtent.y); }
+    if (this.horizontalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.x =          this.internalMinimumExtent().x;                }
+    if (this.horizontalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.x = Math.max(this.internalMinimumExtent().x, thisExtent.x); }
+    if (this.  verticalLayoutMode === avocado.LayoutModes.ShrinkWrap) { availableSpaceToUse.y =          this.internalMinimumExtent().y;                }
+    if (this.  verticalLayoutMode === avocado.LayoutModes.Rigid     ) { availableSpaceToUse.y = Math.max(this.internalMinimumExtent().y, thisExtent.y); }
     
     var scale = this.currentOrDesiredScaleGivenExtent(availableSpaceToUse);
     if (scale !== this.getScale()) { this.setScale(scale); }
@@ -266,7 +270,7 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     if (availableSpaceToUse.x === null) { availableSpaceToUse.x = availableSpace.x / scale; }
     if (availableSpaceToUse.y === null) { availableSpaceToUse.y = availableSpace.y / scale; }
     
-    if (this._debugMyLayout) { console.log(this.inspect() + ": availableSpace: " + availableSpace + ", availableSpaceToUse: " + availableSpaceToUse + ", this.getScale(): " + this.getScale() + ", this._cachedMinimumExtent: " + this._cachedMinimumExtent + ", thisExtent: " + thisExtent); }
+    if (this._debugMyLayout) { console.log(this.inspect() + ": availableSpace: " + availableSpace + ", availableSpaceToUse: " + availableSpaceToUse + ", this.getScale(): " + this.getScale() + ", this.internalMinimumExtent(): " + this.internalMinimumExtent() + ", thisExtent: " + thisExtent); }
     return availableSpaceToUse;
   }, {category: ['layout']});
 

@@ -52,12 +52,10 @@ thisModule.addSlots(avocado.transporter, function(add) {
       
       cmdList.addItem(["browse files...", function(evt) {
         /* AAAAAAAAAAA
-        reposThatCanListFiles.forEach(function(repo) {
-          avocado.ui.grab(repo, evt);
-        });
-        */
-        
+        reposThatCanListFiles.forEach(function(repo) { avocado.ui.grab(repo, evt); });
         var fileMorph = WorldMorph.current().addMorphAt(Object.newChildOf(avocado.webdav.file, new URL("http://localhost/~adam/avocado/javascripts/reflection/slot.js")).morph(), pt(100,100));
+        */
+        var dirMorph = WorldMorph.current().addMorphAt(new FileDirectory(new URL("http://localhost/~adam/avocado/javascripts/programming_environment/")).morph(), pt(100,100));
       }]);
     }
   }, {category: ['user interface', 'commands']});

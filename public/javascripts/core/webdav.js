@@ -12,12 +12,8 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(add) {
   
-  add.method('immediateSubnodes', function () {
+  add.method('immediateContents', function () {
     return [this._rootDir || (this._rootDir = new FileDirectory(new URL(this._url)))];
-  });
-  
-  add.method('nonNodeContents', function () {
-    return [];
   });
   
 });
@@ -54,12 +50,13 @@ thisModule.addSlots(FileDirectory.prototype, function(add) {
 
   add.method('sortOrder', function () { return this.urlString().toUpperCase(); }, {category: ['sorting']});
   
-  add.method('immediateSubnodes', function () {
-    return this._immediateSubnodes || (this._immediateSubnodes = this.subdirectories().map(function(subDirURL) { return new FileDirectory(subDirURL); }));
-  }, {category: ['user interface']});
-  
-  add.method('nonNodeContents', function () {
-    return this._nonNodeContents || (this._nonNodeContents = this.files().map(function(fileURL) { return Object.newChildOf(avocado.webdav.file, fileURL); }));
+  add.method('immediateContents', function () {
+    if (! this._immediateContents) {
+      var subdirs = this.subdirectories().map(function(subDirURL) { return new FileDirectory(subDirURL); });
+      var files = this.files().map(function(fileURL) { return Object.newChildOf(avocado.webdav.file, fileURL); });
+      this._immediateContents = subdirs.concat(files);
+    }
+    return this._immediateContents;
   }, {category: ['user interface']});
   
   add.method('dragAndDropCommands', function () {
