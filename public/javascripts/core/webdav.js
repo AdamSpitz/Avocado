@@ -75,7 +75,7 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
 
   add.method('fileName', function () {
     return this._url.filename();
-  }, {category: ['printing']});
+  }, {category: ['accessing']});
 
   add.method('contentText', function () {
     if (typeof(this._cachedContents) === 'undefined' && !this._contentsReq) {
@@ -88,16 +88,14 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
           if (req.readyState === 4) {
             thisFile._cachedContents = req.responseText;
             delete thisFile._contentsReq;
-            var t1 = new Date().getTime();
-            var m = avocado.ui.worldFor(Event.createFake()).existingMorphFor(thisFile);
-            if (m) {
-              for (var i = 0; i < 1; ++i) {
-                m.refreshContentIfOnScreenOfMeAndSubmorphs();
-              }
-            }
-            // aaaaaaaaaa put this back instead: avocado.ui.justChanged(thisFile);
-            var t2 = new Date().getTime();
-            console.log("Took: " + (t2 - t1));
+
+            avocado.ui.justChanged(thisFile);
+            // If I want to time the refresh:
+            // var t1 = new Date().getTime();
+            // var m = avocado.ui.worldFor(Event.createFake()).existingMorphFor(thisFile);
+            // if (m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); }
+            // var t2 = new Date().getTime();
+            // console.log("Took: " + (t2 - t1));
           }
         };
         req.send();
@@ -106,7 +104,28 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
       }
     }
     return this._cachedContents || "";
-  }, {category: ['printing']});
+  }, {category: ['accessing']});
+
+  add.method('setContentText', function (t) {
+    this._cachedContents = t || "";
+    if (!this._contentsSetterReq) {
+      try {
+        var thisFile = this;
+        var req = new XMLHttpRequest();
+        this._contentsSetterReq = req;
+        req.open("PUT", this.urlString(), true);
+        req.onreadystatechange = function() {
+          if (req.readyState === 4) {
+            delete thisFile._contentsSetterReq;
+          }
+        };
+        req.send(this._cachedContents);
+      } catch (ex) {
+        return "cannot get contents"
+      }
+    }
+    avocado.ui.justChanged(thisFile);
+  }, {category: ['accessing']});
   
   add.method('urlString', function () {
     return this._url.toString();
