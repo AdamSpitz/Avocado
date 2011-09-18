@@ -303,7 +303,7 @@ lively.data.Wrapper.subclass('lively.Text.TextWord', {
     
     allocRawNode: function() {
 	this.rawNode = NodeFactory.create("tspan");
-	reflect(this).slotAt('rawNode').beCreator(); // aaa hack for morph-saving -- Adam
+	// aaa slow? reflect(this).slotAt('rawNode').beCreator(); // aaa hack for morph-saving -- Adam
     },
     
     compose: function(textLine, startLeftX, topLeftY, rightX) {
@@ -1437,8 +1437,8 @@ BoxMorph.subclass('TextMorph', {
 		var defaultInterline = (lively.Text.TextLine.prototype.lineHeightFactor - 1) * this.font.getSize();
 
 		this.lines = this.composeLines(0, topLeft.addXY(0, defaultInterline/2), compositionWidth, this.font);
-		this.lines.makeAllCreatorSlots(); // aaa hack for morph-saving -- Adam
-		reflect(this).slotAt('lines').beCreator(); // aaa hack for morph-saving -- Adam
+		// aaa slow?   this.lines.makeAllCreatorSlots(); // aaa hack for morph-saving -- Adam
+		// aaa slow?   reflect(this).slotAt('lines').beCreator(); // aaa hack for morph-saving -- Adam
 		for (var i = 0; i < this.lines.length; i++) this.lines[i].render(this.textContent);
 	},
 
