@@ -1419,13 +1419,24 @@ BoxMorph.subclass('TextMorph', {
 
 	// return the bounding rectangle for the index-th character in textString	 
 	getCharBounds: function(index) {
+	  // Factored out getCharBoundsWithoutCopying, need it as an optimization. -- Adam
+		// KP: note copy to avoid inadvertent modifications
+	  var bounds = this.getCharBoundsWithoutCopying(index);
+		if (bounds) {
+		  console.log("Copying bounds");
+		  return bounds.copy();
+		} else {
+		  return bounds;
+		}
+	},
+
+	getCharBoundsWithoutCopying: function(index) {
 		// tag: newText
 		this.ensureRendered();
 		if (!this.lines) return null;
 		var line = this.lineForIndex(index);
-		// KP: note copy to avoid inadvertent modifications
 		var bounds = line == null ? null : line.getBounds(index);
-		if (bounds) return bounds.copy(); 
+		if (bounds) { return bounds; }
 		return null;
 	},
 
@@ -1544,7 +1555,7 @@ BoxMorph.subclass('TextMorph', {
 	fitHeight: function() { //Returns true iff height changes
 		// Wrap text to bounds width, and set height from total text height
 		if (!this.textString || this.textString.length <= 0) return;
-		var jRect = this.getCharBounds(this.textString.length - 1);
+		var jRect = this.getCharBoundsWithoutCopying(this.textString.length - 1);
 
 		if (jRect == null) { 
 			console.log("char bounds is null"); 
@@ -1569,7 +1580,7 @@ BoxMorph.subclass('TextMorph', {
 	fitWidth: function() {
 		// Set morph bounds based on max text width and height
 
-		var jRect = this.getCharBounds(0);
+		var jRect = this.getCharBoundsWithoutCopying(0);
 		if (jRect == null) { 
 			// console.log("fitWidth failure on TextMorph.getCharBounds"); // commented out because it's very annoying -- Adam, June 2011
 			var s = this.shape;
@@ -1589,7 +1600,7 @@ BoxMorph.subclass('TextMorph', {
 		for (var i = 0; i <= iMax; i++) {
 			var c = this.textString[Math.min(i+1, iMax)];
 			if (i == iMax || c == "\n" || c == "\r") {
-				jRect = this.getCharBounds(i);
+				jRect = this.getCharBoundsWithoutCopying(i);
 				if (jRect == null) { console.log("null bounds at char " + i); return false; }
 				if (jRect.width < 100) { // line break character gets extended to comp width
 					maxX = Math.max(maxX, jRect.maxX());
@@ -1651,12 +1662,12 @@ BoxMorph.subclass('TextMorph', {
 
 		var jRect;
 		if (this.selectionRange[0] > this.textString.length - 1) { // null sel at end
-			jRect = this.getCharBounds(this.selectionRange[0]-1);
+			jRect = this.getCharBoundsWithoutCopying(this.selectionRange[0]-1);
 			if (jRect) {
 				jRect = jRect.translatedBy(pt(jRect.width,0));
 			}
 		} else {
-			jRect = this.getCharBounds(this.selectionRange[0]);
+			jRect = this.getCharBoundsWithoutCopying(this.selectionRange[0]);
 		}
 
 		if (jRect == null) {
@@ -1670,7 +1681,7 @@ BoxMorph.subclass('TextMorph', {
 		if (this.hasNullSelection()) {
 			var r2 = r1.translatedBy(pt(-1,0)); 
 		} else {
-			jRect = this.getCharBounds(this.selectionRange[1]);
+			jRect = this.getCharBoundsWithoutCopying(this.selectionRange[1]);
 			if (jRect == null)	{
 				return;
 			}
@@ -1726,12 +1737,12 @@ BoxMorph.subclass('TextMorph', {
 		// hit(x,y) returns -1 above and below box -- return 1st char or past last
 		if (charIx < 0) return py < tl.y ? 0 : len;
 
-		if (charIx == 0 && this.getCharBounds(len-1).topRight().lessPt(localP))
+		if (charIx == 0 && this.getCharBoundsWithoutCopying(len-1).topRight().lessPt(localP))
 			return len;
 
 		// It's a normal character hit
 		// People tend to click on gaps rather than character centers...
-		var cRect = this.getCharBounds(charIx);
+		var cRect = this.getCharBoundsWithoutCopying(charIx);
 		if (cRect != null && px > cRect.center().x) {
 			return Math.min(charIx + 1, len);
 		}
@@ -2709,7 +2720,7 @@ TextMorph.addMethods({
 		statusMorph.setTextColor(color || Color.black);
 		statusMorph.ignoreEvents();
 		try {
-			var bounds = this.getCharBounds(this.selectionRange[0]);
+			var bounds = this.getCharBoundsWithoutCopying(this.selectionRange[0]);
 			if (bounds) {
 				var pos = bounds.bottomLeft();
 			} else {
@@ -2837,7 +2848,7 @@ TextMorph.addMethods({
 	scrollSelectionIntoView: function() { 
 		var sp = this.enclosingScrollPane();
 		if (! sp) return;
-		var selRect = this.getCharBounds(this.selectionRange[this.hasNullSelection() ? 0 : 1]);
+		var selRect = this.getCharBoundsWithoutCopying(this.selectionRange[this.hasNullSelection() ? 0 : 1]);
 
     // added the scaling code -- Adam
     var scale = this.getScale();

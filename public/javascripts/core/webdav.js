@@ -35,7 +35,7 @@ thisModule.addSlots(FileDirectory.prototype, function(add) {
   }, {category: ['accessing']});
 
   add.method('toString', function () {
-    return this.urlString();
+    return this.url.filename();
   }, {category: ['printing']});
 
   add.method('hashCode', function () {
@@ -52,11 +52,16 @@ thisModule.addSlots(FileDirectory.prototype, function(add) {
   
   add.method('immediateContents', function () {
     if (! this._immediateContents) {
-      var subdirs = this.subdirectories().map(function(subDirURL) { return new FileDirectory(subDirURL); });
-      var files = this.files().map(function(fileURL) { return Object.newChildOf(avocado.webdav.file, fileURL); });
+      var subdirs = this.subdirectories().selectThenMap(function(subDirURL) { return ! subDirURL.filename().startsWith("."); }, function(subDirURL) { return new FileDirectory(subDirURL); });
+      var files = this.files().selectThenMap(function(fileURL) { return ! fileURL.filename().startsWith("."); }, function(fileURL) { return Object.newChildOf(avocado.webdav.file, fileURL); });
       this._immediateContents = subdirs.concat(files);
     }
     return this._immediateContents;
+  }, {category: ['user interface']});
+  
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
+    return cmdList;
   }, {category: ['user interface']});
   
   add.method('dragAndDropCommands', function () {
@@ -89,13 +94,16 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
             thisFile._cachedContents = req.responseText;
             delete thisFile._contentsReq;
 
-            avocado.ui.justChanged(thisFile);
-            // If I want to time the refresh:
-            // var t1 = new Date().getTime();
-            // var m = avocado.ui.worldFor(Event.createFake()).existingMorphFor(thisFile);
-            // if (m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); }
-            // var t2 = new Date().getTime();
-            // console.log("Took: " + (t2 - t1));
+            var aaa_wantToTimeTheRefresh = true;
+            if (! aaa_wantToTimeTheRefresh) {
+              avocado.ui.justChanged(thisFile);
+            } else {
+              var t1 = new Date().getTime();
+              var m = avocado.ui.worldFor(Event.createFake()).existingMorphFor(thisFile);
+              if (m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); }
+              var t2 = new Date().getTime();
+              console.log("Took: " + (t2 - t1));
+            }
           }
         };
         req.send();

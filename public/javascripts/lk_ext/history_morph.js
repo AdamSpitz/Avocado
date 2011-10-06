@@ -25,7 +25,7 @@ thisModule.addSlots(avocado.history, function(add) {
     return m;
   }, {category: ['user interface']});
 
-  add.creator('defaultMorphStyle', {}, {category: ['user interface']});
+  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
   
 });
 

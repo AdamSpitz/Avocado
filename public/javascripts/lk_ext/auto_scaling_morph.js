@@ -93,6 +93,7 @@ thisModule.addSlots(avocado.AutoScalingMorph.prototype, function(add) {
   add.method('refreshContent', function () {
     var contentMorphs = this.recalculateActualContentMorphs();
     this.removeMorphsNotIncludedIn(contentMorphs);
+    this.invalidateLayoutIfIDoNotContainMorphsIncludedIn(contentMorphs);
     this.refreshLayoutIfNecessary(contentMorphs);
   });
 
@@ -101,33 +102,41 @@ thisModule.addSlots(avocado.AutoScalingMorph.prototype, function(add) {
     this.submorphs.forEach(function(m) {
       if (! contentMorphs.include(m)) {
         this.removeMorph(m);
+        this.invalidateLayout();
       }
     }.bind(this));
+  });
+
+  add.method('invalidateLayoutIfIDoNotContainMorphsIncludedIn', function (contentMorphs) {
+    if (! this._hasAlreadyBeenLaidOutAtLeastOnce) { return; } // already invalidated, no point in checking
+    
+    // aaa - find a more efficient way to do this
+    contentMorphs.forEach(function(m) {
+      if (m.owner !== this) {
+        this.invalidateLayout();
+      }
+    }.bind(this));
+  });
+  
+  add.method('invalidateLayout', function () {
+    this._hasAlreadyBeenLaidOutAtLeastOnce = false;
   });
   
   add.method('refreshLayoutIfNecessary', function (contentMorphs) {
     if (!this._hasAlreadyBeenLaidOutAtLeastOnce) {
       this.cleanUp(contentMorphs);
-    } else {
-      // Don't redo the pose (because the user may have moved things around, and we don't want to wreck
-      // his arrangement), but make sure that if there are any contentMorphs that aren't actually being
-      // shown yet (perhaps because they were just added by some model-level code), they're added to the
-      // contents panel.
-      contentMorphs.forEach(function(m) {
-        if (m.owner !== this) {
-          // aaa - at least spread them out so that if multiple ones are added at the same time, they
-          // don't show up right on top of each other.
-          // 
-          // Or, ideally, someday, do something cool where the morphs arrange themselves, being smart enough
-          // to stay approximately where they're put but they shuffle around a bit to avoid colliding with others.
-          // var possibleLocations = this.owner._contentsPanelSize.subPt(m.getExtent().scaleBy(m.getScale()));
-          // cp.addMorphAt(m, possibleLocations.random());
-          this.addMorphAt(m, pt(0,0));
-        }
-      }.bind(this));
     }
   });
   
+  add.method('possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged', function () {
+    this.invalidateLayout();
+    // aaa Can't just do the refreshLayoutIfNecessary() right now because the submorph's *actual* size
+    // hasn't changed yet. But ideally I guess we would have the cleanUp pose account for minimum size
+    // rather than actual size.
+    setTimeout(this.refreshLayoutIfNecessary.bind(this), 0);
+    return false;
+  }, {category: ['layout']});
+
   add.method('potentialContentsCount', function () {
     // aaa - this is kind of a hack
     return this.recalculateContentModels ? this.recalculateContentModels().size() : this.submorphs.length;
