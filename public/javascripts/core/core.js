@@ -23,6 +23,7 @@ requires('core/graphs');
 requires('core/types');
 requires('core/modification_flag');
 requires('core/dom_stuff');
+requires('core/http');
 requires('core/tree_node');
 
 }, function(thisModule) {

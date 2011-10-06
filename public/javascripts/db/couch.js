@@ -47,20 +47,13 @@ thisModule.addSlots(avocado.couch.dbServer, function(add) {
     return ["avocado.couch.dbServer.atURL(", this._baseURL.inspect(), ", ", this._proxyURL.inspect(), ")"].join("");
   }, {category: ['transporting']});
 
-  add.method('paramsStringFrom', function (paramsStringOrObject) {
-    if (!paramsStringOrObject) { return ""; }
-    var paramsMir = reflect(paramsStringOrObject);
-    if (paramsMir.isReflecteeString()) { return paramsStringOrObject; }
-    return paramsMir.normalSlots().map(function(s) { return encodeURIComponent(s.name()) + "=" + encodeURIComponent(s.contents().reflectee()); }).toArray().join("&");
-  }, {category: ['requests']});
-
   add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback, errback) {
     // See http://wiki.apache.org/couchdb/Complete_HTTP_API_Reference for a list of possible requests.
     
     if (typeof(callback) !== 'function' || typeof(errback) !== 'function') { throw new Error("Need to pass in a callback and errback to doRequest."); }
     
     var fullURL = this._baseURL + url;
-    var paramsString = this.paramsStringFrom(paramsStringOrObject);
+    var paramsString = avocado.http.paramsStringFrom(paramsStringOrObject);
     var req = new XMLHttpRequest();
     var urlForTheImmediateRequest;
     if (this._proxyURL) {
