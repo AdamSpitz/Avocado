@@ -85,6 +85,12 @@ thisModule.addSlots(avocado.ui, function(add) {
     return m;
   });
 
+  add.method('navigateTo', function (obj, evt) {
+    var m = this.worldFor(evt).morphFor(obj);
+    m.navigateToMe(evt);
+    return m;
+  });
+
   add.method('poseManager', function (evt) {
     return this.worldFor(evt).poseManager();
   });
@@ -100,6 +106,11 @@ thisModule.addSlots(avocado.ui, function(add) {
     var w = this.worldFor(evt);
     var morphToBeNextTo = w.morphFor(objToBeNextTo);
     w.morphFor(objToShow).ensureIsInWorld(w, morphToBeNextTo.worldPoint(pt(morphToBeNextTo.getExtent().x + 50, 0)), true, true, true);
+  });
+
+  add.method('showCentered', function (obj, callback, evt) {
+    var w = this.worldFor(evt);
+    w.morphFor(obj).showInCenterOfWorld(w, callback);
   });
 
   add.method('showMessageIfErrorDuring', function (f, evt) {

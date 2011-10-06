@@ -57,7 +57,11 @@ thisModule.addSlots(Morph.prototype, function(add) {
     });
 
   add.method('showTemporarilyInCenterOfWorld', function (w) {
-      this.showInWorldAt(w, this.positionToCenterIn(w), function() {this.zoomAwayAfter(5000);}.bind(this));
+      this.showInCenterOfWorld(w, function() {this.zoomAwayAfter(5000);}.bind(this));
+    });
+
+  add.method('showInCenterOfWorld', function (w, callback) {
+      this.showInWorldAt(w, this.positionToCenterIn(w), callback);
     });
 
   add.method('showInWorldAt', function (w, p, callWhenDone) {
