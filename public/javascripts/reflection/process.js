@@ -45,9 +45,10 @@ thisModule.addSlots(avocado.process, function(add) {
     return "a process";
   }, {category: ['printing']});
 
-  add.method('printTo', function (logger) {
+  add.method('printTo', function (logger, max) {
     var c = this.leafContext();
-    while (c) {
+    var i = 0;
+    while (c && i++ < max) {
       c.printTo(logger);
       c = c.callerContext();
     }

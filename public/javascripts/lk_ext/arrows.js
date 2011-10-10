@@ -260,17 +260,6 @@ thisModule.addSlots(avocado.ArrowEndpoint, function(add) {
 
   add.data('type', 'avocado.ArrowEndpoint');
 
-  add.method('createForSetting', function (evt, tr, fep) {
-    var arrow = tr.setterArrow;
-    if (! arrow) {
-      arrow = tr.setterArrow = new avocado.ArrowMorph(tr, fep || tr.morph());
-      evt.hand.world().addMorph(arrow);
-    } else {
-      arrow.endpoint2.setPosition(evt.hand.position());
-    }
-    evt.hand.grabMorph(arrow.endpoint2, evt);
-  }, {category: ['creating']});
-
   add.creator('prototype', Object.create(Morph.prototype));
 
 });

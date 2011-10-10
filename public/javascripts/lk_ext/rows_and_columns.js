@@ -430,12 +430,15 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
   add.method('recalculateActualContentMorphs', function () {
     // aaa - duplicated in AutoScalingMorph
     var context = this;
+    var layoutModesForContentMorphs = this._layoutModesForContentMorphs;
     if (typeof(this.potentialContentMorphs) === 'function') {
       var potentialContentMorphs = this.potentialContentMorphs();
       var actualContentMorphs = potentialContentMorphs.selectThenMap(function(morphOrToggler) {
         return !!morphOrToggler.actualMorphToShow(context);
       }, function(morphOrToggler) {
-        return morphOrToggler.actualMorphToShow(context);
+        var actualMorph = morphOrToggler.actualMorphToShow(context);
+        if (layoutModesForContentMorphs) { actualMorph.setLayoutModes(layoutModesForContentMorphs); }
+        return actualMorph;
       });
       return actualContentMorphs;
     } else {
@@ -473,6 +476,12 @@ thisModule.addSlots(avocado.TableMorph.prototype, function(add) {
     // aaa - this is kind of a hack - should really just be one clear intensional mechanism and one clear extensional one.
     return this.recalculateContentModels ? this.recalculateContentModels().size() : (this.potentialContentMorphs ? this.potentialContentMorphs().primaryLines().size() : this.submorphs.length);
   });
+
+  add.method('makeContentMorphsHaveLayoutModes', function (layoutModes) {
+    // aaa - kind of a hack, but better than having it directly in the TreeNodeMorph code
+    this._layoutModesForContentMorphs = layoutModes;
+    return this;
+  }, {category: ['layout']});
 
   add.method('addRow', function (m) {
     if (this._tableContent && this._tableContent.primaryLines().length > 0) {

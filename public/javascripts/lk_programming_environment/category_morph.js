@@ -19,10 +19,6 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
     return new avocado.category.Morph(this, this.isRoot());
   }, {category: ['user interface']});
 
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
-  }, {category: ['user interface']});
-
   add.method('existingMorph', function () {
     return WorldMorph.current().existingMorphFor(this);
   }, {category: ['user interface']});
@@ -48,7 +44,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.data('constructor', avocado.category.Morph);
   
   add.method('initialize', function ($super, catOfMir, shouldOmitHeaderRow) {
-    $super(catOfMir);
+    $super(catOfMir, avocado.TreeNodeMorph.functionForCreatingTreeContentsPanel(catOfMir, undefined, undefined, avocado.shouldMirrorsUseZooming));
     this._shouldOmitHeaderRow = shouldOmitHeaderRow;
 
     this.applyStyle(this.desiredCurrentStyle());
@@ -63,7 +59,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
 
   add.method('mirror', function () { return this.category().mirror(); }, {category: ['accessing']});
 
-  add.method('mirrorMorph', function () { return this.mirror().morph(); }, {category: ['accessing']});
+  add.method('mirrorMorph', function () { return WorldMorph.current().morphFor(this.mirror()); }, {category: ['accessing']});
 
   add.method('shouldUseZooming', function () {
     return avocado.shouldMirrorsUseZooming;
@@ -110,26 +106,6 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     if (this._shouldOmitHeaderRow) { delete parts['isExpanded']; } // the mirror will handle it
     return parts;
   }, {category: ['UI state']});
-
-  add.method('immediateContentMorphs', function ($super) {
-    // aaa - Blecch, I hate this whole thing where the categories don't really exist until they've got a slot in them.
-    // Maybe make categories a bit more real, part of the object annotation or something, instead of just having them
-    // live inside the slot annotations?
-    
-    return $super().toArray().concat(this._contentsPanel.submorphs.select(function(m) {
-      if (m.isNewCategory) {
-        var realCatMorph = this.mirrorMorph().existingCategoryMorphFor(m.category());
-        if (realCatMorph) {
-          m.transferUIStateTo(realCatMorph);
-          return false;
-        } else {
-          return true;
-        }
-      } else {
-        return false;
-      }
-    }.bind(this)));
-  }, {category: ['contents panel']});
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
@@ -186,7 +162,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   }, {category: ['drag and drop']});
   
   add.method('cleanUp', function (evt, shouldBeUnobtrusive) {
-    var cp = this.contentsPanel();
+    var cp = this.actualContentsPanel();
     var pose = cp.poseManager().cleaningUpPose().beSquarish().whenDoneScaleToFitWithinCurrentSpace();
     if (true || shouldBeUnobtrusive) { pose.beUnobtrusive(); } // aaa - doing it with animation doesn't work right yet - try making a new object, adding a few slots, and hitting "clean up"
     cp.poseManager().assumePose(pose);
@@ -204,13 +180,15 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.method('rename', function (newName, evt) {
     // aaa - eww
     var result = this.category().rename(newName);
+    this.mirror().annotationForWriting().getCategoryCache(result.newCat.parts()); // this should make sure the new category "exists"
+    this.mirror().annotationForWriting().getCategoryCache(result.oldCat.parts()).removeMe();
     this.mirrorMorph().justRenamedCategoryMorphFor(result.oldCat, result.newCat, result.numberOfRenamedSlots === 0);
   }, {category: ['renaming']});
 
   add.method('addSlot', function (initialContents, evt) {
     this.mirrorMorph().expandCategoryMorph(this);
     var s = this.category().automaticallyChooseDefaultNameAndAddNewSlot(reflect(initialContents));
-    var sm = s.morph();
+    var sm = avocado.ui.worldFor(evt).morphFor(s);
     sm.wasJustShown(evt);
     this.refreshContentOfMeAndSubmorphs(); // aaa blecch, can't do avocado.ui.justChanged because this might be one of those not-quite-existing ones (because it might have no contents yet);
     if (this.shouldUseZooming()) {
@@ -219,9 +197,10 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   }, {category: ['adding']});
 
   add.method('addCategory', function (evt) {
+    var c = this.category().subcategory("");
+    var catCache = this.mirror().annotationForWriting().getCategoryCache(c.parts()); // this should make sure the category "exists"
     this.mirrorMorph().expandCategoryMorph(this);
-    var cm = this.category().subcategory("").newMorph();
-    this.addToContentsPanel(cm);
+    var cm = avocado.ui.worldFor(evt).morphFor(c);
     cm.wasJustShown(evt);
     // aaa blecch, I feel like this line should be here, but bad things happen: avocado.ui.justChanged(this.category());
   }, {category: ['adding']});
@@ -229,7 +208,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.method('grabCopy', function (evt) {
     var newMirror = reflect({});
     var newCategoryOfMir = this.category().copyInto(newMirror.rootCategory());
-    var newCategoryMorph = newCategoryOfMir.morph();
+    var newCategoryMorph = avocado.ui.worldFor(evt).morphFor(newCategoryOfMir);
     newCategoryMorph.applyStyle(this.grabbedStyle);
     newCategoryMorph.refreshContent();
     newCategoryMorph.forceLayoutRejiggering();

@@ -52,10 +52,6 @@ thisModule.addSlots(avocado.signpost, function(add) {
     return this;
   }, {category: ['linking']});
 
-  add.method('morph', function () {
-    return this.existingMorph();
-  }, {category: ['user interface']});
-
   add.method('existingMorph', function () {
     return WorldMorph.current().existingMorphFor(this);
   }, {category: ['user interface']});
@@ -100,7 +96,7 @@ thisModule.addSlots(avocado.signpost, function(add) {
   }, {category: ['user interface']});
 
   add.method('createLinkButton', function (contents, target) {
-    return ButtonMorph.createButton(contents, function(evt) {target.morph().navigateToMe(evt); }).applyStyle(this.linkButtonStyle);
+    return ButtonMorph.createButton(contents, function(evt) {WorldMorph.current().morphFor(target).navigateToMe(evt); }).applyStyle(this.linkButtonStyle);
   }, {category: ['user interface']});
   
   add.creator('defaultStyle', {}, {category: ['user interface']});

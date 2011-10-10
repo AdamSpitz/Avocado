@@ -464,6 +464,16 @@ var annotator = {
       return c;
     },
     
+    removeSubcategory: function(name) {
+      if (! this._subcategories) { return; }
+      delete this._subcategories[name];
+    },
+    
+    removeMe: function() {
+      if (! this._supercategory) { return; }
+      this._supercategory.removeSubcategory(this._lastPart);
+    },
+    
     eachSubcategoryName: function(f) {
       for (var name in this._subcategories) {
         if (this._subcategories.hasOwnProperty(name)) {

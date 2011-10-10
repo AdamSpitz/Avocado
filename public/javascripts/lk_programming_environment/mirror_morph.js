@@ -15,10 +15,6 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return new this.Morph(this);
   }, {category: ['user interface']});
 
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
-  }, {category: ['user interface']});
-
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
 
 });
@@ -164,9 +160,9 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     //       The transporter should be able to handle them. But for now it's
     //       choking for some reason, so let's do this for now. -- Adam, Mar. 2011
     return [
-      "(",
+      "WorldMorph.current().morphFor(",
       this.mirror().storeString(),
-      ").morph().setBasicMorphProperties(",
+      ").setBasicMorphProperties(",
       this.basicMorphPropertiesStoreString(),
       ")"
       /* aaa - not working because the UI state contains references to the actual reflectee of the mirror,
@@ -281,7 +277,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['categories']});
 
   add.method('slotMorphFor', function (s) {
-    return s.morph();
+    return WorldMorph.current().morphFor(s);
   }, {category: ['contents panel']});
 
   add.method('existingCategoryMorphFor', function (c) {
@@ -289,7 +285,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['categories']});
 
   add.method('categoryMorphFor', function (c) {
-    return c.ofMirror(this.mirror()).morph();
+    return WorldMorph.current().morphFor(c.ofMirror(this.mirror()));
   }, {category: ['categories']});
 
   add.method('justRenamedCategoryMorphFor', function (oldCat, newCat, isEmpty) {
@@ -321,7 +317,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     // directly inside the mirror.
     var enableNewVocabularyMorphExperiment = false;
     if (enableNewVocabularyMorphExperiment) {
-      var m = avocado.vocabulary.create(this.mirror()).morph();
+      var m = avocad.ui.worldFor(evt).morphFor(avocado.vocabulary.create(this.mirror()));
       m.openEvaluator(evt);
       if (! this.ownerSatisfying(function(o) { return o === m; })) {
         m.expand();
@@ -354,7 +350,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     /*
     Meh, vocabulary morphs aren't quite feeling right yet. For now, go back to regular evaluators.
     
-    var m = avocado.vocabulary.create(this.mirror()).morph();
+    var m = avocado.ui.worldFor(evt).morphFor(avocado.vocabulary.create(this.mirror()));
     m.expand();
     m.grabMeWithoutZoomingAroundFirst(evt);
     m.getAllMirrors();

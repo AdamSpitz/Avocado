@@ -94,7 +94,7 @@ thisModule.addSlots(avocado.tag.cloud, function(add) {
   add.creator('defaultMorphStyle', {}, {category: ['user interface']});
 
   add.method('newMorph', function () {
-    var m = new avocado.TreeNodeMorph(this).applyStyle(this.defaultMorphStyle);
+    var m = avocado.TreeNodeMorph.create(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'tag cloud';
     return m;
   }, {category: ['user interface']});
@@ -150,17 +150,11 @@ thisModule.addSlots(avocado.tag.cloud.element, function(add) {
   add.method('immediateContents', function () {
     return this.cloud().allPossibleObjects().select(function(o) { return this._tagType.matches(o); }.bind(this));
   });
-  
-  add.method('contentMorphFor', function ($super, m) {
-    var realMorph = $super(m);
-    realMorph.refreshContentOfMeAndSubmorphs();
-    return new avocado.PlaceholderMorph(realMorph).refreshContentOfMeAndSubmorphs();
-  });
 
   add.creator('defaultMorphStyle', {}, {category: ['user interface']});
 
   add.method('newMorph', function () {
-    var m = new avocado.TreeNodeMorph(this);
+    var m = avocado.TreeNodeMorph.create(this);
     m.setFill(this._fill);
     m.typeName = 'tag cloud element';
     m.refreshContentOfMeAndSubmorphs();

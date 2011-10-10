@@ -43,12 +43,6 @@ thisModule.addSlots(avocado.abstractOrganization, function(add) {
     return this.commentOrNullForSlot(s) || "";
   }, {category: ['comments']});
 
-  add.method('mirrorMorphForObjectNamed', function (chainNames) {
-    var mir = avocado.mirror.forObjectNamed(chainNames);
-    if (!mir) { return null; }
-    return mir.morph();
-  }, {category: ['poses']});
-
   add.method('findUnusedPoseName', function () {
     var i = 1;
     while (true) {

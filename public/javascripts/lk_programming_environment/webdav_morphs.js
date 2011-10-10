@@ -8,11 +8,7 @@ requires('core/webdav');
 thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(add) {
   
   add.method('newMorph', function () {
-    return new avocado.TreeNodeMorph(this);
-  }, {category: ['user interface']});
-
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
+    return avocado.TreeNodeMorph.create(this);
   }, {category: ['user interface']});
 
 });
@@ -21,11 +17,7 @@ thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(ad
 thisModule.addSlots(FileDirectory.prototype, function(add) {
   
   add.method('newMorph', function () {
-    return new avocado.TreeNodeMorph(this);
-  }, {category: ['user interface']});
-
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
+    return avocado.TreeNodeMorph.create(this);
   }, {category: ['user interface']});
 
 });
@@ -47,10 +39,6 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
     m.setFill(Color.red.lighter());
     //m.startPeriodicallyUpdating();
     return m;
-  }, {category: ['user interface']});
-
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
   }, {category: ['user interface']});
 
 });

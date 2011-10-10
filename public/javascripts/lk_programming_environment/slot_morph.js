@@ -14,10 +14,6 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     return new this.Morph(this);
   }, {category: ['user interface']});
 
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
-  }, {category: ['user interface']});
-
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
 
   add.method('showInSitu', function (inSituButton) {
@@ -78,7 +74,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       this._buttonChooserMorph = Morph.createEitherOrMorph([
         function() { return Morph.wrapToTakeUpConstantSpace(pt(100, 50), this.sourcePane()); }.bind(this).memoize(),
         function() {
-          var contentsMirrorMorph = slot.contents().morph();
+          var contentsMirrorMorph = WorldMorph.current().morphFor(slot.contents());
           contentsMirrorMorph.setScale(0.65);
           contentsMirrorMorph.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore();
           return contentsMirrorMorph;
@@ -301,7 +297,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
         this.justBecameObsolete();
         if (mirMorph.shouldUseZooming()) {
           // aaa - this shouldn't stay here in the long run, I think, but for now I just want everything to stay lined up nicely
-          newSlot.category().morph().cleanUp(evt, true);
+          WorldMorph.current().morphFor(newSlot.category()).cleanUp(evt, true);
         }
       }
     }.bind(this), evt);

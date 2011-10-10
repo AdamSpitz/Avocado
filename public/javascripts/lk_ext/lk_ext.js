@@ -110,7 +110,8 @@ thisModule.addSlots(avocado.ui, function(add) {
 
   add.method('showCentered', function (obj, callback, evt) {
     var w = this.worldFor(evt);
-    w.morphFor(obj).showInCenterOfWorld(w, callback);
+    var m = w.morphFor(obj);
+    m.showInCenterOfWorld(w, callback);
   });
 
   add.method('showMessageIfErrorDuring', function (f, evt) {

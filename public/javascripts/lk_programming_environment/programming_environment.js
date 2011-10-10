@@ -92,14 +92,6 @@ thisModule.addSlots(avocado, function(add) {
         avocado.ui.grab(mir, evt)
       }.bind(this)});
 
-      cmdList.addItem({label: "get container morph", go: function(evt) {
-        var m = new avocado.ContainerMorph();
-        evt.hand.world().addMorphAt(m, pt(100,100));
-        m.contentsPanel().addMorphAt(reflect({a: 1, b: 'two'}).morph().refreshContentOfMeAndSubmorphs(), pt(30,30));
-        m.contentsPanel().addMorphAt(reflect({a: 'one', b: 2}).morph().refreshContentOfMeAndSubmorphs(), pt(40,40));
-        m.contentsPanel().addMorphAt(reflect({c: 'three', d: false}).morph().refreshContentOfMeAndSubmorphs(), pt(40,40));
-      }.bind(this)});
-
       cmdList.addItem({label: "get zoomingUIExample", go: function(evt) {
         var mir = reflect(this.zoomingUIExample);
         avocado.ui.grab(mir, evt)
@@ -107,7 +99,7 @@ thisModule.addSlots(avocado, function(add) {
 
       cmdList.addItem({label: "scatter 1-50", go: function(evt) {
         var morphs = [];
-        for (var i = 1; i <= 50; ++i) { morphs.push(reflect(i).morph()); }
+        for (var i = 1; i <= 50; ++i) { morphs.push(evt.hand.world().morphFor(reflect(i))); }
         WorldMorph.current().scatter(morphs);
       }.bind(this)});
 
@@ -148,7 +140,7 @@ thisModule.addSlots(avocado, function(add) {
       cmdList.addItem({label: "walk annotations", go: function(evt) {
         var walker = avocado.objectGraphWalker.visitors.annotationWalker.create().createWalker();
         walker.go();
-        reflect(walker).morph().grabMe(evt);
+        evt.hand.world().morphFor(reflect(walker)).grabMe(evt);
       }.bind(this)});
 
       cmdList.addItem({label: "a collection morph", go: function(evt) {

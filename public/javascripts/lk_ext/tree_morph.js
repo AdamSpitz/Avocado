@@ -10,7 +10,7 @@ requires('lk_ext/expander');
 thisModule.addSlots(avocado.treeNode, function(add) {
   
   add.method('newMorph', function () {
-    return new avocado.TreeNodeMorph(this).setShouldScaleContentsToFit(true).refreshContentOfMeAndSubmorphs().applyStyle({borderRadius: 10});
+    return avocado.TreeNodeMorph.create(this).refreshContentOfMeAndSubmorphs().applyStyle({borderRadius: 10});
   }, {category: ['user interface']});
   
 });
@@ -30,6 +30,62 @@ thisModule.addSlots(avocado.TreeNodeMorph, function(add) {
   add.data('type', 'avocado.TreeNodeMorph');
 
   add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+  
+  add.method('create', function (model, shouldAutoOrganize, contentsPanelSize, constructor) {
+    constructor = constructor || avocado.TreeNodeMorph;
+    return new constructor(model, this.functionForCreatingTreeContentsPanel(model, shouldAutoOrganize, contentsPanelSize || pt(150,100)));
+  }, {category: ['creating']});
+
+  add.method('functionForCreatingTreeContentsPanel', function (treeNode, shouldAutoOrganize, contentsPanelSize, shouldUseZooming) {
+    // aaa - This whole thing is a bit of a hack, and too function-y. There's an object missing here or something.
+    contentsPanelSize = contentsPanelSize || pt(150,100);
+    if (typeof(shouldUseZooming) === 'undefined') { shouldUseZooming = avocado.TreeNodeMorph.prototype.shouldUseZooming(); }
+    var f = function() {
+      var cp;
+      if (shouldUseZooming) {
+        cp = new avocado.AutoScalingMorph(new lively.scene.Rectangle(pt(0,0).extent(contentsPanelSize))).applyStyle(avocado.TreeNodeMorph.prototype.zoomingContentsPanelStyle);
+        cp.typeName = 'tree node contents panel'; // just for debugging purposes
+        cp.setShouldScaleSubmorphsToFit(true);
+        if (shouldAutoOrganize) { cp.setShouldAutoOrganize(true); }
+
+        // aaa - eventually should only need one of these, probably recalculateContentModels, and it shouldn't have anything to do with TreeNodeMorph
+        cp.setPotentialContentMorphsFunction(function() { return this.recalculateAndRememberContentMorphsInOrder(); });
+
+        cp.dragAndDropCommands = function() {
+          return this.owner.dragAndDropCommandsForTreeContents();
+        };
+      } else {
+        cp = new avocado.TableMorph().beInvisible().applyStyle(avocado.TreeNodeMorph.prototype.nonZoomingContentsPanelStyle);
+        cp.makeContentMorphsHaveLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+        cp.setPotentialContentMorphsFunction(function () {
+          return avocado.tableContents.createWithColumns([this.recalculateAndRememberContentMorphsInOrder()]);
+        });
+        // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
+      }
+
+      cp.recalculateContentModels = function() { return treeNode.immediateContents(); };
+      cp.recalculateAndRememberContentMorphsInOrder = function () {
+        // aaa - Do I want the old contents-summary thing? If so, how should it be included?
+        // if (treeNode.requiresContentsSummary && treeNode.requiresContentsSummary()) { allSubmorphs.push(this.contentsSummaryMorph()); }
+        var world = WorldMorph.current();
+        var morphs = this.recalculateContentModels().map(function(sn) { return world.morphFor(sn); });
+        this._contentMorphs = morphs.toArray().sortBy(function(m) { return m._model && m._model.sortOrder ? m._model.sortOrder() : ''; });
+        return this._contentMorphs;
+      };
+
+      cp.partsOfUIState = function () {
+        return {
+          collection: this._contentMorphs || [],
+          keyOf: function(cm) { return cm._model; },
+          getPartWithKey: function(morph, c) { return WorldMorph.current().morphFor(c); }
+        };
+      };
+
+      return cp;
+    };
+    f.contentsPanelSize = contentsPanelSize;
+    return f;
+  }, {category: ['creating']});
 
 });
 
@@ -38,26 +94,37 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.data('constructor', avocado.TreeNodeMorph);
 
-	add.data('noShallowCopyProperties', Morph.prototype.noShallowCopyProperties.concat(["_potentialContentMorphs", "_headerRow", "_headerRowContents", "_containerName"]), {initializeTo: 'Morph.prototype.noShallowCopyProperties.concat(["_potentialContentMorphs", "_headerRow", "_headerRowContents", "_containerName"])'});
+	add.data('noShallowCopyProperties', Morph.prototype.noShallowCopyProperties.concat(["_potentialContentMorphs", "_headerRow", "_headerRowContents", "_titleAccessors"]), {initializeTo: 'Morph.prototype.noShallowCopyProperties.concat(["_potentialContentMorphs", "_headerRow", "_headerRowContents", "_titleAccessors"])'});
 	
-  add.method('initialize', function ($super, treeNode) {
+  add.method('initialize', function ($super, treeNode, contentsPanelCreationFn) {
     $super();
     this._model = treeNode;
     this.applyStyle(this.nodeStyle());
-
-    this._contentMorphs = [];
-    reflect(this).slotAt('_contentMorphs').beCreator();
-    
-    if (! this.shouldUseZooming()) {
-      this._expander = new ExpanderMorph(this);
-    }
+    this._createActualContentsPanel = contentsPanelCreationFn;
+    if (! this.shouldUseZooming()) { this._expander = new ExpanderMorph(this); }
   }, {category: ['initializing']});
 
   add.method('treeNode', function () { return this._model; }, {category: ['accessing']});
+  
+  add.method('createContentsPanelOrHider', function () {
+    var treeNode = this._model;
+    if ( !this.shouldUseZooming() || this._shouldNotHideContentsEvenIfTooSmall) {
+      return this.actualContentsPanel();
+    } else {
+      var contentsThreshold = this._contentsThreshold || 0.25;
+      var thresholdMultiplierForHeader = this._shouldOmitHeaderRow ? 0.25 : 0.7;
+      return avocado.scaleBasedMorphHider.create(this, this.actualContentsPanel.bind(this), this, function() {
+        var thresholdMultiplierForModel = treeNode.thresholdMultiplier || (treeNode.immediateContents ? Math.sqrt(treeNode.immediateContents().size()) : 1);
+        return contentsThreshold * thresholdMultiplierForHeader * thresholdMultiplierForModel;
+      }.bind(this), this._createActualContentsPanel.contentsPanelSize || pt(150,100)); 
+    }
+  }, {category: ['contents panel']});
 
   add.method('toString', function () {
-    var t = this.findTitleLabel && this.findTitleLabel();
-    if (t) { return t.getText(); }
+    if (this._headerRow) {
+      var t = this.findTitleLabel();
+      if (t) { return t.getText(); }
+    }
     if (this._model) { return this._model.toString(); }
     return "a tree node";
   }, {category: ['printing']});
@@ -67,12 +134,49 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   }, {category: ['printing']});
 
   add.method('headerRow', function () {
-    var hr = this._headerRow;
-    if (hr) { return hr; }
-    hr = avocado.RowMorph.createSpaceFilling(this.headerRowContents.bind(this), this.nodeStyle().headerRowPadding);
-    this._headerRow = hr;
-    return hr;
-  }, {category: ['creating']});
+    if (! this._headerRow) {
+      this._headerRow = avocado.RowMorph.createSpaceFilling(this.headerRowContents.bind(this), this.nodeStyle().headerRowPadding);
+    }
+    return this._headerRow;
+  }, {category: ['header row']});
+  
+  add.method('headerRowContents', function () {
+    if (! this._headerRowContents) {
+      var titleLabel = this.createTitleLabel();
+      if (! titleLabel) { titleLabel = this.createNameLabel(); }
+      if (this.shouldUseZooming()) {
+        this._headerRowContents = [titleLabel];
+      } else {
+        this._headerRowContents = [this._expander, titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
+      }
+    }
+    return this._headerRowContents;
+  }, {category: ['header row']});
+
+  add.method('createTitleLabel', function () {
+    var titleAccessors = this.titleAccessors();
+    if (titleAccessors) {
+      var lbl = new avocado.TwoModeTextMorph(titleAccessors);
+      lbl.setNameOfEditCommand("rename");
+      lbl.backgroundColorWhenWritable = null;
+      lbl.ignoreEvents();
+      lbl.isTitleLabel = true;
+      return lbl;
+    }
+    return null;
+  }, {category: ['header row', 'title']});
+  
+  add.method('titleAccessors', function () {
+    if (this._titleAccessors) { return this._titleAccessors; }
+    if (typeof(this._model.titleAccessors) === 'function') { return this._model.titleAccessors(); }
+    return null;
+  }, {category: ['header row', 'title']});
+  
+  add.method('findTitleLabel', function () {
+    // Not sure what would be a good way to find it, or whether we should just keep a pointer
+    // to it; for now let's do this isTitleLabel thing. -- Adam
+    return this.headerRow().submorphsRecursively().find(function(m) { return m.isTitleLabel; });
+  }, {category: ['header row', 'title']});
 
   add.method('shouldUseZooming', function () {
     return avocado.isZoomingEnabled;
@@ -91,28 +195,22 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['updating']});
 
-  add.method('partsOfUIState', function () {
-    return {
-      isExpanded: this.expander(),
-      contents: {
-        collection: this._contentMorphs,
-        keyOf: function(cm) { return cm._model; },
-        getPartWithKey: function(morph, c) { return WorldMorph.current().morphFor(c); }
-      }
-    };
-  }, {category: ['UI state']});
-  
-  add.method('headerRowContents', function () {
-    if (! this._headerRowContents) {
-      var titleLabel = this.createTitleLabel ? this.createTitleLabel() : this.createNameLabel();
-      if (this.shouldUseZooming()) {
-        this._headerRowContents = [titleLabel];
-      } else {
-        this._headerRowContents = [this._expander, titleLabel, this._headerRowSpacer || (this._headerRowSpacer = Morph.createSpacer())];
-      }
+  add.method('hasActualContentsPanelAlreadyBeenCreated', function () {
+    return this._contentsPanel;
+  }, {category: ['contents panel']});
+
+  add.method('actualContentsPanel', function () {
+    if (! this._contentsPanel) {
+      this._contentsPanel = this._createActualContentsPanel();
     }
-    return this._headerRowContents;
-  }, {category: ['header row']});
+    return this._contentsPanel;
+  }, {category: ['contents panel']});
+  
+  add.method('partsOfUIState', function () {
+    var s = { isExpanded: this.expander() };
+    if (this.hasActualContentsPanelAlreadyBeenCreated()) { s.contents = this.actualContentsPanel().partsOfUIState(); }
+    return s;
+  }, {category: ['UI state']});
 
   add.method('setContentsThreshold', function (t) {
     this._contentsThreshold = t;
@@ -122,19 +220,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.method('potentialContentMorphs', function () {
     if (this.shouldUseZooming()) {
       if (! this._potentialContentMorphs) {
-        var contentsThreshold = this._contentsThreshold || 0.25;
-        var thresholdMultiplier = this._shouldOmitHeaderRow ? 0.25 : 0.7;
-        var contentsPanelHider;
-        if (this._shouldNotHideContentsEvenIfTooSmall) {
-          contentsPanelHider = this.contentsPanel();
-        } else {
-          contentsPanelHider = avocado.scaleBasedMorphHider.create(this, this.contentsPanel.bind(this), this, function() {
-            return contentsThreshold * thresholdMultiplier * Math.sqrt(this.contentsCount());
-          }.bind(this), this._contentsPanelSize); 
-        }
-        var rows = this._shouldOmitHeaderRow ? [] : [this.headerRow()];
+        var rows = [];
+        if (! this._shouldOmitHeaderRow)  { rows.push(this.headerRow()); }
         if (this._shouldShowTagsWithinBox) { rows.push(this.tagHolderMorph()); }
-        rows.push(contentsPanelHider);
+        rows.push(this.createContentsPanelOrHider());
         this._potentialContentMorphs = avocado.tableContents.createWithColumns([rows]);
       }
       return this._potentialContentMorphs;
@@ -142,46 +231,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       var rows = [];
       if (! this._shouldOmitHeaderRow)  { rows.push(this.headerRow()); }
       if (this._shouldShowTagsWithinBox) { rows.push(this.tagHolderMorph()); }
-      if (this.expander().isExpanded()) { rows.push(this.contentsPanel()); }
+      if (this.expander().isExpanded()) { rows.push(this.createContentsPanelOrHider()); }
       return avocado.tableContents.createWithColumns([rows]);
     }
   }, {category: ['updating']});
 
-  add.data('_contentsPanelSize', pt(150,100), {category: ['free-form contents experiment']});
-  
-  add.method('setShouldScaleContentsToFit', function (b) {
-    if (this._contentsPanel) { this._contentsPanel._shouldScaleSubmorphsToFit = b; }
-    this._shouldScaleContentsPanelSubmorphsToFit = b;
-    return this;
-  }, {category: ['scaling submorphs']});
-
-  add.method('contentsPanel', function () {
-    var cp = this._contentsPanel;
-    if (cp) { return cp; }
-    
-    if (this.shouldUseZooming()) {
-      cp = this._contentsPanel = new avocado.AutoScalingMorph(new lively.scene.Rectangle(pt(0,0).extent(this._contentsPanelSize))).applyStyle(this.contentsPanelStyle());
-      cp.typeName = 'tree node contents panel'; // just for debugging purposes
-      if (this._shouldScaleContentsPanelSubmorphsToFit) { cp.setShouldScaleSubmorphsToFit(true); }
-      
-      // aaa - eventually should only need one of these, probably recalculateContentModels, and it shouldn't have anything to do with TreeNodeMorph
-      cp.setPotentialContentMorphsFunction(function() { return this.owner.recalculateAndRememberContentMorphsInOrder(); });
-      
-      // var thisToString = this.toString(); cp.toString = function() { return thisToString + " contents panel"; } // aaa just for debugging
-      // aaa - do this more cleanly; for now, just wanna see if this can work
-      
-      cp.dragAndDropCommands = function() {
-        return this.owner.dragAndDropCommandsForTreeContents();
-      };
-    } else {
-      cp = this._contentsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.contentsPanelStyle());
-      cp.setPotentialContentMorphsFunction(this.potentialContentMorphsOfContentsPanel.bind(this));
-      // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
-    }
-    cp.recalculateContentModels = function() { return this.owner.treeNode && this.owner.treeNode().immediateContents(); };
-    return cp;
-  }, {category: ['contents panel']});
-  
   add.method('contentsSummaryMorph', function () {
     if (! this._contentsSummaryMorph) {
       this._contentsSummaryMorph = this.createContentsSummaryMorph();
@@ -189,49 +243,13 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     return this._contentsSummaryMorph;
   }, {category: ['contents panel']});
 
-  add.method('contentMorphFor', function (content) {
-    // can be overridden in children, if desired
-    return content.morph ? content.morph() : WorldMorph.current().morphFor(content);
-  }, {category: ['contents panel']});
-
-  add.method('immediateContentMorphs', function () {
-    // can be overridden in children, if desired
-    return this.treeNode().immediateContents().map(function(sn) { return this.contentMorphFor(sn); }.bind(this));
-  }, {category: ['contents panel']});
-  
-  add.method('recalculateAndRememberContentMorphsInOrder', function () {
-    this._contentMorphs = this.immediateContentMorphs().toArray().sortBy(function(m) { return m._model && m._model.sortOrder ? m._model.sortOrder() : ''; });
-    return this._contentMorphs;
-  }, {category: ['contents panel']});
-
   add.method('supernodeMorph', function () {
     if (this.treeNode().isRoot()) { return null; }
     var sn = this.treeNode().supernode();
-    return this.ownerSatisfying(function(o) { return o.constructor === this.constructor && o.treeNode().equals(sn); }.bind(this)) || this.contentMorphFor(sn);
-  }, {category: ['contents panel']});
-
-  add.method('contentsCount', function () {
-    return this.treeNode().immediateContents().size();
-  }, {category: ['contents panel']});
-
-  add.method('potentialContentMorphsOfContentsPanel', function () {
-    var allSubmorphs = [];
-    if (this.treeNode().requiresContentsSummary()) { allSubmorphs.push(this.contentsSummaryMorph()); }
-    var contentMorphs = this.recalculateAndRememberContentMorphsInOrder();
-    contentMorphs.each(function(m) {
-      m.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;
-      allSubmorphs.push(m);
-    });
-    return avocado.tableContents.createWithColumns([allSubmorphs]);
-  }, {category: ['contents panel']});
-
-  add.method('addToContentsPanel', function (m) {
-    this.contentsPanel().addRow(m);
+    return this.ownerSatisfying(function(o) { return o.constructor === this.constructor && o.treeNode().equals(sn); }.bind(this)) || WorldMorph.current().morphFor(sn);
   }, {category: ['contents panel']});
 
   add.method('nodeStyle', function () { return this.shouldUseZooming() ? this.zoomingNodeStyle : this.nonZoomingNodeStyle; }, {category: ['styles']});
-
-  add.method('contentsPanelStyle', function () { return this.shouldUseZooming() ? this.zoomingContentsPanelStyle : this.nonZoomingContentsPanelStyle; }, {category: ['styles']});
 
   add.creator('nonZoomingNodeStyle', {}, {category: ['styles']});
 
@@ -240,6 +258,19 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   add.creator('zoomingNodeStyle', {}, {category: ['styles']});
 
   add.creator('zoomingContentsPanelStyle', {}, {category: ['styles']});
+  
+  add.method('commands', function ($super) {
+    var cmdList = $super();
+    this.addTitleEditingCommandsTo(cmdList);
+    return cmdList;
+  }, {category: ['commands']});
+  
+  add.method('addTitleEditingCommandsTo', function (cmdList) {
+    var titleLabel = this.findTitleLabel();
+    if (titleLabel) {
+      cmdList.addAllCommands(titleLabel.editingCommands());
+    }
+  }, {category: ['commands']});
 
   add.method('dragAndDropCommands', function () {
     if (this.shouldUseZooming()) { return null; } // let the content panel be the drop target
@@ -255,24 +286,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     }
   }, {category: ['drag and drop']});
   
-  add.method('useContentsPanelToDisplayTags', function () {
-    this._shouldUseContentsPanelToDisplayTags = true;
-    return this;
-  }, {category: ['tagging']})
-  
   add.method('showTagsWithinBox', function () {
     // aaa this is a hack, need to create a general-purpose way to put tags on any morph
     this._shouldShowTagsWithinBox = true;
     return this;
-  }, {category: ['tagging']})
-  
-  add.method('addTagMorph', function ($super, tagMorph) {
-    // aaa - not sure this is a good idea
-    if (this._shouldUseContentsPanelToDisplayTags) {
-      this.contentsPanel().addMorphAt(tagMorph, pt(5,5));
-    } else {
-      $super(tagMorph);
-    }
   }, {category: ['tagging']})
 
 });

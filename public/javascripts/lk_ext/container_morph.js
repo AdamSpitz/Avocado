@@ -28,41 +28,15 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
   add.data('constructor', avocado.ContainerMorph);
 
   add.method('initialize', function ($super) {
-    $super();
-    this._model = Object.newChildOf(this.modelUsingWhicheverMorphsHappenToBeThere, this);
+    var model = Object.newChildOf(this.modelUsingWhicheverMorphsHappenToBeThere, this);
+    $super(model, avocado.TreeNodeMorph.functionForCreatingTreeContentsPanel(model, true));
+    
     reflect(this).slotAt('_model').beCreator();
-    
-    this.contentsPanel().setShouldAutoOrganize(true).setShouldScaleSubmorphsToFit(true);
-    
-    this.refreshContentOfMeAndSubmorphs();
-    
   }, {category: ['creating']});
   
   add.creator('modelUsingWhicheverMorphsHappenToBeThere', {});
 
   add.creator('style', {}, {category: ['styles']});
-  
-  add.method('findTitleLabel', function () {
-    return this.headerRow().submorphsRecursively().find(function(m) { return m instanceof avocado.TwoModeTextMorph; });
-  }, {category: ['title']});
-
-  add.method('createTitleLabel', function () {
-    this._containerName = 'a container';
-    var lbl = new avocado.TwoModeTextMorph(avocado.accessors.forAttribute(this, '_containerName'));
-    lbl.setNameOfEditCommand("rename");
-    lbl.backgroundColorWhenWritable = null;
-    lbl.ignoreEvents();
-    return lbl;
-  }, {category: ['title']});
-  
-  add.method('commands', function () {
-    var cmdList = avocado.command.list.create(this);
-    var titleLabel = this.findTitleLabel();
-    if (titleLabel) {
-      cmdList.addAllCommands(titleLabel.editingCommands());
-    }
-    return cmdList;
-  }, {category: ['commands']});
   
 });
 
@@ -71,18 +45,19 @@ thisModule.addSlots(avocado.ContainerMorph.prototype.modelUsingWhicheverMorphsHa
   
   add.method('initialize', function (morph) {
     this._morph = morph;
+    this._containerName = 'a container';
+    this._titleAccessors = avocado.accessors.forAttribute(this, '_containerName');
   }, {category: ['creating']});
   
   add.method('toString', function () { return "morphs of " + this._morph; });
   
   add.method('immediateContents', function () {
-    return this._morph.contentsPanel().submorphs.map(function(m) { return typeof(m._model) !== 'undefined' ? m._model : { newMorph: function() { return m; }}; });
+    return this._morph.actualContentsPanel().submorphs.map(function(m) { return typeof(m._model) !== 'undefined' ? m._model : { newMorph: function() { return m; }}; });
   }, {category: ['accessing']});
-
-  add.method('dragAndDropCommands', function () {
-    var cmdList = avocado.command.list.create();
-    return cmdList;
-  }, {category: ['commands']});
+  
+  add.method('titleAccessors', function () {
+    return this._titleAccessors;
+  }, {category: ['accessing']});
 
 });
 

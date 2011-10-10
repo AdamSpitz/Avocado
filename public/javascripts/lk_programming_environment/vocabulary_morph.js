@@ -13,10 +13,6 @@ thisModule.addSlots(avocado.vocabulary, function(add) {
     return new this.Morph(this);
   }, {category: ['user interface']});
 
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
-  }, {category: ['user interface']});
-
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
 
 });
@@ -48,7 +44,8 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     
     var mirs = this.mirror().meAndAncestors().toArray();
     var mirrorsPanel = this._mirrorsPanel;
-    this._mirrorsPanel.setRows(mirs.map(function(mir) { return mirrorsPanel.placeholderForMorph(mir.morph()); }));
+    var world = WorldMorph.current();
+    this._mirrorsPanel.setRows(mirs.map(function(mir) { return mirrorsPanel.placeholderForMorph(world.morphFor(mir)); }));
     
     this._expander = new ExpanderMorph(this);
     this._titleLabel = this.createNameLabel();
@@ -105,7 +102,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   }, {category: ['evaluators']});
 
   add.method('grabResult', function (resultMirMorph, evt) {
-    if (resultMirMorph === this.mirror().morph()) {
+    if (resultMirMorph === avocado.ui.worldFor(evt).morphFor(this.mirror())) {
       this.wiggle();
     } else {
       resultMirMorph.grabMe(evt);

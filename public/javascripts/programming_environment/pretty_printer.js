@@ -200,7 +200,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
         this._buffer.append("}");
         break;
       }
-      reflect(node).morph().grabMe();
+      avocado.ui.grab(reflect(node));
       throw new Error("prettyPrinter encountered unknown FUNCTION type: " + node.functionForm);
     case nodeTypes.IF:
       this._buffer.append("if (");
@@ -349,7 +349,7 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
       this.prettyPrint(node[2]);
       break;
     default:
-      reflect(node).morph().grabMe();
+      avocado.ui.grab(reflect(node));
       var errorMsg = "prettyPrinter encountered unknown node type: " + jsParse.tokens[node.type];
       console.log(errorMsg);
       throw new Error(errorMsg);

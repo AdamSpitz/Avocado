@@ -15,10 +15,6 @@ thisModule.addSlots(avocado.db, function(add) {
     return new this.Morph(this);
   }, {category: ['user interface']});
 
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
-  }, {category: ['user interface']});
-
   add.creator('morphFactory', {}, {category: ['user interface']});
 
 });
@@ -27,11 +23,7 @@ thisModule.addSlots(avocado.db, function(add) {
 thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add) {
 
   add.method('newMorph', function () {
-    return new avocado.TreeNodeMorph(this).setShouldScaleContentsToFit(true).refreshContentOfMeAndSubmorphs().applyStyle({fill: new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth), borderRadius: 10});
-  }, {category: ['user interface']});
-
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
+    return avocado.TreeNodeMorph.create(this).refreshContentOfMeAndSubmorphs().applyStyle({fill: new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth), borderRadius: 10});
   }, {category: ['user interface']});
   
 });
@@ -43,10 +35,6 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
 
   add.method('newMorph', function () {
     return new this.Morph(this);
-  }, {category: ['user interface']});
-
-  add.method('morph', function () {
-    return WorldMorph.current().morphFor(this);
   }, {category: ['user interface']});
   
 });
@@ -158,9 +146,8 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
   add.data('constructor', avocado.couch.db.container.Morph);
 
   add.method('initialize', function ($super, container) {
-    $super(container);
+    $super(container, avocado.TreeNodeMorph.functionForCreatingTreeContentsPanel(container));
     this.applyStyle(this.style);
-    this.setShouldScaleContentsToFit(true);
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['creating']});
 
@@ -177,8 +164,8 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
   
   add.method('updateContents', function (callback) {
     this._model.updateContents(function(contents) {
-      contents.forEach(function(c) { this.contentMorphFor(c).refreshContentOfMeAndSubmorphs(); }.bind(this));
-      this.contentsPanel().cleanUp();
+      contents.forEach(function(c) { WorldMorph.current().morphFor(c).refreshContentOfMeAndSubmorphs(); }.bind(this));
+      this.actualContentsPanel().cleanUp();
       avocado.ui.justChanged(this._model, evt);
       if (callback) { callback(contents); }
     }.bind(this));
@@ -187,7 +174,7 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
   
   add.method('storeString', function () {
     // aaa - hack, in the long run the transporter should be smart enough to handle this
-    return ["(", this._model.storeString(), ").morph().setBasicMorphProperties(", this.basicMorphPropertiesStoreString(), ").updateContents()"].join("");
+    return ["WorldMorph.current().morphFor(", this._model.storeString(), ").setBasicMorphProperties(", this.basicMorphPropertiesStoreString(), ").updateContents()"].join("");
   }, {category: ['transporting']});
 
 });

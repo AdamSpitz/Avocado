@@ -10,7 +10,7 @@ requires('core/testFramework');
 thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('newMorph', function () {
-    var m = new avocado.TreeNodeMorph(this).applyStyle(this.defaultMorphStyle);
+    var m = avocado.TreeNodeMorph.create(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'test case';
     
     m.refreshContentOfMeAndSubmorphs();
@@ -39,7 +39,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
 thisModule.addSlots(avocado.testCase.suite, function(add) {
 
   add.method('newMorph', function () {
-    var m = new avocado.TreeNodeMorph(this).applyStyle(this.defaultMorphStyle);
+    var m = avocado.TreeNodeMorph.create(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'test suite';
     
     m.refreshContentOfMeAndSubmorphs();

@@ -213,7 +213,7 @@ thisModule.addSlots(avocado.transporter.module.slotOrderizer, function(add) {
       var inDepLists = this.allSlotsInDependencyLists();
       inDepLists.each(function(s) {
         if (! remaining.include(s)) {
-          s.holder().morph().grabMe();
+          avocado.ui.grab(s.holder());
 
           var reason = "I have no idea why";
           if (! s.holder().isWellKnown('probableCreatorSlot')) {
