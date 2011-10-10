@@ -78,6 +78,10 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     return this.contents().isReflecteeSimpleMethod();
   }, {category: ['testing']});
 
+  add.method('shouldBeShownAsJustSourceCode', function () {
+    return this.isSimpleMethod();
+  }, {category: ['user interface']});
+
   add.data('isAvocadoSlot', true, {category: ['testing']});
 
   add.method('doesTypeMatch', function (obj) { return obj && obj.isAvocadoSlot; }, {category: ['testing']});
@@ -87,6 +91,11 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   add.method('copyDownParentThatIAmFrom', function () { return null; }, {category: ['copy-down parents']});
 
   add.method('isFromACopyDownParent', function () { return !! this.copyDownParentThatIAmFrom(); }, {category: ['copy-down parents']});
+
+  add.method('isReallyPartOfHolder', function () {
+    // I don't like the name of this method.
+    return ! this.isFromACopyDownParent();
+  }, {category: ['copy-down parents']});
 
   add.method('isArrayIndex', function () {
     if (! this.holder().isReflecteeArray()) { return false; }
@@ -159,6 +168,11 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
       c.addPossibleCreatorSlot(this);
     }
   }, {category: ['user interface', 'creator slots']});
+
+  add.method('justExplicitlySetContents', function (evt) {
+    // Just to help make it easier and more intuitive to set creator slots.
+    this.bePossibleCreatorSlotIfNoneAlreadySpecified();
+  }, {category: ['user interface']});
 
   add.method('interactivelyBeCreator', function (evt) {
     // aaa - Maybe the justChanged stuff should be put into the regular beCreator method.
@@ -401,6 +415,10 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   add.method('hashCode', function () {
     return this.name().hashCode() + this.mirror().hashCode();
   }, {category: ['comparing']});
+
+  add.method('copyToNewHolder', function () {
+    return this.copyTo(reflect({}).rootCategory());
+  }, {category: ['copying']});
 
   add.method('copyTo', function (targetCatOfNewMir) {
     var newSlot = targetCatOfNewMir.mirror().slotAt(this.name());
