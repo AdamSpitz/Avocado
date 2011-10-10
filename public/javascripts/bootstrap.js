@@ -436,6 +436,34 @@ var annotator = {
   
   categoryCachePrototype: {
     initialize: function(n, supercat) {
+      
+      // The OLD way of doing categories was that they were just in each slot annotation. This
+      // had two problems:
+      //   - A category didn't really "exist" until it had at least one slot in it. Which was
+      //     annoying, because the natural way of creating categories in the UI is for the user
+      //     to say "add category" and *then* add slots to it, so the category would kinda be
+      //     in this weird limbo until the slot was actually added. It was awkward to hack the
+      //     UI to make it remember to keep the newly-created category around.
+      //   - It was slow for really big objects (like "window"), because to find the contents
+      //     of a category, the UI would have to search through every slot in the object.
+      //
+      // So now, an object annotation keeps these "category cache" objects around (in addition
+      // to having them in the slot annotations). The category's cache remembers which slots
+      // are in the category.
+      // 
+      // Unfortunately, there's no way to catch the creation of new slots by code like "obj.x = 3",
+      // so we can't guarantee that this data structure will be up to date. That's why we think
+      // of it as a cache rather than a guaranteed-up-to-date parallel data structure. And I
+      // think that when doing an update, we just replace the whole structure, which means that
+      // we can't have the slots keep pointers to their category caches... which is fine, this
+      // isn't meant to solve that problem.
+      //
+      // For now, I think the mirror morph's refreshContent method refreshes this cache
+      // whenever it runs (so once every 8 seconds, or whatever it is). But maybe it'd make
+      // sense to keep a timestamp and check it whenever someone accesses the cache, so that
+      // it'll still keep getting updated even if there's no mirror morph on the screen.
+      
+      
       this._lastPart = n;
       this._supercategory = supercat;
     },
