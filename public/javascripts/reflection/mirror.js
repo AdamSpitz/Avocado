@@ -4,6 +4,7 @@ requires('core/enumerator');
 requires('core/identity_hash');
 requires('core/testFramework');
 requires('core/dom_stuff');
+requires('core/naming');
 
 }, function(thisModule) {
 
@@ -57,6 +58,8 @@ thisModule.addSlots(avocado.mirror, function(add) {
       return "broken identity hash";
     }
   }, {category: ['comparing']});
+  
+  add.creator('namingScheme', Object.create(avocado.namingScheme), {category: ['naming']});
 
   add.method('reflecteeToString', function () {
     try {
@@ -74,7 +77,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['naming']});
 
   add.method('toString', function () {
-    return "on " + this.inspect();
+    return this.inspect();
   }, {category: ['naming']});
 
   add.method('storeString', function () {
@@ -105,6 +108,16 @@ thisModule.addSlots(avocado.mirror, function(add) {
     }
   }, {category: ['naming']});
 
+  add.method('fullName', function () {
+    return this.name();
+  }, {category: ['naming']});
+
+  add.method('immediateName', function () {
+    var cs = this.probableCreatorSlot();
+    if (cs) { return cs.immediateName(); }
+    return "";
+  }, {category: ['naming']});
+  
   add.method('shortDescription', function () {
     if (! this.canHaveSlots()) { return ""; }
     if (this.isReflecteeFunction()) { return ""; }
@@ -147,11 +160,15 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['naming']});
 
   add.method('name', function () {
+    return this.nameWithinEnclosingObject(undefined);
+  }, {category: ['naming']});
+
+  add.method('nameWithinEnclosingObject', function (enclosingMirrorOrSlot) {
     if (this.isRootOfGlobalNamespace()) { return "window"; }
     if (! this.canHaveCreatorSlot()) {return Object.inspect(this.primitiveReflectee());}
     if (! this.canHaveSlots()) { return Object.inspect(this.primitiveReflectee()); }
 
-    var chain = this.creatorSlotChainOfMeOrAnAncestor('probableCreatorSlot');
+    var chain = this.creatorSlotChainOfMeOrAnAncestor('probableCreatorSlot', enclosingMirrorOrSlot);
 
     // aaa - Not sure whether this is a hack or not. I don't like that we end up with morphs
     // named, for example, "WorldMorph.current.submorphs.3". So use the parent's chain instead.
@@ -225,20 +242,30 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return s.toString();
   }, {category: ['annotations', 'creator slot']});
 
-  add.method('creatorSlotChain', function (kindOfCreatorSlot) {
+  add.method('creatorSlotChain', function (kindOfCreatorSlot, stopAt) {
     if (! this.canHaveCreatorSlot()) {return null;}
 
     var chain = [];
-    var windowMir = reflect(window);
     var mir = this;
     var cs;
     kindOfCreatorSlot = kindOfCreatorSlot || 'explicitlySpecifiedCreatorSlot';
+    var windowMirror = reflect(window);
+    var stopAtMirror, stopAtSlot;
+    if (stopAt) {
+      if (Object.inheritsFrom(avocado.mirror, stopAt)) {
+        stopAtMirror = stopAt;
+      } else {
+        stopAtSlot = stopAt;
+      }
+    }
 
     for (var i = 0; true; ++i) {
-      if (mir.equals(windowMir)) { return chain; }
+      if (mir.equals(windowMirror)) { return chain; }
+      if (stopAtMirror && mir.equals(stopAtMirror)) { return chain; }
       cs = mir[kindOfCreatorSlot].call(mir);
       if (! cs) { return null; }
       if (! cs.contents().equals(mir)) { return null; } // probably obsolete or something
+      if (stopAtSlot && cs.equals(stopAtSlot)) { return chain; }
       chain.push(cs);
       if (i >= 100) {
         console.log("WARNING: Really long (" + i + " so far) chain of creator slots; giving up because it's probably a loop. " +
@@ -249,34 +276,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
     }
   }, {category: ['annotations', 'creator slot']});
 
-  add.method('partialCreatorSlotChain', function (kindOfCreatorSlot) {
-    if (! this.canHaveCreatorSlot()) {return null;}
-
-    var chain = [];
-    var windowMir = reflect(window);
-    var mir = this;
-    var cs;
-    kindOfCreatorSlot = kindOfCreatorSlot || 'explicitlySpecifiedCreatorSlot';
-
-    for (var i = 0; true; ++i) {
-      if (mir.equals(windowMir)) { return chain; }
-      cs = mir[kindOfCreatorSlot].call(mir);
-      if (! cs) { return chain; }
-      if (! cs.contents().equals(mir)) { return chain; } // probably obsolete or something
-      chain.push(cs);
-      if (i >= 100) {
-        console.log("WARNING: Really long (" + i + " so far) chain of creator slots; giving up because it's probably a loop. " +
-                    "Here it is so far, starting from the end: " + chain.map(function(s) { return s.name(); }).join(", "));
-        return chain;
-      }
-      mir = cs.holder();
-    }
-  }, {category: ['annotations', 'creator slot']});
-
-  add.method('creatorSlotChainOfMeOrAnAncestor', function (kindOfCreatorSlot) {
+  add.method('creatorSlotChainOfMeOrAnAncestor', function (kindOfCreatorSlot, stopAt) {
     var mir = this;
     while (true) {
-      var chain = mir.creatorSlotChain(kindOfCreatorSlot);
+      var chain = mir.creatorSlotChain(kindOfCreatorSlot, stopAt);
       if (chain) { return chain; }
       if (! mir.hasAccessibleParent()) { return null; }
       mir = mir.parent();
@@ -1005,6 +1008,11 @@ thisModule.addSlots(avocado.mirror.sourceModulePrompter, function(add) {
       callback(context.slotsInModuleNamed(sourceModuleName));
     }, evt);
   }, {category: ['prompting']});
+
+});
+
+
+thisModule.addSlots(avocado.mirror.namingScheme, function(add) {
 
 });
 

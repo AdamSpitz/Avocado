@@ -21,8 +21,6 @@ thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(ad
 
 thisModule.addSlots(avocado.webdav, function(add) {
 
-  add.creator('directory', {});
-
   add.creator('file', {});
 
 });
@@ -35,6 +33,10 @@ thisModule.addSlots(FileDirectory.prototype, function(add) {
   }, {category: ['accessing']});
 
   add.method('toString', function () {
+    return this.immediateName();
+  }, {category: ['printing']});
+
+  add.method('immediateName', function () {
     return this.url.filename();
   }, {category: ['printing']});
 
@@ -140,6 +142,10 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
   }, {category: ['accessing']});
 
   add.method('toString', function () {
+    return this.fullName();
+  }, {category: ['printing']});
+
+  add.method('fullName', function () {
     return this.urlString();
   }, {category: ['printing']});
 

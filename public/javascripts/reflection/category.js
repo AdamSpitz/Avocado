@@ -36,7 +36,9 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
   add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
 
-  add.method('fullName', function () { return this._parts.join(" "); }, {category: ['accessing']});
+  add.method('immediateName', function () { return this.lastPart(); }, {category: ['printing']});
+
+  add.method('fullName', function () { return this._parts.join(" "); }, {category: ['printing']});
 
   add.method('sortOrder', function () { return this.isRoot() ? '' : this.lastPart().toLowerCase(); }, {category: ['sorting']});
 

@@ -48,20 +48,35 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('holder', function () { return this._mirror; }, {category: ['accessing']});
 
-  add.method('inspect', function () { return this.name(); }, {category: ['printing']});
+  add.method('inspect', function () { return this.toString(); }, {category: ['printing']});
 
   add.method('toString', function () {
-    if (this.name() === undefined) { return ""; }
-    return this.name();
+    var n = this.name();
+    if (n === undefined) { return ""; }
+    return n;
   }, {category: ['printing']});
 
   add.method('fullName', function () {
-    if (this.name() === undefined) { return ""; }
-    return this.holder().name() + "." + this.name();
+    var n = this.immediateName();
+    if (n === undefined) { return ""; }
+    return this.holder().name() + "." + n;
   }, {category: ['printing']});
   
   add.method('readableName', function () {
     return this.name();
+  }, {category: ['printing']});
+  
+  add.method('immediateName', function () {
+    return this.name();
+  }, {category: ['printing']});
+  
+  add.data('namingScheme', avocado.mirror.namingScheme, {category: ['printing']});
+
+  add.method('nameWithinEnclosingObject', function (enclosingMirrorOrSlot) {
+    var n = this.immediateName();
+    if (n === undefined) { return ""; }
+    var enclosingName = this.holder().nameWithinEnclosingObject(enclosingMirrorOrSlot);
+    return enclosingName ? enclosingName + "." + n : n;
   }, {category: ['printing']});
 
   add.method('sortOrder', function () { return this.name().toUpperCase(); }, {category: ['sorting']});

@@ -74,6 +74,8 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.method('desiredCurrentStyle', function () {
     return this.shouldUseZooming() ? this.zoomingStyle : this.nonZoomingStyle;
   }, {category: ['styles']});
+  
+  add.data('_contentsThreshold', 1, {category: ['zooming']});
 
   add.method('createTitleLabel', function () {
     var lbl = new avocado.TwoModeTextMorph(avocado.accessors.create(function( ) { return this.category().lastPart(); }.bind(this),

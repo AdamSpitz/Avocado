@@ -108,10 +108,10 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('createNameLabel', function() {
     // can't use "bind" because we can't transport closures, so instead use ownerWithAModel
     return TextMorph.createLabel({
-      initialText: this.inspect(),
+      initialText: this.nameUsingContextualInfoIfPossible(),
       calculateNewText: function() {
         var o = this.ownerWithAModel();
-        return o ? o.inspect() : "";
+        return o ? o.nameUsingContextualInfoIfPossible() : "";
       }
     });
   }, {category: ['shortcuts']});

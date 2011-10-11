@@ -312,7 +312,29 @@ Morph.addMethods({
 
     toString: function() {
       return ""; // the default behaviour is annoying - makes morph mirrors very wide
-    }
+    },
+
+  	nameUsingContextualInfoIfPossible: function() {
+  		try {
+        if (this._model && this._model.namingScheme) {
+          return this._model.namingScheme.nameInContext(this._model, this);
+        }
+        return this.inspect();
+  		} catch (err) {
+  			return "#<naming error: " + err + ">";
+  		}
+  	},
+  	
+  	enclosingObjectHavingANameInScheme: function(namingScheme) {
+  	  var m = this.owner;
+  	  while (m) {
+  	    if (m._model && m._model.namingScheme) {
+  	      if (m._model.namingScheme === namingScheme) { return m._model; }
+  	    }
+  	    m = m.owner;
+  	  }
+  	  return null;
+  	}
 });
 
 avocado.morphWithAModel = {
