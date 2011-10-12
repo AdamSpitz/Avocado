@@ -346,7 +346,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
   add.method('inspect', function () { return this.toString(); }, {category: ['printing']});
 
   add.method('immediateContents', function () {
-    return this._subtests;
+    return this.subtests();
   }, {category: ['contents']});
   
   add.method('requiresContentsSummary', function () {
@@ -412,7 +412,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     avocado.ui.justChanged(this);
     
     avocado.callbackWaiter.on(function(finalCallback) {
-      thisSuite.immediateContents().each(function(t) {
+      thisSuite.subtests().each(function(t) {
         var callbackForThisOne = finalCallback();
         t.createAndRunAndUpdateAppearance(function() {
           avocado.ui.justChanged(thisSuite);

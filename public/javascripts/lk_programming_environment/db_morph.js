@@ -146,7 +146,7 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
   add.data('constructor', avocado.couch.db.container.Morph);
 
   add.method('initialize', function ($super, container) {
-    $super(container, avocado.TreeNodeMorph.functionForCreatingTreeContentsPanel(container));
+    $super(container);
     this.applyStyle(this.style);
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['creating']});

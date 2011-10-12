@@ -28,8 +28,7 @@ thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
   add.data('constructor', avocado.ContainerMorph);
 
   add.method('initialize', function ($super) {
-    var model = Object.newChildOf(this.modelUsingWhicheverMorphsHappenToBeThere, this);
-    $super(model, avocado.TreeNodeMorph.functionForCreatingTreeContentsPanel(model, true));
+    $super(Object.newChildOf(this.modelUsingWhicheverMorphsHappenToBeThere, this));
     
     reflect(this).slotAt('_model').beCreator();
   }, {category: ['creating']});
@@ -59,6 +58,8 @@ thisModule.addSlots(avocado.ContainerMorph.prototype.modelUsingWhicheverMorphsHa
     return this._titleAccessors;
   }, {category: ['accessing']});
 
+  add.data('shouldContentsPanelAutoOrganize', true);
+  
 });
 
 

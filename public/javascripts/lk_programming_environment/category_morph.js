@@ -24,6 +24,8 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['user interface']});
 
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
+  
+  add.method('shouldContentsPanelUseZooming', function () { return !!avocado.shouldMirrorsUseZooming; });
 
 });
 
@@ -44,7 +46,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
   add.data('constructor', avocado.category.Morph);
   
   add.method('initialize', function ($super, catOfMir, shouldOmitHeaderRow) {
-    $super(catOfMir, avocado.TreeNodeMorph.functionForCreatingTreeContentsPanel(catOfMir, undefined, undefined, avocado.shouldMirrorsUseZooming));
+    $super(catOfMir);
     this._shouldOmitHeaderRow = shouldOmitHeaderRow;
 
     this.applyStyle(this.desiredCurrentStyle());

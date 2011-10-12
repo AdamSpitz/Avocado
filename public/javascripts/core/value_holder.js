@@ -32,9 +32,11 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
     c.notifier = Object.newChildOf(avocado.notifier, this);
     c.setValue(v);
     return c;
-  });
+  }, {category: ['creating']});
 
-  add.method('getValue', function () { return this.value; });
+  add.method('getValue', function () {
+    return this.value;
+  }, {category: ['value']});
 
   add.method('setValue', function (v, evt) {
     var oldValue = this.value;
@@ -42,16 +44,29 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
     this.value = v;
     if (changed) {this.notifier.notifyAllObservers(evt);}
     return v;
-  });
+  }, {category: ['value']});
 
   add.method('areValuesDifferent', function (v1, v2) {
     return v1 !== v2;
-  });
+  }, {category: ['testing']});
+
+  add.method('name', function () {
+    return this._name || "";
+  }, {category: ['naming']});
+
+  add.method('setName', function (n) {
+    this._name = n;
+    return this;
+  }, {category: ['naming']});
+
+  add.method('readableName', function () {
+    return this.name();
+  }, {category: ['naming']});
 
   add.method('addObserver', function (o) {
-      this.notifier.addObserver(o);
-      return this;
-  });
+    this.notifier.addObserver(o);
+    return this;
+  }, {category: ['observing']});
 
 });
 

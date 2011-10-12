@@ -133,10 +133,6 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.creator('signatureRowStyle', {}, {category: ['styles']});
 
-  add.method('mirrorMorph', function () {
-    return WorldMorph.current().existingMorphFor(this.slot().mirror());
-  }, {category: ['accessing']});
-
   add.method('showContentsArrow', function (callWhenDone) {
     this._contentsPointer.arrow.showMe(callWhenDone);
   }, {category: ['contents']});
@@ -275,20 +271,24 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('setSlotName', function (newName, evt) {
     evt = evt || Event.createFake();
+    var world = avocado.ui.worldFor(evt);
     avocado.ui.showMessageIfErrorDuring(function() {
       var newSlot = this.slot().rename(newName);
-      var mirMorph = this.mirrorMorph();
-      if (mirMorph) {
-        mirMorph.refreshContentOfMeAndSubmorphs();
+      var holder = this.slot().holder();
+      if (holder) {
+        var holderMorph = world.existingMorphFor(holder);
+        if (holderMorph) {
+          holderMorph.refreshContentOfMeAndSubmorphs();
 
-        // it's actually a whole nother slot and slotMorph but we want it to feel like the same one
-        var newSlotMorph = mirMorph.slotMorphFor(newSlot);
-        this.transferUIStateTo(newSlotMorph);
-        newSlotMorph.sourceMorph().beWritableAndSelectAll();
-        this.justBecameObsolete();
-        if (mirMorph.shouldUseZooming()) {
-          // aaa - this shouldn't stay here in the long run, I think, but for now I just want everything to stay lined up nicely
-          WorldMorph.current().morphFor(newSlot.category()).cleanUp(evt, true);
+          // it's actually a whole nother slot and slotMorph but we want it to feel like the same one
+          var newSlotMorph = world.morphFor(newSlot);
+          this.transferUIStateTo(newSlotMorph);
+          newSlotMorph.sourceMorph().beWritableAndSelectAll();
+          this.justBecameObsolete();
+          if (holderMorph.shouldUseZooming()) {
+            // aaa - this shouldn't stay here in the long run, I think, but for now I just want everything to stay lined up nicely
+            world.morphFor(newSlot.category()).cleanUp(evt, true);
+          }
         }
       }
     }.bind(this), evt);
@@ -330,23 +330,32 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('wasJustDroppedOnWorld', function (world) {
     if (! this._shouldOnlyBeDroppedOnThisParticularMorph || this._shouldOnlyBeDroppedOnThisParticularMorph === world) {
-      var newSlot = this.slot().copyTo(reflect({}).rootCategory());
+      var newSlot = this.slot().copyToNewHolder();
       var newHolder = newSlot.holder();
-      var newHolderMorph = world.morphFor(newHolder);
-      world.addMorphAt(newHolderMorph, this.position());
-      newHolderMorph.expandCategory(newSlot.category());
+      if (newHolder) {
+        var newHolderMorph = world.morphFor(newHolder);
+        world.addMorphAt(newHolderMorph, this.position());
+        newHolderMorph.expandCategory(newSlot.category());
+      } else {
+        var newSlotMorph = world.morphFor(newSlot);
+        world.addMorphAt(newSlotMorph, this.position());
+      }
       if (this._shouldDisappearAfterCommandIsFinished) { this.remove(); }
     }
   }, {category: ['drag and drop']});
 
   add.method('grabCopy', function (evt) {
-    var newSlot = this.slot().copyTo(reflect({}).rootCategory());
+    var newSlot = this.slot().copyToNewHolder();
     var newSlotMorph = newSlot.newMorph();
     newSlotMorph._explicitStyle = this.grabbedStyle;
     newSlotMorph.refreshContent();
     newSlotMorph.forceLayoutRejiggering();
     newSlotMorph._shouldDisappearAfterCommandIsFinished = true;
-    if (this.mirrorMorph() && ! this.mirrorMorph().shouldAllowModification()) { newSlotMorph._shouldOnlyBeDroppedOnThisParticularMorph = this.mirrorMorph(); }
+    var holder = this.slot().holder();
+    if (holder) {
+      var holderMorph = avocado.ui.worldFor(evt).existingMorphFor(holder);
+      if (holderMorph && ! holderMorph.shouldAllowModification()) { newSlotMorph._shouldOnlyBeDroppedOnThisParticularMorph = holderMorph; }
+    }
     evt.hand.grabMorphWithoutAskingPermission(newSlotMorph, evt);
     return newSlotMorph;
   }, {category: ['drag and drop']});
@@ -354,7 +363,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('grabCopyAndRemoveMe', function (evt) {
     this.grabCopy(evt);
     this.slot().remove();
-    avocado.ui.justChanged(this.slot().holder());
+    var holder = this.slot().holder();
+    if (holder) { avocado.ui.justChanged(holder); }
   }, {category: ['drag and drop']});
 
   add.method('commands', function () {
@@ -486,7 +496,12 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.pointer, function(add) {
 
   add.method('prepareToBeShown', function (callWhenDone) { this._associationMorph.showContents(callWhenDone); }, {category: ['showing']});
 
-  add.method('notifiersToUpdateOn', function () { var mirMorph = this._associationMorph.mirrorMorph(); return mirMorph ? [mirMorph.changeNotifier()] : []; }, {category: ['updating']});
+  add.method('notifiersToUpdateOn', function () {
+    var holder = this.association().holder();
+    if (! holder) { return []; }
+    var holderMorph = WorldMorph.current().existingMorphFor(holder);
+    return holderMorph ? [holderMorph.changeNotifier()] : [];
+  }, {category: ['updating']});
 
   add.method('addExtraCommandsTo', function (cmdList) {
     var assoc = this.association();
@@ -502,6 +517,36 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.pointer, function(add) {
     return m;
   }, {category: ['creating a morph']});
 
+});
+
+
+thisModule.addSlots(avocado.valueHolder, function(add) {
+
+  add.method('newMorph', function () {
+    // Let's try this. A valueHolder is like a slot.
+    return new avocado.slots['abstract'].Morph(this);
+  }, {category: ['user interface']});
+
+  add.method('holder', function () {
+    return null;
+  }, {category: ['pretending to be a slot']});
+
+  add.method('isReallyPartOfHolder', function () {
+    return true;
+  }, {category: ['pretending to be a slot']});
+
+  add.method('shouldBeShownAsJustSourceCode', function () {
+    return false;
+  }, {category: ['pretending to be a slot']});
+
+  add.method('contents', function () {
+    return this.getValue();
+  }, {category: ['pretending to be a slot']});
+
+  add.method('setContents', function (c) {
+    this.setValue(c);
+  }, {category: ['pretending to be a slot']});
+  
 });
 
 

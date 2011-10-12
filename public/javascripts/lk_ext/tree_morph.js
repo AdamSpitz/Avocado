@@ -31,60 +31,57 @@ thisModule.addSlots(avocado.TreeNodeMorph, function(add) {
 
   add.creator('prototype', Object.create(avocado.TableMorph.prototype));
   
-  add.method('create', function (model, shouldAutoOrganize, contentsPanelSize, constructor) {
-    constructor = constructor || avocado.TreeNodeMorph;
-    return new constructor(model, this.functionForCreatingTreeContentsPanel(model, shouldAutoOrganize, contentsPanelSize || pt(150,100)));
+  add.method('create', function (model) {
+    // aaa get rid of this method, just call the constructor directly
+    return new this(model);
   }, {category: ['creating']});
 
-  add.method('functionForCreatingTreeContentsPanel', function (treeNode, shouldAutoOrganize, contentsPanelSize, shouldUseZooming) {
+  add.method('createTreeContentsPanel', function (treeNode, shouldAutoOrganize, contentsPanelSize, shouldUseZooming) {
     // aaa - This whole thing is a bit of a hack, and too function-y. There's an object missing here or something.
     contentsPanelSize = contentsPanelSize || pt(150,100);
     if (typeof(shouldUseZooming) === 'undefined') { shouldUseZooming = avocado.TreeNodeMorph.prototype.shouldUseZooming(); }
-    var f = function() {
-      var cp;
-      if (shouldUseZooming) {
-        cp = new avocado.AutoScalingMorph(new lively.scene.Rectangle(pt(0,0).extent(contentsPanelSize))).applyStyle(avocado.TreeNodeMorph.prototype.zoomingContentsPanelStyle);
-        cp.typeName = 'tree node contents panel'; // just for debugging purposes
-        cp.setShouldScaleSubmorphsToFit(true);
-        if (shouldAutoOrganize) { cp.setShouldAutoOrganize(true); }
 
-        // aaa - eventually should only need one of these, probably recalculateContentModels, and it shouldn't have anything to do with TreeNodeMorph
-        cp.setPotentialContentMorphsFunction(function() { return this.recalculateAndRememberContentMorphsInOrder(); });
+    var cp;
+    if (shouldUseZooming) {
+      cp = new avocado.AutoScalingMorph(new lively.scene.Rectangle(pt(0,0).extent(contentsPanelSize))).applyStyle(avocado.TreeNodeMorph.prototype.zoomingContentsPanelStyle);
+      cp.typeName = 'tree node contents panel'; // just for debugging purposes
+      cp.setShouldScaleSubmorphsToFit(true);
+      if (shouldAutoOrganize) { cp.setShouldAutoOrganize(true); }
 
-        cp.dragAndDropCommands = function() {
-          return this.owner.dragAndDropCommandsForTreeContents();
-        };
-      } else {
-        cp = new avocado.TableMorph().beInvisible().applyStyle(avocado.TreeNodeMorph.prototype.nonZoomingContentsPanelStyle);
-        cp.makeContentMorphsHaveLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
-        cp.setPotentialContentMorphsFunction(function () {
-          return avocado.tableContents.createWithColumns([this.recalculateAndRememberContentMorphsInOrder()]);
-        });
-        // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
-      }
+      // aaa - eventually should only need one of these, probably recalculateContentModels, and it shouldn't have anything to do with TreeNodeMorph
+      cp.setPotentialContentMorphsFunction(function() { return this.recalculateAndRememberContentMorphsInOrder(); });
 
-      cp.recalculateContentModels = function() { return treeNode.immediateContents(); };
-      cp.recalculateAndRememberContentMorphsInOrder = function () {
-        // aaa - Do I want the old contents-summary thing? If so, how should it be included?
-        // if (treeNode.requiresContentsSummary && treeNode.requiresContentsSummary()) { allSubmorphs.push(this.contentsSummaryMorph()); }
-        var world = WorldMorph.current();
-        var morphs = this.recalculateContentModels().map(function(sn) { return world.morphFor(sn); });
-        this._contentMorphs = morphs.toArray().sortBy(function(m) { return m._model && m._model.sortOrder ? m._model.sortOrder() : ''; });
-        return this._contentMorphs;
+      cp.dragAndDropCommands = function() {
+        return this.owner.dragAndDropCommandsForTreeContents();
       };
+    } else {
+      cp = new avocado.TableMorph().beInvisible().applyStyle(avocado.TreeNodeMorph.prototype.nonZoomingContentsPanelStyle);
+      cp.makeContentMorphsHaveLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+      cp.setPotentialContentMorphsFunction(function () {
+        return avocado.tableContents.createWithColumns([this.recalculateAndRememberContentMorphsInOrder()]);
+      });
+      // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
+    }
 
-      cp.partsOfUIState = function () {
-        return {
-          collection: this._contentMorphs || [],
-          keyOf: function(cm) { return cm._model; },
-          getPartWithKey: function(morph, c) { return WorldMorph.current().morphFor(c); }
-        };
-      };
-
-      return cp;
+    cp.recalculateContentModels = function() { return treeNode.immediateContents(); };
+    cp.recalculateAndRememberContentMorphsInOrder = function () {
+      // aaa - Do I want the old contents-summary thing? If so, how should it be included?
+      // if (treeNode.requiresContentsSummary && treeNode.requiresContentsSummary()) { allSubmorphs.push(this.contentsSummaryMorph()); }
+      var world = WorldMorph.current();
+      var morphs = this.recalculateContentModels().map(function(sn) { return world.morphFor(sn); });
+      this._contentMorphs = morphs.toArray().sortBy(function(m) { return m._model && m._model.sortOrder ? m._model.sortOrder() : ''; });
+      return this._contentMorphs;
     };
-    f.contentsPanelSize = contentsPanelSize;
-    return f;
+
+    cp.partsOfUIState = function () {
+      return {
+        collection: this._contentMorphs || [],
+        keyOf: function(cm) { return cm._model; },
+        getPartWithKey: function(morph, c) { return WorldMorph.current().morphFor(c); }
+      };
+    };
+
+    return cp;
   }, {category: ['creating']});
 
 });
@@ -96,11 +93,10 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
 	add.data('noShallowCopyProperties', Morph.prototype.noShallowCopyProperties.concat(["_potentialContentMorphs", "_headerRow", "_headerRowContents", "_titleAccessors"]), {initializeTo: 'Morph.prototype.noShallowCopyProperties.concat(["_potentialContentMorphs", "_headerRow", "_headerRowContents", "_titleAccessors"])'});
 	
-  add.method('initialize', function ($super, treeNode, contentsPanelCreationFn) {
+  add.method('initialize', function ($super, treeNode) {
     $super();
     this._model = treeNode;
     this.applyStyle(this.nodeStyle());
-    this._createActualContentsPanel = contentsPanelCreationFn;
     if (! this.shouldUseZooming()) { this._expander = new ExpanderMorph(this); }
   }, {category: ['initializing']});
 
@@ -114,10 +110,20 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       var contentsThreshold = this._contentsThreshold || 0.25;
       var thresholdMultiplierForHeader = this._shouldOmitHeaderRow ? 0.25 : 0.7;
       return avocado.scaleBasedMorphHider.create(this, this.actualContentsPanel.bind(this), this, function() {
-        var thresholdMultiplierForModel = treeNode.thresholdMultiplier || (treeNode.immediateContents ? Math.sqrt(treeNode.immediateContents().size()) : 1);
-        return contentsThreshold * thresholdMultiplierForHeader * thresholdMultiplierForModel;
-      }.bind(this), this._createActualContentsPanel.contentsPanelSize || pt(150,100)); 
+        return contentsThreshold * thresholdMultiplierForHeader * this.thresholdMultiplierForModel();
+      }.bind(this), pt(150,100)); 
     }
+  }, {category: ['contents panel']});
+  
+  add.method('thresholdMultiplierForModel', function () {
+    if (this._model.thresholdMultiplier) { return this._model.thresholdMultiplier; }
+    if (typeof(this._model.immediateContents) === 'function') {
+      var contents = this._model.immediateContents();
+      if (typeof(contents.size) === 'function') {
+        return Math.sqrt(contents.size());
+      }
+    }
+    return 1;
   }, {category: ['contents panel']});
 
   add.method('toString', function () {
@@ -201,7 +207,13 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('actualContentsPanel', function () {
     if (! this._contentsPanel) {
-      this._contentsPanel = this._createActualContentsPanel();
+      var contents = this.treeNode().immediateContents(); // aaa - is this an unnecessary calculation of immediateContents? Is it gonna be slow?
+      if (Object.isArray(contents) || Object.inheritsFrom(avocado.compositeCollection, contents)) { // aaa - hack, I'm just not quite sure yet that I want an array's newMorph to return one of these AutoScalingMorphs or whatever
+        var shouldUseZooming = typeof(this._model.shouldContentsPanelUseZooming) === 'function' ? this._model.shouldContentsPanelUseZooming() : this._model.shouldContentsPanelUseZooming;
+        this._contentsPanel = avocado.TreeNodeMorph.createTreeContentsPanel(this._model, this._model.shouldContentsPanelAutoOrganize, pt(150,100), shouldUseZooming);
+      } else {
+        this._contentsPanel = (this.world() || WorldMorph.current()).morphFor(contents);
+      }
     }
     return this._contentsPanel;
   }, {category: ['contents panel']});
