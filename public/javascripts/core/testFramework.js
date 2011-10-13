@@ -192,7 +192,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
-    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: function(evt) { this.runAndTimeTest(); }});
+    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: function(evt) { this.createAndRunAndUpdateAppearance(); }});
     cmdList.addLine();
     cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject});
     return cmdList;
