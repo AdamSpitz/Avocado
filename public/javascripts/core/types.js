@@ -1,7 +1,5 @@
 avocado.transporter.module.create('core/types', function(requires) {
 
-requires('core/exit');
-
 }, function(thisModule) {
 
 
@@ -16,8 +14,36 @@ thisModule.addSlots(avocado.types, function(add) {
 
   add.creator('general', {});
 
+  add.creator('boolean', Object.create(avocado.types.general));
+
+  add.creator('string', Object.create(avocado.types.general));
+  
+  add.creator('shortString', Object.create(avocado.types.string));
+
+  add.creator('longString', Object.create(avocado.types.string));
+
   add.creator('collection', Object.create(avocado.types.general));
 
+  add.creator('mirror', Object.create(avocado.types.general));
+
+});
+
+
+thisModule.addSlots(avocado.types.boolean, function(add) {
+
+  add.method('doesTypeMatch', function (o) {
+    return typeof(o) === 'boolean';
+  }, {category: ['testing']});
+  
+});
+
+
+thisModule.addSlots(avocado.types.string, function(add) {
+
+  add.method('doesTypeMatch', function (o) {
+    return typeof(o) === 'string';
+  }, {category: ['testing']});
+  
 });
 
 
@@ -41,6 +67,25 @@ thisModule.addSlots(avocado.types.collection, function(add) {
       });
       return true;
     });
+  }, {category: ['testing']});
+
+});
+
+
+thisModule.addSlots(avocado.types.mirror, function(add) {
+
+  add.method('onReflecteeOfType', function (reflecteeType) {
+    return Object.newChildOf(this, reflecteeType);
+  }, {category: ['creating']});
+
+  add.method('initialize', function (reflecteeType) {
+    this._reflecteeType = reflecteeType;
+  }, {category: ['creating']});
+
+  add.method('doesTypeMatch', function (o) {
+    if (!o) { return false; }
+    if (typeof(o.reflectee) !== 'function') { return false; }
+    return this._reflecteeType.doesTypeMatch(o.reflectee());
   }, {category: ['testing']});
 
 });

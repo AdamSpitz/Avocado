@@ -375,12 +375,20 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
         this.mirror().setParent(newParent);
         this.mirror().parentSlot().beCreator();
         newParentMorph.refreshContentOfMeAndSubmorphs(); // just so that the proper name shows up immediately
+        newParentMorph.ensureParentSlotIsVisible(evt);
+        this.ensureParentSlotIsVisible(evt);
         newParentMorph.slotMorphFor(    newParent.parentSlot()).showContentsArrow();
                   this.slotMorphFor(this.mirror().parentSlot()).showContentsArrow();
       }.bind(this));
     }.bind(this));
   }, {category: ['menu']});
 
+  add.method('ensureParentSlotIsVisible', function (evt) {
+    if (! this.shouldUseZooming()) {
+      this._annotationToggler.beOn(evt);
+    }
+  }, {category: ['menu']});
+  
   add.method('shouldAllowModification', function () {
     return !window.isInCodeOrganizingMode;
   });
@@ -466,7 +474,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
     childMirMorph.growFromNothing(evt, function() {
       var parentSlotMorph = childMirMorph.slotMorphFor(child.parentSlot());
-      parentSlotMorph.contentsPointer().pushMe();
+      parentSlotMorph.pushContentsPointerButton();
     });
   }, {category: ['creating children']});
 
@@ -477,7 +485,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     // might as well show the arrow from the subclass to the superclass
     subclassMirMorph.expand();
     var superclassSlotMorph = subclassMirMorph.slotMorphFor(subclass.slotAt('superclass'));
-    superclassSlotMorph.contentsPointer().pushMe();
+    superclassSlotMorph.pushContentsPointerButton();
   }, {category: ['creating children']});
 
   add.method('showCreatorPath', function (evt, callWhenDone) {

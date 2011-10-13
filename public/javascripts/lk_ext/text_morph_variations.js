@@ -109,6 +109,10 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
   });
   
   add.method('wasJustShown', function(evt) {
+    this.prepareForUserInput(evt);
+  });
+  
+  add.method('prepareForUserInput', function(evt) {
     this.beWritableAndSelectAll(evt);
   });
   

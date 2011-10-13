@@ -1,26 +1,28 @@
 ButtonMorph.subclass("CheckBoxMorph", {
-  initialize: function($super, extent, m) {
+  initialize: function($super, booleanHolder, extent, m) {
+    this._model = booleanHolder || avocado.booleanHolder.containing(false);
     if (!extent) {extent = pt(15,15);}
     this.checkedMorph = m || this.createXShapedMorph(extent);
     this.checkedMorph.handlesMouseDown = function() { return true; };
     this.checkedMorph.relayMouseEvents(this, {onMouseDown: "onMouseDown", onMouseMove: "onMouseMove", onMouseUp: "onMouseUp"});
     $super(pt(0,0).extent(extent));
     this.setFill(Color.white);
-    var model = avocado.booleanHolder.containing(false);
-    this.connectModel({model: model, getValue: "isChecked", setValue: "setChecked"});
-    this.notifier = model.notifier;
+    this.setFillOpacity(0.2);
+    this.connectModel({model: this._model, getValue: "isChecked", setValue: "setChecked"});
+    this.notifier = this._model.notifier;
 
-    this.updateView("all", null);
+    this.refreshContentOfMeAndSubmorphs();
     return this;
   },
 
   toggle: true,
 
   createXShapedMorph: function(extent) {
-    var x = TextMorph.createLabel("X", pt(0,0), extent);
-    // aaa: No longer works now that we've upgraded LK: x.setInset(pt(4,1));
-    return x;
+    return TextMorph.createLabel("X", pt(0,0), extent);
   },
+  
+    getValue: function( ) {return this.getModel().getValue( );},
+    setValue: function(b) {return this.getModel().setValue(b);},
 
    isChecked: function( ) {return this.getModel().getValue( );},
   setChecked: function(b) {return this.getModel().setValue(b);},
@@ -28,13 +30,17 @@ ButtonMorph.subclass("CheckBoxMorph", {
   changeAppearanceFor: function(v) {
     if (v) {
       if (this.checkedMorph.owner !== this) {
-        this.addMorph(this.checkedMorph);
+        this.withoutAnimationAddMorphCentered(this.checkedMorph);
       }
     } else {
       if (this.checkedMorph.owner === this) {
         this.removeMorph(this.checkedMorph);
       }
     }
+  },
+  
+  refreshContent: function() {
+    this.changeAppearanceFor(this.isChecked());
   }
 });
 

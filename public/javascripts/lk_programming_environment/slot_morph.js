@@ -84,27 +84,28 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var signatureRowContent;
     if (this.shouldUseZooming()) {
       /* aaa why does this produce weird shrinking behaviour?   avocado.scaleBasedMorphHider.create(this, function() { */
-      this._buttonChooserMorph = Morph.createEitherOrMorph([
+      this._contentsChooserMorph = Morph.createEitherOrMorph([
+        this.typeSpecificInputMorph.bind(this),
         function() { return Morph.wrapToTakeUpConstantSpace(pt(100, 50), this.sourcePane()); }.bind(this).memoize(),
         function() {
-          var contentsMirrorMorph = WorldMorph.current().morphFor(slot.contents());
-          contentsMirrorMorph.setScale(0.65);
-          contentsMirrorMorph.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore();
-          return contentsMirrorMorph;
+          var contentsMorph = WorldMorph.current().morphFor(slot.contents());
+          contentsMorph.setScale(0.65);
+          contentsMorph.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore();
+          return contentsMorph;
         },
         this.contentsPointerPane.bind(this)
       ], function() {
-        return this.slot().shouldBeShownAsJustSourceCode() ? 0 : (this.slot().equals(this.slot().contents().probableCreatorSlot()) ? 1 : 2);
+        return (this.slot().type() && this.slot().type().createInputMorph) ? 0 : (this.slot().shouldBeShownAsJustSourceCode() ? 1 : (this.slot().shouldBeShownAsContainingItsContents() ? 2 : 3));
       }.bind(this)).applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
       //}.bind(this), this, 1.5, pt(10,10));
       signatureRowContent = [this.descriptionMorph(), Morph.createSpacer(), this._annotationToggler].compact();
     } else {
       this._sourceToggler = avocado.morphToggler.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)));
-      var buttonChooserMorph = Morph.createEitherOrMorph([this.sourceButton(), this.contentsPointer()], function() { return this.slot().shouldBeShownAsJustSourceCode() ? 0 : 1; }.bind(this));
+      var buttonChooserMorph = Morph.createEitherOrMorph([this.sourceButton(), this.contentsPointerButton()], function() { return this.slot().shouldBeShownAsJustSourceCode() ? 0 : 1; }.bind(this));
       signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph].compact();
     }
 
-    this.signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
+    this._signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
     
     this.refreshContentOfMeAndSubmorphs(); // wasn't needed back when slot morphs were always part of a table morph, but now that we have free-form layout we need it
   }, {category: ['creating']});
@@ -134,17 +135,26 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.creator('signatureRowStyle', {}, {category: ['styles']});
 
   add.method('showContentsArrow', function (callWhenDone) {
-    this._contentsPointer.arrow.showMe(callWhenDone);
+    if (this._contentsPointerButton) {
+      this._contentsPointerButton.arrow.showMe(callWhenDone);
+    }
   }, {category: ['contents']});
 
-  add.method('contentsPointer', function () {
-    return this._contentsPointer || (this._contentsPointer = this.constructor.pointer.create(this).newMorph());
+  add.method('pushContentsPointerButton', function () {
+    // aaa - why do we have both this and showContentsArrow?
+    if (this._contentsPointerButton) {
+      this._contentsPointerButton.pushMe();
+    }
+  }, {category: ['contents']});
+
+  add.method('contentsPointerButton', function () {
+    return this._contentsPointerButton || (this._contentsPointerButton = this.constructor.pointer.create(this).newMorph());
   }, {category: ['contents']});
 
   add.method('contentsPointerPane', function () {
     if (! this._contentsPointerPane) {
       this._contentsPointerPane = avocado.TableMorph.newRow().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
-      this._contentsPointerPane.setColumns([Morph.wrapToTakeUpConstantHeight(10, this.sourcePane()), Morph.createSpacer(), this.contentsPointer()]);
+      this._contentsPointerPane.setColumns([Morph.wrapToTakeUpConstantHeight(10, this.sourcePane()), Morph.createSpacer(), this.contentsPointerButton()]);
       this._contentsPointerPane.typeName = 'slot contents pointer pane';
     }
     return this._contentsPointerPane;
@@ -186,6 +196,18 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     // override for children that have more to describe (like process contexts)
     return this.nameMorph();
   }, {category: ['signature']});
+  
+  add.method('typeSpecificInputMorph', function () {
+    var t = this.slot().type();
+    if (!t) {
+      this._typeSpecificInputMorph = null;
+    } else {
+      if (! this._typeSpecificInputMorph) {
+        this._typeSpecificInputMorph = t.createInputMorph(this.slot());
+      }
+    }
+    return this._typeSpecificInputMorph;
+  }, {category: ['type-specific input']});
 
   add.method('sourcePane', function () {
     var sp = this._sourcePane;
@@ -216,7 +238,9 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       // I don't like this; let's make it auto-zoom in instead.
       // this.sourcePane().setScale(0.9);
     } else {
-      this._sourceToggler.beOn(evt);
+      if (this._sourceToggler) {
+        this._sourceToggler.beOn(evt);
+      }
     }
     this._nameMorph.wasJustShown(evt);
   }, {category: ['events']});
@@ -227,30 +251,31 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('setSourceCode', function (s) {
     this.setContents(this.slot().newContentsForSourceCode(s));
+
+    // Sometimes the text doesn't come out quite identical; this makes sure the
+    // source editor doesn't stay red.
+    this._sourceMorph.cancelChanges();
   }, {category: ['accessing']});
 
   add.method('showContents', function (callWhenContentsAreVisible) {
-    var w = this.world();
+    var w = this.world() || WorldMorph.current();
     var mir = this.slot().contents();
     var mirMorph = w.morphFor(mir);
     mirMorph.smoothlyScaleTo(1 / w.getScale()); // aaa - not sure this is a good idea, but maybe
-    mirMorph.ensureIsInWorld(w, this._contentsPointer.worldPoint(pt(150,0)), false, true, true, callWhenContentsAreVisible);
+    mirMorph.ensureIsInWorld(w, this.worldPoint(pt(this.getExtent().x + 125, 0)), false, true, true, callWhenContentsAreVisible);
   }, {category: ['contents']});
 
-  add.method('updateScaleOfSourcePane', function (evt) {
+  add.method('makeSourcePaneLessObtrusiveIfUnlikelyToBeNeeded', function (evt) {
     // Not sure this is really what I want, but I think I don't like it when the
     // source keeps taking up space after I edit it, at least if it's data rather
     // than a method. (The method I'm likely to be editing again. But editing the
     // source of a data slot is usually just done when initially creating the
     // slot.)
     
-    if (this.shouldUseZooming()) {
-      // aaa - I need a better understanding of what exactly needs to happen
-      // when I change the scale of a morph. -- Adam
-      this.sourcePane()._cachedMinimumExtent = false;
-      this.sourcePane().forceLayoutRejiggering(true);
-    } else {
-      if (! this.slot().shouldBeShownAsJustSourceCode()) { this._sourceToggler.beOff(evt); }
+    if (! this.shouldUseZooming()) {
+      if (this._sourceToggler) {
+        if (! this.slot().shouldBeShownAsJustSourceCode()) { this._sourceToggler.beOff(evt); }
+      }
     }
   }, {category: ['contents']});
 
@@ -258,11 +283,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     this.slot().setContents(c);
     this.slot().justExplicitlySetContents(evt);
     
-    // Sometimes the text doesn't come out quite identical; this makes sure the
-    // source editor doesn't stay red.
-    if (this._sourceMorph) { this._sourceMorph.cancelChanges(); }
-
-    this.updateScaleOfSourcePane(evt);
+    this.makeSourcePaneLessObtrusiveIfUnlikelyToBeNeeded(evt);
 
     avocado.ui.justChanged(this.slot());
   }, {category: ['accessing']});
@@ -283,7 +304,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
           // it's actually a whole nother slot and slotMorph but we want it to feel like the same one
           var newSlotMorph = world.morphFor(newSlot);
           this.transferUIStateTo(newSlotMorph);
-          newSlotMorph.sourceMorph().beWritableAndSelectAll();
+          newSlotMorph.justChangedSlotName(evt);
           this.justBecameObsolete();
           if (holderMorph.shouldUseZooming()) {
             // aaa - this shouldn't stay here in the long run, I think, but for now I just want everything to stay lined up nicely
@@ -294,6 +315,13 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     }.bind(this), evt);
   }, {category: ['accessing']});
 
+  add.method('justChangedSlotName', function (evt) {
+    var nextThingTheUserProbablyWantsToDo = this._sourceMorph;
+    if (nextThingTheUserProbablyWantsToDo) {
+      nextThingTheUserProbablyWantsToDo.prepareForUserInput(evt);
+    }
+  }, {category: ['accessing']});
+
   add.method('justBecameObsolete', function () {
     WorldMorph.current().forgetAboutExistingMorphFor(this.slot(), this);
   }, {category: ['renaming']});
@@ -302,7 +330,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     return {
       isSourceOpen:     this._sourceToggler,
       isAnnotationOpen: this._annotationToggler,
-      isArrowVisible:   this.contentsPointer().arrow
+      isArrowVisible:   this._contentsPointerButton ? this._contentsPointerButton.arrow : null
     };
   }, {category: ['UI state']});
 
@@ -320,9 +348,9 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('potentialContentMorphs', function () {
     if (! this._potentialContentMorphs) {
       if (this.shouldUseZooming()) {
-        this._potentialContentMorphs = avocado.tableContents.createWithColumns([[this.signatureRow, this._buttonChooserMorph]]);
+        this._potentialContentMorphs = avocado.tableContents.createWithColumns([[this._signatureRow, this._contentsChooserMorph]]);
       } else {
-        this._potentialContentMorphs = avocado.tableContents.createWithColumns([[this.signatureRow, this._annotationToggler, this._sourceToggler].compact()]);
+        this._potentialContentMorphs = avocado.tableContents.createWithColumns([[this._signatureRow, this._annotationToggler, this._sourceToggler].compact()]);
       }
     }
     return this._potentialContentMorphs;
@@ -545,6 +573,14 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
 
   add.method('setContents', function (c) {
     this.setValue(c);
+  }, {category: ['pretending to be a slot']});
+
+  add.method('shouldBeShownAsContainingItsContents', function () {
+    return false;
+  }, {category: ['pretending to be a slot']});
+
+  add.method('sourceCode', function () {
+    return '' + this.contents();
   }, {category: ['pretending to be a slot']});
   
 });

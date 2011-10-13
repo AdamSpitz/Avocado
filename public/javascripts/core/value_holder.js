@@ -28,10 +28,12 @@ thisModule.addSlots(avocado.booleanHolder, function(add) {
 thisModule.addSlots(avocado.valueHolder, function(add) {
 
   add.method('containing', function (v) {
-    var c = Object.create(this);
-    c.notifier = Object.newChildOf(avocado.notifier, this);
-    c.setValue(v);
-    return c;
+    return Object.newChildOf(this, v);
+  }, {category: ['creating']});
+
+  add.method('initialize', function (v) {
+    this.notifier = Object.newChildOf(avocado.notifier, this);
+    this.setValue(v);
   }, {category: ['creating']});
 
   add.method('getValue', function () {
@@ -39,6 +41,10 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
   }, {category: ['value']});
 
   add.method('setValue', function (v, evt) {
+    if (! this.checkType(v)) {
+      throw new Error("Type mismatch for " + this.name() + ": " + v);
+    }
+    
     var oldValue = this.value;
     var changed = this.areValuesDifferent(oldValue, v);
     this.value = v;
@@ -62,6 +68,21 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
   add.method('readableName', function () {
     return this.name();
   }, {category: ['naming']});
+
+  add.method('type', function () {
+    return this._type;
+  }, {category: ['types']});
+
+  add.method('setType', function (t) {
+    this._type = t;
+    return this;
+  }, {category: ['types']});
+
+  add.method('checkType', function (value) {
+    if (! this._type) { return true; }
+    if (typeof(this._type.doesTypeMatch) !== 'function') { return true; }
+    return this._type.doesTypeMatch(value);
+  }, {category: ['types']});
 
   add.method('addObserver', function (o) {
     this.notifier.addObserver(o);

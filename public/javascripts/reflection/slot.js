@@ -81,6 +81,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('sortOrder', function () { return this.name().toUpperCase(); }, {category: ['sorting']});
 
+  add.method('type', function () { return null; }, {category: ['types']});
+
   add.method('isFunctionBody', function () { return false; }, {category: ['testing']});
 
   add.method('isHardWired', function () { return false; }, {category: ['testing']});
@@ -95,6 +97,10 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('shouldBeShownAsJustSourceCode', function () {
     return this.isSimpleMethod();
+  }, {category: ['user interface']});
+
+  add.method('shouldBeShownAsContainingItsContents', function () {
+    return this.equals(this.contents().probableCreatorSlot());
   }, {category: ['user interface']});
 
   add.data('isAvocadoSlot', true, {category: ['testing']});

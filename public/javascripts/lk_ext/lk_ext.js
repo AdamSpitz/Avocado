@@ -38,6 +38,7 @@ requires('lk_ext/placeholder_morph');
 requires('lk_ext/scripting');
 requires('lk_ext/carrying_hand');
 requires('lk_ext/history_morph');
+requires('lk_ext/types');
 
 }, function(thisModule) {
 
