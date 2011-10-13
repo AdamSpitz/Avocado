@@ -80,7 +80,11 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['zooming']});
 
   add.method('refreshContent', function ($super) {
-    this.mirror().updateCategoryCache();
+    var now;
+    if (!this._categoryCacheTimestamp || (now = new Date().getTime()) - this._categoryCacheTimestamp > 8000) {
+      this._categoryCacheTimestamp = now;
+      this.mirror().updateCategoryCache();
+    }
     return $super();
   }, {category: ['updating']});
   

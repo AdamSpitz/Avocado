@@ -2038,6 +2038,11 @@ Rectangle.addMethods({
 			this.width	/ fullRect.width,
 			this.height / fullRect.height ); 
 	},
+	
+	// Added by Adam
+	matrixTransform: function(tfm) {
+    return rect(this.topLeft().matrixTransform(tfm), this.bottomRight().matrixTransform(tfm));
+	},
 
 	insetBy: function(d) {
 		return new Rectangle(this.x+d, this.y+d, this.width-(d*2), this.height-(d*2));

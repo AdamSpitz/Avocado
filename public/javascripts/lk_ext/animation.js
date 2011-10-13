@@ -8,17 +8,27 @@ requires('core/animation_math');
 thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('isOnScreen', function () {
-      var w = this.world();
-      if (!w) { /* console.log(this + " is not on screen because it's not in the world"); */ return false; }
-      if (w === this) { return true; }
-      // var wTransform = w.getTransform();
-      var wBounds = w.visibleBounds();
-      var thisBounds = this.shape.bounds();
-      var transformedBounds = rect(this.worldPoint(thisBounds.topLeft()), this.worldPoint(thisBounds.bottomRight()));
-      var intersects = wBounds.intersects(transformedBounds);
-      // console.log("For " + this + ", intersects is " + intersects + "; wBounds is " + wBounds + ", transformedBounds is " + transformedBounds);
-      return intersects;
-    }, {category: ['testing']});
+    var w = this.world();
+    if (!w) { /* console.log(this + " is not on screen because it's not in the world"); */ return false; }
+    if (w === this) { return true; }
+    // var wTransform = w.getTransform();
+    var wBounds = w.visibleBoundsCachingIfPossible();
+    var thisBounds = this.shape.bounds();
+    var transformedBounds = thisBounds.matrixTransform(this.transformToMorph(w));
+    var intersects = wBounds.intersects(transformedBounds);
+    // console.log("For " + this + ", intersects is " + intersects + "; wBounds is " + wBounds + ", transformedBounds is " + transformedBounds);
+    return intersects;
+  }, {category: ['testing']});
+
+  add.method('visibleBoundsCachingIfPossible', function () {
+    // Calling world.visibleBounds() from isOnScreen turned out to be a performance problem, so let's
+    // try a simple cache. -- Adam
+    
+    if (!this._cachedVisibleBounds) {
+      this._cachedVisibleBounds = this.visibleBounds();
+    }
+    return this._cachedVisibleBounds;
+  }, {category: ['accessing']});
 
   add.method('startZoomingOuttaHere', function (functionToCallWhenDone) {
       var w = this.world();

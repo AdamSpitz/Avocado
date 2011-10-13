@@ -334,6 +334,14 @@ Morph.addMethods({
   	    m = m.owner;
   	  }
   	  return null;
+  	},
+  	
+  	setFillIfNecessary: function(paint) {
+  	  // aaa - maybe this could just be part of setFill?
+  	  if (paint !== this._fill) {
+  	    this.setFill(paint);
+	    }
+  	  return this;
   	}
 });
 

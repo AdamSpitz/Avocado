@@ -3822,6 +3822,7 @@ Morph.addMethods({
 		if (this.fisheyeScale != 1) scalePt = scalePt.scaleBy(this.fisheyeScale);
 		this.pvtCachedTransform = new lively.scene.Similitude(this.origin, this.rotation, scalePt);
 		this.pvtCachedTransform.applyTo(this.rawNode);
+		if (this._cachedVisibleBounds) { this._cachedVisibleBounds = null; } // added by Adam
 	},
 
 	layoutChanged: function Morph$layoutChanged() {

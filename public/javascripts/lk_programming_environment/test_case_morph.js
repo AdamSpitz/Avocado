@@ -24,12 +24,12 @@ thisModule.addSlots(avocado.testCase, function(add) {
     var r = m._model.result();
     if (r && r.hasFinished()) {
       if (r.anyFailed()) {
-        m.setFill(avocado.testCase.singleResult.failedMorphStyle.fill);
+        m.setFillIfNecessary(avocado.testCase.singleResult.failedMorphStyle.fill);
       } else {
-        m.setFill(avocado.testCase.singleResult.defaultMorphStyle.fill);
+        m.setFillIfNecessary(avocado.testCase.singleResult.defaultMorphStyle.fill);
       }
     } else {
-      m.setFill(avocado.testCase.defaultMorphStyle.fill);
+      m.setFillIfNecessary(avocado.testCase.defaultMorphStyle.fill);
     }
   }, {category: ['user interface']});
 

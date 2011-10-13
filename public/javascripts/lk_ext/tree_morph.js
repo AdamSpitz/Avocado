@@ -68,7 +68,7 @@ thisModule.addSlots(avocado.TreeNodeMorph, function(add) {
       // aaa - Do I want the old contents-summary thing? If so, how should it be included?
       // if (treeNode.requiresContentsSummary && treeNode.requiresContentsSummary()) { allSubmorphs.push(this.contentsSummaryMorph()); }
       var world = WorldMorph.current();
-      var morphs = this.recalculateContentModels().map(function(sn) { return world.morphFor(sn); });
+      var morphs = this.recalculateContentModels().map(function(c) { return world.morphFor(c); });
       this._contentMorphs = morphs.toArray().sortBy(function(m) { return m._model && m._model.sortOrder ? m._model.sortOrder() : ''; });
       return this._contentMorphs;
     };

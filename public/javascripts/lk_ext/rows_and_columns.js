@@ -644,14 +644,12 @@ thisModule.addSlots(avocado.tableContents, function(add) {
   add.data('_data', [], {initializeTo: '[]'});
 
   add.method('initialize', function (a, dir1) {
-    if (! reflect(a).isReflecteeArray()) { throw "Why ain't the data an array?"; }
-    a.forEach(function(line) {
-      if (! reflect(line).isReflecteeArray()) { throw "Why ain't the row or column an array? " + r; }
-    });
     this._data = a;
-    reflect(this).slotAt('_data').beCreator();
-    this._data.makeAllCreatorSlots();
-    this._data.forEach(function(line) { line.makeAllCreatorSlots(); });
+    if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
+      reflect(this).slotAt('_data').beCreator();
+      this._data.makeAllCreatorSlots();
+      this._data.forEach(function(line) { line.makeAllCreatorSlots(); });
+    }
     this._direction1 = dir1;
     this._direction2 = dir1.sideways;
   }, {category: ['creating']});
@@ -772,8 +770,12 @@ thisModule.addSlots(avocado.tableContents, function(add) {
           newRowOrCol.push(mapFn(x));
         }
       });
-      newRowOrCol.makeAllCreatorSlots();
-      c._data.pushAndAdjustCreatorSlots(newRowOrCol);
+      if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
+        newRowOrCol.makeAllCreatorSlots();
+        c._data.pushAndAdjustCreatorSlots(newRowOrCol);
+      } else {
+        c._data.push(newRowOrCol);
+      }
     });
     return c;
   }, {category: ['transforming']});
