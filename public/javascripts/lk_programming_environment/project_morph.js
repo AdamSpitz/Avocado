@@ -28,7 +28,7 @@ thisModule.addSlots(avocado.project, function(add) {
     /* Why isn't this working?
     var privacyRow = avocado.TableMorph.newRow().beInvisible().setPadding({between: {x: 3}});
     var privacyLabel = TextMorph.createLabel("Private: ");
-    var privacyCheckbox = new CheckBoxMorph();
+    var privacyCheckbox = new avocado.CheckBoxMorph();
     privacyRow.setColumns([privacyLabel, privacyCheckbox]);
     privacyCheckbox.notifier.addObserver(function(a, b, c) {
       console.log("Clicked the checkbox: " + a + ", " + b + ", " + c);

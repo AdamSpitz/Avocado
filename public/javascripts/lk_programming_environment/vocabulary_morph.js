@@ -47,7 +47,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     var world = WorldMorph.current();
     this._mirrorsPanel.setRows(mirs.map(function(mir) { return mirrorsPanel.placeholderForMorph(world.morphFor(mir)); }));
     
-    this._expander = new ExpanderMorph(this);
+    this._expander = new avocado.ExpanderMorph(this);
     this._titleLabel = this.createNameLabel();
     
     if (window.avocado && avocado.EvaluatorMorph) {

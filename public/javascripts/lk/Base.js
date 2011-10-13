@@ -384,6 +384,7 @@ Object.extend(Function.prototype, {
 			  // aaa - Another hack to avoid having hundreds of uncategorized classes cluttering
 			  // up the global namespace. -- Adam, August 2010
 			  if (targetScope === Global) {
+			    avocado.annotator.annotationOf(Global).setSlotAnnotation(shortName, {initializeTo: ['null']}); // so it doesn't show up as an unowned slot
 			    avocado.annotator.annotationOf(Global).categorize(['avocado', 'lively kernel'], [shortName]);
 			  }
 

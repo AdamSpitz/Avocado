@@ -17,7 +17,7 @@ thisModule.addSlots(avocado.types.general, function(add) {
 thisModule.addSlots(avocado.types.boolean, function(add) {
 
   add.method('createInputMorph', function (slot) {
-    return new CheckBoxMorph(slot);
+    return new avocado.CheckBoxMorph(slot);
   }, {category: ['input']});
   
 });

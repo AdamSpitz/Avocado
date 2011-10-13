@@ -24,7 +24,8 @@ thisModule.addSlots(avocado.transporter, function(add) {
         var changedOnes = avocado.transporter.module.changedOnes().toArray();
         
         // Include the Unowned Attributes if there are any.
-        var unownedSlotsMorph = avocado.ui.worldFor(evt).morphFor(avocado.searchResultsPresenter.create(avocado.objectGraphWalker.visitors.unownedSlotFinder.create().createWalker(), evt)).redo();
+        var unownedSlotFinder = avocado.objectGraphWalker.visitors.unownedSlotFinder.create();
+        var unownedSlotsMorph = avocado.ui.worldFor(evt).morphFor(avocado.searchResultsPresenter.create(unownedSlotFinder.createWalker(), evt)).redo();
         if (unownedSlotsMorph.searcher().results().size() > 0) {
           changedOnes.unshift(unownedSlotsMorph.searcher());
         }
@@ -32,7 +33,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
         if (changedOnes.size() > 0) {
           avocado.ui.showObjects(changedOnes, "changed modules", evt);
         } else {
-         WorldMorph.current().showMessage("No changed modules to display");
+          avocado.ui.worldFor(evt).showMessage("No changed modules to display");
         }
       }],
 

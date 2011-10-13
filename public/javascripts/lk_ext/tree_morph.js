@@ -97,7 +97,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
     $super();
     this._model = treeNode;
     this.applyStyle(this.nodeStyle());
-    if (! this.shouldUseZooming()) { this._expander = new ExpanderMorph(this); }
+    if (! this.shouldUseZooming()) { this._expander = new avocado.ExpanderMorph(this); }
   }, {category: ['initializing']});
 
   add.method('treeNode', function () { return this._model; }, {category: ['accessing']});

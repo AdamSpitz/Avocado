@@ -480,10 +480,18 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.unownedSlotFinder, functi
     return true;
   });
 
+  add.method('shouldContinueRecursingIntoSlot', function (holder, slotName, howDidWeGetHere) {
+    var slot = reflect(holder).slotAt(slotName);
+    var isCreator = slot.equals(slot.contents().explicitlySpecifiedCreatorSlot());
+    if (!isCreator) { return false; }
+    if (slot.getModuleAssignedToMeExplicitly()) { return false; } // since all the objects under it will implicitly have that module
+    return true;
+  });
+
   add.method('shouldIgnoreSlot', function (holder, slotName, howDidWeGetHere) {
     var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
-    if (slotAnno.initializationExpression()) { return false; }
-    return true;
+    if (slotAnno.initializationExpression()) { return true; }
+    return false;
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {

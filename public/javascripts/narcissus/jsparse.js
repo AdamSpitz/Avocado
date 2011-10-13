@@ -1213,5 +1213,6 @@ window.jsParse = {
   functionForms: functionForms,
   nodeTypes: nodeTypes
 };
+avocado.annotator.annotationOf(window).setSlotAnnotation('jsParse', {initializeTo: ['null']}); // so it doesn't show up as an unowned slot
 
 })();

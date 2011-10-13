@@ -1,5 +1,39 @@
-ButtonMorph.subclass("CheckBoxMorph", {
-  initialize: function($super, booleanHolder, extent, m) {
+avocado.transporter.module.create('lk_ext/check_box', function(requires) {
+
+}, function(thisModule) {
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.method('CheckBoxMorph', function CheckBoxMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
+
+});
+
+
+thisModule.addSlots(avocado.CheckBoxMorph, function(add) {
+
+  add.data('superclass', ButtonMorph);
+
+  add.data('type', 'avocado.CheckBoxMorph');
+
+  add.creator('prototype', Object.create(ButtonMorph.prototype));
+
+  add.method('createWithImage', function(imageURL, size) {
+    var image = new ImageMorph(size.extentAsRectangle(), imageURL);
+    image.setFill(null);
+    var button = new this(size, image);
+    button.setFill(null);
+    return button;
+  }, {category: ['creating']});
+  
+});
+
+
+thisModule.addSlots(avocado.CheckBoxMorph.prototype, function(add) {
+
+  add.data('constructor', avocado.CheckBoxMorph);
+
+  add.method('initialize', function ($super, booleanHolder, extent, m) {
     this._model = booleanHolder || avocado.booleanHolder.containing(false);
     if (!extent) {extent = pt(15,15);}
     this.checkedMorph = m || this.createXShapedMorph(extent);
@@ -13,21 +47,21 @@ ButtonMorph.subclass("CheckBoxMorph", {
 
     this.refreshContentOfMeAndSubmorphs();
     return this;
-  },
+  }, {category: ['creating']})
 
-  toggle: true,
-
-  createXShapedMorph: function(extent) {
+  add.method('createXShapedMorph', function(extent) {
     return TextMorph.createLabel("X", pt(0,0), extent);
-  },
+  }, {category: ['creating']});
+
+  add.data('toggle', true, {category: ['toggling']});
   
-    getValue: function( ) {return this.getModel().getValue( );},
-    setValue: function(b) {return this.getModel().setValue(b);},
+  add.method('getValue', function( ) {return this.getModel().getValue( );}, {category: ['accessing']});
+  add.method('setValue', function(b) {return this.getModel().setValue(b);}, {category: ['accessing']});
 
-   isChecked: function( ) {return this.getModel().getValue( );},
-  setChecked: function(b) {return this.getModel().setValue(b);},
+  add.method('isChecked', function( ) {return this.getModel().getValue( );}, {category: ['accessing']});
+  add.method('setChecked', function(b) {return this.getModel().setValue(b);}, {category: ['accessing']});
 
-  changeAppearanceFor: function(v) {
+  add.method('changeAppearanceFor', function(v) {
     if (v) {
       if (this.checkedMorph.owner !== this) {
         this.withoutAnimationAddMorphCentered(this.checkedMorph);
@@ -37,19 +71,13 @@ ButtonMorph.subclass("CheckBoxMorph", {
         this.removeMorph(this.checkedMorph);
       }
     }
-  },
+  }, {category: ['updating']});
   
-  refreshContent: function() {
+  add.method('refreshContent', function() {
     this.changeAppearanceFor(this.isChecked());
-  }
+  }, {category: ['updating']});
+
 });
 
-Object.extend(CheckBoxMorph, {
-  createWithImage: function(imageURL, size) {
-    var image = new ImageMorph(size.extentAsRectangle(), imageURL);
-    image.setFill(null);
-    var button = new this(size, image);
-    button.setFill(null);
-    return button;
-  }
+
 });

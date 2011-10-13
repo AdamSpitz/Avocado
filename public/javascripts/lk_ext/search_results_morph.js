@@ -38,7 +38,7 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
 
     this._resultsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.resultsPanelStyle);
 
-    this._expander = new ExpanderMorph(this);
+    this._expander = new avocado.ExpanderMorph(this);
     this._titleLabel = this.createNameLabel();
     this.redoButton = ButtonMorph.createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
