@@ -51,7 +51,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
           //reposThatCanListFiles.forEach(function(repo) { avocado.ui.grab(repo, evt); });
           var dirMorph = world.addMorphAt(world.morphFor(new FileDirectory(new URL("http://localhost/~adam/avocado/javascripts/text/"))), pt(100,100)).refreshContentOfMeAndSubmorphs();
           /* AAAAAAAAAAA
-          var fileMorph = world.addMorphAt(world.morphFor(Object.newChildOf(avocado.webdav.file, new URL("http://localhost/~adam/avocado/javascripts/reflection/slot.js"))), pt(100,100));
+          var fileMorph = world.addMorphAt(world.morphFor(avocado.webdav.file.create(new URL("http://localhost/~adam/avocado/javascripts/reflection/slot.js"))), pt(100,100));
           */
         }]);
       } else {

@@ -55,7 +55,7 @@ thisModule.addSlots(FileDirectory.prototype, function(add) {
   add.method('immediateContents', function () {
     if (! this._immediateContents) {
       var subdirs = this.subdirectories().selectThenMap(function(subDirURL) { return ! subDirURL.filename().startsWith("."); }, function(subDirURL) { return new FileDirectory(subDirURL); });
-      var files = this.files().selectThenMap(function(fileURL) { return ! fileURL.filename().startsWith("."); }, function(fileURL) { return Object.newChildOf(avocado.webdav.file, fileURL); });
+      var files = this.files().selectThenMap(function(fileURL) { return ! fileURL.filename().startsWith("."); }, function(fileURL) { return avocado.webdav.file.create(fileURL); });
       this._immediateContents = subdirs.concat(files);
     }
     return this._immediateContents;
@@ -76,6 +76,10 @@ thisModule.addSlots(FileDirectory.prototype, function(add) {
 
 thisModule.addSlots(avocado.webdav.file, function(add) {
   
+  add.method('create', function (url) {
+    return Object.newChildOf(this, url);
+  }, {category: ['creating']});
+  
   add.method('initialize', function (url) {
     this._url = url;
   }, {category: ['creating']});
@@ -84,7 +88,7 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
     return this._url.filename();
   }, {category: ['accessing']});
 
-  add.method('contentText', function () {
+  add.method('contentText', function (callback) {
     if (typeof(this._cachedContents) === 'undefined' && !this._contentsReq) {
       try {
         var thisFile = this;
@@ -95,17 +99,8 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
           if (req.readyState === 4) {
             thisFile._cachedContents = req.responseText;
             delete thisFile._contentsReq;
-
-            var aaa_wantToTimeTheRefresh = true;
-            if (! aaa_wantToTimeTheRefresh) {
-              avocado.ui.justChanged(thisFile);
-            } else {
-              var t1 = new Date().getTime();
-              var m = avocado.ui.worldFor(Event.createFake()).existingMorphFor(thisFile);
-              if (m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); }
-              var t2 = new Date().getTime();
-              console.log("Took: " + (t2 - t1));
-            }
+            avocado.ui.justChanged(thisFile);
+            if (callback) { callback(thisFile._cachedContents); }
           }
         };
         req.send();
@@ -116,7 +111,7 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
     return this._cachedContents || "";
   }, {category: ['accessing']});
 
-  add.method('setContentText', function (t) {
+  add.method('setContentText', function (t, callback) {
     this._cachedContents = t || "";
     if (!this._contentsSetterReq) {
       try {
@@ -127,6 +122,7 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
         req.onreadystatechange = function() {
           if (req.readyState === 4) {
             delete thisFile._contentsSetterReq;
+            if (callback) { callback(); }
           }
         };
         req.send(this._cachedContents);
