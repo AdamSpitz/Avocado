@@ -34,7 +34,8 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
   add.data('constructor', avocado.CarryingHandMorph);
 
   add.method('initialize', function ($super, w) {
-    $super(new lively.scene.Ellipse(pt(0,0), 70));
+    // $super(new lively.scene.Ellipse(pt(0,0), 70));
+    $super(new lively.scene.Rectangle(pt(0,0).extent(pt(140,140))));
     this._world = w;
     this.applyStyle(this.defaultStyle);
     this._originalPositions = Object.newChildOf(avocado.dictionary, avocado.dictionary.identityComparator);
@@ -50,6 +51,7 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
     } else {
       this.setFillOpacity(0);
       this.setScale(1 / this._world.getScale());
+      console.log("carrying hand origin: " + this.origin + ", this._world.getScale(): " + this._world.getScale());
       this._world.addMorphAt(this, pt(0,0));
       this.smoothlyFadeTo(0.1);
       if (callWhenDone) { callWhenDone(); }
@@ -93,15 +95,21 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
   add.method('pickUp', function (m, evt, callWhenDone) {
     this.ensureVisible(function() {
       this.rememberOriginalPositionOf(m);
-      var extent = m.getExtent();
-      var desiredSize = pt(80,80);
-      var scales = pt(desiredSize.x / extent.x, desiredSize.y / extent.y);
+      var currentExternalSize = m.getExtent().scaleBy(m.getScale());
+      var desiredInternalSize = pt(80,80);
+      var desiredExternalSize = desiredInternalSize.scaleBy(this.getScale());
+      var scales = pt(desiredExternalSize.x / currentExternalSize.x, desiredExternalSize.y / currentExternalSize.y);
       var desiredScale = Math.min(scales.x, scales.y);
-      var finalSize = extent.scaleBy(desiredScale);
-      var desiredPos = this.origin.subPt(finalSize.scaleBy(0.5));
-      desiredPos.desiredScale = desiredScale;
-      m.ensureIsInWorld(this._world, desiredPos, true, false, false, function() {
-        this.addMorphAt(m, finalSize.scaleBy(-0.5));
+      var finalExternalSize = currentExternalSize.scaleBy(desiredScale);
+      var finalInternalSize = finalExternalSize.scaleBy(1 / this.getScale());
+      var desiredInternalPos = this.getExtent().scaleBy(0.5).subPt(finalInternalSize.scaleBy(0.5));
+      var desiredExternalPos = this.getPosition().addPt(desiredInternalPos.scaleBy(this.getScale()));
+      console.log("Picking up " + m + ", currentExternalSize: " + currentExternalSize + ", desiredExternalSize: " + desiredExternalSize + ", scales: " + scales
+                  + ", desiredScale: " + desiredScale + ", finalInternalSize: " + finalInternalSize + ", desiredInternalPos: " + desiredInternalPos
+                  + ", desiredExternalPos: " + desiredExternalPos);
+      desiredExternalPos.desiredScale = desiredScale;
+      m.ensureIsInWorld(this._world, desiredExternalPos, true, false, false, function() {
+        this.addMorphAt(m, desiredInternalPos);
         if (callWhenDone) { callWhenDone(); }
       }.bind(this));
     }.bind(this));

@@ -1237,7 +1237,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('printLoadOrder', function () {
-    console.log(avocado.transporter.loadOrder.map(function(itemToLoad) {
+    console.log("# This code produced from bootstrap.js; search for shouldPrintLoadOrder.\n\n" + avocado.transporter.loadOrder.map(function(itemToLoad) {
       if (itemToLoad.externalScript) {
         return "externalScript(" + itemToLoad.externalScript.inspect() + ");";
       } else if (itemToLoad.module) {

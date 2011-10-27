@@ -63,7 +63,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     });
 
   add.method('positionToCenterIn', function (m) {
-      return m.getExtent().scaleBy(0.5).subPt(this.getExtent().scaleBy(0.5));
+      return m.getExtent().scaleBy(0.5).subPt(this.getExtent().scaleBy(this.getScale() * 0.5));
     });
 
   add.method('showTemporarilyInCenterOfWorld', function (w) {

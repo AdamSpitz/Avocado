@@ -31,7 +31,10 @@ thisModule.addSlots(avocado.MessageNotifierMorph, function(add) {
     var msg = "Error: " + err;
     if (err.line !== undefined) { msg += "[" + err.sourceURL + ":" + err.line + "]"; }
     console.log(msg);
-    new this(err, color || Color.red).showTemporarilyInCenterOfWorld((evt || Event.createFake()).hand.world());
+    var morph = new this(err, color || Color.red);
+    var world = avocado.ui.worldFor(evt);
+    morph.setScale(1 / world.getScale());
+    morph.showTemporarilyInCenterOfWorld(world);
   });
 
   add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));

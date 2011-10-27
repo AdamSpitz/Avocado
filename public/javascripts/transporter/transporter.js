@@ -33,7 +33,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
         if (changedOnes.size() > 0) {
           avocado.ui.showObjects(changedOnes, "changed modules", evt);
         } else {
-          avocado.ui.worldFor(evt).showMessage("No changed modules to display");
+          avocado.ui.showMessage("No changed modules to display", evt);
         }
       }],
 

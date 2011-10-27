@@ -171,6 +171,8 @@ thisModule.addSlots(avocado.command, function(add) {
         argSpec.findArgOrPrompt(rcvr, evt, function(arg) {
           args.push(arg);
           promptForArg(i + 1);
+        }, function(err) {
+          avocado.ui.showError(err, evt);
         });
       };
       promptForArg(0);
@@ -231,18 +233,21 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
     return null;
   }, {category: ['prompting']});
 
-  add.method('prompt', function (context, evt, callback) {
+  add.method('prompt', function (context, evt, callback, errback) {
     var p = this.prompter();
-    if (!p) { throw new Error('Cannot prompt for the "' + this._name + '" argument without a prompter'); }
-    return p.prompt(this._name, context, evt, callback);
+    if (p) {
+      return p.prompt(this._name, context, evt, callback);
+    } else {
+      return errback(new Error('Cannot prompt for the "' + this._name + '" argument without a prompter'));
+    }
   }, {category: ['prompting']});
   
-  add.method('findArgOrPrompt', function (context, evt, callback) {
+  add.method('findArgOrPrompt', function (context, evt, callback, errback) {
     var arg = this.findArg(context, evt, callback);
     if (typeof(arg) !== 'undefined') {
       callback(arg);
     } else {
-      this.prompt(context, evt, callback);
+      this.prompt(context, evt, callback, errback);
     }
   }, {category: ['prompting']});
   
