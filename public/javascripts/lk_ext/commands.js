@@ -43,7 +43,19 @@ thisModule.addSlots(avocado.command, function(add) {
       var args = $A(arguments);
       // first arg is the event
       var result = modelCommand.functionToRun().apply(rcvr, args.map(function(o, i) { return i === 0 ? o : o._model; }));
-      args.each(function(arg) { if (arg._shouldDisappearAfterCommandIsFinished) { arg.remove(); }});
+      args.each(function(arg, i) {
+        if (i > 0) {
+          if ((arg.owner instanceof HandMorph || arg.owner instanceof avocado.CarryingHandMorph) && arg._placeholderMorphIJustCameFrom && arg._placeholderMorphIJustCameFrom.world()) {
+            arg._placeholderMorphIJustCameFrom.putOriginalMorphBack(function() {
+              if (typeof(arg.owner.hideIfEmpty) === 'function') { arg.owner.hideIfEmpty(); }
+            });
+          } else if (arg._shouldDisappearAfterCommandIsFinished) {
+            arg.remove();
+          } else {
+            // I guess just leave it there.
+          }
+        }
+      });
       return result;
     });
 

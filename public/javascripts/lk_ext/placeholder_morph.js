@@ -80,6 +80,7 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
     if (this._puttingOriginalMorphBack) { return; }
 	  this._puttingOriginalMorphBack = true;
     this.owner.animatedReplaceMorph(this, this._originalMorph, function() {
+      delete this._originalMorph._placeholderMorphIJustCameFrom;
       this._originalMorph.refreshContentOfMeAndSubmorphs();
       delete this._puttingOriginalMorphBack;
       if (callWhenDone) { callWhenDone(this); }
@@ -88,11 +89,13 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
 
   add.method('putOriginalMorphBackWithoutAnimation', function () {
     this.owner.replaceMorph(this, this._originalMorph);
+    delete this._originalMorph._placeholderMorphIJustCameFrom;
     this._originalMorph.refreshContentOfMeAndSubmorphs();
   }, {category: ['putting in place']});
 
   add.method('putInPlaceOfOriginalMorph', function () {
     this._originalMorph.owner.replaceMorph(this._originalMorph, this);
+    this._originalMorph._placeholderMorphIJustCameFrom = this;
   }, {category: ['putting in place']});
 
   add.method('onMouseDown', function ($super, evt) {
