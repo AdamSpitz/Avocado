@@ -46,8 +46,9 @@ thisModule.addSlots(avocado.command, function(add) {
       args.each(function(arg, i) {
         if (i > 0) {
           if ((arg.owner instanceof HandMorph || arg.owner instanceof avocado.CarryingHandMorph) && arg._placeholderMorphIJustCameFrom && arg._placeholderMorphIJustCameFrom.world()) {
+            var hand = arg.owner;
             arg._placeholderMorphIJustCameFrom.putOriginalMorphBack(function() {
-              if (typeof(arg.owner.hideIfEmpty) === 'function') { arg.owner.hideIfEmpty(); }
+              if (typeof(hand.hideIfEmpty) === 'function') { hand.hideIfEmpty(); }
             });
           } else if (arg._shouldDisappearAfterCommandIsFinished) {
             arg.remove();
