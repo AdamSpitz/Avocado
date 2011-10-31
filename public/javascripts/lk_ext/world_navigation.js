@@ -9,7 +9,6 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 	  if (evt.isCtrlDown() || evt.isMetaDown() || evt.isAltDown()) {
       var factor = Math.pow(1.2, (evt.rawEvent.wheelDeltaY / -600));
       this.zoomBy(factor, evt.point());
-      this.refreshContentIfOnScreenOfMeAndSubmorphs(); // I hope this isn't too slow
       // this.staySameSizeAndSmoothlyScaleTo(this.getScale() * factor, evt.point(), 200, 80, this.refreshContentIfOnScreenOfMeAndSubmorphs.bind(this));
       return true;
     }
@@ -189,6 +188,7 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
         m.justScaledWorld(s);
       }
     });
+    this._world.refreshContentIfOnScreenOfMeAndSubmorphs(); // I hope this isn't too slow
   });
 
   add.method('isOnScreen', function () {
