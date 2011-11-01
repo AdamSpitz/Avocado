@@ -362,12 +362,19 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.CommandMorph.prototype, fun
     if (this.areCommandsEnabled()) {
       this._menuMorph.runCommand(this.command(), evt);
     }
+    this.hideWhatWillHappenIfThisCommandRuns(evt);
   }, {category: ['events']});
 
   add.method('onMouseOver', function (evt) {
     if (this.areCommandsEnabled()) {
       this.beHighlighted();
+      this.showWhatWillHappenIfThisCommandRuns(evt);
     }
+  }, {category: ['events']});
+
+  add.method('onMouseOut', function ($super, evt) {
+    $super(evt);
+    this.hideWhatWillHappenIfThisCommandRuns(evt);
   }, {category: ['events']});
 
   add.creator('defaultStyle', {}, {category: ['styles']});
@@ -388,6 +395,39 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.CommandMorph.prototype, fun
   add.method('styleWhenHighlighted', function () {
     return TextSelectionMorph.prototype.style;
   }, {category: ['styles']});
+
+  add.method('argumentMorphLabels', function () {
+    if (! this._cachedArgumentMorphLabels) {
+      var argSpecs = this.command()._argumentSpecsThatWillBeFoundOrPromptedFor || [];
+      this._cachedArgumentMorphLabels = argSpecs.map(function(argSpec, i) {
+        var tm = TextMorph.createLabel(argSpec.name() || i.toString()).ignoreEvents();
+        tm._argSpec = argSpec;
+        return tm;
+      });
+    }
+    return this._cachedArgumentMorphLabels;
+  }, {category: ['feedback']});
+
+  add.method('showWhatWillHappenIfThisCommandRuns', function (evt) {
+    var c = this.command();
+    var context = c.contextOrDefault();
+    this.argumentMorphLabels().each(function(m, i) {
+      var arg = m._argSpec.findArg(context, evt);
+      if (arg instanceof Morph) {
+        var world = arg.world();
+        if (world) {
+          m.setScale(2.0 / world.getScale());
+          var p = arg.worldPoint(m.positionToCenterIn(arg));
+          m.setPosition(p);
+          world.addMorphFront(m);
+        }
+      }
+    });
+  }, {category: ['feedback']});
+
+  add.method('hideWhatWillHappenIfThisCommandRuns', function (evt) {
+    this.argumentMorphLabels().each(function(m) { m.remove(); });
+  }, {category: ['feedback']});
 
 });
 

@@ -158,6 +158,7 @@ thisModule.addSlots(avocado.command, function(add) {
     if (typeof(this.label) === 'string' && ! this.label.endsWith("...")) { this.setLabel(this.label + "..."); }
     
     c.setArgumentSpecs([]);
+    c._argumentSpecsThatWillBeFoundOrPromptedFor = argSpecs;
     
     var oldFunctionToRun = c.functionToRun();
     c.setFunction(function(evt) {
@@ -195,6 +196,10 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
   add.method('initialize', function (name) {
     this._name = name;
   }, {category: ['creating']});
+
+  add.method('name', function () {
+    return this._name;
+  }, {category: ['accessing']});
 
   add.method('onlyAccepts', function (f) {
     this._acceptanceFunction = f;
