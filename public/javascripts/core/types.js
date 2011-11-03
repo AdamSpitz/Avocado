@@ -26,6 +26,8 @@ thisModule.addSlots(avocado.types, function(add) {
 
   add.creator('mirror', Object.create(avocado.types.general));
 
+  add.creator('enumeration', Object.create(avocado.types.general));
+
 });
 
 
@@ -88,6 +90,38 @@ thisModule.addSlots(avocado.types.mirror, function(add) {
     return this._reflecteeType.doesTypeMatch(o.reflectee());
   }, {category: ['testing']});
 
+});
+
+
+thisModule.addSlots(avocado.types.enumeration, function(add) {
+
+  add.method('forPossibilities', function (possibilities) {
+    return Object.newChildOf(this, possibilities);
+  }, {category: ['creating']});
+
+  add.method('initialize', function (possibilities) {
+    this._possibilities = possibilities;
+  }, {category: ['creating']});
+
+  add.method('doesTypeMatch', function (o) {
+    return this._possibilities.include(o);
+  }, {category: ['testing']});
+  
+  add.creator('prompterProto', {}, {category: ['prompting']});
+  
+  add.method('prompter', function () {
+    return Object.newChildOf(this.prompterProto, this._possibilities);
+  });
+
+});
+
+
+thisModule.addSlots(avocado.types.enumeration.prompterProto, function(add) {
+  
+  add.method('initialize', function (possibilities) {
+    this._possibilities = possibilities;
+  });
+  
 });
 
 

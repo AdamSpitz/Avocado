@@ -61,12 +61,12 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
     this._textMorph.onKeyDown = function(evt) {
       var c = evt.getKeyCode();
       if (c === Event.KEY_RETURN) {
-	this.accept();
-	return true;
+	      this.accept();
+	      return true;
       }
       if (c === Event.KEY_ESC) {
-	this.cancel();
-	return true;
+	      this.cancel();
+	      return true;
       }
       return TextMorph.prototype.onKeyDown.call(this._textMorph, evt);
     }.bind(this);
@@ -87,7 +87,7 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
       this.smoothlyScaleVerticallyTo(1);
     };
 
-    values.each(function(v) {this._menu.addItem([v, function() {this.setValue(v);}.bind(this)]);}.bind(this));
+    values.each(function(v) {this._menu.addItem(["" + v, function() {this.setValue(v);}.bind(this)]);}.bind(this));
 
     this.setColumns([this._textMorph, Morph.createSpacer(), this._button]);
   }, {category: ['creating']});
@@ -99,7 +99,7 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
   }, {category: ['value']});
 
   add.method('setValue', function (v) {
-    this._textMorph.setText(v);
+    this._textMorph.setText("" + v);
     this.hideMenu();
   }, {category: ['value']});
 

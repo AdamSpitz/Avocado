@@ -67,4 +67,13 @@ thisModule.addSlots(avocado.types.morph, function(add) {
 });
 
 
+thisModule.addSlots(avocado.types.enumeration.prompterProto, function(add) {
+  
+  add.method('prompt', function (caption, context, evt, callback) {
+    avocado.ComboBoxMorph.prompt("Which?", "Choose", "Cancel", this._possibilities, this._possibilities.first(), callback);
+  });
+  
+});
+
+
 });
