@@ -3068,11 +3068,9 @@ Morph.addMethods({
 		try {
 			// Highlight morphs when you can drop something on them. -- Adam
 			if (typeof(this.beHighlighted) === 'function') {
-				if (typeof(this.acceptsDropping) === 'function') {
-				  var ms = evt.hand.submorphs.select(function(m) {return this.acceptsDropping(m);}.bind(this));
-					if (ms.size() > 0) {
-						this.showPotentialDrops(ms, evt);
-					}
+			  var ms = evt.hand.submorphs.select(function(m) { return this.okToReceiveDrop(m); }.bind(this));
+				if (ms.size() > 0) {
+					this.showPotentialDrops(ms, evt);
 				}
 			}
 		} catch (ex) {
@@ -3520,7 +3518,7 @@ addAllHandles: function(evt) {
 
 		// On drops, check that this is a willing recipient
 		if (droppingMorph != null) {
-			return this.acceptsDropping(droppingMorph) ? this : null;
+			return this.okToReceiveDrop(droppingMorph) ? this : null;
 		} else {
 			// On grabs, can't pick up the world or morphs that handle mousedown
 			// DI:  I think the world is adequately checked for now elsewhere

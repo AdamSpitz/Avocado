@@ -63,6 +63,11 @@ Morph.addMethods({
       }
     },
     
+    aboutToBeDroppedOn: function(receiver) {
+      // children can override
+      
+      return true; // to indicate that the receiver morph should handle the drop
+    },
     
   
     checkForDoubleClick: function(evt) {
@@ -142,10 +147,13 @@ HandMorph.addMethods({
         if (receiver !== this.world()) this.unbundleCarriedSelection();
         if (this.logDnD) console.log("%s dropping %s on %s", this, this.topSubmorph(), receiver);
         this.carriedMorphsDo( function(m) {
-            receiver.aboutToReceiveDrop(m); // Added by Adam
-            m.dropMeOnMorph(receiver);
-            this.showAsUngrabbed(m);
-            receiver.justReceivedDrop(m, this); // Added by Adam
+            var shouldLetTheReceiverHandleIt = m.aboutToBeDroppedOn(receiver); // Added by Adam
+            if (shouldLetTheReceiverHandleIt) {
+              receiver.aboutToReceiveDrop(m); // Added by Adam
+              m.dropMeOnMorph(receiver);
+              this.showAsUngrabbed(m);
+              receiver.justReceivedDrop(m, this); // Added by Adam
+            }
         });
         this.removeAllMorphs(); // remove any shadows or halos
     },

@@ -17,6 +17,21 @@ Morph.addMethods({
 
   		return this.openForDragAndDrop && !(morph instanceof WindowMorph);
   	},
+
+    particularlyWantsToBeDroppedOn: function (m) {
+      // I'm not sure I like this mechanism, but I want it for things like MorphChoosers,
+      // which should be able to be dropped on anything - the target thing shouldn't
+      // need to know anything about it. -- Adam, Nov. 2011
+      return false;
+    },
+
+    okToBeDroppedOn: function(m) {
+      return m && (m.acceptsDropping(this) || this.particularlyWantsToBeDroppedOn(m));
+    },
+  
+    okToReceiveDrop: function(m) {
+      return m && m.okToBeDroppedOn(this);
+    },
   
     justReceivedDrop: function(morph, hand) {
   	  var c = this.applicableCommandForDropping(morph);
@@ -83,7 +98,7 @@ Morph.addMethods({
 
         // On drops, check that this is a willing recipient
         if (droppingMorph != null) {
-          if (this.acceptsDropping(droppingMorph)) {
+          if (this.okToReceiveDrop(droppingMorph)) {
             //if (droppingMorph) {console.log(this.inspect() + ">>morphToGrabOrReceive accepts the droppingMorph");}
             return this;
           } else {
@@ -164,7 +179,7 @@ WorldMorph.addMethods({
   },
 
   justReceivedDrop: function (m) {
-    if (this.acceptsDropping(m)) {
+    if (this.okToReceiveDrop(m)) {
       if (typeof m.wasJustDroppedOnWorld === 'function') {
         m.wasJustDroppedOnWorld(this);
       }

@@ -89,6 +89,13 @@ thisModule.addSlots(avocado, function(add) {
     if (this.debugMode) {
       cmdList.addLine();
 
+      cmdList.addItem({label: "make morph chooser", go: function(evt) {
+        var w = evt.hand.world();
+        var mc = new avocado.MorphChooser(avocado.types.morph.onModelOfType(avocado.types.string), function(m) { w.showMessage(m._model); });
+        w.scatter(["argle", 1, true, "bargle"].map(function(o) { return w.morphFor(o); }));
+        mc.grabMeWithoutZoomingAroundFirst(evt);
+      }.bind(this)});
+
       cmdList.addItem({label: "get person object", go: function(evt) {
         var mir = reflect(avocado.person.example);
         avocado.ui.grab(mir, evt)

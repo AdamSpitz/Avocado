@@ -96,8 +96,6 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
   add.method('useMorphicContextualArgFinder', function () {
     var thisArgSpec = this;
     return this.setArgFinder(function(context, evt) {
-      var carryingHand = avocado.CarryingHandMorph.forWorld(evt.hand.world());
-      
       var tryMorphs = function(availableMorphs) {
         var possibleArgMorphs = [];
         availableMorphs.forEach(function(morph) {
@@ -114,16 +112,33 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
         return possibleArgMorphs;
       };
       
-      var possibleArgMorphsInHand = tryMorphs(carryingHand.submorphs);
+      var possibleArgMorphsInHand = tryMorphs(evt.hand.submorphs);
       if (possibleArgMorphsInHand.length === 1) {
         return possibleArgMorphsInHand[0];
       } else if (possibleArgMorphsInHand.length > 1) {
         return undefined;
       }
       
+      var world = evt.hand.world();
+      var carryingHand = avocado.CarryingHandMorph.forWorld(world);
+      var possibleArgMorphsInCarryingHand = tryMorphs(carryingHand.submorphs);
+      if (possibleArgMorphsInCarryingHand.length === 1) {
+        return possibleArgMorphsInCarryingHand[0];
+      } else if (possibleArgMorphsInCarryingHand.length > 1) {
+        return undefined;
+      }
+      
       var possibleArgMorphsInMorphStructure = tryMorphs(avocado.compositeCollection.create([context.ownersRecursively(), context.submorphsRecursively()]));
       if (possibleArgMorphsInMorphStructure.length === 1) {
         return possibleArgMorphsInMorphStructure[0];
+      } else if (possibleArgMorphsInMorphStructure.length > 1) {
+        return undefined;
+      }
+      
+      // I hope this isn't too slow. Or too unintuitive.
+      var possibleArgMorphsInEntireWorld = tryMorphs(avocado.compositeCollection.create([world.submorphsRecursively()]));
+      if (possibleArgMorphsInEntireWorld.length === 1) {
+        return possibleArgMorphsInEntireWorld[0];
       } else {
         return undefined;
       }

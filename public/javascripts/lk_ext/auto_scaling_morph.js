@@ -43,6 +43,8 @@ thisModule.addSlots(avocado.AutoScalingMorph.prototype, function(add) {
   }, {category: ['organizing']});
   
   add.method('acceptsDropping', function ($super, m) {
+    // aaa - I'm confused, why was this method always returning null? (The call to $super was not here before.)
+    return $super(m);
   }, {category: ['drag and drop']});
   
   add.method('aboutToReceiveDrop', function ($super, m) {
