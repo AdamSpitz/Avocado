@@ -89,6 +89,15 @@ thisModule.addSlots(avocado, function(add) {
     if (this.debugMode) {
       cmdList.addLine();
 
+      cmdList.addItem(["get a command object", function(evt) {
+        var c = avocado.command.create('doStuff', function(evt) {
+          evt.hand.world().showMessage("Doing stuff!");
+        }).setArgumentSpecs([
+          avocado.command.argumentSpec.create('bool').onlyAcceptsType(avocado.types.boolean)
+        ]);
+        avocado.ui.grab(c.createPartialCommand(), evt);
+      }]);
+
       cmdList.addItem({label: "make morph chooser", go: function(evt) {
         var w = evt.hand.world();
         var mc = new avocado.MorphChooser(avocado.types.morph.onModelOfType(avocado.types.string), function(m) { w.showMessage(m._model); });

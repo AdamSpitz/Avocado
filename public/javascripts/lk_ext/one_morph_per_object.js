@@ -54,7 +54,7 @@ thisModule.addSlots(WorldMorph.prototype.morphIdentityComparator, function(add) 
   }, {category: ['hashing']});
 
   add.method('hashCodeForKey', function (k) {
-    var c = k.isImmutableForMorphIdentity ? avocado.hashTable.equalityComparator : avocado.hashTable.identityComparator;
+    var c = (k !== null && typeof(k) !== 'undefined' && k.isImmutableForMorphIdentity) ? avocado.hashTable.equalityComparator : avocado.hashTable.identityComparator;
     return c.hashCodeForKey(k);
   }, {category: ['hashing']});
 

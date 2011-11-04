@@ -26,7 +26,7 @@ thisModule.addSlots(avocado.command, function(add) {
     
     return m;
   }, {category: ['user interface']});
-
+  
   add.method('wrapForMorph', function (morph) {
     var modelCommand = this;
     
@@ -61,6 +61,10 @@ thisModule.addSlots(avocado.command, function(add) {
     });
 
     return morphCommand;
+  }, {category: ['user interface']});
+
+  add.method('immediateContents', function () {
+    return this.argumentSpecs();
   }, {category: ['user interface']});
 
 });
@@ -238,6 +242,19 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return null;
     }.bind(this));
   }, {category: ['associated objects']});
+
+});
+
+
+thisModule.addSlots(avocado.command.partial, function(add) {
+  
+  add.method('newMorph', function () {
+    var m = avocado.TreeNodeMorph.create(this);
+    m._shouldNotHideContentsEvenIfTooSmall = true;
+    m.refreshContentOfMeAndSubmorphs();
+    m.applyStyle({borderRadius: 10});
+    return m;
+  }, {category: ['user interface']});
 
 });
 

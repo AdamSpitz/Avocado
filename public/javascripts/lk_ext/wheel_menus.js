@@ -151,7 +151,10 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype, function(add) {
   }, {category: ['events']});
 
   add.method('onMouseDown', function (evt) {
-    if (! this.handIsOverMe(evt.hand)) {
+    if (this.handIsOverMe(evt.hand)) {
+      var selectedCommandMorph = this.commandMorphThatHandIsOver(evt.hand);
+      if (selectedCommandMorph) { selectedCommandMorph.onMouseDown(evt); }
+    } else {
       this.close(evt);
     }
   }, {category: ['events']});
@@ -358,6 +361,23 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.CommandMorph.prototype, fun
     return true;
   }, {category: ['events']});
 
+  add.method('onMouseDown', function (evt) {
+    if (this.areCommandsEnabled()) {
+      var world = avocado.ui.worldFor(evt);
+      var pcm = world._partialCommandMorph;
+      var menuMorph = this._menuMorph;
+      if (pcm._model.command() === this.command()) {
+        setTimeout(function() {
+          pcm.smoothlyFadeTo(1);
+          world.grabPartialCommandMorphIfItIsStillThisOne(pcm);
+          menuMorph.close(evt);
+        }, 750);
+      } else {
+        throw new Error("Why is the world's _partialCommandMorph not the one we expected?");
+      }
+    }
+  }, {category: ['events']});
+
   add.method('onMouseUp', function (evt) {
     if (this.areCommandsEnabled()) {
       this._menuMorph.runCommand(this.command(), evt);
@@ -411,24 +431,66 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.CommandMorph.prototype, fun
   add.method('showWhatWillHappenIfThisCommandRuns', function (evt) {
     var c = this.command();
     var context = c.contextOrDefault();
-    this.argumentMorphLabels().each(function(m, i) {
+    var pc = c.createPartialCommand();
+    var argMorphLabels = this.argumentMorphLabels();
+    argMorphLabels.each(function(m, i) {
+      var argHolder = pc.argumentHolders()[i];
       var arg = m._argSpec.findArg(context, evt);
-      if (arg instanceof Morph) {
-        var world = arg.world();
-        if (world) {
-          m.setScale(2.0 / world.getScale());
-          var p = arg.worldPoint(m.positionToCenterIn(arg));
-          m.setPosition(p);
-          world.addMorphFront(m);
+      if (arg !== null && typeof(arg) !== 'undefined') {
+        if (arg instanceof Morph) {
+          argHolder.setValue(arg);
+          var world = arg.world();
+          if (world) {
+            m.setScale(2.0 / world.getScale());
+            var p = arg.worldPoint(m.positionToCenterIn(arg));
+            m.setPosition(p);
+            world.addMorphFront(m);
+          }
         }
       }
     });
+    var world = avocado.ui.worldFor(evt);
+    world.removeAllPartialCommandMorphs();
+    var pcm = world._partialCommandMorph = world.morphFor(pc);
+    pcm.setScale(1 / world.getScale());
+    var padding = 10 / world.getScale();
+    pcm.setFillOpacity(0.5);
+    world.addMorphAt(pcm, pt(world.getExtent().x - pcm.getExtent().scaleBy(pcm.getScale()).x - padding, padding));
   }, {category: ['feedback']});
 
   add.method('hideWhatWillHappenIfThisCommandRuns', function (evt) {
     this.argumentMorphLabels().each(function(m) { m.remove(); });
+    avocado.ui.worldFor(evt).removeAllPartialCommandMorphsExceptFor(this.command());
   }, {category: ['feedback']});
 
+});
+
+
+thisModule.addSlots(WorldMorph.prototype, function(add) {
+  
+  add.method('removeAllPartialCommandMorphsExceptFor', function (command) {
+    var pcm = this._partialCommandMorph;
+    if (pcm && pcm._model.command() === command) {
+      pcm.remove();
+      delete this._partialCommandMorph;
+    }
+  }, {category: ['commands']})
+  
+  add.method('removeAllPartialCommandMorphs', function () {
+    var pcm = this._partialCommandMorph;
+    if (pcm) {
+      pcm.remove();
+      delete this._partialCommandMorph;
+    }
+  }, {category: ['commands']})
+  
+  add.method('grabPartialCommandMorphIfItIsStillThisOne', function (pcm, evt) {
+    if (this._partialCommandMorph === pcm && pcm.owner === this) {
+      delete this._partialCommandMorph;
+      pcm.grabMe(evt);
+    }
+  }, {category: ['commands']})
+  
 });
 
 

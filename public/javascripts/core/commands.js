@@ -181,6 +181,12 @@ thisModule.addSlots(avocado.command, function(add) {
 
     return c;
   }, {category: ['prompting for arguments']});
+  
+  add.creator('partial', {}, {category: ['partial commands']});
+
+  add.method('createPartialCommand', function () {
+    return avocado.command.partial.create().setCommand(this);
+  }, {category: ['partial commands']});
 
 });
 
@@ -199,6 +205,10 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
 
   add.method('name', function () {
     return this._name;
+  }, {category: ['accessing']});
+
+  add.method('type', function () {
+    return this._type;
   }, {category: ['accessing']});
 
   add.method('onlyAccepts', function (f) {
@@ -411,6 +421,55 @@ thisModule.addSlots(avocado.command.list, function(add) {
   add.method('wrapWithPromptersForArguments', function () {
     return avocado.command.list.create(this._defaultContext, this._commands.map(function(c) { return c ? c.wrapWithPromptersForArguments() : null; }));
   }, {category: ['prompting for arguments']});
+
+});
+
+
+thisModule.addSlots(avocado.command.partial, function(add) {
+  
+  add.method('create', function () {
+    return Object.newChildOf(this);
+  }, {category: ['creating']});
+  
+  add.method('initialize', function () {
+  }, {category: ['creating']});
+  
+  add.method('toString', function () {
+    return this.command().toString();
+  }, {category: ['printing']});
+  
+  add.method('command', function () {
+    return this._command;
+  }, {category: ['accessing']});
+  
+  add.method('setCommand', function (c) {
+    this._command = c;
+    this._argumentHolders = (this._command._argumentSpecsThatWillBeFoundOrPromptedFor || this._command.argumentSpecs() || []).map(function(s) {
+      var h = avocado.valueHolder.containing(s.type() ? s.type().defaultValue() : undefined).setName(s.name()).setType(s.type());
+      // aaa kind of a hack; this isn't quite what isReallyPartOfHolder was meant to be used for
+      h.isReallyPartOfHolder = function () { var v = this.getValue(); return v !== null && typeof(v) !== 'undefined'; };
+      return h;
+    });
+    return this;
+  }, {category: ['accessing']});
+  
+  add.method('argumentHolders', function () {
+    return this._argumentHolders;
+  }, {category: ['arguments']});
+  
+  add.method('immediateContents', function () {
+    return this.argumentHolders();
+  }, {category: ['user interface']});
+  
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addItem(avocado.command.create('run', function(evt) {
+      var args = this.argumentHolders().map(function(h) { return h.getValue(); });
+      args.unshift(evt);
+      return this._command.go.apply(this._command, args);
+    }));
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
 
 });
 

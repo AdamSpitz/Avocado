@@ -10,6 +10,8 @@ WorldMorph.addMethods({
     // noticed.) I have no idea why, but it's not important right
     // now, so I'm letting it go. -- Adam, Nov. 2010
     evt.hand.setKeyboardFocus(null);
+    
+    this.removeAllPartialCommandMorphs();
 
     if (this.shouldSlideIfClickedAtEdge) { this.slideIfClickedAtEdge(evt); }
 

@@ -31,7 +31,20 @@ thisModule.addSlots(avocado.types, function(add) {
 });
 
 
+thisModule.addSlots(avocado.types.general, function(add) {
+
+  add.method('defaultValue', function () {
+    return undefined;
+  }, {category: ['default values']});
+  
+});
+
+
 thisModule.addSlots(avocado.types.boolean, function(add) {
+
+  add.method('defaultValue', function () {
+    return false;
+  }, {category: ['default values']});
 
   add.method('doesTypeMatch', function (o) {
     return typeof(o) === 'boolean';

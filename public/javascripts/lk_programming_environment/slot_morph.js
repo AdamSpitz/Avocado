@@ -95,13 +95,18 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
         },
         this.contentsPointerPane.bind(this)
       ], function() {
-        return (this.slot().type() && this.slot().type().createInputMorph) ? 0 : (this.slot().shouldBeShownAsJustSourceCode() ? 1 : (this.slot().shouldBeShownAsContainingItsContents() ? 2 : 3));
+        return (this.slot().type() && this.slot().type().canCreateInputMorph()) ? 0 : (this.slot().shouldBeShownAsJustSourceCode() ? 1 : (this.slot().shouldBeShownAsContainingItsContents() ? 2 : 3));
       }.bind(this)).applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
       //}.bind(this), this, 1.5, pt(10,10));
       signatureRowContent = [this.descriptionMorph(), Morph.createSpacer(), this._annotationToggler].compact();
     } else {
       this._sourceToggler = avocado.morphToggler.create(this, this.createRow(function() {return this.sourcePane();}.bind(this)));
-      var buttonChooserMorph = Morph.createEitherOrMorph([this.sourceButton(), this.contentsPointerButton()], function() { return this.slot().shouldBeShownAsJustSourceCode() ? 0 : 1; }.bind(this));
+      var buttonChooserMorph = Morph.createEitherOrMorph([
+        this.sourceButton(),
+        this.contentsPointerButton()
+      ], function() {
+        return this.slot().shouldBeShownAsJustSourceCode() ? 0 : 1;
+      }.bind(this));
       signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph].compact();
     }
 
