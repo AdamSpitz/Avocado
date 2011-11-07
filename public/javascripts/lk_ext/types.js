@@ -42,7 +42,10 @@ thisModule.addSlots(avocado.types.shortString, function(add) {
 thisModule.addSlots(avocado.types.longString, function(add) {
 
   add.method('createInputMorph', function (slot) {
-    return new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(slot, 'contents'));
+    var tm = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(slot, 'contents'));
+    tm.setScale(0.3);
+    tm.setFill(null);
+    return ScrollPane.containing(tm, pt(100,150));
   }, {category: ['input']});
   
 });
