@@ -34,6 +34,14 @@ thisModule.addSlots(avocado.accessors, function(add) {
     this.get = getter;
     this.set = setter;
   }, {category: ['creating']});
+  
+  add.method('canGet', function () {
+    return !! this.get;
+  }, {category: ['testing']});
+  
+  add.method('canSet', function () {
+    return !! this.set;
+  }, {category: ['testing']});
 
 });
 
@@ -59,6 +67,14 @@ thisModule.addSlots(avocado.methodAccessors, function(add) {
     if (!setter) { throw new Error("No attribute named " + this._setterName + " on " + obj); }
     setter.call(obj, v);
   }, {category: ['accessing']});
+  
+  add.method('canGet', function () {
+    return !! this._object[this._getterName];
+  }, {category: ['testing']});
+  
+  add.method('canSet', function () {
+    return !! this._object[this._setterName];
+  }, {category: ['testing']});
 
 });
 
@@ -77,6 +93,14 @@ thisModule.addSlots(avocado.attributeAccessors, function(add) {
   add.method('set', function (v) {
     this._object[this._attrName] = v;
   }, {category: ['accessing']});
+  
+  add.method('canGet', function () {
+    return true;
+  }, {category: ['testing']});
+  
+  add.method('canSet', function () {
+    return true;
+  }, {category: ['testing']});
 
 });
 
