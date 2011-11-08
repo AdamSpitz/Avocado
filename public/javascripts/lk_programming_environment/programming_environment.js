@@ -89,6 +89,11 @@ thisModule.addSlots(avocado, function(add) {
     if (this.debugMode) {
       cmdList.addLine();
 
+      cmdList.addItem(["get a line graph", function(evt) {
+        var g = avocado.lineGraph.create([[1, 3, 2, 4, 3, 5, 2]]);
+        avocado.ui.grab(g, evt);
+      }]);
+
       cmdList.addItem(["get a command object", function(evt) {
         var c = avocado.command.create('doStuff', function(evt) {
           evt.hand.world().showMessage("Doing stuff!");
