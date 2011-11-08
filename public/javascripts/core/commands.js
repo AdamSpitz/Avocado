@@ -222,6 +222,12 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
     return this;
   }, {category: ['filtering']});
 
+  add.method('butDoesNotAccept', function (rejectionFunction) {
+    var oldAcceptanceFunction = this._acceptanceFunction || function() { return true; };
+    this.onlyAccepts(function(o) { return !rejectionFunction(o) && oldAcceptanceFunction(o); });
+    return this;
+  }, {category: ['filtering']});
+
   add.method('setPrompter', function (p) {
     this._prompter = p;
     return this;
