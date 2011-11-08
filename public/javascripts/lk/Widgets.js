@@ -788,6 +788,7 @@ BoxMorph.subclass("SelectionMorph", {
 		var world = this.world();
 		if (world) {
 			world.firstHand().setKeyboardFocus(this);
+  		this.setScale(1 / world.getScale()); // added by Adam to make it look right when zoomed in or out
 		};	
 		return result;
 	},
