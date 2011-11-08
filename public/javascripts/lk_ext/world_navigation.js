@@ -92,38 +92,74 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     }, mainDuration, accelOrDecelDuration), functionToCallWhenDone);
   }, {category: ['scaling']});
 
-  add.method('staySameSizeAndSmoothlySlideAndScaleTo', function (desiredPosition, desiredScale, targetMorph, functionToCallWhenDone) {
+  add.method('staySameSizeAndSmoothlySlideAndScaleTo', function (desiredCenterPosition, desiredScale, targetMorph, functionToCallWhenDone) {
     var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
     
+    var extent = worldNavigator.getExtent();
     var currentScale = worldNavigator.getScale();
-    var currentPosition = worldNavigator.getPosition();
-    var totalDistance = currentPosition.subPt(desiredPosition).r();
+    var currentCenterPosition = worldNavigator.getPosition().addPt(extent.scaleBy(currentScale * 0.5));
+    var totalDistance = currentCenterPosition.subPt(desiredCenterPosition).r();
     
     var cruisingScale = currentScale / ((0.001 * totalDistance * currentScale) + 1);
-    
     // Trying to improve on the above way, but so far I don't like this better.
-    /*
-    var cruisingScale = 800 / totalDistance;
-    if (desiredScale > cruisingScale && cruisingScale > currentScale) {
-      cruisingScale = currentScale; // no sense doing a zoom-in + slide + zoom-in; just slide and zoom-in
-    } else if (desiredScale < cruisingScale) {
-      cruisingScale = desiredScale; // no sense doing a zoom-out + slide + zoom-out; just zoom-out and slide
+    // var cruisingScale = 800 / totalDistance;
+    
+    
+    var needToLand = true;
+    var needToCruise = true;
+    var needToTakeOff = true;
+    if (totalDistance * currentScale < 0.0001) {
+      needToCruise = false;
     }
-    */
+    if (Math.abs(1 - (currentScale / cruisingScale)) < 0.1) {
+      cruisingScale = currentScale;
+      needToTakeOff = false;
+    }
+    if (Math.abs(1 - (desiredScale / cruisingScale)) < 0.1) {
+      cruisingScale = desiredScale;
+      needToLand = false;
+    }
+    if (desiredScale > cruisingScale && cruisingScale > currentScale) {
+      cruisingScale = currentScale; // no sense doing a zoom-out + slide + zoom-in; just slide and zoom-in
+      needToTakeOff = false;
+    } else if (desiredScale < cruisingScale) {
+      cruisingScale = desiredScale; // no sense doing a zoom-out + slide + zoom-in; just zoom-out and slide
+      needToLand = false;
+    }
     
     
-    // console.log("desiredPosition is " + desiredPosition + ", currentPosition is " + currentPosition + ", totalDistance is " + totalDistance + ", currentScale is " + currentScale + ", using cruisingScale " + cruisingScale + ", desiredScale is " + desiredScale);
-
-    this.staySameSizeAndSmoothlyScaleTo(cruisingScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, 400, function() {
-      var targetMorphCenterPos = targetMorph.owner.worldPoint(targetMorph.getPosition().addPt(targetMorph.getExtent().scaleBy(targetMorph.getScale() * 0.5)));
-      var cruisingEndPosition = targetMorphCenterPos.subPt(this.getExtent().scaleBy(0.5));
-      
-      //console.log("cruisingEndPosition: " + cruisingEndPosition);
-      this.smoothlySlideBy(cruisingEndPosition.negated(), function() {
+    console.log("desiredCenterPosition is " + desiredCenterPosition + ", currentCenterPosition is " + currentCenterPosition + ", totalDistance is " + totalDistance + ", currentScale is " + currentScale + ", using cruisingScale " + cruisingScale + ", desiredScale is " + desiredScale);
+    
+    var land = function() {
+      if (needToLand) {
         //console.log("desiredScale: " + desiredScale);
         this.staySameSizeAndSmoothlyScaleTo(desiredScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, 400, functionToCallWhenDone);
-      }.bind(this));
-    }.bind(this));
+      } else {
+        // done!
+      }
+    }.bind(this);
+    
+    var cruise = function() {
+      if (needToCruise) {
+        var targetMorphCenterPos = targetMorph.owner.worldPoint(targetMorph.getPosition().addPt(targetMorph.getExtent().scaleBy(targetMorph.getScale() * 0.5)));
+        var cruisingEndPosition = targetMorphCenterPos.subPt(this.getExtent().scaleBy(0.5));
+
+        //console.log("cruisingEndPosition: " + cruisingEndPosition);
+        this.smoothlySlideBy(cruisingEndPosition.negated(), needToLand ? land : null);
+      } else {
+        land();
+      }
+    }.bind(this);
+    
+    var takeOff = function() {
+      if (needToTakeOff) {
+        this.staySameSizeAndSmoothlyScaleTo(cruisingScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, 400, cruise);
+      } else {
+        cruise();
+      }
+    }.bind(this);
+    
+    takeOff();
   }, {category: ['navigation']});
 
 });
@@ -227,9 +263,9 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var myHeight = myBounds.height;
     var worldSize = world.getExtent();
     var scalingFactor = Math.min(worldSize.x / myWidth, worldSize.y / myHeight);
-    var desiredPosition = this.owner.worldPoint(myBounds.topLeft());
+    var desiredCenterPosition = this.owner.worldPoint(myBounds.center());
     
-    world.staySameSizeAndSmoothlySlideAndScaleTo(desiredPosition, scalingFactor * world.getScale(), this);
+    world.staySameSizeAndSmoothlySlideAndScaleTo(desiredCenterPosition, scalingFactor * world.getScale(), this);
   }, {category: ['navigating']});
 
   add.method('navigateToMeImmediately', function (evt) {
