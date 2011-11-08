@@ -101,6 +101,7 @@ Morph.addMethods({
   		this.addMorph(m);
   		var handle = new HandleMorph(pt(0,0), lively.scene.Rectangle, evt.hand, m, "bottomRight");
   		handle.setExtent(pt(0, 0));
+      handle.focusHaloBorderWidth = 0; // added by Adam; the halo looks weird
   		handle.mode = 'reshape';
   		m.addMorph(handle);
   		evt.hand.setMouseFocus(handle);
