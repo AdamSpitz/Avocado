@@ -17,31 +17,38 @@ thisModule.addSlots(avocado.stringBuffer, function(add) {
   }, {category: ['creating']});
 
   add.method('initialize', function (initialString) {
-    this.buffer = [];
-    if (initialString !== undefined && initialString !== null) {this.append(initialString);}
+    this._buffer = [];
+    if (initialString !== undefined && initialString !== null) { this.append(initialString); }
   }, {category: ['creating']});
 
   add.method('append', function (string) {
-    this.buffer.push(string);
+    this._buffer.push(string);
+    if (this._shouldNotifyUIWheneverChanged) { avocado.ui.justChanged(this); }
     return this;
   }, {category: ['adding']});
 
   add.method('prepend', function (string) {
-    this.buffer.unshift(string);
+    this._buffer.unshift(string);
+    if (this._shouldNotifyUIWheneverChanged) { avocado.ui.justChanged(this); }
     return this;
   }, {category: ['adding']});
 
   add.method('toString', function () {
-    return this.buffer.join("");
+    return this._buffer.join("");
   }, {category: ['converting']});
 
   add.method('concat', function (other1, other2) {
     var newOne = this.create();
-    newOne.buffer = this.buffer.concat(other1.buffer, other2 ? other2.buffer : undefined);
+    newOne._buffer = this._buffer.concat(other1._buffer, other2 ? other2._buffer : undefined);
     return newOne;
   }, {category: ['concatenating']});
 
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+
+  add.method('startNotifyingUIWheneverChanged', function () {
+    this._shouldNotifyUIWheneverChanged = true;
+    return this;
+  }, {category: ['user interface']});
 
 });
 

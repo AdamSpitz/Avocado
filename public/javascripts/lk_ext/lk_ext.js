@@ -41,6 +41,7 @@ requires('lk_ext/history_morph');
 requires('lk_ext/types');
 requires('lk_ext/morph_chooser');
 requires('lk_ext/line_graph');
+requires('lk_ext/string_buffer_morph');
 
 }, function(thisModule) {
 
