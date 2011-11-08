@@ -358,6 +358,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingContentsPanelStyle, f
 
   add.data('shouldIgnoreEvents', true, {comment: 'Otherwise it\'s just too easy to accidentally mess up an object. Also we want menus to work.'});
 
+  add.data('openForDragAndDrop', true);
+
 });
 
 

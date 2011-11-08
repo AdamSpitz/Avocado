@@ -3224,6 +3224,11 @@ addAllHandles: function(evt) {
     okToBeGrabbedBy: function(evt) {
 		if (this.suppressGrabbing)
 			return null;
+		
+		// added by Adam
+		if (this.owner && !this.owner.openForDragAndDrop)
+		  return null;
+		
 		return this; 
     },
 
