@@ -17,7 +17,7 @@ thisModule.addSlots(avocado.lineGraph, function(add) {
   }, {category: ['creating']});
   
   add.method('initialize', function (valuesOfLines) {
-    this._lines = valuesOfLines ? valuesOfLines.map(function(values) { return avocado.lineGraph.line.create(values); }) : [];
+    this._lines = valuesOfLines ? valuesOfLines.map(function(values) { return avocado.lineGraph.line.create(this, values); }.bind(this)) : [];
   }, {category: ['creating']});
   
   add.method('lines', function () {
@@ -31,11 +31,12 @@ thisModule.addSlots(avocado.lineGraph, function(add) {
 
 thisModule.addSlots(avocado.lineGraph.line, function(add) {
   
-  add.method('create', function (values) {
-    return Object.newChildOf(this, values);
+  add.method('create', function (graph, values) {
+    return Object.newChildOf(this, graph, values);
   }, {category: ['creating']});
   
-  add.method('initialize', function (values) {
+  add.method('initialize', function (graph, values) {
+    this._graph = graph;
     this._values = values;
   }, {category: ['creating']});
   
@@ -53,6 +54,11 @@ thisModule.addSlots(avocado.lineGraph.line, function(add) {
   
   add.method('numberOfValues', function () {
     return this._numberOfValues || this._values.size();
+  }, {category: ['accessing']});
+  
+  add.method('addValue', function (v) {
+    this._values.push(v);
+    avocado.ui.justChanged(this._graph);
   }, {category: ['accessing']});
   
   add.method('determineMinAndMax', function () {

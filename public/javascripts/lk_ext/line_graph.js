@@ -34,8 +34,7 @@ thisModule.addSlots(avocado.lineGraph.Morph.prototype, function(add) {
   add.method('initialize', function ($super, g) {
     $super(new lively.scene.Rectangle(new Rectangle(0, 0, 400, 200)));
     this.setModel(g);
-    this._lineMorphs = g.lines().map(function(line) { return this.createLineMorph(line); }.bind(this));
-    this._lineMorphs.forEach(function(m) { this.addMorph(m); }.bind(this));
+    this.refreshContentOfMeAndSubmorphs();
   }, {category: ['creating']});
   
   add.method('createLineMorph', function (line) {
@@ -50,7 +49,13 @@ thisModule.addSlots(avocado.lineGraph.Morph.prototype, function(add) {
     })));
     m.applyStyle(this.lineStyle);
     return m;
-  }, {category: ['creating']})
+  }, {category: ['updating']})
+  
+  add.method('refreshContent', function () {
+    if (this._lineMorphs) { this._lineMorphs.forEach(function(m) { m.remove(); }); }
+    this._lineMorphs = this._model.lines().map(function(line) { return this.createLineMorph(line); }.bind(this));
+    this._lineMorphs.forEach(function(m) { this.addMorph(m); }.bind(this));
+  }, {category: ['updating']})
 
   add.creator('style', {}, {category: ['styles']});
 

@@ -91,7 +91,8 @@ thisModule.addSlots(avocado, function(add) {
 
       cmdList.addItem(["get a line graph", function(evt) {
         var g = avocado.lineGraph.create([[1, 3, 2, 4, 3, 5, 2]]);
-        avocado.ui.grab(g, evt);
+        avocado.ui.grab(g, evt).startPeriodicallyUpdating();
+        setInterval(function() { g.lines().first().addValue(Math.random() * 10); }, 1000);
       }]);
 
       cmdList.addItem(["get a command object", function(evt) {
