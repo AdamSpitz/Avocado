@@ -71,7 +71,10 @@ thisModule.addSlots(Morph.prototype, function(add) {
     });
 
   add.method('showInCenterOfWorld', function (w, callback) {
-      this.showInWorldAt(w, this.positionToCenterIn(w), callback);
+      // Can't use positionToCenterIn because that finds the actual center of the morph, whereas we
+      // want the center of the *visible* part of the world.
+      var p = w.getExtent().scaleBy(0.5).subPt(this.getExtent().scaleBy(this.getScale() * 0.5));
+      this.showInWorldAt(w, p, callback);
     });
 
   add.method('showInWorldAt', function (w, p, callWhenDone) {
