@@ -166,7 +166,7 @@ thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
     this._model.updateContents(function(contents) {
       contents.forEach(function(c) { WorldMorph.current().morphFor(c).refreshContentOfMeAndSubmorphs(); }.bind(this));
       this.actualContentsPanel().cleanUp();
-      avocado.ui.justChanged(this._model, evt);
+      avocado.ui.justChanged(this._model, null, evt);
       if (callback) { callback(contents); }
     }.bind(this));
     return this;

@@ -429,7 +429,7 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
         design.addViewForRelationship(container.relationship());
         design.put(function(responseObj) {
           this.updateContainerTypes(function() {
-            avocado.ui.justChanged(this, evt);
+            avocado.ui.justChanged(this, null, evt);
             avocado.ui.worldFor(evt).morphFor(this).actualContentsPanel().cleanUp(); // aaa hack, tangles up the model and morph
           }.bind(this));
         }.bind(this), function(err) {
@@ -762,7 +762,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
 
     cmdList.addItem(avocado.command.create('change attribute', function(evt, attributeName) {
       this.setAttributeName(attributeName);
-      avocado.ui.justChanged(this, evt);
+      avocado.ui.justChanged(this, null, evt);
       this.updateContents(function() { avocado.ui.justChanged(this, evt); }.bind(this));
     }.bind(this)).setArgumentSpecs([
       avocado.command.argumentSpec.create('attributeName').onlyAcceptsType(String)
@@ -770,7 +770,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
 
     cmdList.addItem(avocado.command.create('rename', function(evt, containerName) {
       this.setContainerName(containerName);
-      avocado.ui.justChanged(this, evt);
+      avocado.ui.justChanged(this, null, evt);
     }.bind(this)).setArgumentSpecs([
       avocado.command.argumentSpec.create('containerName').onlyAcceptsType(String)
     ]));
@@ -788,7 +788,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
     cmdList.addItem(avocado.command.create("add mirror", function(evt, mir) {
       this.addObject(mir.reflectee(), function(responseObj) {
         var ref = responseObj.ref;
-        avocado.ui.justChanged(this, evt);
+        avocado.ui.justChanged(this, null, evt);
         avocado.ui.worldFor(evt).morphFor(this).actualContentsPanel().cleanUp(); // aaa hack, tangles up the model and morph
         console.log("Successfully added " + mir.name() + " to " + this);
       }.bind(this), function(err) {

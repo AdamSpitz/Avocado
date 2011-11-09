@@ -171,11 +171,12 @@ thisModule.addSlots(avocado.ui, function(add) {
     menu.openIn(world, (evt || Event.createFake()).point(), false, caption);
   });
 
-  add.method('justChanged', function (obj, evt) {
+  add.method('justChanged', function (obj, callback, evt) {
     var ui = this;
     setTimeout(function() {
       var m = ui.worldFor(evt).existingMorphFor(obj);
       if (m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); }
+      if (callback) { callback(); }
     }, 0);
   });
 

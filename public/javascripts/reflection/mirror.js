@@ -856,7 +856,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
         var chainName = this.convertCreatorSlotChainToString(chain);
         akaMenu.addItem([chainName, function(evt) {
           s.beCreator();
-          avocado.ui.justChanged(this, evt);
+          avocado.ui.justChanged(this, null, evt);
           if (callback) { callback(); }
         }.bind(this)]);
       }
