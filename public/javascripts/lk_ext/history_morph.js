@@ -17,7 +17,11 @@ thisModule.addSlots(avocado.history, function(add) {
     m.potentialContentMorphs = function() {
       var rows = [nameLabel];
       var latest = m._model.latest();
-      if (latest !== null && typeof(latest) !== 'undefined') { rows.push(WorldMorph.current().morphFor(latest)); }
+      if (latest !== null && typeof(latest) !== 'undefined') {
+        rows.push(WorldMorph.current().morphFor(latest));
+      } else {
+        rows.push(new avocado.MessageNotifierMorph("None", new Color(0.2, 0.5, 0.5)));
+      }
       return avocado.tableContents.createWithColumns([rows]);
     };
     
