@@ -2238,6 +2238,10 @@ Object.subclass("Color", {
 		var result = this.mixedWith(Color.white, 0.5);
 		return recursion > 1 ? result.lighter(recursion - 1) : result;
 	},
+	
+	// added by Adam
+	isVeryLight: function() { return this.r >= 0.95 && this.g >= 0.95 && this.b >= 0.95; },
+	isVeryDark:  function() { return this.r <= 0.05 && this.g <= 0.05 && this.b <= 0.05; },
 
 	toString: function() {
 		function floor(x) { return Math.floor(x*255.99) };

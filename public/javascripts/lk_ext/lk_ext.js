@@ -165,8 +165,9 @@ thisModule.addSlots(avocado.ui, function(add) {
   });
 
   add.method('showMenu', function (cmdList, target, caption, evt) {
-    var menu = cmdList.createMenu(target);
     var world = this.worldFor(evt);
+    var targetMorph = world.existingMorphFor(target) || world;
+    var menu = cmdList.createMenu(targetMorph);
     menu.openIn(world, (evt || Event.createFake()).point(), false, caption);
   });
 

@@ -33,6 +33,8 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype, function(add) {
 		this._mode = this.modes.transientInactive;
 		$super(new lively.scene.Ellipse(pt(0,0), this._outerRadius));
 		this.applyStyle(this.defaultStyle);
+		var targetMorphFill = targetMorph && targetMorph.getFill();
+		if (targetMorphFill && targetMorphFill.isVeryLight()) { this.setFill(this.defaultStyle.fillToUseWhenTargetIsVeryLight); }
   }, {category: ['creating']});
 
   add.method('commandArray', function () {
@@ -319,6 +321,8 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.CommandMorph.prototype, fun
 		this.addMorphAt(this._labelMorph, labelCenter.addPt(this._labelMorph.getExtent().scaleBy(-0.5)));
 		this.applyStyle(this.defaultStyle);
 		this.applyStyle(this._menuMorph.commandStyle);
+		var targetMorphFill = menuMorph._targetMorph && menuMorph._targetMorph.getFill();
+		if (targetMorphFill && targetMorphFill.isVeryLight()) { this.setFill(this.defaultStyle.fillToUseWhenTargetIsVeryLight); }
   }, {category: ['creating']});
   
   add.method('createWedgeShape', function (commandIndex, innerRadius, outerRadius) {
@@ -499,6 +503,8 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.defaultStyle, function(add)
   add.data('borderWidth', 0);
 
   add.data('fill', new Color(1, 1, 1));
+  
+  add.data('fillToUseWhenTargetIsVeryLight', new Color(0.75, 0.75, 0.75));
 
   add.data('fillOpacity', 0.4);
 
@@ -528,6 +534,8 @@ thisModule.addSlots(avocado.WheelMenuMorph.prototype.CommandMorph.prototype.defa
   add.data('borderWidth', 0);
 
   add.data('fill', new Color(1, 1, 1));
+  
+  add.data('fillToUseWhenTargetIsVeryLight', new Color(0.75, 0.75, 0.75));
 
   add.data('fillOpacity', 0.6);
 

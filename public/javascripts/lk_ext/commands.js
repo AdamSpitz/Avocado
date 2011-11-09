@@ -87,7 +87,7 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
     if (modelPrompter) {
       argSpecForMorphCommand.setPrompter({
         prompt: function(caption, context, evt, callback) {
-          modelPrompter.prompt(caption, context, evt, function(arg) { callback({ _model: arg }); });
+          modelPrompter.prompt(caption, context._model, evt, function(arg) { callback({ _model: arg }); });
         }
       });
     }

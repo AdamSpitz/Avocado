@@ -3008,6 +3008,9 @@ Wrapper.subclass("lively.paint.Gradient", {
 		return "#<" + this.getType() + this.toMarkupString() + ">";
 	},
 
+  // added by Adam; should implement these properly
+	isVeryLight: function() { return false; },
+	isVeryDark:  function() { return false; },
 });
 
 
