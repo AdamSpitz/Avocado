@@ -89,9 +89,9 @@ thisModule.addSlots(avocado.ui, function(add) {
     return m;
   });
 
-  add.method('navigateTo', function (obj, evt) {
+  add.method('navigateTo', function (obj, callback, evt) {
     var m = this.worldFor(evt).morphFor(obj);
-    m.navigateToMe(evt);
+    m.navigateToMe(evt, callback);
     return m;
   });
 

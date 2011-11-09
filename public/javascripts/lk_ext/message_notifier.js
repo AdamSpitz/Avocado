@@ -6,9 +6,30 @@ requires('lk_ext/rows_and_columns');
 
 
 thisModule.addSlots(avocado, function(add) {
+  
+  add.creator('messageNotifier', {}, {category: ['ui']});
 
   add.method('MessageNotifierMorph', function MessageNotifierMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
 
+});
+
+
+thisModule.addSlots(avocado.messageNotifier, function(add) {
+  
+  add.method('create', function (msg, color, heading) {
+    return Object.newChildOf(this, msg, color, heading);
+  }, {category: ['creating']});
+  
+  add.method('initialize', function (msg, color, heading) {
+    this._message = msg;
+    this._color = color;
+    this._heading = heading;
+  }, {category: ['creating']});
+  
+  add.method('newMorph', function () {
+    return new avocado.MessageNotifierMorph(this._message, this._color, this._heading);
+  }, {category: ['user interface']});
+  
 });
 
 
@@ -76,12 +97,46 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 });
 
 
+thisModule.addSlots(Error, function(add) {
+
+  add.method('create', function (err) {
+    if (err instanceof Error) { return err; }
+    return new Error(err);
+  }, {category: ['creating']});
+
+});
+
+
 thisModule.addSlots(Error.prototype, function(add) {
 
   add.method('newMorph', function () {
-    return new avocado.MessageNotifierMorph(this, Color.red);
+    return avocado.TreeNodeMorph.create(this).refreshContentOfMeAndSubmorphs().applyStyle(this.defaultMorphStyle);
+  }, {category: ['user interface']});
+  
+  add.method('immediateContents', function () {
+    var cs = this._immediateContents;
+    if (! cs) {
+      cs = this._immediateContents = [];
+      if (typeof(this.sourceURL) !== 'undefined') { cs.push(avocado.messageNotifier.create(this.sourceURL, Color.red, "source URL")); }
+      if (typeof(this.line     ) !== 'undefined') { cs.push(avocado.messageNotifier.create(this.line     , Color.red, "line"      )); }
+    }
+    return cs;
+  }, {category: ['user interface']});
+  
+  add.method('setImmediateContents', function (cs) {
+    this._immediateContents = cs;
+    return this;
   }, {category: ['user interface']});
 
+  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(Error.prototype.defaultMorphStyle, function(add) {
+  
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0, 0)), new lively.paint.Stop(1, new Color(1, 0.2, 0.2))], lively.paint.LinearGradient.SouthNorth));
+  
 });
 
 

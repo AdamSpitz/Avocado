@@ -61,7 +61,7 @@ thisModule.addSlots(avocado.http.jsonp, function(add) {
     if (timeout) {
       setTimeout(function() {
         if (! jsonpFunction.hasReturned) {
-          errback("Timeout on JSONP request to " + path);
+          errback(new Error("Timeout on JSONP request").setImmediateContents([avocado.messageNotifier.create(path, Color.red, "path")]));
         }
       }, timeout * 1000);
     }
