@@ -350,7 +350,11 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype.zoomingContentsPanelStyle, f
 
   add.data('padding', 0);
   
-  add.data('fill', null);
+  add.data('fill', Color.white);
+  
+  add.data('fillOpacity', 0.65);
+
+  add.data('borderRadius', 10);
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 

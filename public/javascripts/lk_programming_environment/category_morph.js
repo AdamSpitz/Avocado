@@ -263,10 +263,6 @@ thisModule.addSlots(avocado.category.Morph.prototype.zoomingStyle, function(add)
 
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
 
-  add.data('borderWidth', 1);
-
-  add.data('borderColor', new Color(0.6, 0.6, 0.6));
-
   add.data('contentsSummaryPadding', {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}'});
 
 });
