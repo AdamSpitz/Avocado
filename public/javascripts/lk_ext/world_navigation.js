@@ -128,7 +128,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     }
     
     
-    console.log("desiredCenterPosition is " + desiredCenterPosition + ", currentCenterPosition is " + currentCenterPosition + ", totalDistance is " + totalDistance + ", currentScale is " + currentScale + ", using cruisingScale " + cruisingScale + ", desiredScale is " + desiredScale);
+    //console.log("desiredCenterPosition is " + desiredCenterPosition + ", currentCenterPosition is " + currentCenterPosition + ", totalDistance is " + totalDistance + ", currentScale is " + currentScale + ", using cruisingScale " + cruisingScale + ", desiredScale is " + desiredScale);
     
     var land = function() {
       if (needToLand) {
@@ -229,7 +229,18 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     // Need to refresh, but don't want to do it too often - it's unnecessary and noticeably slows things down.
     // So unschedule the previously-scheduled refresh, since we're about to schedule a new one.
     if (typeof(world._scheduledZoomRefresh) !== 'undefined') { clearTimeout(world._scheduledZoomRefresh); }
-    world._scheduledZoomRefresh = setTimeout(function() { world.refreshContentIfOnScreenOfMeAndSubmorphs(); world._scheduledZoomRefresh = undefined; }, 50);
+    world._scheduledZoomRefresh = setTimeout(function() {
+      world._scheduledZoomRefresh = undefined;
+      world.refreshContentIfOnScreenOfMeAndSubmorphs();
+      
+      // OK, this is kinda ridiculous, but removing and re-adding the rawNode seems to fix that
+      // font-scaling problem where the text would look very strange. Of course, this means
+      // that the fonts are constantly adjusting themselves as you zoom in and out, which
+      // is a bit distracting, but... well, it's better than the fonts *not* adjusting.
+      var parentNode = world.rawNode.parentNode;
+      parentNode.removeChild(world.rawNode);
+      parentNode.appendChild(world.rawNode);
+    }, 50);
   });
 
   add.method('isOnScreen', function () {
@@ -261,7 +272,7 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
   
 thisModule.addSlots(Morph.prototype, function(add) {
 
-  add.method('navigateToMe', function (evt) {
+  add.method('navigateToMe', function (evt, functionToCallWhenDone) {
     var world = this.world();
     var myBounds = this.bounds();
     var myWidth = myBounds.width;
@@ -270,10 +281,10 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var scalingFactor = Math.min(worldSize.x / myWidth, worldSize.y / myHeight);
     var desiredCenterPosition = this.owner.worldPoint(myBounds.center());
     
-    world.staySameSizeAndSmoothlySlideAndScaleTo(desiredCenterPosition, scalingFactor * world.getScale(), this);
+    world.staySameSizeAndSmoothlySlideAndScaleTo(desiredCenterPosition, scalingFactor * world.getScale(), this, functionToCallWhenDone);
   }, {category: ['navigating']});
 
-  add.method('navigateToMeImmediately', function (evt) {
+  add.method('navigateToMeImmediately', function (evt, functionToCallWhenDone) {
     var world = this.world();
     var myBounds = this.bounds();
     var myWidth = myBounds.width;
@@ -284,6 +295,8 @@ thisModule.addSlots(Morph.prototype, function(add) {
     
     world.slideBy(desiredPosition.negated());
     world.zoomBy(scalingFactor, pt(0,0));
+    
+    if (functionToCallWhenDone) { functionToCallWhenDone(); }
   }, {category: ['navigating']});
 
 });
