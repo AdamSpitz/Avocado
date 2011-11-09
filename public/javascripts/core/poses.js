@@ -219,7 +219,7 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       if (uiState) { poser.assumeUIState(uiState); }
       f({poser: poser, position: pos, uiState: uiState});
       var poserSpace = poser.getExtent().scaleBy(poser.getScale());
-      pos = pos.withY(pos.y + poserSpace.y);
+      pos = pos.withY(pos.y + poserSpace.y + padding.y);
       widest = Math.max(widest, poserSpace.x);
       
       if (this._shouldBeSquarish && !maxY) {
