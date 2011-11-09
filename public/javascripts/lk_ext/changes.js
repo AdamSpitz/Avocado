@@ -195,6 +195,9 @@ HandMorph.addMethods({
         // Give grabbed morph a chance to, eg, spawn a copy or other referent
         grabbedMorph = grabbedMorph.okToBeGrabbedBy(evt);
         if (!grabbedMorph) return;
+        
+        // A morph with a whooshOuttaHereTimer is supposed to whoosh away after a short while, unless the user touches it. -- Adam
+        if (grabbedMorph.whooshOuttaHereTimer) { clearTimeout(grabbedMorph.whooshOuttaHereTimer); }
 
         // aaa - I think this is not what we want. openForDragAndDrop should mean
         // that the morph is open for arbitrary embedding, but even if it's not,
@@ -259,7 +262,7 @@ Morph.addMethods({
               : dropCmd ? ["drop",    function() { carryingHand.dropOn(this, evt); }.bind(this)]
                         : handEmpty ? ["pick up", function() { carryingHand.pickUp(this, evt); }.bind(this)]
                                     : ["",        function() { }],
-            ["remove", function() { this.startZoomingOuttaHere(); }.bind(this)], // so much cooler this way -- Adam
+            ["remove", function() { this.startWhooshingOuttaHere(); }.bind(this)], // so much cooler this way -- Adam
             this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
             ["zoom to me", this.navigateToMe.curry(evt)], // Added by Adam
             // ["drill", this.showOwnerChain.curry(evt)], // not needed now that we have core samplers. -- Adam

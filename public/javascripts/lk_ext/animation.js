@@ -30,35 +30,31 @@ thisModule.addSlots(Morph.prototype, function(add) {
     return this._cachedVisibleBounds;
   }, {category: ['accessing']});
 
-  add.method('startZoomingOuttaHere', function (functionToCallWhenDone) {
+  add.method('startWhooshingOuttaHere', function (functionToCallWhenDone) {
       var w = this.world();
       if (w) {
         this.becomeDirectSubmorphOfWorld(w);
         var howFarOutside = 300 / w.getScale();
-        this.startZoomingTo(pt(w.getExtent().x + howFarOutside, -howFarOutside), true, false, function() {
+        this.startWhooshingTo(pt(w.getExtent().x + howFarOutside, -howFarOutside), true, false, function() {
           this.remove();
           if (functionToCallWhenDone) { functionToCallWhenDone(); }
         }.bind(this));
       } else {
         if (functionToCallWhenDone) { functionToCallWhenDone(); }
       }
-    }, {category: ['zooming around']});
+    }, {category: ['whooshing around']});
 
-  add.method('startZoomingTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
+  add.method('startWhooshingTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
       return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.arcPath, loc, 3 / WorldMorph.current().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
-    }, {category: ['zooming around']});
+    }, {category: ['whooshing around']});
 
-  add.method('startZoomingInAStraightLineTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
+  add.method('startWhooshingInAStraightLineTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
       return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.straightPath, loc, 2 / WorldMorph.current().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
-    }, {category: ['zooming around']});
+    }, {category: ['whooshing around']});
 
-  add.method('zoomAwayAfter', function (ms) {
-      var originalOwner    = this.owner;
-      var originalPosition = this.getPosition();
-      this.zoomOuttaHereTimer = window.setTimeout(function() {
-        if (this.owner === originalOwner && originalPosition.equals(this.getPosition())) {
-          this.startZoomingOuttaHere();
-        }
+  add.method('whooshAwayAfter', function (ms) {
+      this.whooshOuttaHereTimer = window.setTimeout(function() {
+        this.startWhooshingOuttaHere();
       }.bind(this), ms || 5000);
     });
 
@@ -67,7 +63,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     });
 
   add.method('showTemporarilyInCenterOfWorld', function (w) {
-      this.showInCenterOfWorld(w, function() {this.zoomAwayAfter(5000);}.bind(this));
+      this.showInCenterOfWorld(w, function() {this.whooshAwayAfter(5000);}.bind(this));
     });
 
   add.method('showInCenterOfWorld', function (w, callback) {
@@ -86,7 +82,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
       animator.whenDoneCall(functionToCallWhenDone);
       animator.startAnimating(this);
       return animator;
-    }, {category: ['zooming around']});
+    }, {category: ['whooshing around']});
 
   add.method('wiggle', function (duration) {
       return this.startAnimating(avocado.animation.newWiggler(this, null, duration));
@@ -128,7 +124,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     this.becomeDirectSubmorphOfWorld(w);
     if (originalOwner !== w || shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
       if (typeof(desiredLoc.desiredScale) !== 'undefined') { this.smoothlyScaleTo(desiredLoc.desiredScale); } // aaa hack
-      this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
+      this.startWhooshingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
     } else {
       if (functionToCallWhenDone) { functionToCallWhenDone(); }
     }
@@ -149,7 +145,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('ensureIsNotInWorld', function () {
-    if (this.world()) {this.startZoomingOuttaHere();}
+    if (this.world()) {this.startWhooshingOuttaHere();}
   }, {category: ['adding and removing']});
 
   add.method('animatedAddMorphAt', function (m, p, callWhenDone) {
@@ -240,7 +236,7 @@ thisModule.addSlots(WindowMorph.prototype, function(add) {
   add.method('initiateShutdown', function () {
       if (this.isShutdown()) { return; }
       this.targetMorph.shutdown(); // shutdown may be prevented ...
-      this.ensureIsNotInWorld(); // used to say this.remove(), changed by Adam so that it does the cool zooming-off-the-screen thing
+      this.ensureIsNotInWorld(); // used to say this.remove(), changed by Adam so that it does the cool whooshing-off-the-screen thing
       this.state = 'shutdown'; // no one will ever know...
       return true;
     }, {category: ['closing']});
@@ -250,14 +246,14 @@ thisModule.addSlots(WindowMorph.prototype, function(add) {
 
 thisModule.addSlots(SelectionMorph.prototype, function(add) {
 
-  add.method('startZoomingOuttaHere', function ($super, callWhenDone) {
-      // Alternate way that I don't think looks quite as good: this.selectedMorphs.invoke('startZoomingOuttaHere');
+  add.method('startWhooshingOuttaHere', function ($super, callWhenDone) {
+      // Alternate way that I don't think looks quite as good: this.selectedMorphs.invoke('startWhooshingOuttaHere');
 
       this.selectedMorphs.each(function(m) {
         this.addMorphAt(m, this.relativize(m.owner.worldPoint(m.getPosition())));
       }.bind(this));
       $super(callWhenDone);
-    }, {category: ['zooming around']});
+    }, {category: ['whooshing around']});
 
 });
 

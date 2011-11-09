@@ -334,7 +334,7 @@ thisModule.addSlots(avocado.ArrowEndpoint.prototype, function(add) {
           world.addMorphAt(this, globalCurLoc);
           this.stopCurrentAnimationIfAny();
           // aaa console.log("Now zooming from " + globalCurLoc + " to " + globalNewLoc + "; morphToAttachTo is " + Object.inspect(morphToAttachTo) + "; noLongerNeedsToBeUpdated is " + this.arrow.noLongerNeedsToBeUpdated);
-          this._animator = this.startZoomingInAStraightLineTo(globalNewLoc, false, false, false, function() {
+          this._animator = this.startWhooshingInAStraightLineTo(globalNewLoc, false, false, false, function() {
             var wasAlreadyAttachedToThisMorph = morphToAttachTo === this.owner;
             morphToAttachTo.addMorphAt(this, localNewLoc);
             if (!wasAlreadyAttachedToThisMorph) {
@@ -384,7 +384,7 @@ thisModule.addSlots(avocado.ArrowEndpoint.prototype, function(add) {
       var globalNewLoc = this.otherEndpoint.worldPoint(this.otherEndpoint.relativeLineEndpoint);
       // aaa console.log("OK, zooming from " + globalCurLoc + " to " + globalNewLoc + "; noLongerNeedsToBeUpdated is " + this.arrow.noLongerNeedsToBeUpdated);
       world.addMorphAt(this, globalCurLoc);
-      this._animator = this.startZoomingInAStraightLineTo(globalNewLoc, false, false, false, function() {
+      this._animator = this.startWhooshingInAStraightLineTo(globalNewLoc, false, false, false, function() {
         delete this._animator;
         this.remove();
         callWhenDone();

@@ -61,14 +61,6 @@ thisModule.addSlots(avocado.MessageNotifierMorph.prototype, function(add) {
     this.closeDnD();
   });
 
-  add.method('wasJustDroppedOnWorld', function (world) {
-    // By default, zoom away after a short while, unless the user touches it.
-    if (this.zoomOuttaHereTimer) {
-      // cancel the zooming-away
-      window.clearTimeout(this.zoomOuttaHereTimer);
-    }
-  });
-
 });
 
 

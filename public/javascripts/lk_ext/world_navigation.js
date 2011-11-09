@@ -40,7 +40,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       if (m.shouldStickToScreen) {
       } else {
         // The animated version is a bit weird for now, I think. -- Adam
-        // m.startZoomingInAStraightLineTo(m.position().addPt(delta), false, false, true);
+        // m.startWhooshingInAStraightLineTo(m.position().addPt(delta), false, false, true);
         
         if (! (m instanceof avocado.ArrowMorph)) { // aaa I have no idea why this is necessary, but try taking it out and then zooming in while an arrow is visible
           m.moveBy(delta);
@@ -50,7 +50,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     
     this.hands.each(function(m) {
       // The animated version is a bit weird for now, I think. -- Adam
-      // m.startZoomingInAStraightLineTo(m.position().addPt(delta), false, false, true);
+      // m.startWhooshingInAStraightLineTo(m.position().addPt(delta), false, false, true);
       m.moveBy(delta);
     });
   }, {category: ['navigation']});
@@ -210,21 +210,26 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
   });
 
   add.method('staySameSizeAndScaleTo', function (s, currentPointerPos) {
+    var world = this._world;
     var oldScale = this.getScale();
     var scalingFactor = s / oldScale;
     var desiredSize = this.getExtent().scaleBy(oldScale);
     this.setScale(s);
     this.setExtent(desiredSize.scaleBy(1 / s));
     var delta = (currentPointerPos || pt(0,0)).translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor);
-    this._world.slideBy(delta);
-    this._world.hands.each(function(m) { m.setScale(1 / s); });
-    this._world.stickyMorphs().each(function(m) { m.setScale(1 / s); m.moveBy(m.origin.translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor)); });
-    this._world.submorphs.forEach(function(m) {
+    world.slideBy(delta);
+    world.hands.each(function(m) { m.setScale(1 / s); });
+    world.stickyMorphs().each(function(m) { m.setScale(1 / s); m.moveBy(m.origin.translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor)); });
+    world.submorphs.forEach(function(m) {
       if (typeof(m.justScaledWorld) === 'function') {
         m.justScaledWorld(s);
       }
     });
-    this._world.refreshContentIfOnScreenOfMeAndSubmorphs(); // I hope this isn't too slow
+    
+    // Need to refresh, but don't want to do it too often - it's unnecessary and noticeably slows things down.
+    // So unschedule the previously-scheduled refresh, since we're about to schedule a new one.
+    if (typeof(world._scheduledZoomRefresh) !== 'undefined') { clearTimeout(world._scheduledZoomRefresh); }
+    world._scheduledZoomRefresh = setTimeout(function() { world.refreshContentIfOnScreenOfMeAndSubmorphs(); world._scheduledZoomRefresh = undefined; }, 50);
   });
 
   add.method('isOnScreen', function () {
