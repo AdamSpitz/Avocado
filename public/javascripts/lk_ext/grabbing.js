@@ -124,10 +124,9 @@ Morph.addMethods({
     if (shouldDoCoolAnimations) {
       var world = evt.hand.world();
       
-      // aaa - Not sure at all that this is a good idea. But it might be.
-      this.smoothlyScaleTo(1 / world.getScale());
-
-      var desiredPos = function() {return evt.hand.position().subPt(this.getExtent().scaleBy(0.5));}.bind(this);
+      var desiredScale = 1 / world.getScale();
+      var desiredPos = function() {return evt.hand.position().subPt(this.getExtent().scaleBy(desiredScale * 0.5));}.bind(this);
+      desiredPos.desiredScale = desiredScale;  // aaa - Not sure at all that this is a good idea. But it might be.
       this.ensureIsInWorld(world, desiredPos, true, true, false, function() {
         this.grabMeWithoutZoomingAroundFirst(eventForFinalGrab);
         if (callWhenDone) { callWhenDone(this); }

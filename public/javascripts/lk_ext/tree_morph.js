@@ -220,7 +220,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   
   add.method('partsOfUIState', function () {
     var s = { isExpanded: this.expander() };
-    if (this.hasActualContentsPanelAlreadyBeenCreated()) { s.contents = this.actualContentsPanel().partsOfUIState(); }
+    if (this.hasActualContentsPanelAlreadyBeenCreated()) { s.contents = this.actualContentsPanel().partsOfUIState ? this.actualContentsPanel().partsOfUIState() : null; }
     return s;
   }, {category: ['UI state']});
 

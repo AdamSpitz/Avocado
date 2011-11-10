@@ -122,8 +122,9 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
     var originalOwner = this.owner;
     this.becomeDirectSubmorphOfWorld(w);
+    var wantsToScaleToo = typeof(desiredLoc.desiredScale) !== 'undefined';
+    if (wantsToScaleToo) { this.smoothlyScaleTo(desiredLoc.desiredScale); } // aaa hack
     if (originalOwner !== w || shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
-      if (typeof(desiredLoc.desiredScale) !== 'undefined') { this.smoothlyScaleTo(desiredLoc.desiredScale); } // aaa hack
       this.startWhooshingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
     } else {
       if (functionToCallWhenDone) { functionToCallWhenDone(); }
