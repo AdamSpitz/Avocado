@@ -33,6 +33,17 @@ thisModule.addSlots(avocado.treeNode, function(add) {
 
   add.method('setImmediateContents', function (contents) {
     this._immediateContents = contents;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('setImmediateContentsToResultOrErrorFrom', function (request) {
+    request.get(function(result) {
+      this.setImmediateContents(result);
+      avocado.ui.justChanged(this);
+    }.bind(this), function(err) {
+      this.setImmediateContents([Error.create(err)]);
+      avocado.ui.justChanged(this);
+    }.bind(this));
   }, {category: ['accessing']});
 
 });
