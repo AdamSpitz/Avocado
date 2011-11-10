@@ -264,7 +264,7 @@ Morph.addMethods({
                                     : ["",        function() { }],
             ["remove", function() { this.startWhooshingOuttaHere(); }.bind(this)], // so much cooler this way -- Adam
             this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
-            ["zoom to me", this.navigateToMe.curry(evt)], // Added by Adam
+            ["zoom to me", function(evt) { this.navigateToMe(evt); }.bind(this)], // Added by Adam
             // ["drill", this.showOwnerChain.curry(evt)], // not needed now that we have core samplers. -- Adam
             // ["drag", this.dragMe.curry(evt)], // This menu has too much stuff in it. -- Adam
             this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]

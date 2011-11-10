@@ -278,8 +278,8 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var myWidth = myBounds.width;
     var myHeight = myBounds.height;
     var worldSize = world.getExtent();
-    var scalingFactor = Math.min(worldSize.x / myWidth, worldSize.y / myHeight);
-    var desiredCenterPosition = this.owner.worldPoint(myBounds.center());
+    var scalingFactor = Math.min(worldSize.x / myWidth, worldSize.y / myHeight).scaleBy(1 / this.owner.overallScale(world));
+    var desiredCenterPosition = this.owner.worldPoint(myBounds.center()).scaleBy(world.getScale());
     
     world.staySameSizeAndSmoothlySlideAndScaleTo(desiredCenterPosition, scalingFactor * world.getScale(), this, functionToCallWhenDone);
   }, {category: ['navigating']});

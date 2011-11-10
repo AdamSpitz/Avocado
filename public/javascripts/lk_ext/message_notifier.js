@@ -27,7 +27,7 @@ thisModule.addSlots(avocado.messageNotifier, function(add) {
   }, {category: ['creating']});
   
   add.method('newMorph', function () {
-    return new avocado.MessageNotifierMorph(this._message, this._color, this._heading);
+    return new avocado.MessageNotifierMorph(this._message, this._color, this._heading).setModel(this);
   }, {category: ['user interface']});
   
 });
