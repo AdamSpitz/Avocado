@@ -33,6 +33,10 @@ thisModule.addSlots(avocado.stringBuffer, function(add) {
     return this;
   }, {category: ['adding']});
 
+  add.method('isEmpty', function () {
+    return this._buffer.length === 0;
+  }, {category: ['testing']});
+
   add.method('toString', function () {
     return this._buffer.join("");
   }, {category: ['converting']});
