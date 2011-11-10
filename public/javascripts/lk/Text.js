@@ -2476,10 +2476,14 @@ BoxMorph.subclass('TextMorph', {
 			// case "8": { this.emphasizeSelection({size: (this.fontSize*2.0).roundTo(1)}); return true; }
 
 			// Text Alignment
+			/* I don't understand why these are causing me trouble, but they are. I keep
+			   hitting Cmd-r, intending to refresh the page, but instead the whole morph
+			   disappears for some reason. -- Adam
 			case "l": { this.emphasizeSelection({align: 'left'}); return true; }
 			case "r": { this.emphasizeSelection({align: 'right'}); return true; }
 			case "h": { this.emphasizeSelection({align: 'center'}); return true; }
 			case "j": { this.emphasizeSelection({align: 'justify'}); return true; }
+			*/
 
 			case "u": { this.linkifySelection(evt); return true; }	// add link attribute
 			case "o": { this.colorSelection(evt); return true; }  // a bit of local color
