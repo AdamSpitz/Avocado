@@ -31,6 +31,14 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     return this._immediateContents;
   }, {category: ['accessing']});
 
+  add.method('eachOfImmediateContents', function (f) {
+    if (this._immediateContents instanceof Array) {
+      this._immediateContents.forEach(f);
+    } else {
+      f(this._immediateContents);
+    }
+  }, {category: ['iterating']});
+
   add.method('setImmediateContents', function (contents) {
     this._immediateContents = contents;
     return this;
@@ -45,6 +53,26 @@ thisModule.addSlots(avocado.treeNode, function(add) {
       avocado.ui.justChanged(this);
     }.bind(this));
   }, {category: ['accessing']});
+
+  add.method('asynchronousContentRequest', function () {
+    return this._asynchronousContentRequest;
+  }, {category: ['updating']});
+
+  add.method('setAsynchronousContentRequest', function (req) {
+    this._asynchronousContentRequest = req;
+    return this;
+  }, {category: ['updating']});
+
+  add.method('getRemoteData', function () {
+    this.eachOfImmediateContents(function(c) {
+      if (c && typeof(c.getRemoteData) === 'function') { c.getRemoteData(); }
+    });
+    
+    var req = this.asynchronousContentRequest();
+    if (req) { this.setImmediateContentsToResultOrErrorFrom(req); }
+    
+    return this;
+  }, {category: ['updating']});
 
 });
 
