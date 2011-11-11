@@ -2964,9 +2964,9 @@ BoxMorph.subclass('XenoMorph', {
                               height: bounds.height });
 
         //this.foRawNode.appendChild(document.createTextNode("no content, load an URL"));
-		this.foRawNode.appendChild(NodeFactory.createNS(null, 'input', {type: 'text', name: '?', size: 20}));
+		//this.foRawNode.appendChild(NodeFactory.createNS(null, 'input', {type: 'text', name: '?', size: 20})); // commented out by Adam
         this.addNonMorph(this.foRawNode);
-	
+	      this.adjustForNewBounds(); // added by Adam
     },
 
     onURLUpdate: function(url) {
@@ -2994,10 +2994,16 @@ BoxMorph.subclass('XenoMorph', {
         $super();
         var bounds = this.shape.bounds();
 		// console.log("bounds " + bounds + " vs " + bounds.width + "," + bounds.height);
-        //this.foRawNode.setAttributeNS(null, "width", bounds.width);
-        //this.foRawNode.setAttributeNS(null, "height", bounds.height);
-		//this.foRawNode.width = bounds.width;
-		//this.foRawNode.height = bounds.height;
+		
+		// following lines uncommented out or added by Adam
+        this.foRawNode.setAttributeNS(null, "x", bounds.x);
+        this.foRawNode.setAttributeNS(null, "y", bounds.y);
+		this.foRawNode.x = bounds.x;
+		this.foRawNode.y = bounds.y;
+        this.foRawNode.setAttributeNS(null, "width", bounds.width);
+        this.foRawNode.setAttributeNS(null, "height", bounds.height);
+		this.foRawNode.width = bounds.width;
+		this.foRawNode.height = bounds.height;
     }
 
 });

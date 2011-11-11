@@ -89,6 +89,32 @@ thisModule.addSlots(avocado, function(add) {
     if (this.debugMode) {
       cmdList.addLine();
 
+      cmdList.addItem(["get an HTML morph", function(evt) {
+        var m = new XenoMorph(new Rectangle(0, 0, 400, 600));
+
+        var body = document.createElement("body");
+        body.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+        var div = document.createElement("div");
+        var t = document.createTextNode("The quick brown fox jumps over the lazy dog.");
+        div.appendChild(t);
+        body.appendChild(div);
+        m.foRawNode.appendChild(body);
+
+        m.grabMe(evt);
+      }]);
+
+      cmdList.addItem(["get a textarea morph", function(evt) {
+        var m = new XenoMorph(new Rectangle(0, 0, 400, 600));
+
+        var ta = document.createElement("textarea");
+        m.foRawNode.appendChild(ta);
+        m.handlesMouseDown = Functions.True;
+        m.handlesMouseUp = Functions.True;
+        m.okToBeGrabbedBy = Functions.False;
+
+        m.grabMe(evt);
+      }]);
+
       cmdList.addItem(["get a line graph", function(evt) {
         var g = avocado.lineGraph.create([[1, 3, 2, 4, 3, 5, 2]]);
         avocado.ui.grab(g, evt).startPeriodicallyUpdating();
