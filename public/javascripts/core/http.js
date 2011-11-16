@@ -168,6 +168,10 @@ thisModule.addSlots(avocado.http.request, function(add) {
     });
   }, {category: ['transforming']});
   
+  add.method('expectJSON', function () {
+    return this.map(function(responseText) { return JSON.parse(responseText); });
+  }, {category: ['transforming']});
+  
 });
 
   
@@ -280,13 +284,22 @@ thisModule.addSlots(avocado.asyncRequest, function(add) {
     var errbackTransformer = this._errbackTransformer;
     var partbackTransformer = this._partbackTransformer;
     this._originalRequest.get(function(result) {
-      callbackTransformer ? callbackTransformer(result, callback, errback, partback) : callback(result);
+      callbackTransformer ? callbackTransformer(result, callback, errback, partback) : (callback ? callback(result) : null);
     }, function(err) {
-       errbackTransformer ?  errbackTransformer(err, callback, errback, partback) :  errback(err);
+       errbackTransformer ?  errbackTransformer(err, callback, errback, partback) :  (errback ? errback(err) : null);
     }, function(partialResult) {
-      partbackTransformer ? partbackTransformer(partialResult, callback, errback, partback) : partback(partialResult);
+      partbackTransformer ? partbackTransformer(partialResult, callback, errback, partback) : (partback ? partback(partialResult) : null);
     });
   }, {category: ['creating']});
+  
+  add.method('map', function (f) {
+    return avocado.asyncRequest.mapping(this, f);
+  }, {category: ['transforming']});
+  
+  add.method('transform', function (f) {
+    // aaa this method needs a better name
+    return avocado.asyncRequest.create(this, f);
+  }, {category: ['transforming']});
   
 });
 

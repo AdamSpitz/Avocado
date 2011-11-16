@@ -824,11 +824,9 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
 thisModule.addSlots(avocado.couch.db.prompter, function(add) {
 
   add.method('prompt', function (caption, context, evt, callback) {
-    WorldMorph.current().prompt('CouchDB URL?', function(url) {
-      if (url) {
-        avocado.couch.db.findDBAtURL(url, callback, function(err) { throw err; });
-      }
-    }, 'http://localhost:5984/dbname');
+    avocado.ui.prompt('CouchDB URL?', function(url) {
+      avocado.couch.db.findDBAtURL(url, callback, avocado.ui.showError);
+    }, 'http://localhost:5984/dbname', evt);
   }, {category: ['prompting']});
 
 });
