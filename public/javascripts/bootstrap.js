@@ -703,7 +703,7 @@ var annotator = {
   isSimpleMethod: function(o) {
     if (typeof(o) !== 'function') { return false; }
 
-    var hasSuper = o.argumentNames && o.argumentNames().first() === '$super';
+    var hasSuper = o.argumentNames && o.argumentNames()[0] === '$super';
 
     if (typeof(o.hasOwnProperty) !== 'function') { return false; }
     for (var n in o) {
@@ -839,23 +839,30 @@ avocado.javascript.reservedWords = {'abstract': true, 'boolean': true, 'break': 
 // both prototype-style inheritance and class-style inheritance?
 avocado.makeSuperWork = function(holder, property, contents) {
   var value = contents;
-  var superclass = holder.constructor && this === holder.constructor.prototype && holder.constructor.superclass;
-  var ancestor = superclass ? superclass.prototype : holder['__proto__']; // using [] to fool JSLint
-  if (ancestor && typeof(value) === 'function' && value.argumentNames && value.argumentNames().first() === "$super") {
-    (function() { // wrapped in a method to save the value of 'method' for advice
-      var method = value;
-      var advice = (function(m) {
-        return function callSuper() { 
-          return ancestor[m].apply(this, arguments);
-        };
-      })(property);
-      advice.methodName = "$super:" + (superclass ? superclass.type + "." : "") + property;
-      
-      value = advice.wrap(method);
-      value.valueOf = function() { return method; };
-      value.toString = function() { return method.toString(); };
-      value.originalFunction = method;
-    })();
+  var hasSuperArgument = typeof(value) === 'function' && value.argumentNames && value.argumentNames()[0] === "$super";
+  if (hasSuperArgument) {
+    var superclass = holder.constructor && this === holder.constructor.prototype && holder.constructor.superclass;
+    var ancestor = superclass ? superclass.prototype : holder['__proto__']; // using [] to fool JSLint
+    if (ancestor) {
+      (function() { // wrapped in a method to save the value of 'method' for advice
+        var method = value;
+        var advice = (function(m) {
+          return function callSuper() {
+            return ancestor[m].apply(this, arguments);
+          };
+        })(property);
+        advice.methodName = "$super:" + (superclass ? superclass.type + "." : "") + property;
+
+        value = advice.wrap(method);
+        value.valueOf = function() { return method; };
+        value.toString = function() { return method.toString(); };
+        value.originalFunction = method;
+      })();
+    } else {
+      throw new Error("cannot makeSuperWork, there is no ancestor");
+    }
+  } else {
+    // fine, nothing to do
   }
   return value;
 };
@@ -1106,6 +1113,8 @@ avocado.transporter.module.slotAdder = {
 };
 
 avocado.transporter.module.addSlots = function(holder, block) {
+  var holderType = typeof(holder);
+  if (holder === null || (holderType !== 'object' && holderType !== 'function')) { throw new Error("Cannot addSlots to " + holder); }
   var slotAdder = Object.create(this.slotAdder);
   slotAdder.module = this;
   slotAdder.holder = holder;
@@ -1145,7 +1154,11 @@ thisModule.addSlots(avocado.transporter, function(add) {
   }, {category: ['loading']});
 
   add.method('fileIn', function (name, moduleLoadedCallback) {
-    this.repositoryContainingModuleNamed(name).fileIn(name, moduleLoadedCallback);
+    var repo = this.repositoryContainingModuleNamed(name);
+    if (!repo) {
+      throw new Error("There is no repository containing a module named '" + name + "'; available repositories are: [" + this.availableRepositories.join(", ") + "]");
+    }
+    repo.fileIn(name, moduleLoadedCallback);
   }, {category: ['loading']});
 
   add.method('fileInIfWanted', function (name, callWhenDone) {
@@ -1190,14 +1203,11 @@ thisModule.addSlots(avocado.transporter, function(add) {
     var kernelRepo;
     if (window.kernelModuleSavingScriptURL) {
       var savingScriptURL = window.kernelModuleSavingScriptURL;
-      kernelRepo = Object.create(avocado.transporter.repositories.httpWithSavingScript);
-      kernelRepo.initialize(repoURL, savingScriptURL);
+      kernelRepo = Object.newChildOf(avocado.transporter.repositories.httpWithSavingScript, repoURL, savingScriptURL);
     } else if (avocado.kernelModuleSupportsWebDAV) {
-      kernelRepo = Object.create(avocado.transporter.repositories.httpWithWebDAV);
-      kernelRepo.initialize(repoURL);
+      kernelRepo = Object.newChildOf(avocado.transporter.repositories.httpWithWebDAV, repoURL);
     } else {
-      kernelRepo = Object.create(avocado.transporter.repositories.http);
-      kernelRepo.initialize(repoURL);
+      kernelRepo = Object.newChildOf(avocado.transporter.repositories.http, repoURL);
     }
     
     if (window.urlForKernelModuleName) {
@@ -1327,6 +1337,140 @@ thisModule.addSlots(avocado.transporter, function(add) {
 });
 
 
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('http', {}, {category: ['HTTP']});
+
+});
+
+
+thisModule.addSlots(avocado.http, function(add) {
+
+  add.method('paramsStringFrom', function (paramsStringOrObject) {
+    if (!paramsStringOrObject) { return ""; }
+    if (typeof(paramsStringOrObject) === 'string') { return paramsStringOrObject; }
+    var params = [];
+    for (var n in paramsStringOrObject) {
+      if (paramsStringOrObject.hasOwnProperty(n)) {
+        params.push(encodeURIComponent(n) + "=" + encodeURIComponent(paramsStringOrObject[n]));
+      }
+    }
+    return params.join("&");
+  }, {category: ['requests']});
+  
+  add.creator('request', {}, {category: ['XHR']});
+
+  add.creator('scriptTagRequest', {}, {category: ['script tags']});
+  
+});
+
+
+thisModule.addSlots(avocado.http.request, function(add) {
+  
+  add.method('initialize', function (path) {
+    this._path = path;
+  }, {category: ['creating']});
+  
+  add.method('httpMethod', function () {
+    return this._httpMethod || "GET";
+  }, {category: ['accessing']});
+  
+  add.method('params', function () {
+    return this._params || {};
+  }, {category: ['accessing']});
+  
+  add.method('paramsString', function () {
+    return avocado.http.paramsStringFrom(this.params());
+  }, {category: ['accessing']});
+  
+  add.method('headers', function () {
+    return this._headers || {};
+  }, {category: ['accessing']});
+  
+  add.method('eachHeader', function (f) {
+    var headers =  this.headers()
+  	for (var headerName in headers) {
+  	  if (headers.hasOwnProperty(headerName)) {
+  	    f(headerName, headers[headerName]);
+  	  }
+  	}
+  	if (this.httpMethod() === "POST") {
+    	f("Content-type", "application/x-www-form-urlencoded");
+  	}
+  }, {category: ['accessing']});
+  
+  add.method('url', function () {
+    if (this.httpMethod() === "GET") {
+      return this._path + "?" + this.paramsString();
+    } else {
+      return this._path;
+    }
+  }, {category: ['accessing']});
+  
+  add.method('body', function () {
+    if (this.httpMethod() === "POST") {
+      return this.paramsString();
+    } else {
+      return undefined;
+    }
+  }, {category: ['accessing']});
+  
+  add.method('send', function (callback, errback, partback) {
+  	var req = new XMLHttpRequest();
+  	req.open(this.httpMethod(), this.url(), ! this._isSynchronous);
+  	this.eachHeader(function(name, value) { req.setRequestHeader(name, value); });
+
+    var index = 0;
+    req.onreadystatechange = function () {
+      if (partback && req.readyState === 3) {
+        if (req.status == 200) {
+          var rtlen = req.responseText.length;
+          if (index < rtlen) {
+            var nextPartOfResponseText = req.responseText.substring(index);
+            partback(nextPartOfResponseText);
+            index = rtlen;
+          }
+        }
+      } else if (req.readyState === 4) {
+        if (req.status == 200) {
+          callback(req.responseText);
+        } else {
+          errback("HTTP status: " + req.status);
+        }
+      }
+    }
+    
+  	req.send(this.body());
+  }, {category: ['sending']});
+
+});
+
+
+thisModule.addSlots(avocado.http.scriptTagRequest, function(add) {
+  
+  add.method('initialize', function (path) {
+    this._path = path;
+  }, {category: ['creating']});
+
+  add.method('fullPath', function () {
+    var p = this._path;
+    // aaa - might want to have caching in production?
+    if (p.indexOf('?') >= 0) { p += "&t=" + new Date().getTime(); } else { p += "?t=" + new Date().getTime(); } // to avoid caching;
+    return p;
+  }, {category: ['sending']});
+  
+  add.method('send', function (callback) {
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = this.fullPath();
+    script.onload = callback;
+    var head = document.getElementsByTagName('head')[0];
+    head.appendChild(script);
+  }, {category: ['sending']});
+  
+});
+
+
 thisModule.addSlots(avocado.transporter.repositories, function(add) {
 
   add.creator('abstract', {});
@@ -1414,36 +1558,39 @@ thisModule.addSlots(avocado.transporter.repositories.http, function(add) {
     // aaa - don't use this global loadedURLs thing, use something repo-specific.
     avocado.transporter.loadedURLs[url] = scriptLoadedCallback;
 
-    // Intentionally using primitive mechanisms (either XHR or script tags), so
-    // that we don't depend on having any other code loaded.
-    var shouldUseXMLHttpRequest = false; // aaa - not sure which way is better; seems to be a tradeoff
-    if (shouldUseXMLHttpRequest) {
-      var req = new XMLHttpRequest();
-      req.open("GET", url, true);
-      req.onreadystatechange = function() {
-        if (req.readyState === 4) {
-          var _fileContents = req.responseText;
-          // I really hope "with" is the right thing to do here. We seem to need
-          // it in order to make globally-defined things work.
-          with (window) { eval("//@ sourceURL=" + url + "\n" + _fileContents); } // sourceURL will show up in the debugger
-          avocado.transporter.loadedURLs[url]();
-          avocado.transporter.loadedURLs[url] = 'done';
-        }
-      };
-      req.send();
-    } else {
-      var head = document.getElementsByTagName("head")[0];
-      var script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.onload = function() {
-        avocado.transporter.loadedURLs[url]();
-        avocado.transporter.loadedURLs[url] = 'done';
-      };
-      script.src = url + (url.indexOf('?') >= 0 ? "&" : "?") + "t=" + new Date().getTime(); // to avoid caching; aaa - might want to have caching in production
-      head.appendChild(script);
+    var loadingFunction = avocado.transporter._functionToLoadAURL;
+    if (!loadingFunction) {
+      var thisRepo = this;
+      var shouldUseXMLHttpRequest = false; // aaa - not sure which way is better; seems to be a tradeoff
+      if (shouldUseXMLHttpRequest) {
+        loadingFunction = function(url, callback) { thisRepo.loadURLUsingXHR(url, callback); };
+      } else {
+        loadingFunction = function(url, callback) { thisRepo.loadURLUsingScriptTag(url, callback); };
+      }
     }
+    loadingFunction(url, function() {
+      avocado.transporter.loadedURLs[url]();
+      avocado.transporter.loadedURLs[url] = 'done';
+    });
   }, {category: ['loading']});
 
+  add.method('loadURLUsingXHR', function (url, callback) {
+    var req = Object.newChildOf(avocado.http.request, url);
+    req.send(function(_fileContents) {
+      // I really hope "with" is the right thing to do here. We seem to need
+      // it in order to make globally-defined things work.
+      with (window) { eval("//@ sourceURL=" + url + "\n" + _fileContents); } // sourceURL will show up in the debugger
+      callback();
+    }, function(err) {
+      throw err;
+    });
+  }, {category: ['loading']});
+
+  add.method('loadURLUsingScriptTag', function (url, callback) {
+    var req = Object.newChildOf(avocado.http.scriptTagRequest, url);
+    req.send(callback);
+  }, {category: ['loading']});
+  
   add.method('canFileOutIndividualModules', function () {
     return typeof(this.fileOutModuleVersion) === 'function';
   }, {category: ['saving']});

@@ -1,5 +1,6 @@
 avocado.transporter.module.create('lk_programming_environment/vocabulary_morph', function(requires) {
 
+requires('lk_ext/rows_and_columns');
 requires('reflection/vocabulary');
 
 }, function(thisModule) {

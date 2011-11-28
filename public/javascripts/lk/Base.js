@@ -1765,7 +1765,7 @@ Object.extend(Relay, {
 });
 
 namespace('lively');
-Global.console && Global.console.log("loaded basic library");
+// Global.console && Global.console.log("loaded basic library"); // commented out by Adam - it's getting annoying
 
 
 // ===========================================================================
@@ -2401,7 +2401,7 @@ Object.extend(Color, {
 
 });
 
-Global.console && Global.console.log("Loaded platform-independent graphics primitives");
+// Global.console && Global.console.log("Loaded platform-independent graphics primitives"); // commented out by Adam - it's getting annoying
 
 namespace('lively.data');
 // FIXME the following does not really belong to Base should be somewhere else

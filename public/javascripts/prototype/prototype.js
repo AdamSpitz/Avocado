@@ -704,7 +704,7 @@ Template.Pattern = /(^|.|\r|\n)(#\{(.*?)\})/;
 
 var $break = { };
 
-var Enumerable = (function() {
+window.Enumerable = (function() { // changed by Adam to say "window." instead of "var", for systems where file scope isn't the global scope
   function each(iterator, context) {
     var index = 0;
     try {
@@ -1736,7 +1736,7 @@ if (Prototype.BrowserFeatures.XPath) {
 
 /*--------------------------------------------------------------------------*/
 
-if (!window.Node) var Node = { };
+if (!window.Node) window.Node = { }; // changed by Adam to say "window." instead of "var", for systems where file scope isn't the global scope
 
 if (!Node.ELEMENT_NODE) {
   Object.extend(Node, {

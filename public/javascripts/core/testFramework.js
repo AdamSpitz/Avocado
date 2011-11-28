@@ -139,7 +139,6 @@ thisModule.addSlots(avocado.testCase, function(add) {
 		} catch (e) {
   		var t2 = new Date().getTime();
 			this._result.recordFinished(e, t2 - t1);
-			this.failure(e);
 		  callback();
 		} finally {
 		  this.doTearDown();
@@ -279,6 +278,12 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
     return path[path.length - 1].split("?")[0];
 	});
 
+  add.method('logFailures', function (log) {
+    if (this.anyFailed()) {
+      log(this._error);
+    }
+  });
+
 });
 
 
@@ -307,6 +312,16 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
 
   add.method('anyFailed', function () {
     return this._test.subtests().any(function(t) { return t.result() && t.result().anyFailed(); });
+  });
+
+  add.method('failures', function () {
+    return this._test.subtests().select(function(t) { return t.result() && t.result().anyFailed(); });
+  });
+
+  add.method('logFailures', function (log) {
+    this.failures().forEach(function(t) {
+      t.result().logFailures(log);
+    });
   });
   
 });
