@@ -76,9 +76,11 @@ thisModule.addSlots(avocado.TreeNodeMorph, function(add) {
 
     cp.partsOfUIState = function () {
       return {
-        collection: this._contentMorphs || [],
-        keyOf: function(cm) { return cm._model; },
-        getPartWithKey: function(morph, c) { return WorldMorph.current().morphFor(c); }
+        treeNodeContents: {
+          collection: this._contentMorphs || [],
+          keyOf: function(cm) { return cm._model; },
+          getPartWithKey: function(morph, c) { return WorldMorph.current().morphFor(c); }
+        }
       };
     };
 
@@ -221,7 +223,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
   
   add.method('partsOfUIState', function () {
     var s = { isExpanded: this.expander() };
-    if (this.hasActualContentsPanelAlreadyBeenCreated()) { s.contents = this.actualContentsPanel().partsOfUIState ? this.actualContentsPanel().partsOfUIState() : null; }
+    if (this.hasActualContentsPanelAlreadyBeenCreated()) { s.contents = this.actualContentsPanel(); }
     return s;
   }, {category: ['UI state']});
 
