@@ -51,7 +51,8 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
 
   add.method('recreateInContainer', function (container, startingPos) {
     var originalScale = container.getScale();
-    var originalSpace = container.getExtent().scaleBy(originalScale);
+    //var originalSpace = container.getExtent().scaleBy(originalScale);
+    var originalSpace = container.bounds().extent();
     
     this._bounds = (startingPos || pt(0, 0)).extent(pt(0, 0));
     
@@ -80,6 +81,9 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       var poserExtent = e.poser.getExtent().scaleBy(e.poser.getScale());
       var poserBounds = e.position.extent(poserExtent);
       this._bounds = this._bounds.union(poserBounds);
+      if (this._debugMode) {
+        console.log("Adding poser with bounds: " + poserBounds + " and scale " + e.poser.getScale());
+      }
     }.bind(this), startingPos);
   
     
@@ -104,7 +108,10 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       }
       
       container.setExtent(newExtent); // needed because calling .bounds() returns a rectangle that encompasses the stickouts, but they're still stickouts
-      // console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExternalExtent: " + currentExternalExtent + ", newExtent: " + newExtent + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale);
+
+      if (this._debugMode) {
+        console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExternalExtent: " + currentExternalExtent + ", newExtent: " + newExtent + ", this._bounds.extent(): " + this._bounds.extent() + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale + ", currentScale: " + currentScale);
+      }
     }
   }, {category: ['posing']});
   

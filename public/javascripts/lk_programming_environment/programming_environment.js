@@ -92,14 +92,71 @@ thisModule.addSlots(avocado, function(add) {
     if (this.debugMode) {
       cmdList.addLine();
 
-      cmdList.addItem(["get an HTML morph", function(evt) {
+      cmdList.addItem(["incredible shrinking thingies", function(evt) {
+        var t = avocado.treeNode.create("Root", [
+          avocado.messageNotifier.create("Noodle")
+        ]);
+        var tm = avocado.ui.grab(t, evt);
+        tm._updater = new PeriodicalExecuter(function(pe) {
+          console.log("AAA updating");
+          t.setImmediateContents([
+            avocado.messageNotifier.create("Noodle")
+          ]);
+          tm.refreshContentIfOnScreenOfMeAndSubmorphs();
+        }, 1);
+      }]);
+
+      cmdList.addItem(["get an HTML/Canvas morph", function(evt) {
         var m = new XenoMorph(new Rectangle(0, 0, 400, 600));
 
         var body = document.createElement("body");
         body.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
         var div = document.createElement("div");
-        var t = document.createTextNode("The quick brown fox jumps over the lazy dog.");
-        div.appendChild(t);
+        //div.appendChild(document.createTextNode("The quick brown fox jumps over the lazy dog."));
+
+
+
+
+
+
+				var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+				canvas.width  = 475;
+				canvas.height = 230;
+      	div.appendChild(canvas);
+				
+				var ctx = canvas.getContext("2d");
+				var x=0, y=20;
+				var pix = [], dotCount = 50;
+				
+				//initialize array of dots
+				(function init(){
+				    for (var i = 0; i < dotCount; ++i) {
+				        pix.push({x: canvas.width * Math.random(), y: 20 + Math.random() * canvas.height});
+			      }
+				}());
+				
+				//moving dots loop
+				(function loop(){
+			    if (m.world()) {
+				    var mPos = m.worldPoint(pt(0,0));
+				    console.log("mPos: " + mPos);
+				    ctx.save();
+				    ctx.globalCompositeOperation = 'source-in';
+				    ctx.fillStyle = "rgba(0,0,0,0.4)";
+				    ctx.fillRect(mPos.x, mPos.y, canvas.width, canvas.height);
+				    ctx.restore();
+				    for (var i = 0; i < dotCount; ++i) {
+				        ctx.fillRect(mPos.x + ((pix[i].x += Math.random()) % canvas.width), mPos.y + ((pix[i].y += (Math.random())) % canvas.height), 2, 2);
+				    }
+			    }
+			    setTimeout(loop, 1000 / 60)
+				}());
+
+
+
+
+
+
         body.appendChild(div);
         m.foRawNode.appendChild(body);
 
