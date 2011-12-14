@@ -214,7 +214,11 @@ thisModule.addSlots(avocado.asyncRequest, function(add) {
     }, function(partialResult) {
       partbackTransformer ? partbackTransformer(partialResult, callback, errback, partback) : (partback ? partback(partialResult) : null);
     });
-  }, {category: ['creating']});
+  }, {category: ['sending']});
+  
+  add.method('send', function (callback, errback, partback) {
+    this.get(callback, errback, partback);
+  }, {category: ['sending']});
   
   add.method('map', function (f) {
     return avocado.asyncRequest.mapping(this, f);
