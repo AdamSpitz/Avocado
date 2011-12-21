@@ -5719,6 +5719,19 @@ lookTouchy: function(morph) {
 				this.hasMovedSignificantly = true;
 			}
 			
+			var shouldEnablePanningExperiment = true; // added by Adam
+      if (shouldEnablePanningExperiment && world && evt.type == "MouseMove" && evt.isShiftDown() && evt.isMetaDown()) { // aaa or maybe it should just be Meta?
+        if (this._panningStartPoint) {
+          var v = this._panningStartPoint.subPt(evt.mousePoint);
+          // console.log("Panning by " + v + "; start point was " + this._panningStartPoint + " and current mouse point is " + evt.mousePoint);
+          world.slideBy(v);
+        }
+        this._panningStartPoint = evt.mousePoint;
+        return true;
+      } else {
+        this._panningStartPoint = null;
+      }
+		  
 			if (this.mouseFocus) { // if mouseFocus is set, events go to that morph
 				this.mouseFocus.captureMouseEvent(evt, true);
 			} else if (world) {
