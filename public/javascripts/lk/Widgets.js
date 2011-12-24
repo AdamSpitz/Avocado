@@ -4076,7 +4076,7 @@ Morph.subclass('WindowMorph', {
     initiateShutdown: function() {
         if (this.isShutdown()) return;
         this.targetMorph.shutdown(); // shutdown may be prevented ...
-        this.remove();
+        this.ensureIsNotInWorld(); // used to say this.remove(), changed by Adam so that it does the cool whooshing-off-the-screen thing
         this.state = 'shutdown'; // no one will ever know...
         return true;
     },

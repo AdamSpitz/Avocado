@@ -1123,8 +1123,8 @@ avocado.transporter.module.addSlots = function(holder, block) {
 
 annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__annotation__', 'bootstrapTheModuleSystem', 'modules', 'currentUser', 'jsQuicheBaseURL', 'kernelModuleSavingScriptURL', 'logoutURL', 'startAvocadoGoogleApp', 'urlForKernelModuleName', 'wasServedFromGoogleAppEngine', 'isInCodeOrganizingMode']);
 
-avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
-avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_lk', function() {}); // aaa lk-specific
+avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap',       function() {});
+avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_lk',    function() {}); // aaa lk-specific
 };
 bootstrapTheModuleSystem();
 
@@ -1293,6 +1293,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAllAvocadoCode', function () {
+    avocado.morphMixins.installAll(); // I think this might be the wrong place for this.
     avocado.transporter.callWhenAllAvocadoCodeIsLoaded();
     delete avocado.transporter.callWhenAllAvocadoCodeIsLoaded;
   }, {category: ['bootstrapping']});

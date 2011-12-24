@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_ext/commands', function(requires) {
 
-requires('core/commands');
+requires('general_ui/commands');
 requires('lk_ext/wheel_menus');
 
 }, function(thisModule) {
@@ -26,174 +26,20 @@ thisModule.addSlots(avocado.command, function(add) {
     
     return m;
   }, {category: ['user interface']});
-  
-  add.method('wrapForMorph', function (morph) {
-    var modelCommand = this;
-    
-    var morphCommand = Object.create(modelCommand);
-    morphCommand.setContext(morph); // aaa - not sure this won't break stuff
-    
-    if (modelCommand._argumentSpecs) {
-      morphCommand.setArgumentSpecs(modelCommand._argumentSpecs.map(function(spec) { return spec.wrapForMorph(morph); }))
-    }
-    
-    var oldFunctionToRun = modelCommand.functionToRun();
-    morphCommand.setFunction(function() {
-      var rcvr = modelCommand.contextOrDefault();
-      var args = $A(arguments);
-      // first arg is the event
-      var result = modelCommand.functionToRun().apply(rcvr, args.map(function(o, i) { return i === 0 ? o : o._model; }));
-      args.each(function(arg, i) {
-        if (i > 0) {
-          if ((arg.owner instanceof HandMorph || arg.owner instanceof avocado.CarryingHandMorph) && arg._placeholderMorphIJustCameFrom && arg._placeholderMorphIJustCameFrom.world()) {
-            var hand = arg.owner;
-            arg._placeholderMorphIJustCameFrom.putOriginalMorphBack(function() {
-              if (typeof(hand.hideIfEmpty) === 'function') { hand.hideIfEmpty(); }
-            });
-          } else if (arg._shouldDisappearAfterCommandIsFinished) {
-            arg.remove();
-          } else {
-            // I guess just leave it there.
-          }
-        }
-      });
-      return result;
-    });
-
-    return morphCommand;
-  }, {category: ['user interface']});
-
-  add.method('immediateContents', function () {
-    return this.argumentSpecs();
-  }, {category: ['user interface']});
-
-});
-
-
-thisModule.addSlots(avocado.command.argumentSpec, function(add) {
-
-  add.method('wrapForMorph', function (morph) {
-    var argSpecForModelCommand = this;
-    var argSpecForMorphCommand = avocado.command.argumentSpec.create(this._name);
-    
-    argSpecForMorphCommand.onlyAccepts(function(arg) {
-      return (typeof(arg) === 'object') &&
-             (! arg._shouldOnlyBeDroppedOnThisParticularMorph ||
-                arg._shouldOnlyBeDroppedOnThisParticularMorph === morph) &&
-             argSpecForModelCommand.canAccept(arg._model);
-    });
-    
-    var modelPrompter = argSpecForModelCommand.prompter();
-    if (modelPrompter) {
-      argSpecForMorphCommand.setPrompter({
-        prompt: function(caption, context, evt, callback) {
-          modelPrompter.prompt(caption, context._model, evt, function(arg) { callback({ _model: arg }); });
-        }
-      });
-    }
-    
-    argSpecForMorphCommand.useMorphicContextualArgFinder();
-    
-    return argSpecForMorphCommand;
-  }, {category: ['user interface']});
-  
-  add.method('useMorphicContextualArgFinder', function () {
-    var thisArgSpec = this;
-    return this.setArgFinder(function(context, evt) {
-      var tryMorphs = function(availableMorphs) {
-        var possibleArgMorphs = [];
-        availableMorphs.forEach(function(morph) {
-          var morphAndRelatedMorphs = typeof(morph.relatedMorphs) === 'function' ? [morph].concat(morph.relatedMorphs()) : [morph];
-          morphAndRelatedMorphs.forEach(function(morphOrRelatedMorph) {
-            if (thisArgSpec.canAccept(morphOrRelatedMorph)) {
-              // console.log("Found an argument: " + morphOrRelatedMorph);
-              possibleArgMorphs.push(morphOrRelatedMorph);
-            } else {
-              // console.log("Can't use as argument: " + morphOrRelatedMorph);
-            }
-          });
-        });
-        return possibleArgMorphs;
-      };
-      
-      var possibleArgMorphsInHand = tryMorphs(evt.hand.submorphs);
-      if (possibleArgMorphsInHand.length === 1) {
-        return possibleArgMorphsInHand[0];
-      } else if (possibleArgMorphsInHand.length > 1) {
-        return undefined;
-      }
-      
-      var world = evt.hand.world();
-      var carryingHand = avocado.CarryingHandMorph.forWorld(world);
-      var possibleArgMorphsInCarryingHand = tryMorphs(carryingHand.submorphs);
-      if (possibleArgMorphsInCarryingHand.length === 1) {
-        return possibleArgMorphsInCarryingHand[0];
-      } else if (possibleArgMorphsInCarryingHand.length > 1) {
-        return undefined;
-      }
-      
-      var possibleArgMorphsInMorphStructure = tryMorphs(avocado.compositeCollection.create([context.ownersRecursively(), context.submorphsRecursively()]));
-      if (possibleArgMorphsInMorphStructure.length === 1) {
-        return possibleArgMorphsInMorphStructure[0];
-      } else if (possibleArgMorphsInMorphStructure.length > 1) {
-        return undefined;
-      }
-      
-      // I hope this isn't too slow. Or too unintuitive.
-      var possibleArgMorphsInEntireWorld = tryMorphs(avocado.compositeCollection.create([world.submorphsRecursively()]));
-      if (possibleArgMorphsInEntireWorld.length === 1) {
-        return possibleArgMorphsInEntireWorld[0];
-      } else {
-        return undefined;
-      }
-    });
-  }, {category: ['user interface']});
 
 });
 
 
 thisModule.addSlots(avocado.command.list, function(add) {
 
-  add.method('wrapForMorph', function (morph) {
-    return avocado.command.list.create(morph /* aaa - used to say this._defaultContext, but I think that's wrong... maybe */, this._commands.map(function(c) { return c ? c.wrapForMorph(morph) : null; }));
-  }, {category: ['user interface']});
-
   add.data('shouldUseWheelMenus', true);
 
-  add.method('createMenu', function (target, menuClass) {
-    menuClass = menuClass || (this.shouldUseWheelMenus ? avocado.WheelMenuMorph : MenuMorph);
-    var commands = this.commandsForMenu(menu, target);
-    var menuItems = menuClass.itemsForCommands(commands);
-    if (menuClass === avocado.WheelMenuMorph && menuItems.length > 9) {
-      // Can't have a wheel menu with more than 9 commands.
-      return this.createMenu(target, MenuMorph);
-    }
-    var menu = new menuClass(menuItems, target);
-    return menu;
+  add.method('defaultMenuClass', function () {
+    return this.shouldUseWheelMenus ? avocado.WheelMenuMorph : MenuMorph;
   }, {category: ['converting']});
 
-  add.method('itemsFor', function (menu, target) {
-  }, {category: ['converting']});
-
-  add.method('commandsForMenu', function (menu, target, f) {
-    var commands = [];
-    var i = 0;
-    var n = this._commands.length;
-    this._commands.each(function(c) {
-      if (c) {
-        c = c.wrapWithPromptersForArguments();
-        
-        if (typeof(c.isApplicable) !== 'function' || c.isApplicable()) {
-          commands.push(c);
-        }
-      } else {
-        if (i !== n - 1) { // no point if it's the last one
-          commands.push(c);
-        }
-      }
-      i += 1;
-    }.bind(this));
-    return commands;
+  add.method('menuClassThatCanHandleAnUnlimitedNumberOfItems', function () {
+    return MenuMorph;
   }, {category: ['converting']});
 
 });
@@ -223,25 +69,6 @@ thisModule.addSlots(avocado.WheelMenuMorph, function(add) {
   add.method('itemsForCommands', function (commands) {
     return commands.compact();
   }, {category: ['converting']});
-
-});
-
-
-thisModule.addSlots(Morph.prototype, function(add) {
-
-  add.method('eachAssociatedObject', function (f) {
-    // Children can override.
-    if (typeof(this._model) !== 'undefined') { f(this._model); }
-  }, {category: ['associated objects']});
-
-  add.method('associatedObjectSatisfying', function (criterion) {
-    return exitValueOf(function(exit) {
-      this.eachAssociatedObject(function(o) {
-        if (!criterion || criterion(o)) { exit(o); }
-      });
-      return null;
-    }.bind(this));
-  }, {category: ['associated objects']});
 
 });
 

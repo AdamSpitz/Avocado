@@ -1,7 +1,6 @@
 avocado.transporter.module.create('lk_ext/lk_ext', function(requires) {
 
 requires('core/math');
-requires('lk_ext/fixes');
 requires('lk_ext/changes');
 requires('lk_ext/change_notification');
 requires('lk_ext/menus');

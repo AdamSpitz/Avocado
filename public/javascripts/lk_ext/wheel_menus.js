@@ -17,6 +17,8 @@ thisModule.addSlots(avocado.WheelMenuMorph, function(add) {
   add.data('type', 'avocado.WheelMenuMorph');
 
   add.creator('prototype', Object.create(Morph.prototype));
+  
+  add.data('maximumNumberOfCommands', 9);
 
 });
 

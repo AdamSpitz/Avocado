@@ -693,6 +693,7 @@ var Event = (function() {
 
 	preventDefault: function() {
 		this.rawEvent.preventDefault();
+    this.rawEvent.returnValue = false; // Added because I think it might help on Windows, though I'm really not sure. -- Adam, 2008
 	},
 
 	stop: function() {
@@ -3800,6 +3801,12 @@ Morph.addMethods({
 		}
 	},
 
+  // added by Adam
+  ownerLocalize: function(pt) {
+		if (! this.owner) { return pt; }
+    return this.owner.localize(pt);
+  },
+  
     transformForNewOwner: function(newOwner) {
 		return new lively.scene.Similitude(this.transformToMorph(newOwner));
     },
@@ -4713,6 +4720,12 @@ PasteUpMorph.subclass("WorldMorph", {
 
 		this.enterCount ++;
 	},
+
+  // added by Adam
+  ownerLocalize: function(pt) {
+		if (pt == null) console.log('null pt in ownerLocalize');   
+		return pt.matrixTransform(this.getTransform());
+  },
     
 	addHand: function(hand) {
 		if (this.hands.length > 0 && !this.hands.first())
@@ -5023,6 +5036,11 @@ PasteUpMorph.subclass("WorldMorph", {
 	}.logErrors('alert'),
 
 	prompt: function(message, callback, defaultInput) {
+    // aaa: LK's prompt dialog thing seems (as of Feb. 2009) to be broken.
+    // I doubt it's hard to fix, but for now I don't wanna get distracted by it. -- Adam
+    callback.call(window, window.prompt(message, defaultInput));
+    return;
+
 		var model = Record.newPlainInstance({Message: message, Input: defaultInput || "", Result: null});
 		model.addObserver({ 
 			onResultUpdate: function(value) { 

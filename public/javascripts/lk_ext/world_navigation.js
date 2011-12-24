@@ -42,7 +42,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
         // The animated version is a bit weird for now, I think. -- Adam
         // m.startWhooshingInAStraightLineTo(m.position().addPt(delta), false, false, true);
         
-        if (! (m instanceof avocado.ArrowMorph)) { // aaa I have no idea why this is necessary, but try taking it out and then zooming in while an arrow is visible
+        if (! (m.shouldNotMoveWhenSlidingTheWorld)) { // aaa I have no idea why this is necessary, but try taking it out and then zooming in while an arrow is visible
           m.moveBy(delta);
         }
       }

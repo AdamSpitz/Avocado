@@ -19,9 +19,9 @@ thisModule.addSlots(avocado.CarryingHandMorph, function(add) {
   add.data('type', 'avocado.CarryingHandMorph');
 
   add.method('forWorld', function (w) {
-    if (w.carryingHand) { return w.carryingHand; }
-    w.carryingHand = new this(w);
-    return w.carryingHand;
+    if (w._carryingHand) { return w._carryingHand; }
+    w._carryingHand = new this(w);
+    return w._carryingHand;
   });
 
   add.creator('prototype', Object.create(Morph.prototype));
@@ -104,9 +104,11 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
       var finalInternalSize = finalExternalSize.scaleBy(1 / this.getScale());
       var desiredInternalPos = this.getExtent().scaleBy(0.5).subPt(finalInternalSize.scaleBy(0.5));
       var desiredExternalPos = this.getPosition().addPt(desiredInternalPos.scaleBy(this.getScale()));
+      /*
       console.log("Picking up " + m + ", currentExternalSize: " + currentExternalSize + ", desiredExternalSize: " + desiredExternalSize + ", scales: " + scales
                   + ", desiredScale: " + desiredScale + ", finalInternalSize: " + finalInternalSize + ", desiredInternalPos: " + desiredInternalPos
                   + ", desiredExternalPos: " + desiredExternalPos);
+      */
       desiredExternalPos.desiredScale = desiredScale;
       m.ensureIsInWorld(this._world, desiredExternalPos, true, false, false, function() {
         this.addMorphAt(m, desiredInternalPos);

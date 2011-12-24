@@ -12,7 +12,7 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.http, function(add) {
   
-  add.creator('jsonp', Object.create(avocado.http.scriptTagRequest), {category: ['script tags', 'JSONP']});
+  add.creator('jsonp', {}, {category: ['script tags', 'JSONP']});
 
 });
 
@@ -96,7 +96,7 @@ thisModule.addSlots(avocado.http.jsonp, function(add) {
   
   add.data('callbacks', {}, {category: ['JSONP'], initializeTo: '{}'});
 
-  add.creator('request', {}, {category: ['JSONP']});
+  add.creator('request', Object.create(avocado.http.scriptTagRequest), {category: ['JSONP']});
   
 });
 

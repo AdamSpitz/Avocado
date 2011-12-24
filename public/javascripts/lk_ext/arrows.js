@@ -77,6 +77,8 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
 
   add.data('shouldGrowSmoothly', true);
 
+  add.data('shouldNotMoveWhenSlidingTheWorld', true, {comment: 'Hack, not sure what exactly is going on.'});
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('stopUpdating', function () {

@@ -422,21 +422,8 @@ Morph.addMethods({
 
 
 Morph.addMethods({
-  ownerLocalize: function(pt) {
-		if (! this.owner) { return pt; }
-    return this.owner.localize(pt);
-  },
-  
   handIsOverMe: function (hand) {
     return this.shape.containsPoint(this.localize(hand.getPosition()));
-  }
-});
-
-
-WorldMorph.addMethods({
-  ownerLocalize: function(pt) {
-		if (pt == null) console.log('null pt in ownerLocalize');   
-		return pt.matrixTransform(this.getTransform());
   }
 });
 

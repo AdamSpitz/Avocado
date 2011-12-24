@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_ext/animation', function(requires) {
 
-requires('core/animation_math');
+requires('general_ui/animation');
 
 }, function(thisModule) {
 
@@ -44,26 +44,8 @@ thisModule.addSlots(Morph.prototype, function(add) {
       }
     }, {category: ['whooshing around']});
 
-  add.method('startWhooshingTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-      return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.arcPath, loc, 3 / WorldMorph.current().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
-    }, {category: ['whooshing around']});
-
-  add.method('startWhooshingInAStraightLineTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
-      return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.straightPath, loc, 2 / WorldMorph.current().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
-    }, {category: ['whooshing around']});
-
-  add.method('whooshAwayAfter', function (ms) {
-      this.whooshOuttaHereTimer = window.setTimeout(function() {
-        this.startWhooshingOuttaHere();
-      }.bind(this), ms || 5000);
-    });
-
   add.method('positionToCenterIn', function (m) {
       return m.getExtent().scaleBy(m.getScale() * 0.5).subPt(this.getExtent().scaleBy(this.getScale() * 0.5));
-    });
-
-  add.method('showTemporarilyInCenterOfWorld', function (w) {
-      this.showInCenterOfWorld(w, function() {this.whooshAwayAfter(5000);}.bind(this));
     });
 
   add.method('showInCenterOfWorld', function (w, callback) {
@@ -72,21 +54,6 @@ thisModule.addSlots(Morph.prototype, function(add) {
       var p = w.getExtent().scaleBy(0.5).subPt(this.getExtent().scaleBy(this.getScale() * 0.5));
       this.showInWorldAt(w, p, callback);
     });
-
-  add.method('showInWorldAt', function (w, p, callWhenDone) {
-      this.ensureIsInWorld(w, p, true, false, true, callWhenDone);
-    });
-
-  add.method('startAnimating', function (animator, functionToCallWhenDone) {
-      animator.stopAnimating();
-      animator.whenDoneCall(functionToCallWhenDone);
-      animator.startAnimating(this);
-      return animator;
-    }, {category: ['whooshing around']});
-
-  add.method('wiggle', function (duration) {
-      return this.startAnimating(avocado.animation.newWiggler(this, null, duration));
-    }, {category: ['wiggling']});
 
   add.method('setPositionAndDoMotionBlurIfNecessary', function (newPos, blurTime) {
       var world = this.world();
@@ -145,10 +112,6 @@ thisModule.addSlots(Morph.prototype, function(add) {
     }
   }, {category: ['adding and removing']});
 
-  add.method('ensureIsNotInWorld', function () {
-    if (this.world()) {this.startWhooshingOuttaHere();}
-  }, {category: ['adding and removing']});
-
   add.method('animatedAddMorphAt', function (m, p, callWhenDone) {
     this.summonMorphToPosition(m, p, m.getScale(), function() {
       this.addMorphAt(m, p);
@@ -198,26 +161,6 @@ thisModule.addSlots(Morph.prototype, function(add) {
     }
   }, {category: ['fading']});
 
-  add.method('smoothlyFadeTo', function (desiredAlpha, functionToCallWhenDone) {
-    this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);
-  }, {category: ['fading']});
-
-  add.method('smoothlyResizeTo', function (desiredSize, functionToCallWhenDone) {
-      this.startAnimating(avocado.animation.newResizer(this, desiredSize), functionToCallWhenDone);
-    }, {category: ['resizing']});
-
-  add.method('smoothlyScaleTo', function (desiredScale, functionToCallWhenDone) {
-      this.startAnimating(avocado.animation.newScaler(this, desiredScale), functionToCallWhenDone);
-    }, {category: ['scaling']});
-
-  add.method('smoothlyScaleHorizontallyTo', function (desiredScale, functionToCallWhenDone) {
-      this.startAnimating(avocado.animation.newHorizontalScaler(this, desiredScale), functionToCallWhenDone);
-    }, {category: ['scaling']});
-
-  add.method('smoothlyScaleVerticallyTo', function (desiredScale, functionToCallWhenDone) {
-      this.startAnimating(avocado.animation.newVerticalScaler(this, desiredScale), functionToCallWhenDone);
-    }, {category: ['scaling']});
-
   add.method('stayCenteredAndSmoothlyScaleTo', function (desiredScale, centerPos, functionToCallWhenDone) {
       var center = this.innerBounds().center();
       this.moveOriginBy(center);
@@ -228,19 +171,6 @@ thisModule.addSlots(Morph.prototype, function(add) {
         if (functionToCallWhenDone) { functionToCallWhenDone(); }
       }.bind(this));
     }, {category: ['scaling']});
-
-});
-
-
-thisModule.addSlots(WindowMorph.prototype, function(add) {
-
-  add.method('initiateShutdown', function () {
-      if (this.isShutdown()) { return; }
-      this.targetMorph.shutdown(); // shutdown may be prevented ...
-      this.ensureIsNotInWorld(); // used to say this.remove(), changed by Adam so that it does the cool whooshing-off-the-screen thing
-      this.state = 'shutdown'; // no one will ever know...
-      return true;
-    }, {category: ['closing']});
 
 });
 
