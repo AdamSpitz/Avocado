@@ -14,11 +14,11 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.EvaluatorMorph, function(add) {
 
-  add.data('superclass', avocado.ColumnMorph);
+  add.data('superclass', avocado.TableMorph);
 
   add.data('type', 'avocado.EvaluatorMorph');
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
 
 });
 
@@ -47,8 +47,10 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
     
     var buttons = this.buttonCommands().map(function(c) { return c.newMorph(); });
 
-    this.setRows([tm, avocado.RowMorph.createSpaceFilling(buttons)]);
+    this.setCells([tm, avocado.TableMorph.createSpaceFillingRow(buttons)]);
   }, {category: ['creating']});
+  
+  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
 
   add.method('mirrorMorph', function () { return this._mirrorMorph;  }, {category: ['accessing']});
 

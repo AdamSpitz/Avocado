@@ -48,7 +48,8 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return m.getExtent().scaleBy(m.getScale() * 0.5).subPt(this.getExtent().scaleBy(this.getScale() * 0.5));
     });
 
-  add.method('showInCenterOfWorld', function (w, callback) {
+  add.method('showInCenterOfUsersFieldOfVision', function (w, callback) {
+      this.scaleBy(1 / w.getScale());
       // Can't use positionToCenterIn because that finds the actual center of the morph, whereas we
       // want the center of the *visible* part of the world.
       var p = w.getExtent().scaleBy(0.5).subPt(this.getExtent().scaleBy(this.getScale() * 0.5));

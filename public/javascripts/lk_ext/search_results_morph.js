@@ -14,11 +14,11 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.SearchResultsMorph, function(add) {
 
-  add.data('superclass', avocado.ColumnMorph);
+  add.data('superclass', avocado.TableMorph);
 
   add.data('type', 'avocado.SearchResultsMorph');
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
 
 });
 
@@ -31,7 +31,7 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     $super();
     this._model = searcher;
 
-    this.setFill(lively.paint.defaultFillWithColor(Color.blue.lighter()));
+    this.setFill(avocado.ui.defaultFillWithColor(Color.blue.lighter()));
     this.setPadding(5);
     this.shape.roundEdgesBy(10);
     this.closeDnD();
@@ -43,11 +43,13 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     this.redoButton = ButtonMorph.createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
 
-    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton], this.headerRowStyle.padding);
+    this._headerRow = avocado.TableMorph.createSpaceFillingRow([this._expander, this._titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton], this.headerRowStyle.padding);
 
-    this.setPotentialRows([this._headerRow, Morph.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
+    this.setPotentialCells([this._headerRow, Morph.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
     this.refreshContent();
   });
+  
+  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
 
   add.method('searcher', function () { return this._model; });
 

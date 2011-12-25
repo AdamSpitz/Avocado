@@ -22,8 +22,8 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     }.bind(this), ms || 5000);
   }, {category: ['whooshing around']});
 
-  add.method('showTemporarilyInCenterOfWorld', function (w) {
-    this.showInCenterOfWorld(w, function() {this.whooshAwayAfter(5000);}.bind(this));
+  add.method('showTemporarilyInCenterOfUsersFieldOfVision', function (w) {
+    this.showInCenterOfUsersFieldOfVision(w, function() {this.whooshAwayAfter(5000);}.bind(this));
   }, {category: ['whooshing around']});
 
   add.method('showInWorldAt', function (w, p, callWhenDone) {

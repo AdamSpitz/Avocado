@@ -17,11 +17,7 @@ thisModule.addSlots(modules['lk_programming_environment/code_organizer'], functi
     // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
     reflect(window).categorizeUncategorizedSlotsAlphabetically();
     
-    avocado.theApplication = jsQuiche;
-    
-    if (avocado.world) {
-      avocado.world.addApplication(jsQuiche);
-    }
+    avocado.applicationList.addApplication(jsQuiche);
   });
 
 });

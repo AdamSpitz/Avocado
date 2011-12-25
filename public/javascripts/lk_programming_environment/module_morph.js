@@ -26,7 +26,7 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
     columns.push(changeIndicator);
     this.buttonCommands().commands().each(function(c) { columns.push(c.newMorph()); });
     columns.push(m.createDismissButton());
-    m.setColumns(columns);
+    m.setCells(columns);
 
     m.commands = function() {
       var module = this.ownerWithAModel()._model;

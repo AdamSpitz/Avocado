@@ -8,11 +8,7 @@ requires('avocado_lib');
 thisModule.addSlots(modules['lk_programming_environment/runtime_environment'], function(add) {
 
   add.method('postFileIn', function () {
-    avocado.theApplication = avocado.runtime;
-    
-    if (avocado.world) {
-      avocado.world.addApplication(avocado.runtime);
-    }
+    avocado.applicationList.addApplication(avocado.runtime);
   });
   
 });

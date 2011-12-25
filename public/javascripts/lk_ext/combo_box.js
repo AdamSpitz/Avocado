@@ -14,7 +14,7 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.ComboBoxMorph, function(add) {
 
-  add.data('superclass', avocado.RowMorph);
+  add.data('superclass', avocado.TableMorph);
 
   add.data('type', 'avocado.ComboBoxMorph');
 
@@ -26,14 +26,14 @@ thisModule.addSlots(avocado.ComboBoxMorph, function(add) {
     var cancelButton = ButtonMorph.createButton(cancelButtonText, function(evt) { comboBox.relinquishKeyboardFocus(Event.createFake()); promptBox.remove(); if (onCancel) { onCancel();                 } });
     var comboBox = new this(values, defaultValue, function() {okButton.simulatePress(Event.createFake());}, function() {cancelButton.simulatePress(Event.createFake());});
     comboBox.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;
-    var buttonRow = avocado.RowMorph.createSpaceFilling([okButton, Morph.createSpacer(), cancelButton]);
-    promptBox.setRows([messageLabel, comboBox, buttonRow]);
+    var buttonRow = avocado.TableMorph.createSpaceFillingRow([okButton, Morph.createSpacer(), cancelButton]);
+    promptBox.setCells([messageLabel, comboBox, buttonRow]);
     var world = WorldMorph.current();
     world.addMorphAt(promptBox, promptBox.positionToCenterIn(world));
     comboBox.selectAll();
   });
 
-  add.creator('prototype', Object.create(avocado.RowMorph.prototype));
+  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
 
 });
 
@@ -91,6 +91,8 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
 
     this.setColumns([this._textMorph, Morph.createSpacer(), this._button]);
   }, {category: ['creating']});
+  
+  add.data('_tableContent', avocado.tableContents.rowPrototype, {category: ['layout']});
 
   add.data('padding', {left: 1, right: 1, top: 1, bottom: 1, between: {x: 0, y: 0}}, {initializeTo: '{left: 1, right: 1, top: 1, bottom: 1, between: {x: 0, y: 0}}'});
 

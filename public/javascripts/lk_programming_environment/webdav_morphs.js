@@ -35,7 +35,7 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
     contentsTextMorph.setScale(0.3);
     contentsTextMorph.setFill(null);
     var contentsMorph = ScrollPane.containing(contentsTextMorph, pt(100,150));
-    m.setRows([titleLabel, contentsMorph]);
+    m.setCells([titleLabel, contentsMorph]);
     m.setFill(Color.red.lighter());
     //m.startPeriodicallyUpdating();
     return m;

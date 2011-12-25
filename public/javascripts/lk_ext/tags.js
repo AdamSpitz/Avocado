@@ -268,7 +268,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['tagging']});
   
   add.method('addTagMorph', function (tagMorph) {
-    this.ensureTagHolderMorphIsVisible().addRow(tagMorph);
+    this.ensureTagHolderMorphIsVisible().addCell(tagMorph);
     return this;
   }, {category: ['tagging']});
 

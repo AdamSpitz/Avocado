@@ -2,7 +2,7 @@ Morph.addMethods({
   showMorphMenu: function(evt) {
     // Disable the reflective stuff in deployed apps. -- Adam
     var isReflectionEnabled = false;
-    WorldMorph.current().applications().each(function(app) { if (app.isReflectionEnabled) { isReflectionEnabled = true; }; });
+    WorldMorph.current().applicationList().applications().each(function(app) { if (app.isReflectionEnabled) { isReflectionEnabled = true; }; });
     if (!isReflectionEnabled) { return; }
 
     var menu = this.morphMenu(evt);

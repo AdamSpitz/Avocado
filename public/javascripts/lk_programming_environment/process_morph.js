@@ -14,7 +14,7 @@ thisModule.addSlots(avocado.process, function(add) {
     m._numberToShow = 0;
     m._hasMore = true;
 
-    var headerRow = avocado.RowMorph.createSpaceFilling([m.createNameLabel(), Morph.createSpacer(), m.createDismissButton()]);
+    var headerRow = avocado.TableMorph.createSpaceFillingRow([m.createNameLabel(), Morph.createSpacer(), m.createDismissButton()]);
     
     var world = WorldMorph.current();
     var contentColumn = avocado.TableMorph.newColumn().beInvisible();
@@ -31,13 +31,13 @@ thisModule.addSlots(avocado.process, function(add) {
     });
     
     var moreButton = avocado.command.create('More', function(evt) { m._numberToShow += 10; contentColumn.refreshContent(); }).newMorph();
-    var moreOrLessRow = avocado.RowMorph.createSpaceFilling([
+    var moreOrLessRow = avocado.TableMorph.createSpaceFillingRow([
       Morph.createSpacer(),
       Morph.createOptionalMorph(moreButton, function() { return m._hasMore; }),
       Morph.createSpacer()
     ]).setPadding(3);
     
-    m.setRows([headerRow, contentColumn, moreOrLessRow]);
+    m.setCells([headerRow, contentColumn, moreOrLessRow]);
     
     m._numberToShow = 10;
     m.refreshContentOfMeAndSubmorphs();
@@ -58,7 +58,7 @@ thisModule.addSlots(avocado.process.context, function(add) {
     contextSlot._processContext = this;
     var slotMorph = new avocado.process.context.Morph(contextSlot);
     slotMorph.applyStyle(this.defaultMorphStyle);
-    var m = avocado.RowMorph.createSpaceFilling([slotMorph]);
+    var m = avocado.TableMorph.createSpaceFillingRow([slotMorph]);
     m._model = this;
     return m;
   }, {category: ['user interface']});
@@ -100,7 +100,7 @@ thisModule.addSlots(avocado.process.context.Morph.prototype, function(add) {
         columns.push(context.commandToGrabArg(i).newMorph());
       }
     }
-    m.setColumns(columns);
+    m.setCells(columns);
     return m;
   }, {category: ['signature']});
 

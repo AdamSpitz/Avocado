@@ -126,7 +126,7 @@ thisModule.addSlots(Morph, function(add) {
     var r = avocado.TableMorph.newRow().beInvisible();
     r.typeName = 'either-or morph';
     var togglers = morphs.map(function(m) { return avocado.morphToggler.create(null, m); });
-    r.setPotentialColumns(togglers);
+    r.setPotentialCells(togglers);
     r.refreshContent = avocado.makeSuperWork(r, "refreshContent", function($super) {
       var i = functionReturningTheIndexOfTheOneToShow();
       var evt = Event.createFake();
@@ -160,8 +160,8 @@ thisModule.addSlots(Morph, function(add) {
 
   add.method('wrapToTakeUpConstantSpace', function(space, morph) {
     var wrapper = avocado.TableMorph.newRow().beInvisible();
-    wrapper._desiredSpaceToScaleTo = space;
-    wrapper.setColumns([morph]);
+    wrapper.layout()._desiredSpaceToScaleTo = space;
+    wrapper.setCells([morph]);
     return wrapper;
   }, {category: ['shortcuts']});
 

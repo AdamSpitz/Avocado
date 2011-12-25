@@ -6,12 +6,12 @@ requires('lk_ext/change_notification');
 requires('lk_ext/menus');
 requires('lk_ext/wheel_menus');
 requires('lk_ext/commands');
-requires('lk_ext/applications');
+requires('general_ui/applications');
 requires('lk_ext/grabbing');
 requires('lk_ext/highlighting');
 requires('lk_ext/refreshing_content');
 requires('lk_ext/transporting_morphs');
-requires('lk_ext/one_morph_per_object');
+requires('general_ui/one_morph_per_object');
 requires('lk_ext/text_morph_variations');
 requires('lk_ext/shortcuts');
 requires('lk_ext/check_box');
@@ -114,19 +114,19 @@ thisModule.addSlots(avocado.ui, function(add) {
   add.method('showCentered', function (obj, callback, evt) {
     var w = this.worldFor(evt);
     var m = w.morphFor(obj);
-    m.showInCenterOfWorld(w, callback);
+    m.showInCenterOfUsersFieldOfVision(w, callback);
   });
 
   add.method('showMessageIfErrorDuring', function (f, evt) {
-    return avocado.MessageNotifierMorph.showIfErrorDuring(f, evt);
+    return avocado.messageNotifier.showIfErrorDuring(f, evt);
   });
 
   add.method('showMessageIfWarningDuring', function (f, evt) {
-    return avocado.MessageNotifierMorph.showIfErrorDuring(f, evt, new Color(1.0, 0.55, 0.0));
+    return avocado.messageNotifier.showIfErrorDuring(f, evt, new Color(1.0, 0.55, 0.0));
   });
 
   add.method('showError', function (err, evt) {
-    avocado.MessageNotifierMorph.showError(err, evt);
+    avocado.messageNotifier.showError(err, evt);
   });
 
   add.method('showErrorsThatOccurDuring', function (f, evt) {
@@ -177,6 +177,10 @@ thisModule.addSlots(avocado.ui, function(add) {
       if (m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); }
       if (callback) { callback(); }
     }, 0);
+  });
+  
+  add.method('defaultFillWithColor', function (c) {
+    return lively.paint.defaultFillWithColor(c);
   });
 
 });

@@ -23,19 +23,19 @@ thisModule.addSlots(avocado.project, function(add) {
 
     var columns = [m.createNameLabel()];
     // columns.push(changeIndicator); // aaa just leave this out for now because it's not working right
-    headerRow.setColumns(columns);
+    headerRow.setCells(columns);
     
     /* Why isn't this working?
     var privacyRow = avocado.TableMorph.newRow().beInvisible().setPadding({between: {x: 3}});
     var privacyLabel = TextMorph.createLabel("Private: ");
     var privacyCheckbox = new avocado.CheckBoxMorph();
-    privacyRow.setColumns([privacyLabel, privacyCheckbox]);
+    privacyRow.setCells([privacyLabel, privacyCheckbox]);
     privacyCheckbox.notifier.addObserver(function(a, b, c) {
       console.log("Clicked the checkbox: " + a + ", " + b + ", " + c);
     });
     */
     
-    m.setRows([headerRow]);
+    m.setCells([headerRow]);
 
     this.module().whenChangedNotify(m.refreshContentIfOnScreenOfMeAndSubmorphs.bind(m));
     m.startPeriodicallyUpdating();

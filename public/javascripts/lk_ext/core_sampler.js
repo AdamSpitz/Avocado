@@ -14,11 +14,11 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.CoreSamplerMorph, function(add) {
 
-  add.data('superclass', avocado.ColumnMorph);
+  add.data('superclass', avocado.TableMorph);
 
   add.data('type', 'avocado.CoreSamplerMorph');
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
 
 });
 
@@ -29,7 +29,7 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
 
   add.method('initialize', function ($super) {
     $super();
-    this.setFill(lively.paint.defaultFillWithColor(Color.gray.darker()));
+    this.setFill(avocado.ui.defaultFillWithColor(Color.gray.darker()));
     this.setPadding(10);
     this.closeDnD();
 
@@ -61,6 +61,8 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
     this.refreshContent();
     this.startPeriodicallyUpdating();
   }, {category: ['creating']});
+  
+  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
 
   add.method('refreshContent', function () {
     var w = this.world();
@@ -75,22 +77,22 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
         var morphSummaries = [];
         w.eachMorphAt(p, function(m) {
           if (! this._crosshairMorphs.include(m)) {
-            var summary = avocado.RowMorph.createSpaceFilling([TextMorph.createLabel(reflect(m).name())]).enableEvents();
+            var summary = avocado.TableMorph.createSpaceFillingRow([TextMorph.createLabel(reflect(m).name())]).enableEvents();
             summary.grabsShouldFallThrough = true;
             summary.contextMenu = m.morphMenu.bind(m);
             morphSummaries.push(summary);
           }
         }.bind(this));
         if (morphSummaries.size() > 0) {
-          this.setRows(morphSummaries);
+          this.setCells(morphSummaries);
         } else {
-          this.setRows([this._placeholderForWhenEmpty]);
+          this.setCells([this._placeholderForWhenEmpty]);
         }
       } else {
-        this.setRows([this._placeholderForWhenEmpty]);
+        this.setCells([this._placeholderForWhenEmpty]);
       }
     } else {
-      this.setRows([this._placeholderForWhenEmpty]);
+      this.setCells([this._placeholderForWhenEmpty]);
     }
   }, {category: ['updating']});
 

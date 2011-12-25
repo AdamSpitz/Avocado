@@ -14,9 +14,12 @@ thisModule.addSlots(avocado.morphMixins, function(add) {
 
   add.method('installAll', function () {
     reflect(Morph.prototype).setCopyDownParents([{parent: this.Morph}]);
+    reflect(WorldMorph.prototype).setCopyDownParents([{parent: this.WorldMorph}]);
   }, {category: ['installing']});
   
   add.creator('Morph', {});
+  
+  add.creator('WorldMorph', {});
 
 });
 

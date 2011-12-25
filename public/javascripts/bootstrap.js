@@ -1237,7 +1237,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
     // aaa - HACK! necessary because the phone runs out of memory while doing this, I think.
     // The right solution in the long run, I think, is to have some clear way of specifying
     // whether the programming-environment stuff should be loaded. -- Adam
-    if (!UserAgent.isIPhone) {
+    if (!window.UserAgent || !UserAgent.isIPhone) {
       var annotator = avocado.objectGraphWalker.visitors.objectGraphAnnotator.create();
       annotator.alsoMakeCreatorSlots();
       annotator.alsoBuildListsOfUsedIdentifiers();
@@ -1275,7 +1275,6 @@ thisModule.addSlots(avocado.transporter, function(add) {
   add.method('createAvocadoWorldIfBothTheCodeAndTheWindowAreLoaded', function () {
     if (avocado.transporter.whatHasAlreadyBeenLoaded.isDoneLoadingAvocadoLib && avocado.transporter.whatHasAlreadyBeenLoaded.isDoneLoadingWindow) {
       avocado.world = avocado.transporter.createAvocadoWorld();
-      if (avocado.theApplication && avocado.world.addApplication) { avocado.world.addApplication(avocado.theApplication); }
       avocado.transporter.callWhenWorldIsCreated();
       delete avocado.transporter.callWhenWorldIsCreated;
     }

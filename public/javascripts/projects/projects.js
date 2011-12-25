@@ -46,7 +46,7 @@ thisModule.addSlots(avocado.project, function(add) {
   add.method('setCurrent', function (p) {
     this._current = p;
     
-	  if (avocado.theApplication.shouldOnlyShowDeploymentArea) {
+	  if (this.shouldOnlyShowDeploymentArea()) {
 	    var dm = p.deploymentMorphIfAny();
 	    if (dm) { WorldMorph.current().addMorph(dm); }
     }
@@ -56,6 +56,10 @@ thisModule.addSlots(avocado.project, function(add) {
     }
     
     return p;
+  }, {category: ['current one']});
+  
+  add.method('shouldOnlyShowDeploymentArea', function () {
+    return avocado.applicationList.applications().any(function(app) { return app.shouldOnlyShowDeploymentArea; });
   }, {category: ['current one']});
 
   add.method('create', function (info) {
@@ -252,7 +256,7 @@ thisModule.addSlots(avocado.project, function(add) {
   	
   	currentWorldStateModule.postFileIn = function() {
   	  var w = WorldMorph.current();
-  	  if (! avocado.theApplication.shouldOnlyShowDeploymentArea) {
+  	  if (! avocado.project.shouldOnlyShowDeploymentArea()) {
     	  this.morphs.forEach(function(m) { w.addMorph(m); });
   	  }
   	  avocado.project.resetCurrentWorldStateModule();
@@ -283,7 +287,7 @@ thisModule.addSlots(avocado.project, function(add) {
     var changedModulesNotInThisProject = allChangedModules.select(function(m) { return !versionsToSave[m.name()] && m !== modules.init; }).toArray(); // AAAAAAAAAAAA
     if (changedModulesNotInThisProject.size() > 0) { // aaaaaaaaaaaaaaaaaaaaa
       avocado.ui.showObjects(changedModulesNotInThisProject, "changed modules not in this project", evt);
-      avocado.MessageNotifierMorph.showError("WARNING: You have modified modules that are not part of your project; they will not be saved.", evt, Color.orange);
+      avocado.messageNotifier.showError("WARNING: You have modified modules that are not part of your project; they will not be saved.", evt, Color.orange);
     }
     
     var mockRepo = avocado.project.moduleRepository.create(this, isAutoSave);

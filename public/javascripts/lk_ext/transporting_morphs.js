@@ -38,7 +38,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     if (this.worldMenuContributors) {
       var w = this.world();
       this.worldMenuContributors().each(function(c) {
-        w.addApplication(c);
+        w.applicationList().addApplication(c);
       }.bind(this));
     }
   }, {category: ['transporting']});

@@ -59,7 +59,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
 thisModule.addSlots(avocado.testCase.singleResult, function(add) {
 
   add.method('newMorph', function () {
-    return new avocado.MessageNotifierMorph(this.toString(), Color.gray).setModel(this);
+    return avocado.messageNotifier.create(this.toString(), Color.gray).newMorph().setModel(this);
   }, {category: ['user interface']});
   
   add.method('updateFillOfMorph', function (m) {

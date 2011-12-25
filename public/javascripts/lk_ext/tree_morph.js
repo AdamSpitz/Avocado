@@ -144,7 +144,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('headerRow', function () {
     if (! this._headerRow) {
-      this._headerRow = avocado.RowMorph.createSpaceFilling(this.headerRowContents.bind(this), this.nodeStyle().headerRowPadding);
+      this._headerRow = avocado.TableMorph.createSpaceFillingRow(this.headerRowContents.bind(this), this.nodeStyle().headerRowPadding);
     }
     return this._headerRow;
   }, {category: ['header row']});

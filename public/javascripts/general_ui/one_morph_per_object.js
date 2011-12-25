@@ -1,16 +1,16 @@
-avocado.transporter.module.create('lk_ext/one_morph_per_object', function(requires) {
+avocado.transporter.module.create('general_ui/one_morph_per_object', function(requires) {
+
+requires('general_ui/basic_morph_mixins');
 
 }, function(thisModule) {
 
 
-thisModule.addSlots(WorldMorph.prototype, function(add) {
-
-  add.creator('morphIdentityComparator', {}, {category: ['one morph per object']});
+thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
 
   add.data('_morphsByObject', null, {category: ['one morph per object'], initializeTo: 'null'});
   
   add.method('morphsByObject', function () {
-    return this._morphsByObject || (this._morphsByObject = avocado.dictionary.copyRemoveAll(this.morphIdentityComparator));
+    return this._morphsByObject || (this._morphsByObject = avocado.dictionary.copyRemoveAll(avocado.morphIdentityComparator));
   }, {category: ['one morph per object']});
 
   add.method('existingMorphFor', function (obj) {
@@ -32,9 +32,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     if (typeof(obj.newMorph) === 'function') {
       return obj.newMorph();
     } else {
-      var m = new avocado.MessageNotifierMorph(obj.toString(), Color.yellow);
-      m._model = obj;
-      return m;
+      return avocado.messageNotifier.create(obj.toString(), Color.yellow).newMorph().setModel(obj);
     }
   }, {category: ['one morph per object']});
 
@@ -46,7 +44,14 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(WorldMorph.prototype.morphIdentityComparator, function(add) {
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('morphIdentityComparator', {}, {category: ['user interface', 'one morph per object']});
+  
+});
+
+
+thisModule.addSlots(avocado.morphIdentityComparator, function(add) {
 
   add.method('keysAreEqual', function (k1, k2) {
     var c = k1.isImmutableForMorphIdentity ? avocado.hashTable.equalityComparator : avocado.hashTable.identityComparator;
@@ -61,7 +66,7 @@ thisModule.addSlots(WorldMorph.prototype.morphIdentityComparator, function(add) 
 });
 
 
-thisModule.addSlots(Morph.prototype, function(add) {
+thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('actualMorphToShow', function (context) {
     // If this morph is already elsewhere in the world, don't yank it from there, just show a placeholder.

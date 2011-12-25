@@ -47,13 +47,13 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
 thisModule.addSlots(avocado.slots['abstract'].Morph, function(add) {
 
-  add.data('superclass', avocado.ColumnMorph);
+  add.data('superclass', avocado.TableMorph);
 
   add.data('type', 'avocado.slots.abstract.Morph');
 
   add.creator('pointer', {});
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
 
 });
 
@@ -110,10 +110,12 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph].compact();
     }
 
-    this._signatureRow = avocado.RowMorph.createSpaceFilling(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
+    this._signatureRow = avocado.TableMorph.createSpaceFillingRow(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
     
     this.refreshContentOfMeAndSubmorphs(); // wasn't needed back when slot morphs were always part of a table morph, but now that we have free-form layout we need it
   }, {category: ['creating']});
+  
+  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
 
   add.method('slot', function () { return this._model; }, {category: ['accessing']});
 
@@ -159,7 +161,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('contentsPointerPane', function () {
     if (! this._contentsPointerPane) {
       this._contentsPointerPane = avocado.TableMorph.newRow().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
-      this._contentsPointerPane.setColumns([Morph.wrapToTakeUpConstantHeight(10, this.sourcePane()), Morph.createSpacer(), this.contentsPointerButton()]);
+      this._contentsPointerPane.setCells([Morph.wrapToTakeUpConstantHeight(10, this.sourcePane()), Morph.createSpacer(), this.contentsPointerButton()]);
       this._contentsPointerPane.typeName = 'slot contents pointer pane';
     }
     return this._contentsPointerPane;
@@ -186,7 +188,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     return function() {
       if (row) { return row; }
       var spacer = Morph.createSpacer();
-      row = avocado.RowMorph.createSpaceFilling(function() {return [getOrCreateContent(), spacer];}, p);
+      row = avocado.TableMorph.createSpaceFillingRow(function() {return [getOrCreateContent(), spacer];}, p);
       row.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
       return row;
     }.bind(this);

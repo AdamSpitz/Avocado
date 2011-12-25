@@ -20,7 +20,7 @@ thisModule.addSlots(avocado.history, function(add) {
       if (latest !== null && typeof(latest) !== 'undefined') {
         rows.push(WorldMorph.current().morphFor(latest));
       } else {
-        rows.push(new avocado.MessageNotifierMorph("None", new Color(0.2, 0.5, 0.5)));
+        rows.push(avocado.messageNotifier.create("None", new Color(0.2, 0.5, 0.5)).newMorph());
       }
       return avocado.tableContents.createWithColumns([rows]);
     };

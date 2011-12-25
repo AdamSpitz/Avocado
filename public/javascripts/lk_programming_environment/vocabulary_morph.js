@@ -21,11 +21,11 @@ thisModule.addSlots(avocado.vocabulary, function(add) {
 
 thisModule.addSlots(avocado.vocabulary.Morph, function(add) {
 
-  add.data('superclass', avocado.ColumnMorph);
+  add.data('superclass', avocado.TableMorph);
 
   add.data('type', 'avocado.vocabulary.Morph');
 
-  add.creator('prototype', Object.create(avocado.ColumnMorph.prototype));
+  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
 
 });
 
@@ -46,7 +46,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     var mirs = this.mirror().meAndAncestors().toArray();
     var mirrorsPanel = this._mirrorsPanel;
     var world = WorldMorph.current();
-    this._mirrorsPanel.setRows(mirs.map(function(mir) { return mirrorsPanel.placeholderForMorph(world.morphFor(mir)); }));
+    this._mirrorsPanel.setCells(mirs.map(function(mir) { return mirrorsPanel.placeholderForMorph(world.morphFor(mir)); }));
     
     this._expander = new avocado.ExpanderMorph(this);
     this._titleLabel = this.createNameLabel();
@@ -57,11 +57,13 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
 
     this.dismissButton = this.createDismissButton();
     
-    this._headerRow = avocado.RowMorph.createSpaceFilling([this._expander, this._titleLabel, Morph.createSpacer(), this._evaluatorButton, this.dismissButton].compact(), this.defaultStyle.headerRowPadding);
+    this._headerRow = avocado.TableMorph.createSpaceFillingRow([this._expander, this._titleLabel, Morph.createSpacer(), this._evaluatorButton, this.dismissButton].compact(), this.defaultStyle.headerRowPadding);
     this._headerRow.refreshContentOfMeAndSubmorphs();
     
     this.refreshContent();
   }, {category: ['creating']});
+  
+  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
 
   add.creator('defaultStyle', {}, {category: ['styles']});
 
@@ -93,13 +95,13 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   add.method('openEvaluator', function (evt) {
     evt = evt || Event.createFake();
     var e = new avocado.EvaluatorMorph(this);
-    this._evaluatorsPanel.addRow(e);
+    this._evaluatorsPanel.addCell(e);
     e.wasJustShown(evt);
     return e;
   }, {category: ['evaluators']});
 
   add.method('closeEvaluator', function (evaluatorMorph) {
-    this._evaluatorsPanel.removeRow(evaluatorMorph);
+    this._evaluatorsPanel.removeCell(evaluatorMorph);
   }, {category: ['evaluators']});
 
   add.method('grabResult', function (resultMirMorph, evt) {
