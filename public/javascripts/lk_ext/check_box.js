@@ -64,7 +64,7 @@ thisModule.addSlots(avocado.CheckBoxMorph.prototype, function(add) {
   add.method('changeAppearanceFor', function(v) {
     if (v) {
       if (this.checkedMorph.owner !== this) {
-        this.withoutAnimationAddMorphCentered(this.checkedMorph);
+        this.addMorphCentered(this.checkedMorph);
       }
     } else {
       if (this.checkedMorph.owner === this) {

@@ -54,15 +54,6 @@ Morph.addMethods({
       }
     },
 
-    onMouseMove: function(evt, hasFocus) { //default behavior
-       // why does LK not by default check okToBeGrabbedBy(evt)? -- Adam
-        if (evt.mouseButtonPressed && this==evt.hand.mouseFocus && ((this.owner && this.owner.openForDragAndDrop) || this.okToBeGrabbedBy(evt))) {
-            this.moveBy(evt.mousePoint.subPt(evt.priorPoint));
-        } // else this.checkForControlPointNear(evt);
-        if (!evt.mouseButtonPressed) this.checkForControlPointNear(evt);
-    },
-
-
     morphToGrabOrReceive: function(evt, droppingMorph, checkForDnD) {
         // If checkForDnD is false, return the morph to receive this mouse event (or null)
         // If checkForDnD is true, return the morph to grab from a mouse down event (or null)
@@ -122,7 +113,7 @@ Morph.addMethods({
     var eventForFinalGrab = Event.createFake(evt.hand);
 
     if (shouldDoCoolAnimations) {
-      var world = evt.hand.world();
+      var world = avocado.ui.worldFor(evt);
       
       var desiredScale = 1 / world.getScale();
       var desiredPos = function() {return evt.hand.position().subPt(this.getExtent().scaleBy(desiredScale * 0.5));}.bind(this);

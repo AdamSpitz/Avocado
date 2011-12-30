@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_ext/combo_box', function(requires) {
 
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 
 }, function(thisModule) {
 
@@ -14,26 +14,26 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.ComboBoxMorph, function(add) {
 
-  add.data('superclass', avocado.TableMorph);
+  add.data('superclass', Morph);
 
   add.data('type', 'avocado.ComboBoxMorph');
 
   add.method('prompt', function (msg, okButtonText, cancelButtonText, values, defaultValue, onAccept, onCancel) {
-    var promptBox = avocado.TableMorph.newColumn();
+    var promptBox = avocado.table.newColumnMorph();
     promptBox.setFill(Color.blue.lighter().lighter());
     var messageLabel = TextMorph.createLabel(msg);
     var     okButton = ButtonMorph.createButton(    okButtonText, function(evt) { comboBox.relinquishKeyboardFocus(Event.createFake()); promptBox.remove(); if (onAccept) { onAccept(comboBox.value()); } });
     var cancelButton = ButtonMorph.createButton(cancelButtonText, function(evt) { comboBox.relinquishKeyboardFocus(Event.createFake()); promptBox.remove(); if (onCancel) { onCancel();                 } });
     var comboBox = new this(values, defaultValue, function() {okButton.simulatePress(Event.createFake());}, function() {cancelButton.simulatePress(Event.createFake());});
     comboBox.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;
-    var buttonRow = avocado.TableMorph.createSpaceFillingRow([okButton, Morph.createSpacer(), cancelButton]);
-    promptBox.setCells([messageLabel, comboBox, buttonRow]);
+    var buttonRow = avocado.table.createSpaceFillingRowMorph([okButton, Morph.createSpacer(), cancelButton]);
+    promptBox.layout().setCells([messageLabel, comboBox, buttonRow]);
     var world = WorldMorph.current();
     world.addMorphAt(promptBox, promptBox.positionToCenterIn(world));
     comboBox.selectAll();
   });
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -43,16 +43,14 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
   add.data('constructor', avocado.ComboBoxMorph);
 
   add.method('initialize', function ($super, values, defaultValue, onAccept, onCancel) {
-    $super();
+    $super(lively.scene.Rectangle.createWithIrrelevantExtent());
+    this.useTableLayout(avocado.table.contents.rowPrototype);
     this._values = values;
     this._defaultValue = defaultValue;
     this._onAccept = onAccept;
     this._onCancel = onCancel;
 
-    this.closeDnD();
-    this.setFill(Color.white);
-    this.setBorderWidth(1);
-    this.setBorderColor(Color.black);
+    this.applyStyle(this.defaultStyle);
     
     this._textMorph = new TextMorph(pt(0,0).extent(pt(120,20)), this._defaultValue);
     this._textMorph.suppressHandles = true;
@@ -92,9 +90,7 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
     this.setColumns([this._textMorph, Morph.createSpacer(), this._button]);
   }, {category: ['creating']});
   
-  add.data('_tableContent', avocado.tableContents.rowPrototype, {category: ['layout']});
-
-  add.data('padding', {left: 1, right: 1, top: 1, bottom: 1, between: {x: 0, y: 0}}, {initializeTo: '{left: 1, right: 1, top: 1, bottom: 1, between: {x: 0, y: 0}}'});
+  add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('value', function () {
     return this._textMorph.getText();
@@ -138,6 +134,21 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
     this._textMorph.relinquishKeyboardFocus(evt ? evt.hand : WorldMorph.current().firstHand());
   }, {category: ['keyboard']});
 
+});
+
+
+thisModule.addSlots(avocado.ComboBoxMorph.prototype.defaultStyle, function(add) {
+
+  add.data('padding', {left: 1, right: 1, top: 1, bottom: 1, between: {x: 0, y: 0}}, {initializeTo: '{left: 1, right: 1, top: 1, bottom: 1, between: {x: 0, y: 0}}'});
+  
+  add.data('fill', Color.white);
+
+  add.data('borderColor', Color.black);
+
+  add.data('borderWidth', 1);
+
+  add.data('openForDragAndDrop', false);
+  
 });
 
 

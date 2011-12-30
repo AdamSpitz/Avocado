@@ -295,6 +295,14 @@ thisModule.addSlots(avocado.command.list, function(add) {
     if (optionalCommands) { this.addItems(optionalCommands); }
   }, {category: ['creating']});
 
+  add.method('toString', function () {
+    return "a command list";
+  }, {category: ['printing']});
+
+  add.method('inspect', function () {
+    return this.toString();
+  }, {category: ['printing']});
+
   add.method('size', function () {
     return this._commands.size();
   }, {category: ['accessing']});
@@ -451,7 +459,7 @@ thisModule.addSlots(avocado.command.partial, function(add) {
   add.method('setCommand', function (c) {
     this._command = c;
     this._argumentHolders = (this._command._argumentSpecsThatWillBeFoundOrPromptedFor || this._command.argumentSpecs() || []).map(function(s) {
-      var h = avocado.valueHolder.containing(s.type() ? s.type().defaultValue() : undefined).setName(s.name()).setType(s.type());
+      var h = avocado.valueHolder.containing(s.type() && s.type().defaultValue ? s.type().defaultValue() : undefined).setName(s.name()).setType(s.type());
       // aaa kind of a hack; this isn't quite what isReallyPartOfHolder was meant to be used for
       h.isReallyPartOfHolder = function () { var v = this.getValue(); return v !== null && typeof(v) !== 'undefined'; };
       return h;

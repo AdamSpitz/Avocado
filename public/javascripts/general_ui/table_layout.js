@@ -1,35 +1,54 @@
 avocado.transporter.module.create('general_ui/table_layout', function(requires) {
 
+requires('reflection/reflection');
+requires('core/table');
+requires('general_ui/basic_morph_mixins');
+
 }, function(thisModule) {
 
 
-thisModule.addSlots(avocado, function(add) {
+thisModule.addSlots(avocado.table, function(add) {
 
-  add.creator('directions', {}, {category: ['ui', 'rows and columns']});
+  add.creator('layout', {}, {category: ['user interface']});
+  
+  add.method('newColumnMorph', function () {
+    return avocado.ui.newMorph().useTableLayout(avocado.table.contents.columnPrototype);
+  }, {category: ['user interface']});
 
-  add.creator('tableContents', {}, {category: ['ui', 'rows and columns']});
+  add.method('newRowMorph', function () {
+    return avocado.ui.newMorph().useTableLayout(avocado.table.contents.rowPrototype);
+  }, {category: ['user interface']});
 
-  add.creator('tableLayout', {}, {category: ['ui', 'rows and columns']});
+  add.method('newTableMorph', function () {
+    return this.newColumnMorph();
+  }, {category: ['user interface']});
 
-});
+  add.method('createSpaceFillingRowMorph', function (content, padding) {
+    var m = this.newRowMorph().beInvisible();
+    var direction = avocado.directions.horizontal;
+    if (padding !== undefined) { m.layout().setPadding(padding); }
+    direction.setLayoutModeOf(m, avocado.LayoutModes.SpaceFill);
+    
+    if (typeof(content) === 'function') {
+      m.setPotentialContentMorphsFunction(function() { return avocado.table.contents.create([content()], direction.sideways); });
+      m.refreshContent();
+    } else {
+      // default to left-justifying the contents
+      if (content.all(function(c) {return direction.layoutModeOf(c) !== avocado.LayoutModes.SpaceFill;})) {
+        content = content.concat([Morph.createSpacer()]);
+      }
+      m.replaceContentWith(avocado.table.contents.create([content], direction.sideways));
+    }
+    
+    return m;
+  }, {category: ['user interface']});
 
-
-thisModule.addSlots(avocado.directions, function(add) {
-
-  add.creator('abstractDirection', {});
-
-  add.creator('vertical', Object.create(avocado.directions.abstractDirection));
-
-  add.creator('horizontal', Object.create(avocado.directions.abstractDirection));
+  add.creator('boxStyle', {}, {category: ['user interface']});
 
 });
 
 
 thisModule.addSlots(avocado.directions.vertical, function(add) {
-
-  add.data('sideways', avocado.directions.horizontal);
-
-  add.method('toString', function () { return 'vertical'; });
 
   add.method('externallySpecifiedFreeSpaceSideways', function (m) {return m.externallySpecifiedFreeWidth;});
 
@@ -37,15 +56,9 @@ thisModule.addSlots(avocado.directions.vertical, function(add) {
 
   add.method('dimensionOfRect', function (r) {return r.height;});
 
-  add.method('coord', function (p) {return p.y;});
-
-  add.method('setCoord', function (p, y) {p.y = y;});
-
   add.method('padding1', function (padding) {return padding.top;});
 
   add.method('padding2', function (padding) {return padding.bottom;});
-
-  add.method('point', function (f, s) {return pt(s, f);});
 
   add.method('layoutModeOf', function (m) {return m.verticalLayoutMode;});
 
@@ -56,25 +69,15 @@ thisModule.addSlots(avocado.directions.vertical, function(add) {
 
 thisModule.addSlots(avocado.directions.horizontal, function(add) {
 
-  add.data('sideways', avocado.directions.vertical);
-
-  add.method('toString', function () { return 'horizontal'; });
-
   add.method('externallySpecifiedFreeSpaceSideways', function (m) {return m.externallySpecifiedFreeHeight;});
 
   add.method('specifyFreeSpaceSideways', function (m, s) {m.externallySpecifiedFreeHeight = s;});
 
   add.method('dimensionOfRect', function (r) {return r.width;});
 
-  add.method('coord', function (p) {return p.x;});
-
-  add.method('setCoord', function (p, x) {p.x = x;});
-
   add.method('padding1', function (padding) {return padding.left;});
 
   add.method('padding2', function (padding) {return padding.right;});
-
-  add.method('point', function (f, s) {return pt(f, s);});
 
   add.method('layoutModeOf', function (m) {return m.horizontalLayoutMode;});
 
@@ -83,212 +86,7 @@ thisModule.addSlots(avocado.directions.horizontal, function(add) {
 });
 
 
-thisModule.addSlots(avocado.tableContents, function(add) {
-
-  add.method('createWithRows', function (a) {
-    return this.create(a, avocado.directions.vertical);
-  }, {category: ['creating']});
-
-  add.method('createWithColumns', function (a) {
-    return this.create(a, avocado.directions.horizontal);
-  }, {category: ['creating']});
-
-  add.method('createWithRow', function (elements) {
-    return this.createWithRows([elements]);
-  }, {category: ['creating']});
-
-  add.method('createWithColumn', function (elements) {
-    return this.createWithColumns([elements]);
-  }, {category: ['creating']});
-
-  add.method('create', function (a, dir1) {
-    return Object.newChildOf(this, a, dir1);
-  }, {category: ['creating']});
-
-  add.data('_direction1', avocado.directions.vertical);
-
-  add.data('_direction2', avocado.directions.horizontal);
-
-  add.data('_data', [], {initializeTo: '[]'});
-
-  add.method('initialize', function (a, dir1) {
-    this._data = a;
-    if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
-      reflect(this).slotAt('_data').beCreator();
-      this._data.makeAllCreatorSlots();
-      this._data.forEach(function(line) { line.makeAllCreatorSlots(); });
-    }
-    this._direction1 = dir1;
-    this._direction2 = dir1.sideways;
-  }, {category: ['creating']});
-
-  add.method('copyRemoveAll', function () {
-    return avocado.tableContents.create([], this._direction1);
-  }, {category: ['creating']});
-
-  add.method('copyWithLines', function (primaryLines) {
-    return avocado.tableContents.create(primaryLines, this._direction1);
-  }, {category: ['creating']});
-
-  add.method('copyWithSoleLine', function (solePrimaryLine) {
-    return avocado.tableContents.create([solePrimaryLine], this._direction1);
-  }, {category: ['creating']});
-
-  add.method('copy', function () {
-    return this.copyWithLines(this._data.map(function(line) { return line.map(function(elem) { return elem; }); }));
-  }, {category: ['copying']});
-
-  add.method('duplicate', function (copier) {
-    return this.copy(copier);
-  }, {category: ['copying']});
-
-  add.method('copyAndAddElement', function (extraElement) {
-    var c = this.copy();
-    if (! c.primaryLines().last()) { c.primaryLines().push([]); }
-    c.primaryLines().last().push(extraElement);
-    return c;
-  }, {category: ['creating']});
-
-  add.method('copyAndRemoveElement', function (e) {
-    var newData = this._data.map(function(primaryLine) { return primaryLine.reject(function(ee) { return e === ee; }); });
-    return this.copyWithLines(newData);
-  }, {category: ['creating']});
-
-  add.method('equals', function (other) {
-    if (this._direction1 !== other._direction1) { return false; }
-    if (this._data.length !== other._data.length) { return false; }
-    for (var i = 0, n = this._data.length; i < n; ++i) {
-      if (! this.areArraysEqual(this._data[i], other._data[i])) {
-        return false;
-      }
-    }
-    return true;
-  }, {category: ['comparing']});
-
-  add.method('areArraysEqual', function (a1, a2) {
-    if (a1.length !== a2.length) { return false; }
-    for (var i = 0, n = a1.length; i < n; ++i) {
-      if (a1[i] !== a2[i]) { return false; }
-    }
-    return true;
-  }, {category: ['comparing']});
-
-  add.method('hashCode', function (other) {
-    var h = [this._direction1];
-    // aaa - maybe just loop over the first few, not all of them
-    this.eachElement(function(x) { h.push(avocado.hashTable.identityComparator.hashCodeForKey(x)); })
-    return h.join("");
-  }, {category: ['comparing']});
-
-  add.method('eachElement', function (f) {
-    this._data.each(function(rowOrCol) {
-      rowOrCol.each(f);
-    });
-  }, {category: ['iterating']});
-
-  add.method('eachRow', function (f) {
-    this.eachLineInDirection(avocado.directions.horizontal, f);
-  }, {category: ['iterating']});
-
-  add.method('eachColumn', function (f) {
-    this.eachLineInDirection(avocado.directions.vertical, f);
-  }, {category: ['iterating']});
-
-  add.method('eachLineInDirection', function (dir, f) {
-    if (dir === this._direction2) {
-      this.eachPrimaryLine(f);
-    } else if (dir === this._direction1) {
-      this.eachSecondaryLine(f);
-    } else {
-      throw new Error("eachLineInDirection(" + dir + ")???");
-    }
-  }, {category: ['iterating']});
-
-  add.method('eachPrimaryLine', function (f) {
-    this._data.each(f);
-  }, {category: ['iterating']});
-
-  add.method('primaryLines', function () {
-    return this._data;
-  }, {category: ['accessing']});
-
-  add.method('primaryLine', function (i) {
-    return this._data[i];
-  }, {category: ['iterating']});
-
-  add.method('eachSecondaryLine', function (f) {
-    for (var i = 0, n = this.lengthOfLongestPrimaryLine(); i < n; ++i) {
-      f(this.secondaryLine(i));
-    }
-  }, {category: ['iterating']});
-
-  add.method('secondaryLine', function (i) {
-    return avocado.enumerator.create(this, 'eachElementInSecondaryLine', i);
-  }, {category: ['iterating']});
-
-  add.method('secondaryLines', function () {
-    return avocado.enumerator.create(this, 'eachSecondaryLine');
-  }, {category: ['accessing']});
-
-  add.method('eachElementInSecondaryLine', function (i, f) {
-    this.primaryLines().each(function(line) {
-      f(line.length > i ? line[i] : null);
-    });
-  }, {category: ['iterating']});
-
-  add.method('lengthOfLongestPrimaryLine', function () {
-    var n = 0;
-    this.primaryLines().each(function(line) {
-      n = Math.max(n, line.length);
-    });
-    return n;
-  }, {category: ['accessing']});
-
-  add.method('insertPrimaryLine', function (line, i) {
-    if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
-      line.makeAllCreatorSlots();
-      this._data.spliceAndAdjustCreatorSlots(i, 0, line);
-    } else {
-      this._data.splice(i, 0, line);
-    }
-  }, {category: ['inserting']});
-
-  add.method('selectThenMap', function (selectFn, mapFn) {
-    var c = this.copyRemoveAll();
-    this._data.each(function(rowOrCol) {
-      var newRowOrCol = [];
-      rowOrCol.each(function(x) {
-        if (selectFn(x)) {
-          newRowOrCol.push(mapFn(x));
-        }
-      });
-      if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
-        newRowOrCol.makeAllCreatorSlots();
-        c._data.pushAndAdjustCreatorSlots(newRowOrCol);
-      } else {
-        c._data.push(newRowOrCol);
-      }
-    });
-    return c;
-  }, {category: ['transforming']});
-
-  add.method('map', function (mapFn) {
-    return this.selectThenMap(function() { return true; }, mapFn);
-  }, {category: ['transforming']});
-
-  add.method('replaceElement', function (currentElement, newElement) {
-    this._data.each(function(rowOrCol) {
-      for (var i = 0, n = rowOrCol.length; i < n; ++i) {
-        var e = rowOrCol[i];
-        if (e === currentElement) { rowOrCol[i] = newElement; }
-      }
-    });
-  }, {category: ['transforming']});
-
-});
-
-
-thisModule.addSlots(avocado.tableLayout, function(add) {
+thisModule.addSlots(avocado.table.layout, function(add) {
   
   add.method('initialize', function (tableMorph) {
     this._tableMorph = tableMorph;
@@ -306,13 +104,18 @@ thisModule.addSlots(avocado.tableLayout, function(add) {
     this._tableMorph.setScale(s);
   }, {category: ['accessing the table morph']});
   
-  add.method('getPadding', function () {
-    return this._tableMorph.padding;
-  }, {category: ['accessing the table morph']});
-  
   add.method('tableContent', function () {
-    return this._tableMorph._tableContent;
-  }, {category: ['accessing the table morph']});
+    return this._tableContent;
+  }, {category: ['accessing']});
+  
+  add.method('setTableContent', function (c) {
+    this._tableContent = c;
+    // aaa - several hacks piled on top of each other
+    if (!avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance && c !== avocado.table.contents.rowPrototype && c !== avocado.table.contents.columnPrototype && !reflect(c).explicitlySpecifiedCreatorSlot()) {
+      reflect(this).slotAt('_tableContent').beCreator();
+    }
+    return this;
+  }, {category: ['accessing']});
   
   add.method('shouldPrintDebugInfo', function () {
     return this._tableMorph._debugMyLayout;
@@ -323,20 +126,82 @@ thisModule.addSlots(avocado.tableLayout, function(add) {
     return pt(this._tableMorph.horizontalLayoutMode, this._tableMorph.verticalLayoutMode);
   }, {category: ['accessing the table morph']});
 
+  add.method('replaceContentWith', function (newContent) {
+    if (this.tableContent() && this.tableContent().equals(newContent)) { return; }
+    this.setTableContent(newContent);
+    this.setSubmorphsFromTableContent();
+  }, {category: ['adding and removing']});
+
+  add.method('replaceMorph', function (m, newSubmorph) {
+		// Gotta make sure to leave the replaced morph at the right scale, so that if we then add it back to the world it'll look right. -- Adam
+		var mScale = m.overallScale(this._tableMorph.world());
+		
+    this.tableContent().replaceElement(m, newSubmorph);
+    this.setSubmorphsFromTableContent();
+    
+		m.setScale(mScale);
+  }, {category: ['adding and removing']});
+
+  add.method('setCells', function (ms) {
+    this.replaceContentWith(this.tableContent().copyWithSoleLine(ms));
+  }, {category: ['adding and removing']});
+
+  add.method('setPotentialCells', function (ms) {
+    this._tableMorph.setPotentialContentMorphs(this.tableContent().copyWithSoleLine(ms));
+  }, {category: ['adding and removing']});
+
+  add.method('addCell', function (m) {
+    this.replaceContentWith(this.tableContent().copyAndAddElement(m));
+  }, {category: ['adding and removing']});
+
+  add.method('removeCell', function (m) {
+    this.replaceContentWith(this.tableContent().copyAndRemoveElement(m));
+  }, {category: ['adding and removing']});
+
+  add.method('setSubmorphsFromTableContent', function () {
+    this._tableMorph.replaceMorphs(this._tableMorph.submorphsParticipatingInLayout(), this.tableContent().elements());
+  }, {category: ['adding and removing']});
+  
+  add.method('getPadding', function () {
+    return this._padding;
+  }, {category: ['padding']});
+
   add.method('setPadding', function (p) {
     if (typeof p === 'number') {
-      this._tableMorph.padding = {left: p, right: p, top: p, bottom: p, between: {x: p, y: p}};
+      this._padding = {left: p, right: p, top: p, bottom: p, between: {x: p, y: p}};
     } else {
-      this._tableMorph.padding = p;
+      this._padding = p;
     }
     return this;
   }, {category: ['padding']});
+
+  add.data('_padding', {left: 10, right: 10, top: 10, bottom: 10, between: {x: 10, y: 10}}, {category: ['padding'], initializeTo: '{left: 10, right: 10, top: 10, bottom: 10, between: {x: 10, y: 10}}'});
+
+  add.method('applyStyle', function (spec) {
+	  if (typeof(spec.padding) !== 'undefined') { this.setPadding(spec.padding); }
+  }, {category: ['styles']});
+
+  add.method('adjustStyleSpec', function (spec) {
+    if (typeof(this._padding) !== 'undefined') { spec.padding = this._padding; }
+  }, {category: ['styles']});
 
   add.method('eachDirection', function (f) {
     f(avocado.directions.horizontal);
     f(avocado.directions.vertical);
   }, {category: ['directions']});
 
+  add.method('isAffectedBy', function (operation, morph) {
+    return ! morph.shouldNotBePartOfRowOrColumn;
+  }, {category: ['layout']});
+
+  add.method('isMinimumExtentDependentOnMinimumExtentOfSubmorphs', function () {
+    return true;
+  }, {category: ['layout']});
+
+  add.method('minimumExtent', function () {
+    return this.adjustForRigidityAndScale(this.internalMinimumExtent());
+  }, {category: ['layout', 'minimum extent']});
+  
   add.method('adjustForRigidityAndScale', function (e) {
     var e2 = this.adjustForRigidity(e);
     return e2.scaleBy(this.currentOrDesiredScaleGivenExtent(e2));
@@ -527,6 +392,7 @@ thisModule.addSlots(avocado.tableLayout, function(add) {
 
   add.method('setMorphPositionsAndSizes', function (actualCoordsAndSizes) {
     var direction = this.tableContent()._direction2;
+    var origin = this._tableMorph.getOriginAAAHack(); // necessary because in 3D-land the origin is in the centre, but I don't understand why it's not working in LK-land
     this.tableContent().primaryLines().each(function(line, i) {
       line.each(function(m, j) {
         var actualsForThisMorph = direction.point(direction.sideways.coord(actualCoordsAndSizes)[j], direction.coord(actualCoordsAndSizes)[i]);
@@ -545,10 +411,52 @@ thisModule.addSlots(avocado.tableLayout, function(add) {
         } else {
           x = s; y = f;
         }
-        m.setPositionXY(x, y);
+        m.setTopLeftPositionXYZ(origin.x + x, origin.y + y, origin.z);
         if (this.shouldPrintDebugInfo()) { console.log("Added " + m.inspect() + " at " + x + ", " + y); }
       }.bind(this));
     }.bind(this));
+  }, {category: ['layout']});
+  
+});
+
+
+thisModule.addSlots(avocado.table.contents, function(add) {
+  
+  add.data('rowPrototype', avocado.table.contents.create([], avocado.directions.vertical), {initializeTo: 'avocado.table.contents.create([], avocado.directions.vertical)'});
+  
+  add.data('columnPrototype', avocado.table.contents.create([], avocado.directions.horizontal), {initializeTo: 'avocado.table.contents.create([], avocado.directions.horizontal)'});
+
+  add.method('newMorph', function () {
+    var world = avocado.ui.currentWorld();
+    var morphsTable = this.map(function(model) { return world.morphFor(model); });
+    var m = avocado.table.newTableMorph();
+    m.replaceContentWith(morphsTable);
+    m.applyStyle(avocado.table.boxStyle);
+    return m;
+  }, {category: ['user interface']});
+  
+});
+
+
+thisModule.addSlots(avocado.table.boxStyle, function(add) {
+
+  add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}'});
+
+  add.data('borderRadius', 10);
+
+  add.data('openForDragAndDrop', false);
+
+});
+
+
+thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
+  
+  add.method('useTableLayout', function (tableContent) {
+    this.horizontalLayoutMode = avocado.LayoutModes.ShrinkWrap;
+    this.  verticalLayoutMode = avocado.LayoutModes.ShrinkWrap;
+    this.suppressHandles = true; // aaa - handles don't work right with tables yet
+    this.setLayout(Object.newChildOf(avocado.table.layout, this).setTableContent(tableContent));
+    return this;
   }, {category: ['layout']});
   
 });

@@ -13,14 +13,26 @@ thisModule.addSlots(avocado, function(add) {
 thisModule.addSlots(avocado.morphMixins, function(add) {
 
   add.method('installAll', function () {
-    reflect(Morph.prototype).setCopyDownParents([{parent: this.Morph}]);
+    reflect(Morph.prototype).setCopyDownParents([{parent: this.Morph}, {parent: this.MorphOrWorld}]);
     reflect(WorldMorph.prototype).setCopyDownParents([{parent: this.WorldMorph}]);
+    reflect(TextMorph.prototype).setCopyDownParents([{parent: this.TextMorph}]);
   }, {category: ['installing']});
+  
+  add.creator('MorphOrWorld', {});
   
   add.creator('Morph', {});
   
   add.creator('WorldMorph', {});
+  
+  add.creator('TextMorph', {});
 
+});
+
+
+thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
+  
+  add.data('isMorph', true, {category: ['testing']});
+  
 });
 
 

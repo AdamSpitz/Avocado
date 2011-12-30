@@ -152,7 +152,7 @@ thisModule.addSlots(avocado, function(add) {
     cmdList.addItem({label: "group by remainders mod 5", go: function(evt) {
       var w = evt.hand.world();
       var posersByGroupID = avocado.dictionary.copyRemoveAll();
-      w.submorphs.forEach(function(m) {
+      w.eachSubmorph(function(m) {
         var poseName = "Other";
         if ((m instanceof avocado.mirror.Morph) && m.mirror().isReflecteeNumber()) {
           poseName = (m.mirror().primitiveReflectee() % 5).toString() + " mod 5";

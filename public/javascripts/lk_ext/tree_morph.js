@@ -1,7 +1,7 @@
 avocado.transporter.module.create('lk_ext/tree_morph', function(requires) {
 
 requires('lk_ext/auto_scaling_morph');
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 requires('lk_ext/expander');
 
 }, function(thisModule) {
@@ -25,11 +25,11 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.TreeNodeMorph, function(add) {
 
-  add.data('superclass', avocado.TableMorph);
+  add.data('superclass', Morph);
 
   add.data('type', 'avocado.TreeNodeMorph');
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+  add.creator('prototype', Object.create(Morph.prototype));
   
   add.method('create', function (model) {
     // aaa get rid of this method, just call the constructor directly
@@ -55,10 +55,10 @@ thisModule.addSlots(avocado.TreeNodeMorph, function(add) {
         return this.owner.dragAndDropCommandsForTreeContents();
       };
     } else {
-      cp = new avocado.TableMorph().beInvisible().applyStyle(avocado.TreeNodeMorph.prototype.nonZoomingContentsPanelStyle);
+      cp = avocado.table.newTableMorph().beInvisible().applyStyle(avocado.TreeNodeMorph.prototype.nonZoomingContentsPanelStyle);
       cp.makeContentMorphsHaveLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
       cp.setPotentialContentMorphsFunction(function () {
-        return avocado.tableContents.createWithColumns([this.recalculateAndRememberContentMorphsInOrder()]);
+        return avocado.table.contents.createWithColumns([this.recalculateAndRememberContentMorphsInOrder()]);
       });
       // cp.refreshContent(); // aaa - leaving this line in breaks the "don't show if the scale is too small" functionality, but does taking it out break something else?
     }
@@ -97,7 +97,8 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 	add.data('noShallowCopyProperties', Morph.prototype.noShallowCopyProperties.concat(["_potentialContentMorphs", "_headerRow", "_headerRowContents", "_titleAccessors"]), {initializeTo: 'Morph.prototype.noShallowCopyProperties.concat(["_potentialContentMorphs", "_headerRow", "_headerRowContents", "_titleAccessors"])'});
 	
   add.method('initialize', function ($super, treeNode) {
-    $super();
+    $super(lively.scene.Rectangle.createWithIrrelevantExtent());
+    this.useTableLayout(avocado.table.contents.columnPrototype);
     this._model = treeNode;
     this.applyStyle(this.nodeStyle());
     if (! this.shouldUseZooming()) { this._expander = new avocado.ExpanderMorph(this); }
@@ -144,7 +145,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
 
   add.method('headerRow', function () {
     if (! this._headerRow) {
-      this._headerRow = avocado.TableMorph.createSpaceFillingRow(this.headerRowContents.bind(this), this.nodeStyle().headerRowPadding);
+      this._headerRow = avocado.table.createSpaceFillingRowMorph(this.headerRowContents.bind(this), this.nodeStyle().headerRowPadding);
     }
     return this._headerRow;
   }, {category: ['header row']});
@@ -239,7 +240,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
         if (! this._shouldOmitHeaderRow)  { rows.push(this.headerRow()); }
         if (this._shouldShowTagsWithinBox) { rows.push(this.tagHolderMorph()); }
         rows.push(this.createContentsPanelOrHider());
-        this._potentialContentMorphs = avocado.tableContents.createWithColumns([rows]);
+        this._potentialContentMorphs = avocado.table.contents.createWithColumns([rows]);
       }
       return this._potentialContentMorphs;
     } else {
@@ -247,7 +248,7 @@ thisModule.addSlots(avocado.TreeNodeMorph.prototype, function(add) {
       if (! this._shouldOmitHeaderRow)  { rows.push(this.headerRow()); }
       if (this._shouldShowTagsWithinBox) { rows.push(this.tagHolderMorph()); }
       if (this.expander().isExpanded()) { rows.push(this.createContentsPanelOrHider()); }
-      return avocado.tableContents.createWithColumns([rows]);
+      return avocado.table.contents.createWithColumns([rows]);
     }
   }, {category: ['updating']});
 

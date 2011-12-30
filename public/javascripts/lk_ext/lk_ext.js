@@ -1,17 +1,15 @@
 avocado.transporter.module.create('lk_ext/lk_ext', function(requires) {
 
 requires('core/math');
+requires('general_ui/general_ui');
 requires('lk_ext/changes');
 requires('lk_ext/change_notification');
 requires('lk_ext/menus');
-requires('lk_ext/wheel_menus');
 requires('lk_ext/commands');
-requires('general_ui/applications');
 requires('lk_ext/grabbing');
-requires('lk_ext/highlighting');
-requires('lk_ext/refreshing_content');
+requires('general_ui/highlighting');
+requires('lk_ext/invisibility');
 requires('lk_ext/transporting_morphs');
-requires('general_ui/one_morph_per_object');
 requires('lk_ext/text_morph_variations');
 requires('lk_ext/shortcuts');
 requires('lk_ext/check_box');
@@ -19,7 +17,6 @@ requires('lk_ext/combo_box');
 requires('lk_ext/toggler');
 requires('lk_ext/scaling');
 requires('lk_ext/layout');
-requires('lk_ext/rows_and_columns');
 requires('lk_ext/collection_morph');
 requires('lk_ext/tree_morph');
 requires('lk_ext/container_morph');
@@ -47,12 +44,12 @@ requires('lk_ext/string_buffer_morph');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('ui', {}, {category: ['user interface'], comment: 'An extra layer of indirection, in case we want to switch to a non-LK UI someday.\n\nDefinitely not complete yet. -- Adam, Oct. 2010'});
+  add.creator('livelyKernelUI', {}, {category: ['user interface'], comment: 'An extra layer of indirection, in case we want to switch to a non-LK UI someday.\n\nDefinitely not complete yet. -- Adam, Oct. 2010'});
 
 });
 
 
-thisModule.addSlots(avocado.ui, function(add) {
+thisModule.addSlots(avocado.livelyKernelUI, function(add) {
 
   add.method('worldFor', function (evtOrMorph) {
     if (evtOrMorph) {
@@ -182,6 +179,43 @@ thisModule.addSlots(avocado.ui, function(add) {
   add.method('defaultFillWithColor', function (c) {
     return lively.paint.defaultFillWithColor(c);
   });
+  
+  add.method('newMorph', function (shape) {
+    return new Morph(shape || lively.scene.Rectangle.createWithIrrelevantExtent());
+  });
+  
+  add.method('currentWorld', function () {
+    return WorldMorph.current();
+  });
+  
+  add.creator('shapeFactory', {});
+
+});
+
+
+thisModule.addSlots(avocado.livelyKernelUI.shapeFactory, function(add) {
+
+  add.method('newCircle', function (centre, radius) {
+    return new lively.scene.Ellipse(centre, radius);
+  });
+
+  add.method('newPieWedge', function (thetaA, thetaC, innerRadius, outerRadius) {
+    var thetaB = (thetaA + thetaC) / 2;
+    var p0    = Point.polar(innerRadius, thetaA);
+    var p1    = Point.polar(innerRadius, thetaC);
+    var ctrl1 = Point.polar(innerRadius * 1.05, thetaB);
+    var p2    = Point.polar(outerRadius, thetaA);
+    var p3    = Point.polar(outerRadius, thetaC);
+    var ctrl2 = Point.polar(outerRadius * 1.05, thetaB);
+		var g = lively.scene;
+		var cmds = [];
+		cmds.push(new g.MoveTo(true, p0.x,  p0.y));
+		cmds.push(new g.QuadCurveTo(true, p1.x, p1.y, ctrl1.x, ctrl1.y));
+		cmds.push(new g.LineTo(true, p3.x,  p3.y));
+		cmds.push(new g.QuadCurveTo(true, p2.x, p2.y, ctrl2.x, ctrl2.y));
+		cmds.push(new g.LineTo(true, p0.x,  p0.y));
+		return new g.Path(cmds);
+  }, {category: ['layout']});
 
 });
 

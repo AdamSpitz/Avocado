@@ -130,7 +130,7 @@ thisModule.addSlots(avocado.project, function(add) {
        label to appear in the deployed project. -- Adam, June 2011
       var label = TextMorph.createLabel("Put things in this box to make them appear in the deployed project");
       label.fitText();
-      morph.withoutAnimationAddMorphCentered(label);
+      morph.addMorphCentered(label);
       */
       
       var slot = reflect(module).slotAt('_deploymentMorph');

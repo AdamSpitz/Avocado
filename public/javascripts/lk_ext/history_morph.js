@@ -1,7 +1,7 @@
 avocado.transporter.module.create('lk_ext/history_morph', function(requires) {
 
-requires("core/history");
-requires("lk_ext/rows_and_columns");
+requires('core/history');
+requires('general_ui/table_layout');
 
 }, function(thisModule) {
 
@@ -9,7 +9,7 @@ requires("lk_ext/rows_and_columns");
 thisModule.addSlots(avocado.history, function(add) {
   
   add.method('newMorph', function () {
-    var m = avocado.TableMorph.newColumn().setModel(this);
+    var m = avocado.table.newColumnMorph().setModel(this);
     m.applyStyle(this.defaultMorphStyle);
 
     var nameLabel = m.createNameLabel();
@@ -22,14 +22,14 @@ thisModule.addSlots(avocado.history, function(add) {
       } else {
         rows.push(avocado.messageNotifier.create("None", new Color(0.2, 0.5, 0.5)).newMorph());
       }
-      return avocado.tableContents.createWithColumns([rows]);
+      return avocado.table.contents.createWithColumns([rows]);
     };
     
     m.refreshContentOfMeAndSubmorphs();
     return m;
   }, {category: ['user interface']});
 
-  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
+  add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
   
 });
 

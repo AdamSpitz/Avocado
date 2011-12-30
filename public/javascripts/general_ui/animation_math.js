@@ -1,5 +1,6 @@
 avocado.transporter.module.create('general_ui/animation_math', function(requires) {
 
+requires('core/math');
 requires('core/quickhull');
 
 }, function(thisModule) {
@@ -472,7 +473,7 @@ thisModule.addSlots(avocado.animation.path, function(add) {
     return a;
   }, {category: ['creating']});
 
-  add.method('destination', function () { return typeof(this._destinationFnOrPt) === 'function' ? this._destinationFnOrPt() : this._destinationFnOrPt; });
+  add.method('destination', function () { var p = this._destinationFnOrPt; return typeof(p) === 'function' ? p() : p; });
 
 });
 
@@ -482,6 +483,7 @@ thisModule.addSlots(avocado.animation.straightPath, function(add) {
   add.method('initialize', function (from, to) {
     this._destinationFnOrPt = to;
     var dstPos = this.destination();
+    
     this._totalDistance = dstPos.subPt(from).r();
   });
 
@@ -509,18 +511,14 @@ thisModule.addSlots(avocado.animation.straightPath, function(add) {
 thisModule.addSlots(avocado.animation.arcPath, function(add) {
 
   add.method('initialize', function (from, to) {
-    // Find the center of a circle that hits both points.
     this._destinationFnOrPt = to;
     var dstPos = this.destination();
     
-    var vector = dstPos.subPt(from);
-    var normal = vector.perpendicularVector().scaleToLength(vector.r() * 4); // can fiddle with the length until it looks good
-    this._center = from.midPt(dstPos).addPt(normal);
-    var fromVector =   from.subPt(this._center);
-    var   toVector = dstPos.subPt(this._center);
-    this._radius = fromVector.r();
-    this._destinationAngle = toVector.theta();
-    this._totalAngle = this._destinationAngle - fromVector.theta();
+    this._circleThatPassesThroughBothPoints = from.circleThatAlsoPassesThrough(dstPos);
+
+    this._destinationAngle = this._circleThatPassesThroughBothPoints.angleAtPoint(dstPos);
+    this._sourceAngle      = this._circleThatPassesThroughBothPoints.angleAtPoint(from  );
+    this._totalAngle       = this._destinationAngle - this._sourceAngle;
   });
 
   add.method('move', function (progressThisStep, curPos) {
@@ -529,13 +527,13 @@ thisModule.addSlots(avocado.animation.arcPath, function(add) {
     if (vector.r() < 0.1) {return curPos;}
 
     var angleToMove = progressThisStep * this._totalAngle;
-    var curAngle = curPos.subPt(this._center).theta();
+    var curAngle = this._circleThatPassesThroughBothPoints.angleAtPoint(curPos);
     var angleDifference = this._destinationAngle - curAngle;
     if (angleDifference < 0.001) {return curPos;}
     var newAngle = curAngle + angleToMove;
     var newAngleDifference = this._destinationAngle - newAngle;
     if (newAngleDifference.sign() !== angleDifference.sign()) {newAngle = this._destinationAngle;} // don't go past it
-    var newPos = this._center.pointOnCircle(this._radius, newAngle);
+    var newPos = this._circleThatPassesThroughBothPoints.pointAtAngle(newAngle);
     // console.log("progressThisStep: " + progressThisStep + ", angleToMove: " + angleToMove + ", curAngle: " + curAngle + ", newAngle: " + newAngle + ", newPos: " + newPos + ", curPos: " + curPos);
     return newPos;
   });
@@ -545,6 +543,10 @@ thisModule.addSlots(avocado.animation.arcPath, function(add) {
 
 thisModule.addSlots(Point.prototype, function(add) {
 
+  add.method('planeThatAlsoPassesThrough', function (otherPt) {
+    return avocado.geometry.planes.twoD;
+  });
+  
   add.method('doNotGoPast', function (targetValue, originalValue) {
     var originalDifference = targetValue.minus(originalValue);
     var      newDifference = targetValue.minus(this);
@@ -556,6 +558,16 @@ thisModule.addSlots(Point.prototype, function(add) {
     if (yIsDifferent) { return this.withY(targetValue.y); }
     return this;
   });
+  
+  add.method('circleThatAlsoPassesThrough', function (otherPt) {
+    if (otherPt.is3D) { return this.withZ(0).circleThatAlsoPassesThrough(otherPt); }
+    
+    var plane = this.planeThatAlsoPassesThrough(otherPt);
+    var vector = otherPt.subPt(this);
+    var normal = vector.perpendicularVector().scaleToLength(vector.r() * 4); // can fiddle with the length until it looks good
+    var center = this.midPt(otherPt).addPt(normal);
+    return Object.newChildOf(avocado.geometry.circle, center, this.subPt(center).r(), plane);
+  }, {category: ['geometry']});
 
 });
 

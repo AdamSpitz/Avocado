@@ -102,7 +102,7 @@ thisModule.addSlots(avocado.category.Morph.prototype, function(add) {
     // summaryLabel.setLayoutModes({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     // return summaryLabel;
     
-    return avocado.TableMorph.createSpaceFillingRow([summaryLabel], this.desiredCurrentStyle().contentsSummaryPadding).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
+    return avocado.table.createSpaceFillingRowMorph([summaryLabel], this.desiredCurrentStyle().contentsSummaryPadding).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
   }, {category: ['creating']});
 
   add.method('partsOfUIState', function ($super) {

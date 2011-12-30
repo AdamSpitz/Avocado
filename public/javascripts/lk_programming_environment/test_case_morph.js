@@ -1,7 +1,7 @@
 avocado.transporter.module.create('lk_programming_environment/test_case_morph', function(requires) {
 
 requires('lk_ext/shortcuts');
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 requires('core/testFramework');
 
 }, function(thisModule) {
@@ -18,7 +18,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
     return m;
   }, {category: ['user interface']});
 
-  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
+  add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
   
   add.method('updateFillOfMorph', function (m) {
     var r = m._model.result();
@@ -47,7 +47,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     return m;
   }, {category: ['user interface']});
 
-  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
+  add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
   
   add.method('updateFillOfMorph', function (m) {
     avocado.testCase.updateFillOfMorph(m);

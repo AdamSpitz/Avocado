@@ -135,7 +135,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
       // Can't have a wheel menu with more than 9 commands.
       return this.createMenu(target, this.menuClassThatCanHandleAnUnlimitedNumberOfItems());
     }
-    return new menuClass(menuItems, target);
+    return menuClass.createMenuMorph(menuItems, target);
   }, {category: ['converting']});
 
   add.method('commandsForMenu', function (target) {
@@ -178,6 +178,65 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     }.bind(this));
   }, {category: ['associated objects']});
 
+  add.method('dragAndDropCommands', function () {
+    if (this._model && typeof(this._model.dragAndDropCommands) === 'function') {
+      var cmdList = this._model.dragAndDropCommands();
+      if (cmdList) {
+        return cmdList.wrapForMorph(this);
+      }
+    }
+    return null;
+  }, {category: ['menus']});
+
+});
+
+
+thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
+
+  add.method('showMorphMenu', function(evt) {
+    // Disable the reflective stuff in deployed apps. -- Adam
+    var isReflectionEnabled = false;
+    avocado.ui.currentWorld().applicationList().applications().each(function(app) { if (app.isReflectionEnabled) { isReflectionEnabled = true; }; });
+    if (!isReflectionEnabled) { return; }
+
+    var menu = this.morphMenu(evt);
+    var world = this.world();
+    menu.openIn(world, world.worldPointCorrespondingToScreenPoint(evt.point()), false, (Object.inspect(this) || "").truncate()); // added || "" -- Adam
+  }, {category: ['menus']});
+
+  add.method('showContextMenu', function(evt) {
+    var menu = this.contextMenu(evt);
+    if (!menu) { return; }
+    
+    // should be a clear difference between a morph menu and a context menu
+    var baseColor = Color.black;
+    if (menu.listStyle) {
+      menu.listStyle = Object.create(menu.listStyle);
+      menu.listStyle.borderColor = baseColor;
+      menu.listStyle.fill        = baseColor.lighter(5);
+    }
+    if (menu.textStyle) {
+      menu.textStyle = Object.create(menu.textStyle);
+      menu.textStyle.textColor   = baseColor;
+    }
+    
+    var world = this.world();
+    menu.openIn(world, world.worldPointCorrespondingToScreenPoint(evt.point()), false, (Object.inspect(this) || "").truncate()); // added || "" -- Adam
+  }, {category: ['menus']});
+
+  add.method('contextMenu', function (evt) {
+    var cs = this.commands();
+    if (!cs || cs.size() === 0) { return null; }
+    return cs.createMenu(this);
+  }, {category: ['menus']});
+
+  add.method('commands', function () {
+    if (this._model && typeof(this._model.commands) === 'function') {
+      return this._model.commands().wrapForMorph(this);
+    }
+    return null;
+  }, {category: ['menus']});
+  
 });
 
 

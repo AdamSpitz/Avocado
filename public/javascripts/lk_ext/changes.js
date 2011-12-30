@@ -16,6 +16,10 @@ WorldMorph.addMethods({
     if (this.shouldSlideIfClickedAtEdge) { this.slideIfClickedAtEdge(evt); }
 
     return $super(evt);
+  },
+  
+  worldPointCorrespondingToScreenPoint: function (p) {
+    return p;
   }
 });
 
@@ -54,6 +58,26 @@ PasteUpMorph.addMethods({
         evt.hand.grabMorph(m, evt);
         return true;
     },
+});
+
+Morph.addMethods({
+  getOwner: function() { return this.owner; },
+  
+  eachSubmorph: function(f) {
+    for (var i = 0, n = this.submorphs.length; i < n; ++i) {
+      f(this.submorphs[i]);
+    }
+  },
+  
+  submorphEnumerator: function() {
+    return avocado.enumerator.create(this, 'eachSubmorph');
+  },
+  
+  // for compatibility with 3D
+  setTopLeftPositionXY:  function(x, y   ) { return this.setPositionXY(x, y); },
+  setTopLeftPositionXYZ: function(x, y, z) { return this.setTopLeftPositionXY(x, y); },
+  
+  getOriginAAAHack: function() { return pt(0,0); }, // aaa for compatibility with 3D, but it's a bug, I need to just fix it
 });
 
 Morph.addMethods({
@@ -408,15 +432,20 @@ Morph.addMethods({
 
 
 Morph.addMethods({
-  addMorphCentered: function(m, callWhenDone) {
-    this.animatedAddMorphAt(m, this.getExtent().subPt(m.getExtent()).scaleBy(0.5), callWhenDone);
+  animatedAddMorphCentered: function(m, callWhenDone) {
+    this.animatedAddMorphCenteredAt(m, this.getExtent().scaleBy(0.5), callWhenDone);
   },
   
-  // really should fix the names of these two functions; without animation should be the default -- Adam
-  withoutAnimationAddMorphCentered: function(m, callWhenDone) {
-    var p = this.getExtent().subPt(m.getExtent()).scaleBy(0.5);
-    // console.log("this.getExtent(): " + this.getExtent() + ", m.getExtent(): " + m.getExtent() + ", p: " + p);
-    this.addMorphAt(m, p);
+  animatedAddMorphCenteredAt: function(m, centerPt, callWhenDone) {
+    this.animatedAddMorphAt(m, centerPt.subPt(m.getExtent().scaleBy(0.5)), callWhenDone);
+  },
+  
+  addMorphCentered: function(m) {
+    this.addMorphCenteredAt(m, this.getExtent().scaleBy(0.5));
+  },
+
+  addMorphCenteredAt: function(m, centerPt) {
+    this.addMorphAt(m, centerPt.subPt(m.getExtent().scaleBy(0.5)));
   },
 });
 
@@ -424,12 +453,32 @@ Morph.addMethods({
 Morph.addMethods({
   handIsOverMe: function (hand) {
     return this.shape.containsPoint(this.localize(hand.getPosition()));
-  }
+  },
+  
+  submorphThatHandIsOver: function (hand) {
+    for (var i = 0, n = this.submorphs.length; i < n; ++i) {
+      var m = this.submorphs[i];
+      if (m.handIsOverMe(hand)) { return m; }
+    }
+    return null;
+  },
 });
 
 
 Morph.addMethods({
+  setExtentIfChanged: function (newExtent) {
+    if (! newExtent.eqPt(this.getExtent())) {
+      this.setExtent(newExtent);
+      //this.smoothlyResizeTo(newExtent); // aaa - doesn't quite work right yet
+    }
+  }
+});
+
+Morph.addMethods({
   replaceMorph: function(m, newSubmorph) {
+    // Let the layout take care of it if it wants to.
+    if (this._layout && this._layout.replaceMorph) { return this._layout.replaceMorph(m, newSubmorph); }
+    
     // This method is kind of a combination of addMorphFrontOrBack and removeMorph. -- Adam
     
 		var index = this.submorphs.indexOf(m);
@@ -471,6 +520,26 @@ Morph.addMethods({
 		
 		newSubmorph.setPosition(position);
   },
+});
+
+
+Object.extend(lively.scene.Rectangle, {
+  createWithIrrelevantExtent: function () {
+    // This is a small hack. Sometimes we just want a default shape and we don't really
+    // care what it is because it's going to be changed immediately anyways.
+    // But LK doesn't let us create a Morph without a shape.
+    return new this(new Rectangle(0, 0, 10, 10));
+  }
+});
+
+
+Object.extend(HandMorph.prototype, {
+  shouldNotBePartOfRowOrColumn: true
+});
+
+
+Object.extend(HandleMorph.prototype, {
+  shouldNotBePartOfRowOrColumn: true
 });
 
 

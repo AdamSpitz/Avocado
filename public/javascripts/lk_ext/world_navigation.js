@@ -36,7 +36,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     // Blecch. I would have preferred to leave the morphs at the same world-coordinates and just
     // make the top-left corner be (-X,-Y) instead of (0,0). But that was turning out to be complicated.
     // So for now, just move all the morphs by (X,Y).
-    this.submorphs.each(function(m) {
+    this.eachSubmorph(function(m) {
       if (m.shouldStickToScreen) {
       } else {
         // The animated version is a bit weird for now, I think. -- Adam
@@ -48,7 +48,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       }
     });
     
-    this.hands.each(function(m) {
+    this.hands.forEach(function(m) {
       // The animated version is a bit weird for now, I think. -- Adam
       // m.startWhooshingInAStraightLineTo(m.position().addPt(delta), false, false, true);
       m.moveBy(delta);
@@ -220,7 +220,7 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     world.slideBy(delta);
     world.hands.each(function(m) { m.setScale(1 / s); });
     world.stickyMorphs().each(function(m) { m.setScale(1 / s); m.moveBy(m.origin.translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor)); });
-    world.submorphs.forEach(function(m) {
+    world.eachSubmorph(function(m) {
       if (typeof(m.justScaledWorld) === 'function') {
         m.justScaledWorld(s);
       }

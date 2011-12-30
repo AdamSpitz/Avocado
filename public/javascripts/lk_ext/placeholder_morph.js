@@ -57,7 +57,7 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
     this._originalMorph = originalMorph;
     this._labelMorph = TextMorph.createLabel(originalMorph.inspect());
     this._labelMorph.setTextColor(this.defaultStyle.textColor);
-    this.addMorphCentered(this._labelMorph);
+    this.animatedAddMorphCentered(this._labelMorph);
   }, {category: ['creating']});
 
   add.creator('defaultStyle', {}, {category: ['styles']});

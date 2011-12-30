@@ -9,7 +9,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('isOnScreen', function () {
     var w = this.world();
-    if (!w) { /* console.log(this + " is not on screen because it's not in the world"); */ return false; }
+    if (!w) { return false; }
     if (w === this) { return true; }
     // var wTransform = w.getTransform();
     var wBounds = w.visibleBoundsCachingIfPossible();
@@ -48,6 +48,10 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return m.getExtent().scaleBy(m.getScale() * 0.5).subPt(this.getExtent().scaleBy(this.getScale() * 0.5));
     });
 
+  add.method('setCenterPosition', function (p) {
+    return this.setPosition(this.getExtent().scaleBy(this.getScale() * -0.5));
+  });
+
   add.method('showInCenterOfUsersFieldOfVision', function (w, callback) {
       this.scaleBy(1 / w.getScale());
       // Can't use positionToCenterIn because that finds the actual center of the morph, whereas we
@@ -55,6 +59,29 @@ thisModule.addSlots(Morph.prototype, function(add) {
       var p = w.getExtent().scaleBy(0.5).subPt(this.getExtent().scaleBy(this.getScale() * 0.5));
       this.showInWorldAt(w, p, callback);
     });
+
+  add.method('showWithoutAnimationInTopRightCornerOfUsersFieldOfVision', function (w) {
+    var wScale = w.getScale();
+    this.setScale(1 / wScale);
+    var padding = 10 / wScale;
+    w.addMorphAt(this, pt(w.getExtent().x - this.getExtent().scaleBy(this.getScale()).x - padding, padding));
+  });
+
+  add.method('showAsLabelOnTopOf', function (morphToBeLabelled, world) {
+    this.setScale(2.0 / world.getScale());
+    var p = morphToBeLabelled.worldPoint(this.positionToCenterIn(morphToBeLabelled));
+    this.setPosition(p);
+    world.addMorphFront(this);
+  });
+  
+  add.method('startTinyAndSmoothlyGrowTo', function (desiredScale, functionToCallWhenDone) {
+    this.setScale(desiredScale * 0.01);
+    this.smoothlyScaleTo(desiredScale, functionToCallWhenDone);
+  });
+  
+  add.method('smoothlyShrinkDownToNothing', function (functionToCallWhenDone) {
+    this.smoothlyScaleTo(0.01, functionToCallWhenDone);
+  });
 
   add.method('setPositionAndDoMotionBlurIfNecessary', function (newPos, blurTime) {
       var world = this.world();
@@ -86,32 +113,6 @@ thisModule.addSlots(Morph.prototype, function(add) {
       this.setPosition(newPos);
       if (this.justDidAnimatedPositionChange) { this.justDidAnimatedPositionChange(); }
     }, {category: ['motion blur']});
-
-  add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-    var originalOwner = this.owner;
-    this.becomeDirectSubmorphOfWorld(w);
-    var wantsToScaleToo = typeof(desiredLoc.desiredScale) !== 'undefined';
-    if (wantsToScaleToo) { this.smoothlyScaleTo(desiredLoc.desiredScale); } // aaa hack
-    if (originalOwner !== w || shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
-      this.startWhooshingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
-    } else {
-      if (functionToCallWhenDone) { functionToCallWhenDone(); }
-    }
-  }, {category: ['adding and removing']});
-
-  add.method('becomeDirectSubmorphOfWorld', function (w) {
-    var owner = this.owner;
-    if (w) {
-      if (owner !== w) {
-        var initialLoc = (!owner || this.world() !== w) ? this.getExtent().scaleBy(-1.1).addXY(-200,-200) : owner.worldPoint(this.getPosition());
-        if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
-        this.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore(); // aaa - not sure this is a good idea, but maybe; it makes sure that a mirror will be updated as soon as it's visible, for one thing.
-        w.addMorphAt(this, initialLoc);
-      }
-    } else {
-      if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
-    }
-  }, {category: ['adding and removing']});
 
   add.method('animatedAddMorphAt', function (m, p, callWhenDone) {
     this.summonMorphToPosition(m, p, m.getScale(), function() {

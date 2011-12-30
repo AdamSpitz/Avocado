@@ -471,7 +471,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('detachArrowEndpoints', function () {
     var world = this.world();
     if (world) {
-      this.submorphs.each(function(m) {
+      this.eachSubmorph(function(m) {
         if (m instanceof avocado.ArrowEndpoint) {
           world.addMorphAt(m, this.worldPoint(m.getPosition()));
         }

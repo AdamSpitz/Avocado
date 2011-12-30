@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_programming_environment/evaluator_morph', function(requires) {
 
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 
 }, function(thisModule) {
 
@@ -14,11 +14,11 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.EvaluatorMorph, function(add) {
 
-  add.data('superclass', avocado.TableMorph);
+  add.data('superclass', Morph);
 
   add.data('type', 'avocado.EvaluatorMorph');
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -28,7 +28,8 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
   add.data('constructor', avocado.EvaluatorMorph);
 
   add.method('initialize', function ($super, mirrorMorph) {
-    $super();
+    $super(lively.scene.Rectangle.createWithIrrelevantExtent());
+    this.useTableLayout(avocado.table.contents.columnPrototype);
     this._mirrorMorph = mirrorMorph;
     
     this.applyStyle(this.defaultStyle);
@@ -47,11 +48,9 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
     
     var buttons = this.buttonCommands().map(function(c) { return c.newMorph(); });
 
-    this.setCells([tm, avocado.TableMorph.createSpaceFillingRow(buttons)]);
+    this.layout().setCells([tm, avocado.table.createSpaceFillingRowMorph(buttons)]);
   }, {category: ['creating']});
   
-  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
-
   add.method('mirrorMorph', function () { return this._mirrorMorph;  }, {category: ['accessing']});
 
   add.method('textMorph', function () { return this._textMorph;  }, {category: ['accessing']});

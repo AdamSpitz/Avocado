@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_ext/collection_morph', function(requires) {
 
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 requires('lk_ext/shortcuts');
 
 }, function(thisModule) {
@@ -24,11 +24,11 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.CollectionMorph, function(add) {
 
-  add.data('superclass', avocado.TableMorph);
+  add.data('superclass', Morph);
 
   add.data('type', 'avocado.CollectionMorph');
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -38,7 +38,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
   add.data('constructor', avocado.CollectionMorph);
 
   add.method('initialize', function ($super, collection, columnsToShow, dropCriteria) {
-    $super();
+    $super(lively.scene.Rectangle.createWithIrrelevantExtent());
     this._collection = collection;
     this._columnsToShow = (columnsToShow || [{name: 'Name', valueOf: function(o) { return Object.inspect(o); }}]).map(function(c) {
       if (typeof(c) === 'string') {
@@ -97,7 +97,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
   }, {category: ['content']});
 
   add.method('potentialContentMorphs', function () {
-    return avocado.tableContents.createWithRows([this._headerRow].concat(this._collection.map(function(o) {
+    return avocado.table.contents.createWithRows([this._headerRow].concat(this._collection.map(function(o) {
       return this.rowOfCellMorphsFor(o);
     }.bind(this))));
   }, {category: ['content']});
@@ -122,7 +122,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
     if (! this.insertionIndexMatters()) { return this._collection.size(); }
     
     var p = this.localize(evt.point());
-    var morphs = avocado.enumerator.create(this, 'eachCell').toArray();
+    var morphs = this.submorphsParticipatingInLayout().toArray();
     var numCols = this._columnsToShow.size();
     for (var i = 1; i * numCols < morphs.length; i += 1) {
       var m = morphs[i * numCols];
@@ -158,6 +158,11 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
     return this._collection.canInsert || reflect(this._collection).isReflecteeArray();
   }, {category: ['testing']});
 
+});
+
+
+thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
+
   add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}'});
 
   add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.4980392156862745)), new lively.paint.Stop(1, new Color(1, 0.9019607843137255, 0.7490196078431373))], lively.paint.LinearGradient.SouthNorth));
@@ -165,7 +170,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
   add.data('borderRadius', 10);
 
   add.data('openForDragAndDrop', false);
-
+  
 });
 
 

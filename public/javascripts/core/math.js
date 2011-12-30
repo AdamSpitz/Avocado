@@ -42,7 +42,7 @@ thisModule.addSlots(Point.prototype, function(add) {
   });
 
   add.method('equals', function (other) {
-    return other && other.constructor && other.constructor === Point && this.eqPt(other);
+    return other && other.constructor && this.constructor === other.constructor && this.eqPt(other);
   });
 
   add.method('hashCode', function () {
@@ -111,10 +111,6 @@ thisModule.addSlots(Point.prototype, function(add) {
     return x*x + y*y;
   });
 
-  add.method('pointOnCircle', function (radius, angle) {
-    return this.addPt(pt(Math.cos(angle), Math.sin(angle)).scaleToLength(radius));
-  });
-
 });
 
 
@@ -124,6 +120,8 @@ thisModule.addSlots(Rectangle.prototype, function(add) {
 
   add.method('vertices', function () {return [this.topLeft(), this.topRight(), this.bottomLeft(), this.bottomRight()];});
 
+  add.method('originCorner', function () { return this.topLeft(); });
+
   add.method('storeString', function () {
     return ['new Rectangle(', this.x, ', ', this.y, ', ', this.width, ', ', this.height, ')'].join('');
   }, {category: ['transporting']});
@@ -131,6 +129,95 @@ thisModule.addSlots(Rectangle.prototype, function(add) {
   add.method('storeStringNeeds', function () {
     return Rectangle.prototype;
   }, {category: ['transporting']});
+
+});
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('geometry', {}, {category: ['geometry']});
+
+});
+
+
+thisModule.addSlots(avocado.geometry, function(add) {
+
+  add.creator('planes', {});
+
+  add.creator('circle', {});
+
+});
+
+
+thisModule.addSlots(avocado.geometry.planes, function(add) {
+
+  add.creator('twoD', {});
+
+  add.creator('threeD', {});
+
+});
+
+
+thisModule.addSlots(avocado.geometry.planes.threeD, function(add) {
+  
+  add.method('createFromThreePoints', function (pointA, pointB, pointC) {
+    var normal = pointB.subPt(pointA).crossProduct(pointC.subPt(pointA));
+    if (normal.x === 0 && normal.y === 0 && normal.z === 0) { return null; }
+    return Object.newChildOf(this, normal, pointA);
+  }, {category: ['creating']});
+
+  add.method('initialize', function (normalVector, referencePoint) {
+    this._normalVector = normalVector.scaleToLength(1);
+    this._referencePoint = referencePoint;
+  }, {category: ['creating']});
+  
+  add.method('normalVector', function () {
+    return this._normalVector;
+  }, {category: ['accessing']});
+  
+  add.method('referencePoint', function () {
+    return this._referencePoint;
+  }, {category: ['accessing']});
+  
+});
+
+
+thisModule.addSlots(avocado.geometry.circle, function(add) {
+  
+  add.method('initialize', function (center, radius, plane) {
+    this._center = center;
+    this._radius = radius;
+    this._plane  = plane || avocado.geometry.planes.twoD;
+  }, {category: ['creating']});
+  
+  add.method('center', function () { return this._center; }, {category: ['accessing']});
+
+  add.method('radius', function () { return this._radius; }, {category: ['accessing']});
+
+  add.method('pointAtAngle', function (angle) {
+    var vector;
+    if (this._plane === avocado.geometry.planes.twoD) {
+      vector = pt(Math.cos(angle), Math.sin(angle));
+    } else {
+      var vectorToReferencePoint = this._plane.referencePoint().subPt(this.center()).scaleToLength(1);
+      var aaa = this._plane.normalVector().crossProduct(vectorToReferencePoint).scaleBy(Math.sin(angle));
+      vector = vectorToReferencePoint.scaleBy(Math.cos(angle)).addPt(aaa);
+    }
+    return this.center().addPt(vector.scaleToLength(this.radius()));
+  });
+
+  add.method('angleAtPoint', function (p) {
+    var vector = p.subPt(this.center());
+    if (this._plane === avocado.geometry.planes.twoD) {
+      return vector.theta();
+    } else {
+      if (p.eqPt(this._plane.referencePoint())) { return 0; } // aaa is this right? and why is it necessary? I'm confused.  -- Adam
+      var vectorToReferencePoint = this._plane.referencePoint().subPt(this.center());
+      var angle = Math.acos(vector.dotProduct(vectorToReferencePoint) / (vector.r() * vectorToReferencePoint.r()));
+      if (isNaN(angle)) { debugger; }
+      return angle;
+    }
+  });
 
 });
 

@@ -123,10 +123,10 @@ thisModule.addSlots(Morph, function(add) {
   
   add.method('createEitherOrMorph', function(morphs, functionReturningTheIndexOfTheOneToShow) {
     // aaa - callers that are TableMorphs already and just need two choices should just use the new enhanced morphToggler, don't need to wrap it in this RowMorph anymore
-    var r = avocado.TableMorph.newRow().beInvisible();
+    var r = avocado.table.newRowMorph().beInvisible();
     r.typeName = 'either-or morph';
     var togglers = morphs.map(function(m) { return avocado.morphToggler.create(null, m); });
-    r.setPotentialCells(togglers);
+    r.layout().setPotentialCells(togglers);
     r.refreshContent = avocado.makeSuperWork(r, "refreshContent", function($super) {
       var i = functionReturningTheIndexOfTheOneToShow();
       var evt = Event.createFake();
@@ -139,7 +139,7 @@ thisModule.addSlots(Morph, function(add) {
   }, {category: ['shortcuts']});
 
   add.method('createOptionalMorph', function(m, condition, layoutModes) {
-    var om = Morph.createEitherOrMorph([m, avocado.TableMorph.newRow().beInvisible()], function() { return condition() ? 0 : 1; });
+    var om = Morph.createEitherOrMorph([m, avocado.table.newRowMorph().beInvisible()], function() { return condition() ? 0 : 1; });
     om.typeName = 'optional morph';
     om.horizontalLayoutMode = (layoutModes || m).horizontalLayoutMode;
     om.verticalLayoutMode   = (layoutModes || m).verticalLayoutMode;
@@ -147,7 +147,7 @@ thisModule.addSlots(Morph, function(add) {
   }, {category: ['shortcuts']});
 
   add.method('createSpacer', function() {
-    return avocado.TableMorph.newRow().beInvisible().beSpaceFilling();
+    return avocado.table.newRowMorph().beInvisible().beSpaceFilling();
   }, {category: ['shortcuts']});
 
   add.method('wrapToTakeUpConstantWidth', function(width, morph) {
@@ -159,9 +159,9 @@ thisModule.addSlots(Morph, function(add) {
   }, {category: ['shortcuts']});
 
   add.method('wrapToTakeUpConstantSpace', function(space, morph) {
-    var wrapper = avocado.TableMorph.newRow().beInvisible();
+    var wrapper = avocado.table.newRowMorph().beInvisible();
     wrapper.layout()._desiredSpaceToScaleTo = space;
-    wrapper.setCells([morph]);
+    wrapper.layout().setCells([morph]);
     return wrapper;
   }, {category: ['shortcuts']});
 

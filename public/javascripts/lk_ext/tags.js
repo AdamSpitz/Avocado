@@ -82,7 +82,7 @@ thisModule.addSlots(avocado.tag.cloud, function(add) {
     if (this._allPossibleObjects) { return this._allPossibleObjects; }
     var objs = [];
     // aaa - I don't think this object should know about morphs.
-    WorldMorph.current().submorphs.forEach(function(morph) {
+    WorldMorph.current().eachSubmorph(function(morph) {
       var model = morph._model;
       if (typeof(model) !== 'undefined') { objs.push(model); }
     });
@@ -255,7 +255,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   
   add.method('tagSubmorphsWithTag', function (tagType) {
     var color = this.getOrCreateColorForTagType(tagType);
-    this.submorphs.forEach(function(m) {
+    this.eachSubmorph(function(m) {
       if (tagType.matchesMorph(m)) {
         m.addTagMorph(new avocado.PlaceholderMorph(tagType));
       }
@@ -268,7 +268,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['tagging']});
   
   add.method('addTagMorph', function (tagMorph) {
-    this.ensureTagHolderMorphIsVisible().addCell(tagMorph);
+    this.ensureTagHolderMorphIsVisible().layout().addCell(tagMorph);
     return this;
   }, {category: ['tagging']});
 
@@ -287,7 +287,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['tagging']});
 
   add.method('createTagHolderMorph', function () {
-    return avocado.TableMorph.newColumn().applyStyle({fill: null}).ignoreEvents();
+    return avocado.table.newColumnMorph().applyStyle({fill: null}).ignoreEvents();
   }, {category: ['tagging']});
 
 });

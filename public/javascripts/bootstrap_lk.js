@@ -42,9 +42,15 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
     else if (window.isInRunMode)       { whichOne = "lk_programming_environment/runtime_environment";     }
     else                               { whichOne = "lk_programming_environment/programming_environment"; }
     
-    avocado.transporter.fileInIfWanted(whichOne, callWhenDone);
+    avocado.transporter.fileInIfWanted(whichOne, function() {
+      callWhenDone();
+    });
   }, {category: ['bootstrapping']});
 
+  add.method('doneLoadingAllAvocadoCode', function () {
+    avocado.ui = avocado.livelyKernelUI;
+  }, {category: ['bootstrapping']});
+    
   add.method('createCanvasIfNone', function () {
     var canvas = document.getElementById("canvas");
     if (! canvas) {

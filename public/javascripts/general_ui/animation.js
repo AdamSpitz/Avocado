@@ -9,11 +9,11 @@ requires('general_ui/basic_morph_mixins');
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('startWhooshingTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-    return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.arcPath, loc, 3 / WorldMorph.current().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
+    return this.startAnimating(avocado.animation.newMovement(this, avocado.ui.aaa_isArcPathBroken ? avocado.animation.straightPath : avocado.animation.arcPath, loc, 3 / avocado.ui.currentWorld().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
   }, {category: ['whooshing around']});
 
   add.method('startWhooshingInAStraightLineTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
-    return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.straightPath, loc, 2 / WorldMorph.current().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
+    return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.straightPath, loc, 2 / avocado.ui.currentWorld().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
   }, {category: ['whooshing around']});
 
   add.method('whooshAwayAfter', function (ms) {
@@ -29,6 +29,32 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   add.method('showInWorldAt', function (w, p, callWhenDone) {
     this.ensureIsInWorld(w, p, true, false, true, callWhenDone);
   }, {category: ['whooshing around']});
+
+  add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
+    var originalOwner = this.getOwner();
+    this.becomeDirectSubmorphOfWorld(w);
+    var wantsToScaleToo = typeof(desiredLoc.desiredScale) !== 'undefined';
+    if (wantsToScaleToo) { this.smoothlyScaleTo(desiredLoc.desiredScale); } // aaa hack
+    if (originalOwner !== w || shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
+      this.startWhooshingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
+    } else {
+      if (functionToCallWhenDone) { functionToCallWhenDone(); }
+    }
+  }, {category: ['adding and removing']});
+
+  add.method('becomeDirectSubmorphOfWorld', function (w) {
+    var owner = this.getOwner();
+    if (w) {
+      if (owner !== w) {
+        var initialLoc = (!owner || this.world() !== w) ? this.getExtent().scaleBy(-1.1).addXY(-200,-200) : owner.worldPoint(this.getPosition());
+        if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
+        this.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore(); // aaa - not sure this is a good idea, but maybe; it makes sure that a mirror will be updated as soon as it's visible, for one thing.
+        w.addMorphAt(this, initialLoc);
+      }
+    } else {
+      if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { new avocado.PlaceholderMorph(this).putInPlaceOfOriginalMorph(); }
+    }
+  }, {category: ['adding and removing']});
 
   add.method('startAnimating', function (animator, functionToCallWhenDone) {
     animator.stopAnimating();

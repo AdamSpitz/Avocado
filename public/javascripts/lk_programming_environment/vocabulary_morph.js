@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_programming_environment/vocabulary_morph', function(requires) {
 
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 requires('reflection/vocabulary');
 
 }, function(thisModule) {
@@ -21,11 +21,11 @@ thisModule.addSlots(avocado.vocabulary, function(add) {
 
 thisModule.addSlots(avocado.vocabulary.Morph, function(add) {
 
-  add.data('superclass', avocado.TableMorph);
+  add.data('superclass', Morph);
 
   add.data('type', 'avocado.vocabulary.Morph');
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -35,18 +35,19 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   add.data('constructor', avocado.vocabulary.Morph);
 
   add.method('initialize', function ($super, v) {
-    $super();
+    $super(lively.scene.Rectangle.createWithIrrelevantExtent());
+    this.useTableLayout(avocado.table.contents.columnPrototype);
     this._model = v;
     this.applyStyle(this.defaultStyle);
 
-    this._evaluatorsPanel = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
-    this._mirrorsPanel    = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+    this._evaluatorsPanel = avocado.table.newColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+    this._mirrorsPanel    = avocado.table.newColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     
     
     var mirs = this.mirror().meAndAncestors().toArray();
     var mirrorsPanel = this._mirrorsPanel;
     var world = WorldMorph.current();
-    this._mirrorsPanel.setCells(mirs.map(function(mir) { return mirrorsPanel.placeholderForMorph(world.morphFor(mir)); }));
+    this._mirrorsPanel.layout().setCells(mirs.map(function(mir) { return mirrorsPanel.placeholderForMorph(world.morphFor(mir)); }));
     
     this._expander = new avocado.ExpanderMorph(this);
     this._titleLabel = this.createNameLabel();
@@ -57,13 +58,11 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
 
     this.dismissButton = this.createDismissButton();
     
-    this._headerRow = avocado.TableMorph.createSpaceFillingRow([this._expander, this._titleLabel, Morph.createSpacer(), this._evaluatorButton, this.dismissButton].compact(), this.defaultStyle.headerRowPadding);
+    this._headerRow = avocado.table.createSpaceFillingRowMorph([this._expander, this._titleLabel, Morph.createSpacer(), this._evaluatorButton, this.dismissButton].compact(), this.defaultStyle.headerRowPadding);
     this._headerRow.refreshContentOfMeAndSubmorphs();
     
     this.refreshContent();
   }, {category: ['creating']});
-  
-  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
 
   add.creator('defaultStyle', {}, {category: ['styles']});
 
@@ -81,11 +80,11 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     var rows = [this._headerRow];
     if (this._expander.isExpanded()) { rows.push(this._mirrorsPanel); }
     rows.push(this._evaluatorsPanel);
-    return avocado.tableContents.createWithColumns([rows]);
+    return avocado.table.contents.createWithColumns([rows]);
   }, {category: ['updating']});
 
   add.method('getAllMirrors', function () {
-    this._mirrorsPanel.eachCell(function(m) {
+    this._mirrorsPanel.submorphsParticipatingInLayout().forEach(function(m) {
       if (m.putOriginalMorphBack) {
         m.putOriginalMorphBack();
       }
@@ -95,13 +94,13 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   add.method('openEvaluator', function (evt) {
     evt = evt || Event.createFake();
     var e = new avocado.EvaluatorMorph(this);
-    this._evaluatorsPanel.addCell(e);
+    this._evaluatorsPanel.layout().addCell(e);
     e.wasJustShown(evt);
     return e;
   }, {category: ['evaluators']});
 
   add.method('closeEvaluator', function (evaluatorMorph) {
-    this._evaluatorsPanel.removeCell(evaluatorMorph);
+    this._evaluatorsPanel.layout().removeCell(evaluatorMorph);
   }, {category: ['evaluators']});
 
   add.method('grabResult', function (resultMirMorph, evt) {
@@ -121,7 +120,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   }, {category: ['placeholders']});
 
   add.method('placeholderMorphs', function () {
-    return this._mirrorsPanel.cells().select(function(m) { return m instanceof avocado.PlaceholderMorph; });
+    return this._mirrorsPanel.submorphsParticipatingInLayout().select(function(m) { return m instanceof avocado.PlaceholderMorph; });
   }, {category: ['placeholders']});
 
 });

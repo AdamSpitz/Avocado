@@ -26,7 +26,7 @@ thisModule.addSlots(FileDirectory.prototype, function(add) {
 thisModule.addSlots(avocado.webdav.file, function(add) {
   
   add.method('newMorph', function () {
-    var m = avocado.TableMorph.newColumn();
+    var m = avocado.table.newColumnMorph();
     var titleLabel = new avocado.TwoModeTextMorph(avocado.accessors.forMethods(this, 'fileName'));
     titleLabel.setFill(null);
     var contentsTextMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'contentText'));
@@ -35,7 +35,7 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
     contentsTextMorph.setScale(0.3);
     contentsTextMorph.setFill(null);
     var contentsMorph = ScrollPane.containing(contentsTextMorph, pt(100,150));
-    m.setCells([titleLabel, contentsMorph]);
+    m.layout().setCells([titleLabel, contentsMorph]);
     m.setFill(Color.red.lighter());
     //m.startPeriodicallyUpdating();
     return m;

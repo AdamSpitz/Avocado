@@ -15,7 +15,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     this.suppressHandles = false;
     this.openDnD();
     this.startUsingEditModeLayoutManager();
-    this.submorphs.each(function(m) { m.switchEditModeOn(); });
+    this.eachSubmorph(function(m) { m.switchEditModeOn(); });
     return this;
   }, {category: ['edit mode']});
 
@@ -25,7 +25,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     this.suppressHandles = true;
     this.closeDnD();
     this.stopUsingEditModeLayoutManager();
-    this.submorphs.each(function(m) { m.switchEditModeOff(); });
+    this.eachSubmorph(function(m) { m.switchEditModeOff(); });
     return this;
   }, {category: ['edit mode']});
 

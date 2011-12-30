@@ -1,7 +1,7 @@
 avocado.transporter.module.create('lk_programming_environment/module_morph', function(requires) {
 
 requires('lk_ext/shortcuts');
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 requires('transporter/transporter');
 
 }, function(thisModule) {
@@ -10,7 +10,7 @@ requires('transporter/transporter');
 thisModule.addSlots(avocado.transporter.module, function(add) {
 
   add.method('newMorph', function () {
-    var m = avocado.TableMorph.newRow().setModel(this).applyStyle(this.defaultMorphStyle);
+    var m = avocado.table.newRowMorph().setModel(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'module';
 
     var changeIndicator = TextMorph.createLabel(function() {
@@ -26,7 +26,7 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
     columns.push(changeIndicator);
     this.buttonCommands().commands().each(function(c) { columns.push(c.newMorph()); });
     columns.push(m.createDismissButton());
-    m.setCells(columns);
+    m.layout().setCells(columns);
 
     m.commands = function() {
       var module = this.ownerWithAModel()._model;
@@ -44,7 +44,7 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
     return m;
   }, {category: ['user interface']});
 
-  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
+  add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
 
 });
 

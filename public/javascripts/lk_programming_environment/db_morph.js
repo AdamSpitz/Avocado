@@ -47,9 +47,9 @@ thisModule.addSlots(avocado.db.morphFactory, function(add) {
   add.method('createFactoryMorph', function () {
     var dbMorph = new avocado.db.Morph(null);
     
-    var factory = new avocado.TableMorph();
+    var factory = avocado.table.newTableMorph();
     factory.applyStyle(avocado.morphFactories.defaultStyle);
-    factory.replaceContentWith(avocado.tableContents.createWithRow([dbMorph]));
+    factory.replaceContentWith(avocado.table.contents.createWithRow([dbMorph]));
     return factory;
   });
 

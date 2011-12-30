@@ -1,7 +1,7 @@
 avocado.transporter.module.create('lk_programming_environment/slot_morph', function(requires) {
 
 requires('reflection/reflection');
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 
 }, function(thisModule) {
 
@@ -18,8 +18,8 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     // aaa - It'd be nice if we could just as the annotation for its own morph, but for now we
     // still have to ask the slot for its annotation-related info (because, for one thing, there's
     // that organization object in between).
-    var m = new avocado.TableMorph().beInvisible().applyStyle(this.Morph.prototype.annotationStyle);
-    m.replaceContentWith(avocado.tableContents.createWithRows([
+    var m = avocado.table.newTableMorph().beInvisible().applyStyle(this.Morph.prototype.annotationStyle);
+    m.replaceContentWith(avocado.table.contents.createWithRows([
       [TextMorph.createLabel("Comment:"      ), new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'comment'))],
       [TextMorph.createLabel("Module:"       ), new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'moduleName'))],
       [TextMorph.createLabel("Initialize to:"), new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'initializationExpression'))]
@@ -47,13 +47,13 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
 thisModule.addSlots(avocado.slots['abstract'].Morph, function(add) {
 
-  add.data('superclass', avocado.TableMorph);
+  add.data('superclass', Morph);
 
   add.data('type', 'avocado.slots.abstract.Morph');
 
   add.creator('pointer', {});
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -63,7 +63,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.data('constructor', avocado.slots['abstract'].Morph);
   
   add.method('initialize', function ($super, slot) {
-    $super();
+    $super(lively.scene.Rectangle.createWithIrrelevantExtent());
+    this.useTableLayout(avocado.table.contents.columnPrototype);
     this._model = slot;
 
     this.applyAppropriateStyles();
@@ -110,13 +111,11 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, Morph.createSpacer(), buttonChooserMorph].compact();
     }
 
-    this._signatureRow = avocado.TableMorph.createSpaceFillingRow(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
+    this._signatureRow = avocado.table.createSpaceFillingRowMorph(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
     
     this.refreshContentOfMeAndSubmorphs(); // wasn't needed back when slot morphs were always part of a table morph, but now that we have free-form layout we need it
   }, {category: ['creating']});
   
-  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
-
   add.method('slot', function () { return this._model; }, {category: ['accessing']});
 
   add.method('toString', function () { return this.slot().toString(); }, {category: ['accessing']});
@@ -160,8 +159,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
   add.method('contentsPointerPane', function () {
     if (! this._contentsPointerPane) {
-      this._contentsPointerPane = avocado.TableMorph.newRow().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
-      this._contentsPointerPane.setCells([Morph.wrapToTakeUpConstantHeight(10, this.sourcePane()), Morph.createSpacer(), this.contentsPointerButton()]);
+      this._contentsPointerPane = avocado.table.newRowMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+      this._contentsPointerPane.layout().setCells([Morph.wrapToTakeUpConstantHeight(10, this.sourcePane()), Morph.createSpacer(), this.contentsPointerButton()]);
       this._contentsPointerPane.typeName = 'slot contents pointer pane';
     }
     return this._contentsPointerPane;
@@ -188,7 +187,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     return function() {
       if (row) { return row; }
       var spacer = Morph.createSpacer();
-      row = avocado.TableMorph.createSpaceFillingRow(function() {return [getOrCreateContent(), spacer];}, p);
+      row = avocado.table.createSpaceFillingRowMorph(function() {return [getOrCreateContent(), spacer];}, p);
       row.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
       return row;
     }.bind(this);
@@ -355,9 +354,9 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('potentialContentMorphs', function () {
     if (! this._potentialContentMorphs) {
       if (this.shouldUseZooming()) {
-        this._potentialContentMorphs = avocado.tableContents.createWithColumns([[this._signatureRow, this._contentsChooserMorph]]);
+        this._potentialContentMorphs = avocado.table.contents.createWithColumns([[this._signatureRow, this._contentsChooserMorph]]);
       } else {
-        this._potentialContentMorphs = avocado.tableContents.createWithColumns([[this._signatureRow, this._annotationToggler, this._sourceToggler].compact()]);
+        this._potentialContentMorphs = avocado.table.contents.createWithColumns([[this._signatureRow, this._annotationToggler, this._sourceToggler].compact()]);
       }
     }
     return this._potentialContentMorphs;

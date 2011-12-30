@@ -1,11 +1,15 @@
-avocado.transporter.module.create('lk_ext/highlighting', function(requires) {
+avocado.transporter.module.create('general_ui/highlighting', function(requires) {
+
+requires('general_ui/basic_morph_mixins');
 
 }, function(thisModule) {
 
 
-thisModule.addSlots(Morph.prototype, function(add) {
+thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('styleWhenHighlighted', function () {
+    if (this._stylist) { return this._stylist.styleWhenHighlighted(this); }
+    
     if (! this._styleBeforeHighlighting.fill) {
       return {
         fill: Color.white,
@@ -21,7 +25,8 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('beHighlighted', function () {
     if (!this._styleBeforeHighlighting) {
       this._styleBeforeHighlighting = this.makeStyleSpec();
-      this.applyStyle(this.styleWhenHighlighted());
+      var newStyle = this.styleWhenHighlighted();
+      this.applyStyle(newStyle);
     }
   }, {category: ['highlighting']});
 
@@ -47,7 +52,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(WorldMorph.prototype, function(add) {
+thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
 
   add.method('beHighlighted', function () {
     // Don't highlight the world.;

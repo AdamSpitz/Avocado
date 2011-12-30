@@ -47,7 +47,8 @@ thisModule.addSlots(avocado.messageNotifier, function(add) {
 
   add.method('showInWorld', function (world) {
     // By default, zoom away after a short while, unless the user touches it.
-    world.morphFor(this).showTemporarilyInCenterOfUsersFieldOfVision(world);
+    var m = world.morphFor(this);
+    m.showTemporarilyInCenterOfUsersFieldOfVision(world);
   }, {category: ['showing']});
   
   add.method('updateFillOfMorph', function (m) {
@@ -57,7 +58,7 @@ thisModule.addSlots(avocado.messageNotifier, function(add) {
   add.method('newMorph', function () {
     var rows = [avocado.label.create(this._message.toString())];
     if (this._heading) { rows.unshift(avocado.label.create(this._heading).setEmphasis({style: 'bold'})); }
-    var m = avocado.tableContents.createWithColumns([rows]).newMorph().setModel(this);
+    var m = avocado.table.contents.createWithColumns([rows]).newMorph().setModel(this);
     this.updateFillOfMorph(m);
     return m;
   }, {category: ['user interface']});
@@ -119,6 +120,15 @@ thisModule.addSlots(Error.prototype, function(add) {
     return this;
   }, {category: ['user interface']});
 
+  add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(Error.prototype.defaultMorphStyle, function(add) {
+  
+  add.data('fillBase', new Color(1, 0, 0));
+  
 });
 
 

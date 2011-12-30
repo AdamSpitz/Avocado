@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_ext/search_results_morph', function(requires) {
 
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 
 }, function(thisModule) {
 
@@ -14,11 +14,11 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.SearchResultsMorph, function(add) {
 
-  add.data('superclass', avocado.TableMorph);
+  add.data('superclass', Morph);
 
   add.data('type', 'avocado.SearchResultsMorph');
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -28,30 +28,28 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
   add.data('constructor', avocado.SearchResultsMorph);
 
   add.method('initialize', function ($super, searcher) {
-    $super();
+    $super(lively.scene.Rectangle.createWithIrrelevantExtent());
+    this.useTableLayout(avocado.table.contents.columnPrototype);
     this._model = searcher;
+    
+    this.applyStyle(this.defaultStyle);
 
-    this.setFill(avocado.ui.defaultFillWithColor(Color.blue.lighter()));
-    this.setPadding(5);
-    this.shape.roundEdgesBy(10);
-    this.closeDnD();
-
-    this._resultsPanel = new avocado.TableMorph().beInvisible().applyStyle(this.resultsPanelStyle);
+    this._resultsPanel = avocado.table.newTableMorph().beInvisible().applyStyle(this.resultsPanelStyle);
 
     this._expander = new avocado.ExpanderMorph(this);
     this._titleLabel = this.createNameLabel();
     this.redoButton = ButtonMorph.createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
 
-    this._headerRow = avocado.TableMorph.createSpaceFillingRow([this._expander, this._titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton], this.headerRowStyle.padding);
+    this._headerRow = avocado.table.createSpaceFillingRowMorph([this._expander, this._titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton], this.headerRowStyle.padding);
 
-    this.setPotentialCells([this._headerRow, Morph.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
+    this.layout().setPotentialCells([this._headerRow, Morph.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
     this.refreshContent();
   });
   
-  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
-
   add.method('searcher', function () { return this._model; });
+
+  add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.creator('headerRowStyle', {}, {category: ['styles']});
 
@@ -67,12 +65,12 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
   });
 
   add.method('redo', function () {
-    this._resultsPanel.replaceContentWith(avocado.tableContents.createWithRows([[]]));
+    this._resultsPanel.replaceContentWith(avocado.table.contents.createWithRows([[]]));
     var results = this.searcher().go();
     var sortCrit = this.searcher().sortingCriteriaForSearchResults();
     if (sortCrit) { results = results.sortBy(sortCrit); }
     var resultRows = results.map(function(o) { return o.createMorphsForSearchResults(); });
-    this._resultsPanel.replaceContentWith(avocado.tableContents.createWithRows(resultRows));
+    this._resultsPanel.replaceContentWith(avocado.table.contents.createWithRows(resultRows));
     this.expander().expand();
     return this;
   });
@@ -83,6 +81,19 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     };
   }, {category: ['UI state']});
 
+});
+
+
+thisModule.addSlots(avocado.SearchResultsMorph.prototype.defaultStyle, function(add) {
+  
+  add.data('openForDragAndDrop', false);
+
+  add.data('padding', 5);
+
+  add.data('borderRadius', 10);
+
+  add.data('fill', lively.paint.defaultFillWithColor(Color.blue.lighter()));
+  
 });
 
 

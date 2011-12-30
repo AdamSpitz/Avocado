@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_programming_environment/process_morph', function(requires) {
 
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 requires('reflection/process');
 requires('lk_programming_environment/slot_morph');
 
@@ -10,14 +10,14 @@ requires('lk_programming_environment/slot_morph');
 thisModule.addSlots(avocado.process, function(add) {
 
   add.method('newMorph', function () {
-    var m = avocado.TableMorph.newColumn().setModel(this).applyStyle(this.defaultMorphStyle);
+    var m = avocado.table.newColumnMorph().setModel(this).applyStyle(this.defaultMorphStyle);
     m._numberToShow = 0;
     m._hasMore = true;
 
-    var headerRow = avocado.TableMorph.createSpaceFillingRow([m.createNameLabel(), Morph.createSpacer(), m.createDismissButton()]);
+    var headerRow = avocado.table.createSpaceFillingRowMorph([m.createNameLabel(), Morph.createSpacer(), m.createDismissButton()]);
     
     var world = WorldMorph.current();
-    var contentColumn = avocado.TableMorph.newColumn().beInvisible();
+    var contentColumn = avocado.table.newColumnMorph().beInvisible();
     contentColumn.setPotentialContentMorphsFunction(function () {
       var rows = [];
       var c = m._model.leafContext();
@@ -27,24 +27,24 @@ thisModule.addSlots(avocado.process, function(add) {
       }
       m._hasMore = !!c;
       moreOrLessRow.refreshContentOfMeAndSubmorphs();
-      return avocado.tableContents.createWithColumns([rows]);
+      return avocado.table.contents.createWithColumns([rows]);
     });
     
     var moreButton = avocado.command.create('More', function(evt) { m._numberToShow += 10; contentColumn.refreshContent(); }).newMorph();
-    var moreOrLessRow = avocado.TableMorph.createSpaceFillingRow([
+    var moreOrLessRow = avocado.table.createSpaceFillingRowMorph([
       Morph.createSpacer(),
       Morph.createOptionalMorph(moreButton, function() { return m._hasMore; }),
       Morph.createSpacer()
-    ]).setPadding(3);
+    ]).applyStyle({padding: 3});
     
-    m.setCells([headerRow, contentColumn, moreOrLessRow]);
+    m.layout().setCells([headerRow, contentColumn, moreOrLessRow]);
     
     m._numberToShow = 10;
     m.refreshContentOfMeAndSubmorphs();
     return m;
   }, {category: ['user interface']});
 
-  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
+  add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
 
 });
 
@@ -58,7 +58,7 @@ thisModule.addSlots(avocado.process.context, function(add) {
     contextSlot._processContext = this;
     var slotMorph = new avocado.process.context.Morph(contextSlot);
     slotMorph.applyStyle(this.defaultMorphStyle);
-    var m = avocado.TableMorph.createSpaceFillingRow([slotMorph]);
+    var m = avocado.table.createSpaceFillingRowMorph([slotMorph]);
     m._model = this;
     return m;
   }, {category: ['user interface']});
@@ -88,7 +88,7 @@ thisModule.addSlots(avocado.process.context.Morph.prototype, function(add) {
   add.data('constructor', avocado.process.context.Morph);
 
   add.method('descriptionMorph', function () {
-    var m = avocado.TableMorph.newRow().beInvisible();
+    var m = avocado.table.newRowMorph().beInvisible();
     var columns = [this.nameMorph()];
     var context = this._model._processContext;
     var args = context.args();
@@ -100,7 +100,7 @@ thisModule.addSlots(avocado.process.context.Morph.prototype, function(add) {
         columns.push(context.commandToGrabArg(i).newMorph());
       }
     }
-    m.setCells(columns);
+    m.layout().setCells(columns);
     return m;
   }, {category: ['signature']});
 

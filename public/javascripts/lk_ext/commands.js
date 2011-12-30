@@ -1,7 +1,7 @@
 avocado.transporter.module.create('lk_ext/commands', function(requires) {
 
 requires('general_ui/commands');
-requires('lk_ext/wheel_menus');
+requires('general_ui/wheel_menus');
 
 }, function(thisModule) {
 
@@ -35,7 +35,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
   add.data('shouldUseWheelMenus', true);
 
   add.method('defaultMenuClass', function () {
-    return this.shouldUseWheelMenus ? avocado.WheelMenuMorph : MenuMorph;
+    return this.shouldUseWheelMenus ? avocado.wheelMenu : MenuMorph;
   }, {category: ['converting']});
 
   add.method('menuClassThatCanHandleAnUnlimitedNumberOfItems', function () {
@@ -47,6 +47,10 @@ thisModule.addSlots(avocado.command.list, function(add) {
 
 thisModule.addSlots(MenuMorph, function(add) {
 
+  add.method('createMenuMorph', function (items, target) {
+    return new this(items, target);
+  }, {category: ['creating']});
+  
   add.method('itemsForCommands', function (commands) {
     return commands.map(function(c) {
       if (!c) {
@@ -59,15 +63,6 @@ thisModule.addSlots(MenuMorph, function(add) {
         return [c.labelString(), function() { c.go.apply(c, arguments); }];
       }
     });
-  }, {category: ['converting']});
-
-});
-
-
-thisModule.addSlots(avocado.WheelMenuMorph, function(add) {
-
-  add.method('itemsForCommands', function (commands) {
-    return commands.compact();
   }, {category: ['converting']});
 
 });

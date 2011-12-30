@@ -1,7 +1,7 @@
 avocado.transporter.module.create('lk_programming_environment/project_morph', function(requires) {
 
 requires('lk_ext/shortcuts');
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 requires('lk_ext/check_box');
 requires('projects/projects');
 
@@ -11,9 +11,9 @@ requires('projects/projects');
 thisModule.addSlots(avocado.project, function(add) {
 
   add.method('newMorph', function () {
-    var m = avocado.TableMorph.newColumn().setModel(this).applyStyle(this.defaultMorphStyle);
+    var m = avocado.table.newColumnMorph().setModel(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'project';
-    var headerRow = avocado.TableMorph.newRow().beInvisible().setPadding(3);
+    var headerRow = avocado.table.newRowMorph().beInvisible().applyStyle({padding: 3});
     
     var changeIndicator = TextMorph.createLabel(function() {
       var project = this.ownerWithAModel()._model;
@@ -23,26 +23,26 @@ thisModule.addSlots(avocado.project, function(add) {
 
     var columns = [m.createNameLabel()];
     // columns.push(changeIndicator); // aaa just leave this out for now because it's not working right
-    headerRow.setCells(columns);
+    headerRow.layout().setCells(columns);
     
     /* Why isn't this working?
-    var privacyRow = avocado.TableMorph.newRow().beInvisible().setPadding({between: {x: 3}});
+    var privacyRow = avocado.table.newRowMorph().beInvisible().applyStyle({padding: {between: {x: 3}}});
     var privacyLabel = TextMorph.createLabel("Private: ");
     var privacyCheckbox = new avocado.CheckBoxMorph();
-    privacyRow.setCells([privacyLabel, privacyCheckbox]);
+    privacyRow.layout().setCells([privacyLabel, privacyCheckbox]);
     privacyCheckbox.notifier.addObserver(function(a, b, c) {
       console.log("Clicked the checkbox: " + a + ", " + b + ", " + c);
     });
     */
     
-    m.setCells([headerRow]);
+    m.layout().setCells([headerRow]);
 
     this.module().whenChangedNotify(m.refreshContentIfOnScreenOfMeAndSubmorphs.bind(m));
     m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});
 
-  add.creator('defaultMorphStyle', Object.create(avocado.TableMorph.boxStyle), {category: ['user interface']});
+  add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
 
 });
 

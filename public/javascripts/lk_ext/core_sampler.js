@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_ext/core_sampler', function(requires) {
 
-requires('lk_ext/rows_and_columns');
+requires('general_ui/table_layout');
 
 }, function(thisModule) {
 
@@ -14,11 +14,11 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.CoreSamplerMorph, function(add) {
 
-  add.data('superclass', avocado.TableMorph);
+  add.data('superclass', Morph);
 
   add.data('type', 'avocado.CoreSamplerMorph');
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -28,10 +28,10 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
   add.data('constructor', avocado.CoreSamplerMorph);
 
   add.method('initialize', function ($super) {
-    $super();
-    this.setFill(avocado.ui.defaultFillWithColor(Color.gray.darker()));
-    this.setPadding(10);
-    this.closeDnD();
+    $super(lively.scene.Rectangle.createWithIrrelevantExtent());
+    
+    this.useTableLayout(avocado.table.contents.columnPrototype);
+    this.applyStyle(this.defaultStyle);
 
     var crosshairCenter = pt(-40,-40);
     var radius = 10;
@@ -62,7 +62,7 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
     this.startPeriodicallyUpdating();
   }, {category: ['creating']});
   
-  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
+  add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('refreshContent', function () {
     var w = this.world();
@@ -77,22 +77,22 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
         var morphSummaries = [];
         w.eachMorphAt(p, function(m) {
           if (! this._crosshairMorphs.include(m)) {
-            var summary = avocado.TableMorph.createSpaceFillingRow([TextMorph.createLabel(reflect(m).name())]).enableEvents();
+            var summary = avocado.table.createSpaceFillingRowMorph([TextMorph.createLabel(reflect(m).name())]).enableEvents();
             summary.grabsShouldFallThrough = true;
             summary.contextMenu = m.morphMenu.bind(m);
             morphSummaries.push(summary);
           }
         }.bind(this));
         if (morphSummaries.size() > 0) {
-          this.setCells(morphSummaries);
+          this.layout().setCells(morphSummaries);
         } else {
-          this.setCells([this._placeholderForWhenEmpty]);
+          this.layout().setCells([this._placeholderForWhenEmpty]);
         }
       } else {
-        this.setCells([this._placeholderForWhenEmpty]);
+        this.layout().setCells([this._placeholderForWhenEmpty]);
       }
     } else {
-      this.setCells([this._placeholderForWhenEmpty]);
+      this.layout().setCells([this._placeholderForWhenEmpty]);
     }
   }, {category: ['updating']});
 
@@ -102,6 +102,17 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
   }, {category: ['drag and drop']});
 
   add.data('suppressHandles', true, {category: ['handles']});
+
+});
+
+
+thisModule.addSlots(avocado.CoreSamplerMorph.prototype.defaultStyle, function(add) {
+
+  add.data('openForDragAndDrop', false);
+
+  add.data('padding', 10);
+
+  add.data('fill', lively.paint.defaultFillWithColor(Color.gray.darker()));
 
 });
 

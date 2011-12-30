@@ -22,11 +22,11 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
 thisModule.addSlots(avocado.mirror.Morph, function(add) {
 
-  add.data('superclass', avocado.TableMorph);
+  add.data('superclass', Morph);
 
   add.data('type', 'avocado.mirror.Morph');
 
-  add.creator('prototype', Object.create(avocado.TableMorph.prototype));
+  add.creator('prototype', Object.create(Morph.prototype));
 
 });
 
@@ -36,7 +36,8 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.data('constructor', avocado.mirror.Morph);
 
   add.method('initialize', function ($super, m) {
-    $super();
+    $super(lively.scene.Rectangle.createWithIrrelevantExtent());
+    this.useTableLayout(avocado.table.contents.columnPrototype);
     this._mirror = m;
     this._model = m;
 
@@ -69,8 +70,6 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     this.startPeriodicallyUpdating();
   }, {category: ['creating']});
   
-  add.data('_tableContent', avocado.tableContents.columnPrototype, {category: ['layout']});
-
   add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
 
   add.method('toString', function () {
@@ -126,7 +125,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       var descInHeader = this.shouldUseZooming() ? null : this._descMorph;
       
       var headerRowContents = [this.shouldUseZooming() ? Morph.createSpacer() : null, this.expander(), this._nameMorph, descInHeader, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact();
-      this._headerRow = avocado.TableMorph.createSpaceFillingRow(function() { return headerRowContents; }, this.defaultStyle.headerRowPadding);
+      this._headerRow = avocado.table.createSpaceFillingRowMorph(function() { return headerRowContents; }, this.defaultStyle.headerRowPadding);
       this._headerRow.refreshContentOfMeAndSubmorphs();
     }
     return this._headerRow;
@@ -138,7 +137,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     }
     
     if (! this._potentialContentMorphs) {
-      this._potentialContentMorphs = avocado.tableContents.createWithColumns([this._potentialRows]);
+      this._potentialContentMorphs = avocado.table.contents.createWithColumns([this._potentialRows]);
     }
     
     return this._potentialContentMorphs;
@@ -200,7 +199,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
   add.method('createRow', function (m) {
     var content = this.shouldUseZooming() ? [Morph.createSpacer(), m, Morph.createSpacer()] : [m, Morph.createSpacer()];
-    var r = avocado.TableMorph.createSpaceFillingRow(content, this.defaultStyle.internalPadding);
+    var r = avocado.table.createSpaceFillingRowMorph(content, this.defaultStyle.internalPadding);
     r.wasJustShown = function(evt) { m.wasJustShown(evt); };
     return r;
   }, {category: ['creating']});
@@ -208,16 +207,16 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = avocado.TableMorph.newColumn().beInvisible().applyStyle(this.annotationStyle);
+    m = this._annotationMorph = avocado.table.newColumnMorph().beInvisible().applyStyle(this.annotationStyle);
     if (this.shouldUseZooming()) { m.setScale(0.25); }
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
     this._copyDownParentsLabel = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString')).applyStyle(this.copyDownParentsStyle);
 
     var rows = [];
-    if (this.shouldUseZooming()) { rows.push(avocado.TableMorph.createSpaceFillingRow([TextMorph.createLabel("Comment:"), this.commentMorph()])); }
-    rows.push(avocado.TableMorph.createSpaceFillingRow([TextMorph.createLabel("Copy-down parents:"), this._copyDownParentsLabel]).setScale(this.shouldUseZooming() ? 0.5 : 1.0));
-    m.setCells(rows);
+    if (this.shouldUseZooming()) { rows.push(avocado.table.createSpaceFillingRowMorph([TextMorph.createLabel("Comment:"), this.commentMorph()])); }
+    rows.push(avocado.table.createSpaceFillingRowMorph([TextMorph.createLabel("Copy-down parents:"), this._copyDownParentsLabel]).setScale(this.shouldUseZooming() ? 0.5 : 1.0));
+    m.layout().setCells(rows);
     return m;
   }, {category: ['annotation']});
 
@@ -229,7 +228,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     var parentSlotMorph = this.mirror().hasAccessibleParent() ? this.slotMorphFor(this.mirror().parentSlot()) : null;
     if (parentSlotMorph) { parentSlotMorph.setScale(this.shouldUseZooming() ? 0.5 : 1.0); }
     var content = this.shouldUseZooming() ? [parentSlotMorph, Morph.createSpacer(), annoMorph].compact() : [parentSlotMorph, annoMorph, Morph.createSpacer()].compact();
-    var r = this._annotationRow = avocado.TableMorph.createSpaceFillingRow(content, this.defaultStyle.internalPadding);
+    var r = this._annotationRow = avocado.table.createSpaceFillingRowMorph(content, this.defaultStyle.internalPadding);
     r.wasJustShown = function(evt) { annoMorph.wasJustShown(evt); };
 
     return r;
@@ -311,7 +310,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   
   add.method('evaluatorsPanel', function () {
     if (! this._evaluatorsPanel) {
-      this._evaluatorsPanel = avocado.TableMorph.newColumn().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+      this._evaluatorsPanel = avocado.table.newColumnMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     }
     return this._evaluatorsPanel;
   }, {category: ['creating']});
@@ -335,13 +334,13 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     
     
     var e = new avocado.EvaluatorMorph(this);
-    this.evaluatorsPanel().addCell(e);
+    this.evaluatorsPanel().layout().addCell(e);
     e.wasJustShown(evt);
     return e;
   }, {category: ['evaluators']});
 
   add.method('closeEvaluator', function (evaluatorMorph) {
-    this.evaluatorsPanel().removeCell(evaluatorMorph);
+    this.evaluatorsPanel().layout().removeCell(evaluatorMorph);
   }, {category: ['evaluators']});
 
   add.method('grabResult', function (resultMirMorph, evt) {

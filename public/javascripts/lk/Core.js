@@ -2030,7 +2030,12 @@ Morph.addMethods({
 			if (spec.grabsShouldFallThrough !== undefined) this.grabsShouldFallThrough = spec.grabsShouldFallThrough;
 			if (spec.horizontalLayoutMode !== undefined) this.horizontalLayoutMode = spec.horizontalLayoutMode;
 			if (spec.verticalLayoutMode !== undefined) this.verticalLayoutMode = spec.verticalLayoutMode;
+			if (spec.fillBase !== undefined) this.setFill(lively.paint.defaultFillWithColor(spec.fillBase));
 			if (spec.shouldIgnoreEvents) this.ignoreEvents();
+			
+			// This stuff added by Adam too.
+			if (this._layout)  { this._layout .applyStyle(spec); }
+			if (this._stylist) { this._stylist.applyStyle(this, spec); }
 		}
 		return this;
 	},
@@ -2051,6 +2056,10 @@ Morph.addMethods({
 		spec.horizontalLayoutMode = this.horizontalLayoutMode;
 		spec.verticalLayoutMode = this.verticalLayoutMode;
 		spec.shouldIgnoreEvents = !this.mouseHandler;
+
+    // added by Adam
+		if (this._layout ) { this._layout.adjustStyleSpec(spec);  }
+		if (this._stylist) { this._stylist.adjustStyleSpec(this, spec); }
 		
 		return spec;
 	},
@@ -2114,7 +2123,13 @@ Morph.addMethods({
 
 	reshape: function(partName, newPoint, lastCall) {
 		try {
-			return this.shape.reshape(partName,newPoint,lastCall); 
+			var result = this.shape.reshape(partName,newPoint,lastCall); 
+			
+			// added by Adam
+      this.horizontalLayoutMode = this.verticalLayoutMode = avocado.LayoutModes.Rigid;
+      this.minimumExtentMayHaveChanged();
+      
+			return result;
 		} finally {
 			// FIXME: consider converting polyline to polygon when vertices merge.
 			this.adjustForNewBounds();
@@ -2371,7 +2386,7 @@ Morph.addMethods({
 // Submorph management functions
 Morph.addMethods({ 
 
-    addMorph: function(morph) { return this.addMorphFrontOrBack(morph, true) },
+    addMorph: function(morph, shouldNotForceLayoutRejiggering) { return this.addMorphFrontOrBack(morph, true, shouldNotForceLayoutRejiggering) }, // shouldNotForceLayoutRejiggering added by Adam
 
 	addMorphAt: function(morph, position) {
 		var morph = this.addMorphFrontOrBack(morph, true);
@@ -2383,7 +2398,7 @@ Morph.addMethods({
 
     addMorphBack: function(morph) { return this.addMorphFrontOrBack(morph, false) },
 
-	addMorphFrontOrBack: function(m, isFront) {
+	addMorphFrontOrBack: function(m, isFront, shouldNotForceLayoutRejiggering) { // shouldNotForceLayoutRejiggering added by Adam
 		console.assert(m instanceof Morph, "not an instance");
 		if (m.owner) {
 			var tfm = m.transformForNewOwner(this);
@@ -2398,6 +2413,7 @@ Morph.addMethods({
 		m.changed();
 		m.layoutChanged();
 		this.layoutChanged();
+    if (!shouldNotForceLayoutRejiggering) { this.forceLayoutRejiggeringIfNecessaryAfter('addMorph', m); } // added by Adam
 		return m;
 	},
 	
@@ -2454,7 +2470,7 @@ Morph.addMethods({
 		return m;
 	},
 	
-	removeMorph: function(m) {// FIXME? replaceMorph() with remove as a special case
+	removeMorph: function(m, shouldNotForceLayoutRejiggering) {// FIXME? replaceMorph() with remove as a special case   // shouldNotForceLayoutRejiggering added by Adam
 
 		var index = this.submorphs.indexOf(m);
 		if (index < 0) {
@@ -2474,6 +2490,7 @@ Morph.addMethods({
 		m.setHasKeyboardFocus(false);
 
 		this.layoutManager.removeMorph(this, m);
+    if (!shouldNotForceLayoutRejiggering) { this.forceLayoutRejiggeringIfNecessaryAfter('removeMorph', m); } // added by Adam
 		return m;
     },
 
@@ -3035,26 +3052,46 @@ Morph.addMethods({
 		return this.mouseHandler.handlesMouseDown(); 
 	},
 
+  // aaa hack added by Adam, this'll be overwritten later when the Avocado code is loaded
+  runAvocadoEventHandler: function (handlerMethodName, evt) {
+  },
+  
 	onMouseDown: function(evt) { 
 		if (UserAgent.isTouch && this.checkForDoubleClick(evt)) { return true; } // Added by Adam
 		this.hideHelp();
 		if (this.shouldAllowSelecting()) { this.makeSelection(evt); } // Added by Adam
+    return this.runAvocadoEventHandler('onMouseDown', evt); // added by Adam
 	}, //default behavior
 
-	onMouseMove: function(evt, hasFocus) { //default behavior
-		if (evt.mouseButtonPressed && this==evt.hand.mouseFocus && this.owner && this.owner.openForDragAndDrop) { 
-			this.moveBy(evt.mousePoint.subPt(evt.priorPoint));
-		} // else this.checkForControlPointNear(evt);
-		if (!evt.mouseButtonPressed && !this.hasHandles()) this.checkForControlPointNear(evt);
+  onMouseMove: function(evt, hasFocus) { //default behavior
+     // why does LK not by default check okToBeGrabbedBy(evt)? -- Adam
+      if (evt.mouseButtonPressed && this==evt.hand.mouseFocus && ((this.owner && this.owner.openForDragAndDrop) || this.okToBeGrabbedBy(evt))) {
+          this.moveBy(evt.mousePoint.subPt(evt.priorPoint));
+      } // else this.checkForControlPointNear(evt);
+      if (!evt.mouseButtonPressed) this.checkForControlPointNear(evt);
+      return this.runAvocadoEventHandler('onMouseMove', evt); // added by Adam
+  },
+
+	onMouseUp: function(evt) {
+    return this.runAvocadoEventHandler('onMouseUp', evt); // added by Adam
+	}, //default behavior
+
+	//onKeyWhatever stuff added by Adam - I guess if the methods aren't there they don't get called, but I want them here so I can call my own event handler
+	onKeyDown: function(evt) {
+    return this.runAvocadoEventHandler('onKeyDown', evt); // added by Adam
 	},
-
-	onMouseUp: function(evt) { }, //default behavior
-
+	onKeyPress: function(evt) {
+    return this.runAvocadoEventHandler('onKeyPress', evt); // added by Adam
+	},
+	onKeyUp: function(evt) {
+    return this.runAvocadoEventHandler('onKeyUp', evt); // added by Adam
+	},
+	
 	considerShowHelp: function(oldEvt) {
 		// if the mouse has not moved reasonably
 		var hand = oldEvt.hand;
 		if (!hand) return; // this is not an active world so it doesn't have a hand
-		else if (hand.getPosition().dist(oldEvt.mousePoint) < 10)
+		else if (oldEvt.mousePoint && hand.getPosition().dist(oldEvt.mousePoint) < 10) // oldEvt.mousePoint existence check added by Adam
 		this.showHelp(oldEvt);
 	},
 
@@ -3074,6 +3111,8 @@ Morph.addMethods({
 					this.showPotentialDrops(ms, evt);
 				}
 			}
+
+      return this.runAvocadoEventHandler('onMouseOver', evt); // added by Adam
 		} catch (ex) {
 			console.log("Exception in onMouseOver for " + this + ": " + ex);
 		}
@@ -3096,6 +3135,8 @@ Morph.addMethods({
 		if (typeof(this.beUnhighlighted) === 'function') {
 			this.hidePotentialDrops();
 		}
+
+    return this.runAvocadoEventHandler('onMouseOut', evt); // added by Adam
 	}, 
 
 	onMouseWheel: function(evt) {

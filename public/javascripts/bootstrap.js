@@ -1125,6 +1125,7 @@ annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__annotati
 
 avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap',       function() {});
 avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_lk',    function() {}); // aaa lk-specific
+avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_three', function() {}); // aaa threejs-specific
 };
 bootstrapTheModuleSystem();
 
@@ -1292,7 +1293,9 @@ thisModule.addSlots(avocado.transporter, function(add) {
   }, {category: ['bootstrapping']});
 
   add.method('doneLoadingAllAvocadoCode', function () {
-    avocado.morphMixins.installAll(); // I think this might be the wrong place for this.
+    avocado.transporter.userInterfaceInitializer.doneLoadingAllAvocadoCode();
+    avocado.morphMixins.installAll();
+    
     avocado.transporter.callWhenAllAvocadoCodeIsLoaded();
     delete avocado.transporter.callWhenAllAvocadoCodeIsLoaded;
   }, {category: ['bootstrapping']});
