@@ -1,9 +1,11 @@
-avocado.transporter.module.create('lk_ext/invisibility', function(requires) {
+avocado.transporter.module.create('general_ui/invisibility', function(requires) {
+
+requires('general_ui/basic_morph_mixins');
 
 }, function(thisModule) {
 
 
-thisModule.addSlots(Morph.prototype, function(add) {
+thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('beInvisible', function () {
     return this.applyStyle(this.invisibleStyle);
@@ -14,7 +16,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(Morph.prototype.invisibleStyle, function(add) {
+thisModule.addSlots(avocado.morphMixins.Morph.invisibleStyle, function(add) {
 
   add.data('padding', 0);
 

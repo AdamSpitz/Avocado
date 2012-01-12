@@ -15,7 +15,7 @@ thisModule.addSlots(avocado.project, function(add) {
     m.typeName = 'project';
     var headerRow = avocado.table.newRowMorph().beInvisible().applyStyle({padding: 3});
     
-    var changeIndicator = TextMorph.createLabel(function() {
+    var changeIndicator = avocado.label.newMorphFor(function() {
       var project = this.ownerWithAModel()._model;
       return project.modificationFlag().hasThisOneOrChildrenChanged() ? ' has changed ' : '';
     });
@@ -27,7 +27,7 @@ thisModule.addSlots(avocado.project, function(add) {
     
     /* Why isn't this working?
     var privacyRow = avocado.table.newRowMorph().beInvisible().applyStyle({padding: {between: {x: 3}}});
-    var privacyLabel = TextMorph.createLabel("Private: ");
+    var privacyLabel = avocado.label.newMorphFor("Private: ");
     var privacyCheckbox = new avocado.CheckBoxMorph();
     privacyRow.layout().setCells([privacyLabel, privacyCheckbox]);
     privacyCheckbox.notifier.addObserver(function(a, b, c) {

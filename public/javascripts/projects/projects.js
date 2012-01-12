@@ -48,7 +48,7 @@ thisModule.addSlots(avocado.project, function(add) {
     
 	  if (this.shouldOnlyShowDeploymentArea()) {
 	    var dm = p.deploymentMorphIfAny();
-	    if (dm) { WorldMorph.current().addMorph(dm); }
+	    if (dm) { avocado.ui.currentWorld().addMorph(dm); }
     }
     
     if (typeof(avocado.justSetCurrentProject) === 'function') {
@@ -128,7 +128,7 @@ thisModule.addSlots(avocado.project, function(add) {
       
       /* aaa - I do want some sort of instructions for the programmer, but I don't want this
        label to appear in the deployed project. -- Adam, June 2011
-      var label = TextMorph.createLabel("Put things in this box to make them appear in the deployed project");
+      var label = avocado.label.newMorphFor("Put things in this box to make them appear in the deployed project");
       label.fitText();
       morph.addMorphCentered(label);
       */
@@ -232,7 +232,7 @@ thisModule.addSlots(avocado.project, function(add) {
   	reflect(currentWorldStateModule).slotAt('morphs').beCreator(); // .setInitializationExpression('[]'); // aaa I don't understand why this was here, it just seems broken
   	var morphsArrayMir = reflect(currentWorldStateModule.morphs);
   	
-    var currentWorldSubmorphs = WorldMorph.current().submorphs;
+    var currentWorldSubmorphs = avocado.ui.currentWorld().submorphs;
     var currentWorldSubmorphsMir = reflect(currentWorldSubmorphs);
     currentWorldSubmorphs.forEach(function(m, i) {
       if (! m.shouldNotBeTransported() && ! m.shouldIgnorePoses()) {
@@ -255,7 +255,7 @@ thisModule.addSlots(avocado.project, function(add) {
   	});
   	
   	currentWorldStateModule.postFileIn = function() {
-  	  var w = WorldMorph.current();
+  	  var w = avocado.ui.currentWorld();
   	  if (! avocado.project.shouldOnlyShowDeploymentArea()) {
     	  this.morphs.forEach(function(m) { w.addMorph(m); });
   	  }

@@ -42,10 +42,10 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   });
 
   add.method('recalculateActualContent', function () {
-    if (typeof(this.potentialContentMorphs) === 'function') {
+    var potentialContentMorphs = this.potentialContentMorphs();
+    if (potentialContentMorphs) {
       var context = this;
       var layoutModesForContentMorphs = this._layoutModesForContentMorphs;
-      var potentialContentMorphs = this.potentialContentMorphs();
       var actualContentMorphs = potentialContentMorphs.selectThenMap(function(morphOrToggler) {
         return !!morphOrToggler.actualMorphToShow(context);
       }, function(morphOrToggler) {
@@ -73,6 +73,14 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this._layoutModesForContentMorphs = layoutModes;
     return this;
   }, {category: ['layout']});
+  
+  add.method('potentialContentMorphs', function () {
+    // children can override, or specify a _potentialContentCreator, or call setPotentialContentMorphs or setPotentialContentMorphsFunction
+    
+    if (this._potentialContentCreator) { return this._potentialContentCreator.potentialContentMorphsForMorph(this); }
+    
+    return null;
+  }, {category: ['potential content']});
 
   add.method('setPotentialContentMorphs', function (content) {
     this.setPotentialContentMorphsFunction(function() { return content; });
@@ -94,11 +102,41 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
       if (window.shouldNotDoAnyPeriodicalMorphUpdating) { pe.stop(); return; }
       this.refreshContentIfOnScreenOfMeAndSubmorphs();
     }.bind(this), frequency || 8);
+    return this;
   });
   
   add.method('isPeriodicallyUpdating', function () {
     return this._updater && this._updater.timer;
   });
+
+  add.method('justChangedContent', function () {
+    // children can override
+    if (this._layout && typeof(this._layout.justChangedContent) === 'function') {
+      this._model.justChangedContent(this);
+    }
+  }, {category: ['updating']});
+  
+  add.method('ensureVisible', function () {
+    this.morphsThatNeedToBeVisibleBeforeICanBeVisible().forEach(function(morph) { morph.ensureVisibleForJustMe(); });
+    this.ensureVisibleForJustMe();
+    this.topmostOwnerBesidesTheWorldAndTheHand().refreshContentIfOnScreenOfMeAndSubmorphs();
+  }, {category: ['updating']});
+
+  add.method('morphsThatNeedToBeVisibleBeforeICanBeVisible', function () {
+    // children can override
+    return [];
+  }, {category: ['updating']});
+
+  add.method('ensureVisibleForJustMe', function () {
+    // children can override
+  }, {category: ['updating']});
+
+  add.method('wasJustShown', function (evt) {
+    // aaa - not sure this really belongs here, used to be on TreeNodeMorph
+    this.ensureVisible();
+    var titleLabel = this.findTitleLabel();
+    if (titleLabel) { titleLabel.wasJustShown(evt); }
+  }, {category: ['events']});
   
 });
 

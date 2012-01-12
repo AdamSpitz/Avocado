@@ -429,8 +429,7 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
         design.addViewForRelationship(container.relationship());
         design.put(function(responseObj) {
           this.updateContainerTypes(function() {
-            avocado.ui.justChanged(this, null, evt);
-            avocado.ui.worldFor(evt).morphFor(this).actualContentsPanel().cleanUp(); // aaa hack, tangles up the model and morph
+            avocado.ui.justChangedContent(this, evt);
           }.bind(this));
         }.bind(this), function(err) {
           console.error("Error setting the DB design: " + err.error + ", reason: " + err.reason);
@@ -788,8 +787,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
     cmdList.addItem(avocado.command.create("add mirror", function(evt, mir) {
       this.addObject(mir.reflectee(), function(responseObj) {
         var ref = responseObj.ref;
-        avocado.ui.justChanged(this, null, evt);
-        avocado.ui.worldFor(evt).morphFor(this).actualContentsPanel().cleanUp(); // aaa hack, tangles up the model and morph
+        avocado.ui.justChangedContent(this, evt);
         console.log("Successfully added " + mir.name() + " to " + this);
       }.bind(this), function(err) {
         throw err; // aaa or display it in a better way

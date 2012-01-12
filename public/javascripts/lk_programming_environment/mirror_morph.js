@@ -17,6 +17,23 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
 
+  add.method('justRenamedCategory', function (oldCat, newCat, isEmpty) {
+    // aaa - I don't think this code could ever have really worked right. When we
+    // rename a category, it's going to break all the subcategories - they *all*
+    // have different names now. What can we do about this?
+    var world = avocado.ui.currentWorld();
+    var oldCatMorph = world.existingMorphFor(oldCat);
+    if (oldCatMorph) {
+      world.forgetAboutExistingMorphFor(oldCat, oldCatMorph);
+    }
+    avocado.ui.justChanged(this, function() {
+      if (!isEmpty) {
+        var newCatMorph = world.morphFor(newCat);
+        if (oldCatMorph) { oldCatMorph.transferUIStateTo(newCatMorph, Event.createFake()); }
+      }
+    });
+  }, {category: ['categories']});
+
 });
 
 
@@ -46,7 +63,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     this._nameMorph = this.createNameLabel();
     this._nameMorph.setEmphasis({style: 'bold'});
     
-    var descLabel = TextMorph.createLabel('');
+    var descLabel = avocado.label.newMorphFor('');
     descLabel.setScale(0.9);
     this._descMorph = avocado.morphHider.create(this, descLabel, null, function() {
       var s = m.shortDescription();
@@ -124,7 +141,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
       var descInHeader = this.shouldUseZooming() ? null : this._descMorph;
       
-      var headerRowContents = [this.shouldUseZooming() ? Morph.createSpacer() : null, this.expander(), this._nameMorph, descInHeader, optionalAKAButtonMorph, optionalCommentButtonMorph, Morph.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact();
+      var headerRowContents = [this.shouldUseZooming() ? avocado.ui.createSpacer() : null, this.expander(), this._nameMorph, descInHeader, optionalAKAButtonMorph, optionalCommentButtonMorph, avocado.ui.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact();
       this._headerRow = avocado.table.createSpaceFillingRowMorph(function() { return headerRowContents; }, this.defaultStyle.headerRowPadding);
       this._headerRow.refreshContentOfMeAndSubmorphs();
     }
@@ -198,7 +215,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.creator('copyDownParentsStyle', {}, {category: ['styles']});
 
   add.method('createRow', function (m) {
-    var content = this.shouldUseZooming() ? [Morph.createSpacer(), m, Morph.createSpacer()] : [m, Morph.createSpacer()];
+    var content = this.shouldUseZooming() ? [avocado.ui.createSpacer(), m, avocado.ui.createSpacer()] : [m, avocado.ui.createSpacer()];
     var r = avocado.table.createSpaceFillingRowMorph(content, this.defaultStyle.internalPadding);
     r.wasJustShown = function(evt) { m.wasJustShown(evt); };
     return r;
@@ -214,8 +231,8 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     this._copyDownParentsLabel = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString')).applyStyle(this.copyDownParentsStyle);
 
     var rows = [];
-    if (this.shouldUseZooming()) { rows.push(avocado.table.createSpaceFillingRowMorph([TextMorph.createLabel("Comment:"), this.commentMorph()])); }
-    rows.push(avocado.table.createSpaceFillingRowMorph([TextMorph.createLabel("Copy-down parents:"), this._copyDownParentsLabel]).setScale(this.shouldUseZooming() ? 0.5 : 1.0));
+    if (this.shouldUseZooming()) { rows.push(avocado.table.createSpaceFillingRowMorph([avocado.label.newMorphFor("Comment:"), this.commentMorph()])); }
+    rows.push(avocado.table.createSpaceFillingRowMorph([avocado.label.newMorphFor("Copy-down parents:"), this._copyDownParentsLabel]).setScale(this.shouldUseZooming() ? 0.5 : 1.0));
     m.layout().setCells(rows);
     return m;
   }, {category: ['annotation']});
@@ -227,7 +244,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     var annoMorph = this.mirror().canHaveAnnotation() ? this.annotationMorph() : null;
     var parentSlotMorph = this.mirror().hasAccessibleParent() ? this.slotMorphFor(this.mirror().parentSlot()) : null;
     if (parentSlotMorph) { parentSlotMorph.setScale(this.shouldUseZooming() ? 0.5 : 1.0); }
-    var content = this.shouldUseZooming() ? [parentSlotMorph, Morph.createSpacer(), annoMorph].compact() : [parentSlotMorph, annoMorph, Morph.createSpacer()].compact();
+    var content = this.shouldUseZooming() ? [parentSlotMorph, avocado.ui.createSpacer(), annoMorph].compact() : [parentSlotMorph, annoMorph, avocado.ui.createSpacer()].compact();
     var r = this._annotationRow = avocado.table.createSpaceFillingRowMorph(content, this.defaultStyle.internalPadding);
     r.wasJustShown = function(evt) { annoMorph.wasJustShown(evt); };
 
@@ -268,19 +285,6 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     return this._expander;
   }, {category: ['expanding']});
 
-  add.method('updateExpandedness', function () {
-    this.refreshContentIfOnScreenOfMeAndSubmorphs();
-  }, {category: ['updating']});
-
-  add.method('expandCategory', function (c) {
-    this.expandCategoryMorph(this.categoryMorphFor(c));
-  }, {category: ['categories']});
-
-  add.method('expandCategoryMorph', function (cm) {
-    cm.expandMeAndAncestors();
-    this.refreshContentIfOnScreenOfMeAndSubmorphs(); /// aaa maybe this isn't necessary?;
-  }, {category: ['categories']});
-
   add.method('slotMorphFor', function (s) {
     return WorldMorph.current().morphFor(s);
   }, {category: ['contents panel']});
@@ -291,21 +295,6 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 
   add.method('categoryMorphFor', function (c) {
     return WorldMorph.current().morphFor(c.ofMirror(this.mirror()));
-  }, {category: ['categories']});
-
-  add.method('justRenamedCategoryMorphFor', function (oldCat, newCat, isEmpty) {
-    // aaa - I don't think this code could ever have really worked right. When we
-    // rename a category, it's going to break all the subcategories - they *all*
-    // have different names now. What can we do about this?
-    var oldCatMorph = this.existingCategoryMorphFor(oldCat);
-    if (oldCatMorph) {
-      WorldMorph.current().forgetAboutExistingMorphFor(oldCat, oldCatMorph);
-      if (!isEmpty) {
-        var newCatMorph = this.categoryMorphFor(newCat);
-        this.refreshContentOfMeAndSubmorphs();
-        oldCatMorph.transferUIStateTo(newCatMorph, Event.createFake());
-      }
-    }
   }, {category: ['categories']});
   
   add.method('evaluatorsPanel', function () {
@@ -501,7 +490,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       var creatorSlot = myMirror.probableCreatorSlot();
       var mirMorphForCreator = evt.hand.world().morphFor(creatorSlot.holder());
       mirMorphForCreator.showCreatorPath(evt, function() {
-        mirMorphForCreator.expandCategory(creatorSlot.category());
+        avocado.ui.ensureVisible(creatorSlot.category(), evt);
         mirMorphForCreator.slotMorphFor(creatorSlot).showContentsArrow(function() {
           if (callWhenDone) { callWhenDone(); }
         }.bind(this));
@@ -536,7 +525,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype.defaultStyle, function(add) {
 
   add.data('openForDragAndDrop', false);
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.8))], lively.paint.LinearGradient.NorthSouth));
+  add.data('fillBase', new Color(0.8, 0.8, 0.8));
 
   add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}'});
 

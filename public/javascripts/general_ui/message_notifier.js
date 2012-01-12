@@ -12,6 +12,8 @@ thisModule.addSlots(avocado, function(add) {
   add.creator('messageNotifier', {}, {category: ['ui']});
   
   add.creator('label', {}, {category: ['ui']});
+  
+  add.creator('infrequentlyEditedText', Object.create(avocado.label), {category: ['ui']});
 
 });
 
@@ -73,11 +75,51 @@ thisModule.addSlots(avocado.label, function(add) {
   }, {category: ['creating']});
   
   add.method('initialize', function (str) {
-    this._string = str;
+    this._stringSpecifier = str;
   }, {category: ['creating']});
   
   add.method('setEmphasis', function (e) {
     this._emphasis = e;
+    return this;
+  }, {category: ['accessing']});
+  
+  add.method('newMorph', function () {
+    var m = avocado.label.newMorphFor(this._stringSpecifier);
+    if (this._emphasis) { m.setEmphasis(this._emphasis); }
+    return m;
+  }, {category: ['user interface']});
+  
+  add.method('newMorphFor', function(textOrFunctionOrObject, pos, extent) {
+    var initialText = "";
+    var calculateNewText = null;
+    if (textOrFunctionOrObject) {
+      if (typeof textOrFunctionOrObject === 'string') {
+        initialText = textOrFunctionOrObject;
+      } else if (typeof textOrFunctionOrObject === 'function') {
+        calculateNewText = textOrFunctionOrObject;
+      } else if (typeof textOrFunctionOrObject === 'object') {
+        initialText = textOrFunctionOrObject.initialText || "";
+        calculateNewText = textOrFunctionOrObject.calculateNewText;
+      }
+    }
+    
+    var m = this.newMorphWithInitialText(initialText, pos, extent);
+    
+    if (calculateNewText) {
+      m.calculateNewText = calculateNewText;
+      m.refreshText = function() { this.setText(this.calculateNewText()); };
+    }
+    
+    return m;
+  });
+  
+});
+
+
+thisModule.addSlots(avocado.infrequentlyEditedText, function(add) {
+  
+  add.method('setNameOfEditCommand', function (n) {
+    this._nameOfEditCommand = n;
     return this;
   }, {category: ['accessing']});
   

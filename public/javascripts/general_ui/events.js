@@ -12,10 +12,11 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
       if (typeof(this._eventHandler.isEnabled) !== 'function' || this._eventHandler.isEnabled(this, evt)) {
         var handlerMethod = this._eventHandler[handlerMethodName];
         if (typeof(handlerMethod) === 'function') {
-          handlerMethod.call(this._eventHandler, this, evt);
+          return handlerMethod.call(this._eventHandler, this, evt);
         }
       }
     }
+    return false;
   }, {category: ['events']});
 
 });

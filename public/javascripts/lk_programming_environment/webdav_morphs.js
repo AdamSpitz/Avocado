@@ -8,7 +8,7 @@ requires('core/webdav');
 thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(add) {
   
   add.method('newMorph', function () {
-    return avocado.TreeNodeMorph.create(this);
+    return avocado.treeNode.newMorphFor(this);
   }, {category: ['user interface']});
 
 });
@@ -17,7 +17,7 @@ thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(ad
 thisModule.addSlots(FileDirectory.prototype, function(add) {
   
   add.method('newMorph', function () {
-    return avocado.TreeNodeMorph.create(this);
+    return avocado.treeNode.newMorphFor(this);
   }, {category: ['user interface']});
 
 });

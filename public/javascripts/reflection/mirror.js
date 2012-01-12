@@ -286,6 +286,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
     }
   }, {category: ['annotations', 'creator slot']});
 
+  add.method('alreadyContainsSlotWithNameAndContents', function (name, contents) {
+    return this.slotAt(name).contents().equals(contents);
+  }, {category: ['testing']});
+  
   add.method('eachSlot', function (f) {
     this.eachFakeSlot(f);
     this.eachNormalSlot(f);
@@ -870,6 +874,11 @@ thisModule.addSlots(avocado.mirror, function(add) {
     s.setContents(initialContentsMir);
     if (cat) { s.setCategory(cat); }
     if (initialContentsMir.isReflecteeFunction()) { s.beCreator(); }
+
+    // aaa - UI-related, but hopefully not a problem
+    avocado.ui.currentWorld().morphFor(s).wasJustShown();
+    if (cat) { avocado.ui.justChangedContent(cat); }
+    
     return s;
   }, {category: ['user interface', 'slots']});
 

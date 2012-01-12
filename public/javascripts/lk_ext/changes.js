@@ -26,7 +26,7 @@ WorldMorph.addMethods({
 Object.extend(Morph, {
   suppressAllHandlesForever: function() {
     Object.extend(Morph.prototype, {checkForControlPointNear: function(evt) {return false;}});
-  }
+  },
 });
 
 PasteUpMorph.addMethods({
@@ -68,12 +68,17 @@ Morph.addMethods({
       f(this.submorphs[i]);
     }
   },
-  
-  submorphEnumerator: function() {
-    return avocado.enumerator.create(this, 'eachSubmorph');
+
+  topmostOwnerBesidesTheWorldAndTheHand: function () {
+    var m = this;
+    while (m.owner && ! (m.owner instanceof WorldMorph) && ! (m.owner instanceof HandMorph)) {
+      m = m.owner;
+    }
+    return m;
   },
   
   // for compatibility with 3D
+  setTopLeftPosition:    function(p      ) { return this.setTopLeftPositionXY(p.x, p.y); },
   setTopLeftPositionXY:  function(x, y   ) { return this.setPositionXY(x, y); },
   setTopLeftPositionXYZ: function(x, y, z) { return this.setTopLeftPositionXY(x, y); },
   
@@ -81,11 +86,16 @@ Morph.addMethods({
 });
 
 Morph.addMethods({
+  
+  overallScaleTakingUsersPositionIntoAccount: function() {
+    return this.overallScale();
+  },
+  
     aboutToReceiveDrop: function(m) {
       // children can override
       
-      if (this._shouldScaleSubmorphsToFit) {
-  			m.scaleBy(1 / m.transformForNewOwner(this).getScale());
+      if (this._layout && this._layout.aboutToReceiveDrop) {
+        this._layout.aboutToReceiveDrop(m);
       }
     },
     
@@ -110,7 +120,7 @@ Morph.addMethods({
 
     onDoubleClick: function(evt) {
       if (UserAgent.isTouch) {
-        this.showContextMenu(evt);
+        return this.showContextMenu(evt);
       }
     },
 
@@ -135,38 +145,6 @@ Morph.addMethods({
   	shouldAllowSelecting: function() {
   	  return this._shouldAllowSelecting;
   	},
-    
-    eachSubmorphRecursively: function(f) {
-      this.submorphs.forEach(function(m) {
-        f(m);
-        m.eachSubmorphRecursively(f);
-      });
-    },
-    
-    submorphsRecursively: function() {
-      return avocado.enumerator.create(this, 'eachSubmorphRecursively');
-    },
-    
-    ownerChainIncludes: function(m) {
-      var o = this.owner;
-      while (o) {
-        if (o === m) { return true; }
-        o = o.owner;
-      }
-      return false;
-    },
-    
-    eachOwnerRecursively: function(f) {
-      var o = this.owner;
-      while (o) {
-        f(o);
-        o = o.owner;
-      }
-    },
-    
-    ownersRecursively: function() {
-      return avocado.enumerator.create(this, 'eachOwnerRecursively');
-    }
 });
 
 HandMorph.addMethods({
@@ -329,58 +307,11 @@ Morph.addMethods({
         return menu;
     },
     
-    setModel: function(m) {
-      this._model = m;
-      return this;
-    },
-
-  	inspect: function() {
-  		try {
-        if (this._model && typeof(this._model.inspect) === 'function') { return this._model.inspect(); } // added by Adam
-  			return this.toString();
-  		} catch (err) {
-  			return "#<inspect error: " + err + ">";
-  		}
-  	},
-  	
   	debugInspect: function() {
   	  var tos = this.toString();
   	  return "a " + this.constructor.type + (tos ? "(" + tos + ")" : "");
   	},
 
-    toString: function() {
-      return ""; // the default behaviour is annoying - makes morph mirrors very wide
-    },
-
-  	nameUsingContextualInfoIfPossible: function() {
-  		try {
-        if (this._model && this._model.namingScheme) {
-          return this._model.namingScheme.nameInContext(this._model, this);
-        }
-        return this.inspect();
-  		} catch (err) {
-  			return "#<naming error: " + err + ">";
-  		}
-  	},
-  	
-  	enclosingObjectHavingANameInScheme: function(namingScheme) {
-  	  var m = this.owner;
-  	  while (m) {
-  	    if (m._model && m._model.namingScheme) {
-  	      if (m._model.namingScheme === namingScheme) { return m._model; }
-  	    }
-  	    m = m.owner;
-  	  }
-  	  return null;
-  	},
-  	
-  	setFillIfNecessary: function(paint) {
-  	  // aaa - maybe this could just be part of setFill?
-  	  if (paint !== this._fill) {
-  	    this.setFill(paint);
-	    }
-  	  return this;
-  	}
 });
 
 avocado.morphWithAModel = {
@@ -399,34 +330,6 @@ Morph.addMethods({
   setHelpText: function(t) {
     this.getHelpText = function() { return t; };
     return this;
-  }
-});
-
-
-Morph.addMethods({
-  isSameTypeAs: function(m) {
-    return m && m['__proto__'] === this['__proto__'];
-  },
-  
-  ownerSatisfying: function(condition) {
-    if (!this.owner) { return null; }
-    if (condition(this.owner)) { return this.owner; }
-    return this.owner.ownerSatisfying(condition);
-  },
-  
-  ownerWithAModel: function() {
-    if (typeof(this._model) !== 'undefined') { return this; }
-    return this.ownerSatisfying(function(m) { return typeof(m._model) !== 'undefined'; });
-  },
-  
-  outermostOwner: function() {
-    var m = this;
-    while (m) {
-      var o = m.owner;
-      if (!o || o instanceof WorldMorph) { return m; }
-      m = o;
-    }
-    throw new Error("Should never get here.");
   }
 });
 

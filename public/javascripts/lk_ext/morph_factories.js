@@ -56,7 +56,7 @@ thisModule.addSlots(avocado.morphFactories.simpleMorphs, function(add) {
   this.world().showMessage("Inspect the button and edit its 'run' method.");
 }).closeDnD();
 
-    var container = new avocado.ContainerMorph();
+    var container = avocado.container.newContainerMorph();
 
     var dbMorph = new avocado.db.Morph(null);
 

@@ -35,7 +35,7 @@ thisModule.addSlots(avocado.table, function(add) {
     } else {
       // default to left-justifying the contents
       if (content.all(function(c) {return direction.layoutModeOf(c) !== avocado.LayoutModes.SpaceFill;})) {
-        content = content.concat([Morph.createSpacer()]);
+        content = content.concat([avocado.ui.createSpacer()]);
       }
       m.replaceContentWith(avocado.table.contents.create([content], direction.sideways));
     }
@@ -194,8 +194,8 @@ thisModule.addSlots(avocado.table.layout, function(add) {
     return ! morph.shouldNotBePartOfRowOrColumn;
   }, {category: ['layout']});
 
-  add.method('isMinimumExtentDependentOnMinimumExtentOfSubmorphs', function () {
-    return true;
+  add.method('possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged', function () {
+    return this._tableMorph.minimumExtentMayHaveChanged();
   }, {category: ['layout']});
 
   add.method('minimumExtent', function () {
@@ -326,8 +326,10 @@ thisModule.addSlots(avocado.table.layout, function(add) {
 
       var extraSpaceUsage = this.decideWhatToDoWithExtraSpace(availableSpaceToUse);
       var actualCoordsAndSizes = this.calculateActualCoordinatesAndSizes(extraSpaceUsage);
-      this.setMorphPositionsAndSizes(actualCoordsAndSizes);
+      
+      // aaa - Just reversed these two lines, because in 3D-land setMorphPositionsAndSizes needs to have the extent set already. Will that cause grief?
       this._tableMorph.setExtentIfChanged(availableSpaceToUse);
+      this.setMorphPositionsAndSizes(actualCoordsAndSizes);
 
       this._tableMorph._layoutIsStillValid = true;
     }
@@ -411,7 +413,7 @@ thisModule.addSlots(avocado.table.layout, function(add) {
         } else {
           x = s; y = f;
         }
-        m.setTopLeftPositionXYZ(origin.x + x, origin.y + y, origin.z);
+        m.setTopLeftPosition(origin.moveDownAndRightBy(x, y));
         if (this.shouldPrintDebugInfo()) { console.log("Added " + m.inspect() + " at " + x + ", " + y); }
       }.bind(this));
     }.bind(this));

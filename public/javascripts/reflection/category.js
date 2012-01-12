@@ -32,6 +32,8 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
   add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
 
+  add.method('holder', function () { return this._mirror; }, {category: ['accessing']});
+
   add.method('category', function () { return this; }, {category: ['accessing']});
 
   add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
@@ -84,6 +86,10 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
     return this.subcategory(name);
   }, {category: ['related categories']});
 
+  add.method('ownerObject', function () {
+    return this.isRoot() ? null : this.supercategory();
+  }, {category: ['related categories']});
+
   add.method('ofMirror', function (mir) {
     if (mir.equals(this._mirror)) { return this; }
     return avocado.category.ofAParticularMirror.create(mir, this.parts());
@@ -106,10 +112,15 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['accessing']});
 
   add.method('setLastPart', function (newName) {
-    if (this.isRoot()) { throw "Cannot rename the root category"; }
-    this._parts = this._parts.clone();
-    this._parts[this._parts.length - 1] = newName;
+    return this.rename(newName);
   }, {category: ['accessing']});
+
+  add.method('addSubcategory', function () {
+    var c = this.subcategory("");
+    this.mirror().annotationForWriting().getCategoryCache(c.parts()); // this should make sure the category "exists"
+    avocado.ui.currentWorld().morphFor(c).wasJustShown();
+    return c;
+  }, {category: ['categories']});
 
   add.method('isImmediateSubcategoryOf', function (c) {
     if (this.parts().length !== c.parts().length + 1) { return false; }
@@ -143,8 +154,10 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.method('possiblyStaleNormalSlotsInMeAndSubcategories', function () {
     return this.mirror().possiblyStaleSlotsNestedSomewhereUnderCategory(this);
   }, {category: ['accessing']});
-
+  
   add.method('rename', function (newName) {
+    if (this.isRoot()) { throw "Cannot rename the root category"; }
+    
     var oldCat = this.copy();
     var oldCatPrefixParts = oldCat.parts().map(function(p) {return p;});
     var slotCount = 0;
@@ -164,8 +177,14 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
       //console.log("Changing the category of " + s.name() + " from " + oldCat + " to " + newCat);
       s.setCategory(newCat);
     }.bind(this));
-    this.setLastPart(newName);
-    return {oldCat: oldCat, newCat: this, numberOfRenamedSlots: slotCount};
+
+    this._parts = this._parts.clone();
+    this._parts[this._parts.length - 1] = newName;
+
+    this.mirror().annotationForWriting().getCategoryCache(  this.parts()); // this should make sure the new category "exists"
+    this.mirror().annotationForWriting().getCategoryCache(oldCat.parts()).removeMe();
+    this.mirror().justRenamedCategory(oldCat, this, slotCount === 0);
+    return this;
   }, {category: ['renaming']});
 
   add.method('getModuleAssignedToMeImplicitly', function () {
@@ -211,13 +230,23 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
     ]);
   }, {category: ['iterating']});
 
-  add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
+  add.method('canBeAddedToCategory', function (cat) {
+    if (window.isInCodeOrganizingMode) {
+      return this.possiblyStaleNormalSlotsInMeAndSubcategories().all(function(s) { return s.canBeAddedToCategory(cat); });
+    } else {
+      return true;
+    }
+  }, {category: ['testing']});
 
   add.method('removeSlots', function () {
     this.possiblyStaleNormalSlotsInMeAndSubcategories().each(function(slot) {
       slot.remove();
     });
   }, {category: ['removing']});
+
+  add.method('copyToNewHolder', function () {
+    return this.copyInto(reflect({}).rootCategory())
+  }, {category: ['copying']});
 
   add.method('copyInto', function (target) {
     var targetSubcat = this.isRoot() ? target : target.subcategory(this.lastPart());
@@ -233,16 +262,29 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
     return target;
   }, {category: ['copying']});
 
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
+    var addCommands = [];
+    if (this.mirror().canHaveSlots()) {
+      if (! window.isInCodeOrganizingMode) {
+        addCommands.push(avocado.command.create("function",  function(evt) { this.automaticallyChooseDefaultNameAndAddNewSlot(reflect(function() {})); }, this));
+        addCommands.push(avocado.command.create("attribute", function(evt) { this.automaticallyChooseDefaultNameAndAddNewSlot(reflect(null         )); }, this));
+      }
+      addCommands.push(avocado.command.create("category", function(evt) { this.addSubcategory(evt); }, this));
+      cmdList.addItem(["add...", addCommands]);
+    }
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
+
   add.method('dragAndDropCommands', function () {
     var cmdList = avocado.command.list.create(this);
+    var thisCategory = this; // aaa - need to make the argSpecs use the context when calling the _acceptanceFunction
     cmdList.addItem(avocado.command.create("add slot or category", function(evt, slotOrCat) {
-      if (! this.equals(slotOrCat.category())) {
-        return slotOrCat.copyInto(this);
-      } else {
-        return slotOrCat;
-      }
+      var newSlotOrCat = this.equals(slotOrCat.category()) ? slotOrCat : slotOrCat.copyInto(this);
+      avocado.ui.ensureVisible(newSlotOrCat, evt);
+      return newSlotOrCat;
     }).setArgumentSpecs([avocado.command.argumentSpec.create('slotOrCat').onlyAccepts(function(o) {
-      return o && typeof(o.canBeAddedToCategory) === 'function' && o.canBeAddedToCategory();
+      return o && typeof(o.canBeAddedToCategory) === 'function' && o.canBeAddedToCategory(thisCategory);
     })]));
     return cmdList;
   }, {category: ['user interface', 'drag and drop']});

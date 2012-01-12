@@ -8,15 +8,14 @@ thisModule.addSlots(Function.prototype, function(add) {
   add.method('memoize', function () {
     // aaa - this isn't really a full memoize, it's just for functions that take no arguments
     var originalFunction = this;
-    var result;
-    var hasRun = false;
-    return function() {
-      if (! hasRun) {
-        hasRun = true;
-        result = originalFunction();
+    var memoizingFunction = function() {
+      if (! memoizingFunction.hasRun) {
+        memoizingFunction.hasRun = true;
+        memoizingFunction.result = originalFunction();
       }
-      return result;
+      return memoizingFunction.result;
     };
+    return memoizingFunction;
   }, {category: ['avocado']});
 
 });

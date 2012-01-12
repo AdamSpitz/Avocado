@@ -498,7 +498,7 @@ thisModule.addSlots(String, function(add) {
 thisModule.addSlots(String.prompter, function(add) {
 
   add.method('prompt', function (caption, context, evt, callback) {
-    WorldMorph.current().prompt(caption, function(s) {
+    avocado.ui.currentWorld().prompt(caption, function(s) {
       if (s) {
         callback(s);
       }

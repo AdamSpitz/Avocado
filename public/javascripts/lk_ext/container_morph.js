@@ -1,46 +1,35 @@
 avocado.transporter.module.create('lk_ext/container_morph', function(requires) {
 
-requires('lk_ext/tree_morph');
+requires('lk_ext/tree_node_morph');
 
 }, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
-
-  add.method('ContainerMorph', function ContainerMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
-
-});
-
-
-thisModule.addSlots(avocado.ContainerMorph, function(add) {
-
-  add.data('superclass', avocado.TreeNodeMorph);
-
-  add.data('type', 'avocado.ContainerMorph');
-
-  add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
+  
+  add.creator('container', {}, {category: ['user interface']});
 
 });
 
 
-thisModule.addSlots(avocado.ContainerMorph.prototype, function(add) {
-
-  add.data('constructor', avocado.ContainerMorph);
-
-  add.method('initialize', function ($super) {
-    $super(Object.newChildOf(this.modelUsingWhicheverMorphsHappenToBeThere, this));
-    
-    reflect(this).slotAt('_model').beCreator();
-  }, {category: ['creating']});
+thisModule.addSlots(avocado.container, function(add) {
   
   add.creator('modelUsingWhicheverMorphsHappenToBeThere', {});
 
-  add.creator('style', {}, {category: ['styles']});
+  add.creator('defaultStyle', {}, {category: ['styles']});
   
+  add.method('newContainerMorph', function () {
+    var model = Object.newChildOf(this.modelUsingWhicheverMorphsHappenToBeThere);
+    var morph = avocado.treeNode.newMorphFor(model);
+    model._morph = morph;
+    reflect(morph).slotAt('_model').beCreator();
+    return morph;
+  });
+
 });
 
 
-thisModule.addSlots(avocado.ContainerMorph.prototype.modelUsingWhicheverMorphsHappenToBeThere, function(add) {
+thisModule.addSlots(avocado.container.modelUsingWhicheverMorphsHappenToBeThere, function(add) {
   
   add.method('initialize', function (morph) {
     this._morph = morph;
@@ -51,7 +40,13 @@ thisModule.addSlots(avocado.ContainerMorph.prototype.modelUsingWhicheverMorphsHa
   add.method('toString', function () { return "morphs of " + this._morph; });
   
   add.method('immediateContents', function () {
-    return this._morph.actualContentsPanel().submorphs.map(function(m) { return typeof(m._model) !== 'undefined' ? m._model : { newMorph: function() { return m; }}; });
+    var models = [];
+    if (this._morph._contentsPanel) {
+      this._morph._contentsPanel.eachSubmorph(function(m) {
+        models.push(typeof(m._model) !== 'undefined' ? m._model : { newMorph: function() { return m; }});
+      });
+    }
+    return models;
   }, {category: ['accessing']});
   
   add.method('titleAccessors', function () {
@@ -63,9 +58,9 @@ thisModule.addSlots(avocado.ContainerMorph.prototype.modelUsingWhicheverMorphsHa
 });
 
 
-thisModule.addSlots(avocado.ContainerMorph.prototype.style, function(add) {
+thisModule.addSlots(avocado.container.defaultStyle, function(add) {
   
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth));
+  add.data('fillBase', new Color(1, 0.8, 0.5));
   
   add.data('openForDragAndDrop', false);
   

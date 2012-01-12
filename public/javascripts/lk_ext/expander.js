@@ -30,7 +30,8 @@ thisModule.addSlots(avocado.ExpanderMorph.prototype, function(add) {
     $super(pt(0, 0).extent(pt(s, s))); // aaa - should fix ButtonMorph so that its initial shape doesn't have to be a rectangle
     var model = avocado.booleanHolder.containing(false);
     this.connectModel({model: model, getValue: "isChecked", setValue: "setChecked"});
-    if (expandee) { model.notifier.addObserver(function() {this.updateExpandedness();}.bind(expandee)); }
+    this._expandee = expandee;
+    model.notifier.addObserver(function() {if (this._expandee && this._expandee.world()) { this._expandee.refreshContentOfMeAndSubmorphs(); }}.bind(this));
     return this;
   });
 

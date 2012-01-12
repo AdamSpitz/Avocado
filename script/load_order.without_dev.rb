@@ -1,4 +1,4 @@
-# This code produced from bootstrap.js; search for shouldPrintLoadOrder.
+# This code was produced by calling avocado.transporter.printLoadOrder()
 
 newModule('bootstrap');
 newModule('bootstrap_lk');
@@ -58,7 +58,7 @@ newModule('lk_ext/layout');
 newModule('lk_ext/combo_box');
 newModule('lk_ext/collection_morph');
 externalScript('lk_ext/expander');
-newModule('lk_ext/tree_morph');
+newModule('lk_ext/tree_node_morph');
 externalScript('lk_ext/expander');
 newModule('lk_ext/message_notifier');
 newModule('general_ui/one_morph_per_object');
@@ -83,9 +83,9 @@ newModule('reflection/category');
 newModule('reflection/organization');
 newModule('reflection/reflection');
 newModule('transporter/transporter');
-newModule('lk_ext/morph_hider');
+newModule('general_ui/morph_hider');
 newModule('lk_ext/toggler');
-newModule('lk_ext/scaling');
+newModule('general_ui/scaling');
 newModule('core/poses');
 newModule('lk_ext/poses');
 newModule('core/quickhull');

@@ -1875,6 +1875,11 @@ Object.subclass("Point", {
 		acc.y = mx.b * this.x + mx.d * this.y ;
 		return acc;
 	},
+	
+	// added by Adam for compatibility with other coordinate systems where y goes up instead of down
+  moveDownAndRightBy: function (x, y) {
+    return this.addXY(x, y);
+  },
 
 	// Polar coordinates (theta=0 is East on screen, and increases in CCW direction
 	r: function() { return this.dist(pt(0,0)); },

@@ -12,7 +12,6 @@ requires('lk_programming_environment/vocabulary_morph');
 requires('lk_programming_environment/process_morph');
 requires('lk_programming_environment/evaluator_morph');
 requires('lk_programming_environment/searching');
-requires('lk_programming_environment/test_case_morph');
 requires('lk_programming_environment/db_morph');
 requires('lk_programming_environment/project_morph');
 requires('lk_programming_environment/webdav_morphs');

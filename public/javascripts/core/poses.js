@@ -49,6 +49,25 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this.toString();
   }, {category: ['printing']});
 
+  add.method('putInPosition', function (container, poser, position, origin) {
+    if (this._shouldBeUnobtrusive) {
+      var poserOrPlaceholder = poser;
+      if (poser.getOwner() !== container && poser.world()) { // aaa what's going on here?
+        poserOrPlaceholder = container.placeholderForMorph(poser);
+      }
+      var positionFromOrigin = origin.moveDownAndRightBy(position.x, position.y);
+      poserOrPlaceholder.setTopLeftPosition(positionFromOrigin);
+      container.addMorph(poserOrPlaceholder);
+    } else {
+      if (! poser.world()) {
+        // aaa - Not sure at all that this is a good idea. But it might be.
+        poser.setScale(1 / container.world().getScale());
+      }
+      
+      poser.ensureIsInWorld(container, position, true, true, true);
+    }
+  }, {category: ['posing']});
+    
   add.method('recreateInContainer', function (container, startingPos) {
     var originalScale = container.getScale();
     //var originalSpace = container.getExtent().scaleBy(originalScale);
@@ -56,63 +75,54 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     
     this._bounds = (startingPos || pt(0, 0)).extent(pt(0, 0));
     
+    var elements = [];
     this.eachElement(function(e) {
+      elements.push(e);
+      
       e.poser.isPartOfCurrentPose = true;
       // do bad things happen if I make the uiState thing happen before moving the poser?
       if (e.uiState) { e.poser.assumeUIState(e.uiState); }
-      
-      if (this._shouldBeUnobtrusive) {
-        var poserOrPlaceholder = e.poser;
-        if (e.poser.owner !== container && e.poser.world()) { // aaa what's going on here?
-          poserOrPlaceholder = container.placeholderForMorph(e.poser);
-        }
-        container.addMorphAt(poserOrPlaceholder, e.position);
-      } else {
-        
-        if (! e.poser.world()) {
-          // aaa - Not sure at all that this is a good idea. But it might be.
-          e.poser.setScale(1 / container.world().getScale());
-        }
-        
-        e.poser.ensureIsInWorld(container, e.position, true, true, true);
-      }
       
       // Keep track of how much space the pose is taking up, so that the pose can answer getExtent(). -- Adam, June 2011
       var poserExtent = e.poser.getExtent().scaleBy(e.poser.getScale());
       var poserBounds = e.position.extent(poserExtent);
       this._bounds = this._bounds.union(poserBounds);
-      if (this._debugMode) {
-        console.log("Adding poser with bounds: " + poserBounds + " and scale " + e.poser.getScale());
-      }
+      if (this._debugMode) { console.log("Adding poser with bounds: " + poserBounds + " and scale " + e.poser.getScale()); }
     }.bind(this), startingPos);
-  
     
     if (this._shouldScaleToFitWithinCurrentSpace) {
       // aaa - Shoot, this isn't going to work right if this pose is doing the animation (i.e. if _shouldBeUnobtrusive is false), because
       // the container won't know how much space its submorphs will take up until the animation is done.
       
-      // AAAAAAA - I took out this one line and suddenly everything got way faster.
-      // container.refreshContentOfMeAndSubmorphs(); // to make sure the submorphs are laid out right - though, aaa, shouldn't this be done before even calculating the pose positions?
       var currentScale = container.getScale();
-      var currentExternalExtent = container.bounds().extent();
+      var currentBounds = this._bounds;
+      var currentExternalExtent = currentBounds.extent();
+      if (currentExternalExtent.isZero()) { currentExternalExtent = container.getExtent(); }
       var hs = originalSpace.x / currentExternalExtent.x;
       var vs = originalSpace.y / currentExternalExtent.y;
       
-      var newExtent;
+      var newExtent, newScale;
       if (hs < vs) {
-        container.scaleBy(hs);
-        newExtent = currentExternalExtent.withY(currentExternalExtent.x * (originalSpace.y / originalSpace.x)).scaleBy(1 / currentScale);
+        newScale = hs;
+        newExtent = currentExternalExtent.withY(currentExternalExtent.x * (originalSpace.y / originalSpace.x));
       } else {
-        container.scaleBy(vs);
-        newExtent = currentExternalExtent.withX(currentExternalExtent.y * (originalSpace.x / originalSpace.y)).scaleBy(1 / currentScale);
+        newScale = vs;
+        newExtent = currentExternalExtent.withX(currentExternalExtent.y * (originalSpace.x / originalSpace.y));
       }
       
+      container.setScale(newScale);
       container.setExtent(newExtent); // needed because calling .bounds() returns a rectangle that encompasses the stickouts, but they're still stickouts
 
       if (this._debugMode) {
         console.log("Scaling " + container + " to fit within originalSpace: " + originalSpace + ", currentExternalExtent: " + currentExternalExtent + ", newExtent: " + newExtent + ", this._bounds.extent(): " + this._bounds.extent() + ", hs: " + hs + ", vs: " + vs + ", originalScale: " + originalScale + ", currentScale: " + currentScale);
       }
     }
+    
+    var origin = container.getOriginAAAHack(); // necessary because in 3D-land the origin is in the centre, but I don't understand why it's not working in LK-land
+    if (this._extraZHack) { origin = origin.withZ((origin.z || 0) + this._extraZHack); }
+    elements.forEach(function(e) {
+      this.putInPosition(container, e.poser, e.position, origin);
+    }.bind(this));
   }, {category: ['posing']});
   
   add.method('whenDoneScaleToFitWithinCurrentSpace', function () {
@@ -172,7 +182,7 @@ thisModule.addSlots(avocado.poses.tree, function(add) {
   });
 
   add.method('eachElement', function (f, startingPos) {
-    var worldScale = WorldMorph.current().getScale();
+    var worldScale = avocado.ui.currentWorld().getScale();
     var indentation = this.indentation / worldScale;
     var padding     = this.padding     / worldScale;
     var pos = (startingPos || pt(0,0)).addXY(indentation, indentation);
@@ -186,7 +196,7 @@ thisModule.addSlots(avocado.poses.tree, function(add) {
   });
 
   add.method('eachChildElement', function (m, pos, f) {
-    var worldScale = WorldMorph.current().getScale();
+    var worldScale = avocado.ui.currentWorld().getScale();
     var indentation = this.indentation / worldScale;
     var padding     = this.padding     / worldScale;
     this.childrenOf(m).each(function(child) {

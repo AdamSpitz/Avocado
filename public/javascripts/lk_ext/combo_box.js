@@ -21,12 +21,12 @@ thisModule.addSlots(avocado.ComboBoxMorph, function(add) {
   add.method('prompt', function (msg, okButtonText, cancelButtonText, values, defaultValue, onAccept, onCancel) {
     var promptBox = avocado.table.newColumnMorph();
     promptBox.setFill(Color.blue.lighter().lighter());
-    var messageLabel = TextMorph.createLabel(msg);
+    var messageLabel = avocado.label.newMorphFor(msg);
     var     okButton = ButtonMorph.createButton(    okButtonText, function(evt) { comboBox.relinquishKeyboardFocus(Event.createFake()); promptBox.remove(); if (onAccept) { onAccept(comboBox.value()); } });
     var cancelButton = ButtonMorph.createButton(cancelButtonText, function(evt) { comboBox.relinquishKeyboardFocus(Event.createFake()); promptBox.remove(); if (onCancel) { onCancel();                 } });
     var comboBox = new this(values, defaultValue, function() {okButton.simulatePress(Event.createFake());}, function() {cancelButton.simulatePress(Event.createFake());});
     comboBox.horizontalLayoutMode = avocado.LayoutModes.SpaceFill;
-    var buttonRow = avocado.table.createSpaceFillingRowMorph([okButton, Morph.createSpacer(), cancelButton]);
+    var buttonRow = avocado.table.createSpaceFillingRowMorph([okButton, avocado.ui.createSpacer(), cancelButton]);
     promptBox.layout().setCells([messageLabel, comboBox, buttonRow]);
     var world = WorldMorph.current();
     world.addMorphAt(promptBox, promptBox.positionToCenterIn(world));
@@ -87,7 +87,7 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
 
     values.each(function(v) {this._menu.addItem(["" + v, function() {this.setValue(v);}.bind(this)]);}.bind(this));
 
-    this.setColumns([this._textMorph, Morph.createSpacer(), this._button]);
+    this.setColumns([this._textMorph, avocado.ui.createSpacer(), this._button]);
   }, {category: ['creating']});
   
   add.creator('defaultStyle', {}, {category: ['styles']});

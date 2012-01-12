@@ -16,33 +16,6 @@ thisModule.addSlots(lively.paint, function(add) {
 
 
 thisModule.addSlots(TextMorph, function(add) {
-  
-  add.method('createLabel', function(textOrFunctionOrObject, pos, extent) {
-    var initialText = "";
-    var calculateNewText = null;
-    if (textOrFunctionOrObject) {
-      if (typeof textOrFunctionOrObject === 'string') {
-        initialText = textOrFunctionOrObject;
-      } else if (typeof textOrFunctionOrObject === 'function') {
-        calculateNewText = textOrFunctionOrObject;
-      } else if (typeof textOrFunctionOrObject === 'object') {
-        initialText = textOrFunctionOrObject.initialText || "";
-        calculateNewText = textOrFunctionOrObject.calculateNewText;
-      }
-    }
-    
-    var tf = new this((pos || pt(5, 10)).extent(extent || pt(0, 0)), initialText);
-    tf.acceptInput = false;
-    tf.closeDnD();
-    tf.beLabel();
-    
-    if (calculateNewText) {
-      tf.calculateNewText = calculateNewText;
-      tf.refreshText = function() { this.setText(this.calculateNewText()); };
-    }
-    
-    return tf;
-  }, {category: ['shortcuts']});
 
   add.method('createInputBox', function(initialText, extent) {
     var tm = new this(pt(5, 10).extent(extent || pt(50, 20)), initialText || "");
@@ -59,7 +32,7 @@ thisModule.addSlots(ButtonMorph, function(add) {
   add.creator('simpleModelPlug', {}, {category: ['shortcuts']});
 
   add.method('createButton', function (contents, f, padding, labelPos) {
-    var contentsMorph = (typeof contents === 'string' || typeof contents === 'function') ? TextMorph.createLabel(contents) : contents;
+    var contentsMorph = (typeof contents === 'string' || typeof contents === 'function') ? avocado.label.newMorphFor(contents) : contents;
     var p = (padding !== null && padding !== undefined) ? padding : 5;
     if (Config.fatFingers) { p = Math.max(p, 10); }
     var b = new ButtonMorph(pt(0,0).extent(contentsMorph.bounds().extent().addXY(p * 2, p * 2)));
@@ -103,22 +76,6 @@ thisModule.addSlots(DisplayThemes.lively.button, function(add) {
 });
 
 
-thisModule.addSlots(Morph.prototype, function(add) {
-  
-  add.method('createNameLabel', function() {
-    // can't use "bind" because we can't transport closures, so instead use ownerWithAModel
-    return TextMorph.createLabel({
-      initialText: this.nameUsingContextualInfoIfPossible(),
-      calculateNewText: function() {
-        var o = this.ownerWithAModel();
-        return o ? o.nameUsingContextualInfoIfPossible() : "";
-      }
-    });
-  }, {category: ['shortcuts']});
-
-});
-
-
 thisModule.addSlots(Morph, function(add) {
   
   add.method('createEitherOrMorph', function(morphs, functionReturningTheIndexOfTheOneToShow) {
@@ -144,10 +101,6 @@ thisModule.addSlots(Morph, function(add) {
     om.horizontalLayoutMode = (layoutModes || m).horizontalLayoutMode;
     om.verticalLayoutMode   = (layoutModes || m).verticalLayoutMode;
     return om;
-  }, {category: ['shortcuts']});
-
-  add.method('createSpacer', function() {
-    return avocado.table.newRowMorph().beInvisible().beSpaceFilling();
   }, {category: ['shortcuts']});
 
   add.method('wrapToTakeUpConstantWidth', function(width, morph) {

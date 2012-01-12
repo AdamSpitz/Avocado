@@ -7,18 +7,15 @@ requires('lk_ext/change_notification');
 requires('lk_ext/menus');
 requires('lk_ext/commands');
 requires('lk_ext/grabbing');
-requires('general_ui/highlighting');
-requires('lk_ext/invisibility');
 requires('lk_ext/transporting_morphs');
 requires('lk_ext/text_morph_variations');
 requires('lk_ext/shortcuts');
 requires('lk_ext/check_box');
 requires('lk_ext/combo_box');
 requires('lk_ext/toggler');
-requires('lk_ext/scaling');
 requires('lk_ext/layout');
 requires('lk_ext/collection_morph');
-requires('lk_ext/tree_morph');
+requires('lk_ext/tree_node_morph');
 requires('lk_ext/container_morph');
 requires('lk_ext/animation');
 requires('lk_ext/scatter');
@@ -175,6 +172,18 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
       if (callback) { callback(); }
     }, 0);
   });
+
+  add.method('justChangedContent', function (obj, evt) {
+    // aaa - I don't like that this method and justChanged are different.
+    var m = this.worldFor(evt).morphFor(obj);
+    m.refreshContentOfMeAndSubmorphs();
+    m.justChangedContent();
+  });
+
+  add.method('ensureVisible', function (obj, evt) {
+    var m = this.worldFor(evt).morphFor(obj);
+    if (m.ensureVisible) { m.ensureVisible(); }
+  });
   
   add.method('defaultFillWithColor', function (c) {
     return lively.paint.defaultFillWithColor(c);
@@ -182,6 +191,10 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
   
   add.method('newMorph', function (shape) {
     return new Morph(shape || lively.scene.Rectangle.createWithIrrelevantExtent());
+  });
+
+  add.method('createSpacer', function() {
+    return avocado.table.newRowMorph().beInvisible().beSpaceFilling();
   });
   
   add.method('currentWorld', function () {
@@ -194,6 +207,10 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
 
 
 thisModule.addSlots(avocado.livelyKernelUI.shapeFactory, function(add) {
+
+  add.method('newRectangle', function (rectangle) {
+    return new lively.scene.Rectangle(rectangle || new Rectangle(0, 0, 10, 10));
+  });
 
   add.method('newCircle', function (centre, radius) {
     return new lively.scene.Ellipse(centre, radius);

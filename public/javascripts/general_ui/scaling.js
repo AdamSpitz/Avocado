@@ -1,6 +1,7 @@
-avocado.transporter.module.create('lk_ext/scaling', function(requires) {
+avocado.transporter.module.create('general_ui/scaling', function(requires) {
 
-requires('lk_ext/morph_hider');
+requires('general_ui/basic_morph_mixins');
+requires('general_ui/morph_hider');
 
 }, function(thisModule) {
 
@@ -29,7 +30,7 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
     var h = this._spaceHolder;
     if (!h) {
       if (!this._sizeOfSpaceHolder) { return null; }
-      var h = new Morph(new lively.scene.Rectangle(pt(0,0).extent(this._sizeOfSpaceHolder)));
+      var h = avocado.ui.newMorph(avocado.ui.shapeFactory.newRectangle(pt(0,0).extent(this._sizeOfSpaceHolder)));
       h.setFill(null);
       h.ignoreEvents();
       this._spaceHolder = h;
@@ -45,7 +46,7 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
     var b = false;
     var onScreen = this._owner.isOnScreen();
     if (onScreen) {
-      var s = this._owner.overallScale();
+      var s = this._owner.overallScaleTakingUsersPositionIntoAccount();
       var t = this.currentThreshold();
       b = s >= t;
     }
@@ -56,14 +57,14 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
 });
 
 
-thisModule.addSlots(Morph.prototype, function(add) {
+thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('overallScale', function (optionalAncestorToStopAt) {
     var s = 1.0;
     var m = this;
     while (m && m !== optionalAncestorToStopAt) {
       s = s * m.getScale();
-      m = m.owner;
+      m = m.getOwner();
     }
     return s;
   }, {category: ['zooming interface']});

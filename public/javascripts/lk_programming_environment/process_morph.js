@@ -14,7 +14,7 @@ thisModule.addSlots(avocado.process, function(add) {
     m._numberToShow = 0;
     m._hasMore = true;
 
-    var headerRow = avocado.table.createSpaceFillingRowMorph([m.createNameLabel(), Morph.createSpacer(), m.createDismissButton()]);
+    var headerRow = avocado.table.createSpaceFillingRowMorph([m.createNameLabel(), avocado.ui.createSpacer(), m.createDismissButton()]);
     
     var world = WorldMorph.current();
     var contentColumn = avocado.table.newColumnMorph().beInvisible();
@@ -32,9 +32,9 @@ thisModule.addSlots(avocado.process, function(add) {
     
     var moreButton = avocado.command.create('More', function(evt) { m._numberToShow += 10; contentColumn.refreshContent(); }).newMorph();
     var moreOrLessRow = avocado.table.createSpaceFillingRowMorph([
-      Morph.createSpacer(),
+      avocado.ui.createSpacer(),
       Morph.createOptionalMorph(moreButton, function() { return m._hasMore; }),
-      Morph.createSpacer()
+      avocado.ui.createSpacer()
     ]).applyStyle({padding: 3});
     
     m.layout().setCells([headerRow, contentColumn, moreOrLessRow]);

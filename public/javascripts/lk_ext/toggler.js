@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_ext/toggler', function(requires) {
 
-requires('lk_ext/morph_hider');
+requires('general_ui/morph_hider');
 
 }, function(thisModule) {
 

@@ -63,7 +63,7 @@ thisModule.addSlots(Point.prototype, function(add) {
 
   add.method('divideBy', function (n) { return this.scaleBy(1.0 / n); });
 
-  add.method('isZero', function () { return this.x.isZero() && this.y.isZero(); });
+  add.method('isZero', function () { return this.x === 0 && this.y === 0; });
 
   add.method('round', function () { return new Point(Math.round(this.x), Math.round(this.y)); });
 

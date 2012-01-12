@@ -77,7 +77,7 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
         var morphSummaries = [];
         w.eachMorphAt(p, function(m) {
           if (! this._crosshairMorphs.include(m)) {
-            var summary = avocado.table.createSpaceFillingRowMorph([TextMorph.createLabel(reflect(m).name())]).enableEvents();
+            var summary = avocado.table.createSpaceFillingRowMorph([avocado.label.newMorphFor(reflect(m).name())]).enableEvents();
             summary.grabsShouldFallThrough = true;
             summary.contextMenu = m.morphMenu.bind(m);
             morphSummaries.push(summary);

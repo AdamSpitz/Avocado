@@ -19,27 +19,29 @@ thisModule.addSlots(avocado.command, function(add) {
     }
     
     var oldFunctionToRun = modelCommand.functionToRun();
-    morphCommand.setFunction(function() {
-      var rcvr = modelCommand.contextOrDefault();
-      var args = $A(arguments);
-      // first arg is the event
-      var result = modelCommand.functionToRun().apply(rcvr, args.map(function(o, i) { return i === 0 ? o : o._model; }));
-      args.each(function(arg, i) {
-        if (i > 0) {
-          if ((arg.owner instanceof HandMorph || arg.owner instanceof avocado.CarryingHandMorph) && arg._placeholderMorphIJustCameFrom && arg._placeholderMorphIJustCameFrom.world()) {
-            var hand = arg.owner;
-            arg._placeholderMorphIJustCameFrom.putOriginalMorphBack(function() {
-              if (typeof(hand.hideIfEmpty) === 'function') { hand.hideIfEmpty(); }
-            });
-          } else if (arg._shouldDisappearAfterCommandIsFinished) {
-            arg.remove();
-          } else {
-            // I guess just leave it there.
+    if (oldFunctionToRun) {
+      morphCommand.setFunction(function() {
+        var rcvr = modelCommand.contextOrDefault();
+        var args = $A(arguments);
+        // first arg is the event
+        var result = modelCommand.functionToRun().apply(rcvr, args.map(function(o, i) { return i === 0 ? o : o._model; }));
+        args.each(function(arg, i) {
+          if (i > 0) {
+            if ((arg.getOwner() instanceof HandMorph || arg.getOwner() instanceof avocado.CarryingHandMorph) && arg._placeholderMorphIJustCameFrom && arg._placeholderMorphIJustCameFrom.world()) {
+              var hand = arg.getOwner();
+              arg._placeholderMorphIJustCameFrom.putOriginalMorphBack(function() {
+                if (typeof(hand.hideIfEmpty) === 'function') { hand.hideIfEmpty(); }
+              });
+            } else if (arg._shouldDisappearAfterCommandIsFinished) {
+              arg.remove();
+            } else {
+              // I guess just leave it there.
+            }
           }
-        }
+        });
+        return result;
       });
-      return result;
-    });
+    }
 
     return morphCommand;
   }, {category: ['user interface']});
@@ -178,6 +180,12 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     }.bind(this));
   }, {category: ['associated objects']});
 
+  add.method('addModelSpecificUICommandsTo', function (cmdList) {
+    if (this._model && typeof(this._model.addUICommandsTo) === 'function') {
+      this._model.addUICommandsTo(cmdList);
+    }
+  }, {category: ['commands']});
+
   add.method('dragAndDropCommands', function () {
     if (this._model && typeof(this._model.dragAndDropCommands) === 'function') {
       var cmdList = this._model.dragAndDropCommands();
@@ -186,7 +194,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
       }
     }
     return null;
-  }, {category: ['menus']});
+  }, {category: ['commands']});
 
 });
 
@@ -197,16 +205,17 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
     // Disable the reflective stuff in deployed apps. -- Adam
     var isReflectionEnabled = false;
     avocado.ui.currentWorld().applicationList().applications().each(function(app) { if (app.isReflectionEnabled) { isReflectionEnabled = true; }; });
-    if (!isReflectionEnabled) { return; }
+    if (!isReflectionEnabled) { return false; }
 
     var menu = this.morphMenu(evt);
     var world = this.world();
     menu.openIn(world, world.worldPointCorrespondingToScreenPoint(evt.point()), false, (Object.inspect(this) || "").truncate()); // added || "" -- Adam
+    return true;
   }, {category: ['menus']});
 
   add.method('showContextMenu', function(evt) {
     var menu = this.contextMenu(evt);
-    if (!menu) { return; }
+    if (!menu) { return false; }
     
     // should be a clear difference between a morph menu and a context menu
     var baseColor = Color.black;
@@ -222,6 +231,7 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
     
     var world = this.world();
     menu.openIn(world, world.worldPointCorrespondingToScreenPoint(evt.point()), false, (Object.inspect(this) || "").truncate()); // added || "" -- Adam
+    return true;
   }, {category: ['menus']});
 
   add.method('contextMenu', function (evt) {
@@ -231,10 +241,15 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
   }, {category: ['menus']});
 
   add.method('commands', function () {
+    var cmdList;
     if (this._model && typeof(this._model.commands) === 'function') {
-      return this._model.commands().wrapForMorph(this);
+      cmdList = this._model.commands().wrapForMorph(this);
+    } else {
+      cmdList = avocado.command.list.create();
     }
-    return null;
+    this.addTitleEditingCommandsTo(cmdList);
+    this.addModelSpecificUICommandsTo(cmdList);
+    return cmdList;
   }, {category: ['menus']});
   
 });

@@ -13,7 +13,7 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
     var m = avocado.table.newRowMorph().setModel(this).applyStyle(this.defaultMorphStyle);
     m.typeName = 'module';
 
-    var changeIndicator = TextMorph.createLabel(function() {
+    var changeIndicator = avocado.label.newMorphFor(function() {
       var module = this.ownerWithAModel()._model;
       if (module.modificationFlag().hasJustThisOneChanged()) { return ' has changed '; }
       // aaa - maybe it's fine to just say 'has changed' here too?

@@ -1,4 +1,6 @@
-avocado.transporter.module.create('lk_ext/morph_hider', function(requires) {
+avocado.transporter.module.create('general_ui/morph_hider', function(requires) {
+
+requires('general_ui/basic_morph_mixins');
 
 }, function(thisModule) {
 
@@ -50,14 +52,14 @@ thisModule.addSlots(avocado.morphHider, function(add) {
 });
 
 
-thisModule.addSlots(Morph.prototype, function(add) {
+thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('wasJustShown', function (evt) { });
 
 });
 
 
-thisModule.addSlots(TextMorph.prototype, function(add) {
+thisModule.addSlots(avocado.morphMixins.TextMorph, function(add) {
 
   add.method('wasJustShown', function (evt) { this.requestKeyboardFocus(evt.hand); });
 

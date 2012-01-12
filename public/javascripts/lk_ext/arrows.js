@@ -460,14 +460,6 @@ thisModule.addSlots(avocado.ArrowEndpoint.prototype, function(add) {
 
 thisModule.addSlots(Morph.prototype, function(add) {
 
-  add.method('topmostOwnerBesidesTheWorldAndTheHand', function () {
-    var m = this;
-    while (m.owner && ! (m.owner instanceof WorldMorph) && ! (m.owner instanceof HandMorph)) {
-      m = m.owner;
-    }
-    return m;
-  }, {category: ['accessing owner']});
-
   add.method('detachArrowEndpoints', function () {
     var world = this.world();
     if (world) {

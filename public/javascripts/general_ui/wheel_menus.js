@@ -246,11 +246,13 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForMenu, function(add) {
     } else {
       avocado.wheelMenu.close(morph, evt);
     }
+    return true;
   });
 
   add.method('onMouseUp', function (morph, evt) {
     var selectedCommandMorph = morph.submorphThatHandIsOver(evt.hand);
     if (selectedCommandMorph) { selectedCommandMorph.onMouseUp(evt); }
+    return true;
   });
 
   add.method('onMouseMove', function (morph, evt) {
@@ -335,6 +337,7 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForShowingPartialCommandMorph,
         world.grabPartialCommandMorphIfItIsStillThisOne(pcm);
         avocado.wheelMenu.close(menuMorph, evt);
       }, 750);
+      return true;
     } else {
       throw new Error("Why is the world's _partialCommandMorph not the one we expected?");
     }
@@ -406,7 +409,7 @@ thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
   }, {category: ['commands']})
   
   add.method('grabPartialCommandMorphIfItIsStillThisOne', function (pcm, evt) {
-    if (this._partialCommandMorph === pcm && pcm.owner === this) {
+    if (this._partialCommandMorph === pcm && pcm.getOwner() === this) {
       delete this._partialCommandMorph;
       pcm.grabMe(evt);
     }
@@ -424,6 +427,7 @@ thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
   }, {category: ['commands', 'feedback']});
 
   add.method('findArgumentMorphsAndShowLabels', function (argMorphLabels, partialCommand) {
+    var context = partialCommand.command().contextOrDefault();
     argMorphLabels.each(function(m, i) {
       var argHolder = partialCommand.argumentHolders()[i];
       var arg = m._argSpec.findArg(context, evt);

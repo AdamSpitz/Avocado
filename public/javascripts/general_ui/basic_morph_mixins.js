@@ -36,4 +36,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 });
 
 
+thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
+  
+  add.data('isWorld', true, {category: ['testing']});
+  
+});
+
+
 });

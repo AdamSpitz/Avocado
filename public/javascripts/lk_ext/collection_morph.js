@@ -80,7 +80,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
   add.method('cellMorphFor', function (o) {
     var s = "";
     if (o !== null && typeof(o) !== 'undefined') { s = o.toString(); }
-    var m = TextMorph.createLabel(s);
+    var m = avocado.label.newMorphFor(s);
     return m;
   }, {category: ['content']});
 

@@ -70,7 +70,7 @@ thisModule.addSlots(avocado.signpost, function(add) {
   }, {category: ['user interface']});
   
   add.method('addTitleLabelTo', function (morph) {
-    var titleLabel = TextMorph.createLabel(this.description());
+    var titleLabel = avocado.label.newMorphFor(this.description());
     titleLabel.setFontSize(48);
     titleLabel.fitText();
     titleLabel.enableEvents();

@@ -41,7 +41,7 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
     this.redoButton = ButtonMorph.createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
 
-    this._headerRow = avocado.table.createSpaceFillingRowMorph([this._expander, this._titleLabel, Morph.createSpacer(), this.redoButton, this.dismissButton], this.headerRowStyle.padding);
+    this._headerRow = avocado.table.createSpaceFillingRowMorph([this._expander, this._titleLabel, avocado.ui.createSpacer(), this.redoButton, this.dismissButton], this.headerRowStyle.padding);
 
     this.layout().setPotentialCells([this._headerRow, Morph.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
     this.refreshContent();
@@ -58,11 +58,6 @@ thisModule.addSlots(avocado.SearchResultsMorph.prototype, function(add) {
   add.method('inspect', function () {return this.searcher().inspect();});
 
   add.method('expander', function () { return this._expander; }, {category: ['expanding and collapsing']});
-
-  add.method('updateExpandedness', function () {
-    if (! this.world()) { return; }
-    this.refreshContentOfMeAndSubmorphs();
-  });
 
   add.method('redo', function () {
     this._resultsPanel.replaceContentWith(avocado.table.contents.createWithRows([[]]));

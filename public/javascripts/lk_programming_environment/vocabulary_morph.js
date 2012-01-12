@@ -58,7 +58,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
 
     this.dismissButton = this.createDismissButton();
     
-    this._headerRow = avocado.table.createSpaceFillingRowMorph([this._expander, this._titleLabel, Morph.createSpacer(), this._evaluatorButton, this.dismissButton].compact(), this.defaultStyle.headerRowPadding);
+    this._headerRow = avocado.table.createSpaceFillingRowMorph([this._expander, this._titleLabel, avocado.ui.createSpacer(), this._evaluatorButton, this.dismissButton].compact(), this.defaultStyle.headerRowPadding);
     this._headerRow.refreshContentOfMeAndSubmorphs();
     
     this.refreshContent();
@@ -70,10 +70,6 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
 
   add.method('expand', function () {
     this._expander.expand();
-  }, {category: ['updating']});
-
-  add.method('updateExpandedness', function () {
-    this.refreshContentOfMeAndSubmorphs();
   }, {category: ['updating']});
 
   add.method('potentialContentMorphs', function () {

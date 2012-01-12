@@ -110,8 +110,8 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     // can be overridden by morphs that want to trigger a higher-level rejiggering;
     // return true to tell the caller not to bother with the lower-level rejiggering
 
-    if (this._layout && this._layout.isMinimumExtentDependentOnMinimumExtentOfSubmorphs()) {
-      return this.minimumExtentMayHaveChanged();
+    if (this._layout && this._layout.possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged) {
+      return this._layout.possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged();
     }
     
     return false;
@@ -121,8 +121,8 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this._layoutIsStillValid = false;
 
     var doesMyOwnerNeedToKnow = isMinimumExtentKnownToHaveChanged || this.hasMinimumExtentActuallyChanged();
-    var o = this.owner;
-    if (!o || o instanceof WorldMorph || o instanceof HandMorph) {
+    var o = this.getOwner();
+    if (!o || o.isWorld || o.isHand) {
       this.rejiggerTheLayout(pt(100000, 100000));
       return;
     }

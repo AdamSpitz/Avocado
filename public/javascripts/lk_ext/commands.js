@@ -71,11 +71,7 @@ thisModule.addSlots(MenuMorph, function(add) {
 thisModule.addSlots(avocado.command.partial, function(add) {
   
   add.method('newMorph', function () {
-    var m = avocado.TreeNodeMorph.create(this);
-    m._shouldNotHideContentsEvenIfTooSmall = true;
-    m.refreshContentOfMeAndSubmorphs();
-    m.applyStyle({borderRadius: 10});
-    return m;
+    return avocado.treeNode.newMorphFor(this, undefined, 0.1);
   }, {category: ['user interface']});
 
 });

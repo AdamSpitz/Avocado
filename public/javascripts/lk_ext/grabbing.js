@@ -52,6 +52,10 @@ Morph.addMethods({
 	    } else {
         throw new Error("for drag-and-drop, children should implement either dragAndDropCommands or justReceivedDrop");
       }
+      
+      if (this._layout && this._layout.justReceivedDrop) {
+        this._layout.justReceivedDrop(morph, hand);
+      }
     },
 
     morphToGrabOrReceive: function(evt, droppingMorph, checkForDnD) {
@@ -170,9 +174,7 @@ WorldMorph.addMethods({
 
   justReceivedDrop: function (m) {
     if (this.okToReceiveDrop(m)) {
-      if (typeof m.wasJustDroppedOnWorld === 'function') {
-        m.wasJustDroppedOnWorld(this);
-      }
+      m.wasJustDroppedOnWorld(this);
     }
   }
 

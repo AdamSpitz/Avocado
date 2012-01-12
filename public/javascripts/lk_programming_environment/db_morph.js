@@ -23,7 +23,7 @@ thisModule.addSlots(avocado.db, function(add) {
 thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add) {
 
   add.method('newMorph', function () {
-    return avocado.TreeNodeMorph.create(this).refreshContentOfMeAndSubmorphs().applyStyle({fill: new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.5)), new lively.paint.Stop(1, new Color(1, 0.9, 0.75))], lively.paint.LinearGradient.SouthNorth), borderRadius: 10});
+    return avocado.treeNode.newMorphFor(this, {fillBase: new Color(1, 0.8, 0.5), borderRadius: 10});
   }, {category: ['user interface']});
   
 });
@@ -31,11 +31,36 @@ thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add)
 
 thisModule.addSlots(avocado.couch.db.container, function(add) {
 
-  add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
-
   add.method('newMorph', function () {
-    return new this.Morph(this);
+    var m = avocado.treeNode.newMorphFor(this, this.defaultStyle);
+
+    // aaa - this is a hack, but for now I just want a custom copy; in the
+    // long run make this work with the general copying mechanism
+    m.copyAttributesFrom = function (copier, other) {
+      Morph.prototype.copyAttributesFrom.call(this, copier, other);
+
+      // Make a new container object, don't try to copy all the contents yet.
+      this._model = this._model.copyRemoveAll();
+    };
+  
+    m.updateContents = function (callback) {
+      this._model.updateContents(function(contents) {
+        contents.forEach(function(c) { WorldMorph.current().morphFor(c).refreshContentOfMeAndSubmorphs(); }.bind(this));
+        avocado.ui.justChangedContent(this._model, evt);
+        if (callback) { callback(contents); }
+      }.bind(this));
+      return this;
+    };
+  
+    m.storeString = function () {
+      // aaa - hack, in the long run the transporter should be smart enough to handle this
+      return ["WorldMorph.current().morphFor(", this._model.storeString(), ").setBasicMorphProperties(", this.basicMorphPropertiesStoreString(), ").updateContents()"].join("");
+    };
+
+    return m;
   }, {category: ['user interface']});
+
+  add.creator('defaultStyle', {}, {category: ['user interface', 'styles']});
   
 });
 
@@ -93,7 +118,7 @@ thisModule.addSlots(avocado.db.Morph.prototype, function(add) {
   add.method('setDB', function (db) {
     this._model = db;
     if (this._labelMorph) { this._labelMorph.remove(); }
-		this._labelMorph = TextMorph.createLabel(this.labelString()).fitText();
+		this._labelMorph = avocado.label.newMorphFor(this.labelString()).fitText();
 		this.addMorphAt(this._labelMorph, this._labelMorph.getExtent().scaleBy(-0.5));
   }, {category: ['accessing']});
 
@@ -130,59 +155,9 @@ thisModule.addSlots(avocado.db.Morph.prototype.style, function(add) {
 });
 
 
-thisModule.addSlots(avocado.couch.db.container.Morph, function(add) {
+thisModule.addSlots(avocado.couch.db.container.defaultStyle, function(add) {
 
-  add.data('superclass', avocado.TreeNodeMorph);
-
-  add.data('type', 'avocado.couch.db.container.Morph');
-
-  add.creator('prototype', Object.create(avocado.TreeNodeMorph.prototype));
-
-});
-
-
-thisModule.addSlots(avocado.couch.db.container.Morph.prototype, function(add) {
-
-  add.data('constructor', avocado.couch.db.container.Morph);
-
-  add.method('initialize', function ($super, container) {
-    $super(container);
-    this.applyStyle(this.style);
-    this.refreshContentOfMeAndSubmorphs();
-  }, {category: ['creating']});
-
-  add.creator('style', {}, {category: ['styles']});
-  
-  add.method('copyAttributesFrom', function ($super, copier, other) {
-    // aaa - this is kind of a hack, but for now I just want a custom copy; in the
-    // long run make this work with the general copying mechanism
-    $super(copier, other);
-    
-    // Make a new container object, don't try to copy all the contents yet.
-    this._model = this._model.copyRemoveAll();
-  }, {category: ['copying']});
-  
-  add.method('updateContents', function (callback) {
-    this._model.updateContents(function(contents) {
-      contents.forEach(function(c) { WorldMorph.current().morphFor(c).refreshContentOfMeAndSubmorphs(); }.bind(this));
-      this.actualContentsPanel().cleanUp();
-      avocado.ui.justChanged(this._model, null, evt);
-      if (callback) { callback(contents); }
-    }.bind(this));
-    return this;
-  }, {category: ['updating']});
-  
-  add.method('storeString', function () {
-    // aaa - hack, in the long run the transporter should be smart enough to handle this
-    return ["WorldMorph.current().morphFor(", this._model.storeString(), ").setBasicMorphProperties(", this.basicMorphPropertiesStoreString(), ").updateContents()"].join("");
-  }, {category: ['transporting']});
-
-});
-
-
-thisModule.addSlots(avocado.couch.db.container.Morph.prototype.style, function(add) {
-
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.7, 1, 0.6)), new lively.paint.Stop(1, new Color(0.8, 1, 0.8))], lively.paint.LinearGradient.SouthNorth));
+  add.data('fillBase', new Color(0.7, 1, 0.6));
   
   add.data('openForDragAndDrop', false);
   

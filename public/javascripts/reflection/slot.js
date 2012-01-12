@@ -107,7 +107,13 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('doesTypeMatch', function (obj) { return obj && obj.isAvocadoSlot; }, {category: ['testing']});
 
-  add.method('canBeAddedToCategory', function () { return true; }, {category: ['testing']});
+  add.method('canBeAddedToCategory', function (cat) {
+    if (window.isInCodeOrganizingMode) {
+      return cat.mirror().alreadyContainsSlotWithNameAndContents(this.name(), this.contents());
+    } else {
+      return true;
+    }
+  }, {category: ['testing']});
 
   add.method('copyDownParentThatIAmFrom', function () { return null; }, {category: ['copy-down parents']});
 

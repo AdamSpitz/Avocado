@@ -1941,6 +1941,11 @@ Morph.addMethods({
 		return this; // added by Adam
 	},
 
+  // added by Adam
+	setFillBase: function(fillBase) {
+	  return this.setFill(fillBase ? avocado.ui.defaultFillWithColor(fillBase) : null);
+	},
+
 	getFill: function() {
 		return this.shape.getFill();
 	},
@@ -2030,7 +2035,7 @@ Morph.addMethods({
 			if (spec.grabsShouldFallThrough !== undefined) this.grabsShouldFallThrough = spec.grabsShouldFallThrough;
 			if (spec.horizontalLayoutMode !== undefined) this.horizontalLayoutMode = spec.horizontalLayoutMode;
 			if (spec.verticalLayoutMode !== undefined) this.verticalLayoutMode = spec.verticalLayoutMode;
-			if (spec.fillBase !== undefined) this.setFill(lively.paint.defaultFillWithColor(spec.fillBase));
+			if (spec.fillBase !== undefined) this.setFillBase(spec.fillBase);
 			if (spec.shouldIgnoreEvents) this.ignoreEvents();
 			
 			// This stuff added by Adam too.
@@ -5621,6 +5626,8 @@ Morph.subclass("HandMorph", {
         return this;
     },
 
+  isHand: true, // added by Adam
+  
 	id: function() {
 		if (!this.rawNode) {
 			return undefined
