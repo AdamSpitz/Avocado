@@ -467,8 +467,9 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     childMirMorph.expand();
 
     childMirMorph.growFromNothing(evt, function() {
+      childMirMorph.ensureParentSlotIsVisible(evt);
       var parentSlotMorph = childMirMorph.slotMorphFor(child.parentSlot());
-      parentSlotMorph.pushContentsPointerButton();
+      parentSlotMorph.showContentsArrow();
     });
   }, {category: ['creating children']});
 
@@ -479,7 +480,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     // might as well show the arrow from the subclass to the superclass
     subclassMirMorph.expand();
     var superclassSlotMorph = subclassMirMorph.slotMorphFor(subclass.slotAt('superclass'));
-    superclassSlotMorph.pushContentsPointerButton();
+    superclassSlotMorph.showContentsArrow();
   }, {category: ['creating children']});
 
   add.method('showCreatorPath', function (evt, callWhenDone) {

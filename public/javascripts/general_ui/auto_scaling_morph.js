@@ -52,11 +52,18 @@ thisModule.addSlots(avocado.autoScaling.layout, function(add) {
   
   add.method('removeMorphsNotIncludedIn', function (contentMorphs) {
     // aaa - find a more efficient way to do this
+
+    var notIncluded = [];
+    
     this._morph.eachSubmorph(function(m) {
       if (! contentMorphs.include(m)) {
-        this._morph.removeMorph(m);
-        this.invalidateLayout();
+        notIncluded.push(m);
       }
+    });
+    
+    notIncluded.forEach(function(m) {
+      this._morph.removeMorph(m);
+      this.invalidateLayout();
     }.bind(this));
   });
 

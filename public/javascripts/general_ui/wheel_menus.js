@@ -98,7 +98,7 @@ thisModule.addSlots(avocado.wheelMenu, function(add) {
   add.method('openMenu', function (menuMorph, parentMorph, loc, remainOnScreen, captionIfAny) {
 		this.createCommandMorphsIfNecessary(menuMorph);
     parentMorph.addMorphAt(menuMorph, loc.addXY(- menuMorph._layout.outerRadius(), - menuMorph._layout.outerRadius()));
-    menuMorph.takeMouseAndKeyboardFocus(parentMorph.world().firstHand());
+    menuMorph.takeInputFocus(parentMorph.world().firstHand());
     this.waitForABitAndThenBecomeActive(menuMorph);
     this.startOpeningAnimation(menuMorph);
   }, {category: ['user interface', 'opening']});
@@ -120,7 +120,7 @@ thisModule.addSlots(avocado.wheelMenu, function(add) {
   }, {category: ['user interface', 'closing']});
 
   add.method('close', function (menuMorph, evt, callback) {
-    menuMorph.releaseMouseAndKeyboardFocus(evt.hand);
+    menuMorph.releaseInputFocus(evt.hand);
     this.startClosingAnimation(menuMorph, callback);
   }, {category: ['user interface', 'closing']});
 
@@ -256,7 +256,7 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForMenu, function(add) {
   });
 
   add.method('onMouseMove', function (morph, evt) {
-    morph.takeMouseAndKeyboardFocus(evt.hand);
+    morph.takeInputFocus(evt.hand);
     avocado.wheelMenu.highlightAppropriateCommandMorphs(morph, evt);
   });
 

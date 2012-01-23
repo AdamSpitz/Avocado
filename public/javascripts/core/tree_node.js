@@ -32,7 +32,7 @@ thisModule.addSlots(avocado.treeNode, function(add) {
   }, {category: ['accessing']});
 
   add.method('eachOfImmediateContents', function (f) {
-    if (this._immediateContents instanceof Array) {
+    if (typeof(this._immediateContents.forEach) === 'function') {
       this._immediateContents.forEach(f);
     } else {
       f(this._immediateContents);
@@ -74,6 +74,11 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     return this;
   }, {category: ['updating']});
 
+  add.method('commands', function () {
+    // aaa - this might be a bad idea; do I really want the commands to be on the tree node rather than on the contents?
+    return this._immediateContents.commands && this._immediateContents.commands();
+  }, {category: ['user interface', 'commands']});
+  
 });
 
 

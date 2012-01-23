@@ -1,6 +1,5 @@
-avocado.transporter.module.create('lk_programming_environment/module_morph', function(requires) {
+avocado.transporter.module.create('programming_environment/module_morph', function(requires) {
 
-requires('lk_ext/shortcuts');
 requires('general_ui/table_layout');
 requires('transporter/transporter');
 
@@ -51,7 +50,7 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
 
 thisModule.addSlots(avocado.transporter.module.defaultMorphStyle, function(add) {
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.4980392156862745, 0.4980392156862745)), new lively.paint.Stop(1, new Color(0.9529411764705882, 0.7490196078431373, 0.7490196078431373))], lively.paint.LinearGradient.SouthNorth));
+  add.data('fillBase', new Color(0.9, 0.5, 0.5));
 
 });
 

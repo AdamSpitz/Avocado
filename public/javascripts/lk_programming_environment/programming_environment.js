@@ -6,7 +6,6 @@ requires('lk_ext/core_sampler');
 requires('lk_ext/poses');
 requires('lk_ext/tags');
 requires('lk_ext/morph_factories');
-requires('lk_programming_environment/module_morph');
 requires('lk_programming_environment/mirror_morph');
 requires('lk_programming_environment/vocabulary_morph');
 requires('lk_programming_environment/process_morph');

@@ -49,6 +49,11 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this.toString();
   }, {category: ['printing']});
 
+  add.method('beInDebugMode', function () {
+    this._debugMode = true;
+    return this;
+  }, {category: ['debugging']});
+
   add.method('putInPosition', function (container, poser, position, origin) {
     if (this._shouldBeUnobtrusive) {
       var poserOrPlaceholder = poser;
@@ -70,8 +75,8 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     
   add.method('recreateInContainer', function (container, startingPos) {
     var originalScale = container.getScale();
-    //var originalSpace = container.getExtent().scaleBy(originalScale);
-    var originalSpace = container.bounds().extent();
+    var originalSpace = container.getExtent().scaleBy(originalScale);
+    //var originalSpace = container.bounds().extent(); // aaa if I use this line instead of the previous line I get that annoying grows-slightly-each-time problem
     
     this._bounds = (startingPos || pt(0, 0)).extent(pt(0, 0));
     

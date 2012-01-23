@@ -26,6 +26,7 @@ requires('core/dom_stuff');
 requires('core/http');
 requires('core/tree_node');
 requires('core/naming');
+requires('core/typed_collection');
 
 }, function(thisModule) {
 

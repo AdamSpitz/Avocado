@@ -97,12 +97,12 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
     pm.assumePose(pm.listPoseOfMorphsFor(objs, name));
   });
 
-  add.method('showNextTo', function (objToBeNextTo, objToShow, evt) {
+  add.method('showNextTo', function (objToBeNextTo, objToShow, callback, evt) {
     // This is maybe a bit too much abstraction. But let's try it for now. Un-abstract
     // it if this function starts needing a million arguments. -- Adam, Oct. 2010
     var w = this.worldFor(evt);
     var morphToBeNextTo = w.morphFor(objToBeNextTo);
-    w.morphFor(objToShow).ensureIsInWorld(w, morphToBeNextTo.worldPoint(pt(morphToBeNextTo.getExtent().x + 50, 0)), true, true, true);
+    w.morphFor(objToShow).ensureIsInWorld(w, morphToBeNextTo.worldPoint(pt(morphToBeNextTo.getExtent().x + 50, 0)), true, true, true, callback);
   });
 
   add.method('showCentered', function (obj, callback, evt) {
@@ -169,7 +169,7 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
     setTimeout(function() {
       var m = ui.worldFor(evt).existingMorphFor(obj);
       if (m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); }
-      if (callback) { callback(); }
+      if (callback) { callback(m); }
     }, 0);
   });
 

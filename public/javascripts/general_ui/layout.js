@@ -152,6 +152,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   
   add.method('setLayout', function (layout) {
     this._layout = layout;
+    if (this._debugMode) { layout._debugMode = true; }
     return this;
   }, {category: ['layout']});
 

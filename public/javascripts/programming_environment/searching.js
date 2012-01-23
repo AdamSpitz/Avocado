@@ -41,6 +41,12 @@ thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
     return this._searcher.results();
   }, {category: ['accessing']});
 
+  add.method('goAndReturnSortedResults', function () {
+    var results = this.go();
+    var sortCrit = this.sortingCriteriaForSearchResults();
+    return sortCrit ? results.sortBy(sortCrit) : results;
+  }, {category: ['accessing']});
+  
   add.method('sortingCriteriaForSearchResults', function () {
     if (this._searcher.resultsAreSlots()) { // aaa hack
       return function(s) { return s.holder().name().toUpperCase(); };

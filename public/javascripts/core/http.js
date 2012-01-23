@@ -59,6 +59,11 @@ thisModule.addSlots(avocado.http.request, function(add) {
     return this;
   }, {category: ['accessing']});
   
+  add.method('setPostBody', function (str) {
+    this._postBody = str;
+    return this;
+  }, {category: ['accessing']});
+  
   add.method('setHeaders', function (headers) {
     this._headers = headers;
     return this;

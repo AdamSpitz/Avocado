@@ -483,7 +483,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
     newSlot.setAnnotation(slotAnno);
 
     if (isCreator) {newSlot.beCreator();}
-
+    
     return newSlot;
   }, {category: ['accessing']});
 

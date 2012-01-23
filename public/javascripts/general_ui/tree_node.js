@@ -36,9 +36,12 @@ thisModule.addSlots(avocado.treeNode, function(add) {
 
   add.method('createContentsPanelMorphFor', function (model) {
     var contents = model.immediateContents(); // aaa - is this an unnecessary calculation of immediateContents? Is it gonna be slow?
-    if (Object.isArray(contents) || Object.inheritsFrom(avocado.compositeCollection, contents)) { // aaa - hack, I'm just not quite sure yet that I want an array's newMorph to return one of these autoScaling.Morphs or whatever
+    if (Object.isArray(contents) || Object.inheritsFrom(avocado.compositeCollection, contents) || Object.inheritsFrom(avocado.typedCollection, contents)) { // aaa - hack, I'm just not quite sure yet that I want an array's newMorph to return one of these autoScaling.Morphs or whatever
       var shouldUseZooming = typeof(model.shouldContentsPanelUseZooming) === 'function' ? model.shouldContentsPanelUseZooming() : model.shouldContentsPanelUseZooming;
-      return avocado.treeNode.createTreeContentsPanelMorph(model, model.shouldContentsPanelAutoOrganize, pt(150,100), shouldUseZooming);
+      var m = avocado.treeNode.createTreeContentsPanelMorph(model, model.shouldContentsPanelAutoOrganize, pt(150,100), shouldUseZooming);
+      m.setModel(contents);
+      avocado.ui.currentWorld().rememberMorphFor(contents, m);
+      return m;
     } else {
       return avocado.ui.currentWorld().morphFor(contents);
     }
@@ -73,7 +76,12 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     cp.recalculateAndRememberContentMorphsInOrder = function () {
       var world = avocado.ui.currentWorld();
       var models = this.recalculateContentModels();
-      var morphs = models.map(function(c) { return world.morphFor(c); });
+      var morphs;
+      if (models.mapElementsAndType) {
+        morphs = models.mapElementsAndType(function(c) { return world.morphFor(c); }, function(t) { return avocado.types.morph.onModelOfType(t); });
+      } else {
+        morphs = models.map(function(c) { return world.morphFor(c); });
+      }
       this._contentMorphs = morphs.toArray().sortBy(function(m) { return m._model && m._model.sortOrder ? m._model.sortOrder() : ''; });
       return this._contentMorphs;
     };

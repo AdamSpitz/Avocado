@@ -6,6 +6,20 @@ requires('general_ui/table_layout');
 }, function(thisModule) {
 
 
+thisModule.addSlots(avocado.slots, function(add) {
+  
+  add.creator('userInterface', {}, {category: ['user interface'], comment: 'This object seems like a hack, just using it as a place to store UI-related code for slots.'});
+  
+});
+
+
+thisModule.addSlots(avocado.slots.userInterface, function(add) {
+  
+  
+  
+});
+
+
 thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
@@ -29,17 +43,15 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
 
-  add.method('showInSitu', function (inSituButton) {
-    var w = inSituButton.world();
-    var m = w.morphFor(this.holder());
-    m.ensureIsInWorld(w, inSituButton.worldPoint(pt(150,0)), true, true, true, function() {
-      avocado.ui.ensureVisible(this.category());
+  add.method('showInSitu', function (inSituCommand) {
+    avocado.ui.showNextTo(inSituCommand, this.holder(), function() {
+      avocado.ui.ensureVisible(this);
     }.bind(this));
   }, {category: ['user interface', 'slices']});
 
   add.method('createMorphsForSearchResults', function () {
-    var inSituButton = ButtonMorph.createButton("in situ", function() { this.showInSitu(inSituButton); }.bind(this), 2);
-    return [avocado.label.newMorphFor(this.holder().name()), this.newMorph(), inSituButton];
+    var inSituCommand = avocado.command.create("in situ", function() { this.showInSitu(inSituCommand); }.bind(this));
+    return [avocado.label.newMorphFor(this.holder().name()), this.newMorph(), avocado.ui.currentWorld().morphFor(inSituCommand)];
   }, {category: ['user interface', 'slices']});
   
   add.method('copyForGrabbing', function () {
@@ -83,7 +95,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 
     var optionalCommentButtonMorph;
     if (slot.annotationIfAny) {
-      var annotationRow = this.createRow(function() { return this.annotationMorph(); }.bind(this));
+      var annotationRow = this.createRow(function() { return this.createAnnotationMorph(); }.bind(this).memoize());
       if (this.shouldUseZooming()) {
         this._annotationToggler = avocado.scaleBasedMorphHider.create(this, annotationRow, this, 4, pt(50,25)); // aaa made-up space-holder-size number
       } else {
@@ -106,7 +118,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
           contentsMorph.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore();
           return contentsMorph;
         },
-        this.contentsPointerPane.bind(this)
+        this.createContentsPointerPane.bind(this).memoize()
       ], function() {
         return (this.slot().type() && this.slot().type().canCreateInputMorph()) ? 0 : (this.slot().shouldBeShownAsJustSourceCode() ? 1 : (this.slot().shouldBeShownAsContainingItsContents() ? 2 : 3));
       }.bind(this)).applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
@@ -156,37 +168,22 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     }
   }, {category: ['contents']});
 
-  add.method('pushContentsPointerButton', function () {
-    // aaa - why do we have both this and showContentsArrow?
-    if (this._contentsPointerButton) {
-      this._contentsPointerButton.pushMe();
-    }
-  }, {category: ['contents']});
-
   add.method('contentsPointerButton', function () {
     return this._contentsPointerButton || (this._contentsPointerButton = this.constructor.pointer.create(this).newMorph());
   }, {category: ['contents']});
 
-  add.method('contentsPointerPane', function () {
-    if (! this._contentsPointerPane) {
-      this._contentsPointerPane = avocado.table.newRowMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
-      this._contentsPointerPane.layout().setCells([Morph.wrapToTakeUpConstantHeight(10, this.sourcePane()), avocado.ui.createSpacer(), this.contentsPointerButton()]);
-      this._contentsPointerPane.typeName = 'slot contents pointer pane';
-    }
-    return this._contentsPointerPane;
+  add.method('createContentsPointerPane', function () {
+    var m = avocado.table.newRowMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+    m.layout().setCells([Morph.wrapToTakeUpConstantHeight(10, this.sourcePane()), avocado.ui.createSpacer(), this.contentsPointerButton()]);
+    m.typeName = 'slot contents pointer pane';
+    return m;
   }, {category: ['contents']});
 
   add.method('sourceButton', function () {
-    // Let's try making the icon as a polygon morph rather than using the old GIF image.
-    // var sourceIcon = this.createIconForButton("images/icon-method-slot.gif");
     var sourceIcon = Morph.makePolygon([pt(0,0), pt(8,0), pt(8,8), pt(0,8), pt(0,0), pt(0,2), pt(8,2), pt(0,2)], 1, Color.black, null).ignoreEvents();
     
     return this._sourceButton || (this._sourceButton = this._sourceToggler.commandForToggling("code").newMorph(sourceIcon, 1, pt(3,3)));
   }, {category: ['source']});
-
-  add.method('createIconForButton', function (path) {
-    return new ImageMorph(pt(10,10).extentAsRectangle(), (avocado.transporter.avocadoBaseURL || "") + path).beLabel();
-  }, {category: ['creating']});
 
   add.method('createRow', function (getOrCreateContent) {
     // Blecch, functions everywhere. But creating the row is expensive. Find a cleaner way to cache them.
@@ -241,10 +238,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     return sm;
   }, {category: ['source']});
 
-  add.method('annotationMorph', function () {
-    var m = this._annotationMorph;
-    if (m) { return m; }
-    m = this._annotationMorph = this.slot().newAnnotationMorph();
+  add.method('createAnnotationMorph', function () {
+    var m = this.slot().newAnnotationMorph();
     if (this.shouldUseZooming()) { m.setScale(0.2); }
     return m;
   }, {category: ['annotation']});
@@ -252,8 +247,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('wasJustShown', function (evt) {
     this.ensureVisible();
     if (this.shouldUseZooming()) {
-      // I don't like this; let's make it auto-zoom in instead.
-      // this.sourcePane().setScale(0.9);
+      // Make it auto-zoom in?
     } else {
       if (this._sourceToggler) {
         this._sourceToggler.beOn(evt);
@@ -321,8 +315,9 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
           // it's actually a whole nother slot and slotMorph but we want it to feel like the same one
           var newSlotMorph = world.morphFor(newSlot);
           this.transferUIStateTo(newSlotMorph);
+          world.forgetAboutExistingMorphFor(this.slot(), this);
+          
           newSlotMorph.justChangedSlotName(evt);
-          this.justBecameObsolete();
           if (holderMorph.shouldUseZooming()) {
             // aaa - this shouldn't stay here in the long run, I think, but for now I just want everything to stay lined up nicely
             avocado.ui.justChangedContent(newSlot.category(), evt);
@@ -338,10 +333,6 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       nextThingTheUserProbablyWantsToDo.prepareForUserInput(evt);
     }
   }, {category: ['accessing']});
-
-  add.method('justBecameObsolete', function () {
-    WorldMorph.current().forgetAboutExistingMorphFor(this.slot(), this);
-  }, {category: ['renaming']});
 
   add.method('partsOfUIState', function () {
     return {
@@ -488,8 +479,6 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.pointer, function(add) {
   add.method('setTarget', function (targetMorph) { this._associationMorph.setContents(targetMorph.mirror()); }, {category: ['setting']});
 
   add.method('labelMorph', function () {
-    // Make an "arrow" icon (rather than the old two-dots thing, which was a Self-ism). -- Adam
-    // return this._associationMorph.createIconForButton("images/icon-data-slot.gif");
     return Morph.makePolygon([pt(0,5), pt(10,5), pt(5,0), pt(10,5), pt(5,10), pt(10,5)], 1, Color.black, Color.black).ignoreEvents();
   }, {category: ['creating a morph']});
 

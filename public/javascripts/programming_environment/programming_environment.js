@@ -3,6 +3,7 @@ avocado.transporter.module.create('programming_environment/programming_environme
 requires('avocado_lib');
 requires('general_ui/general_ui');
 requires('programming_environment/categorize_libraries');
+requires('programming_environment/module_morph');
 requires('programming_environment/pretty_printer');
 requires('programming_environment/test_case_morph');
 requires('db/couch');

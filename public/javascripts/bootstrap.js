@@ -1409,7 +1409,11 @@ thisModule.addSlots(avocado.http.request, function(add) {
   
   add.method('body', function () {
     if (this.httpMethod() === "POST") {
-      return this.paramsString();
+      if (this._postBody) {
+        return this._postBody;
+      } else {
+        return this.paramsString();
+      }
     } else {
       return undefined;
     }

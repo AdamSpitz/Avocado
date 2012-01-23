@@ -876,7 +876,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
     if (initialContentsMir.isReflecteeFunction()) { s.beCreator(); }
 
     // aaa - UI-related, but hopefully not a problem
-    avocado.ui.currentWorld().morphFor(s).wasJustShown();
+    avocado.ui.currentWorld().morphFor(s).wasJustShown(Event.createFake());
     if (cat) { avocado.ui.justChangedContent(cat); }
     
     return s;
