@@ -97,7 +97,9 @@ thisModule.addSlots(avocado.wheelMenu, function(add) {
 
   add.method('openMenu', function (menuMorph, parentMorph, loc, remainOnScreen, captionIfAny) {
 		this.createCommandMorphsIfNecessary(menuMorph);
-    parentMorph.addMorphAt(menuMorph, loc.addXY(- menuMorph._layout.outerRadius(), - menuMorph._layout.outerRadius()));
+    menuMorph.rotateToFaceTheCamera();
+    menuMorph.setCenterPosition(loc);
+    parentMorph.addMorph(menuMorph);
     menuMorph.takeInputFocus(parentMorph.world().firstHand());
     this.waitForABitAndThenBecomeActive(menuMorph);
     this.startOpeningAnimation(menuMorph);

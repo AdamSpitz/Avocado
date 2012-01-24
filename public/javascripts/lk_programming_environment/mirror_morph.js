@@ -217,7 +217,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.method('createRow', function (m) {
     var content = this.shouldUseZooming() ? [avocado.ui.createSpacer(), m, avocado.ui.createSpacer()] : [m, avocado.ui.createSpacer()];
     var r = avocado.table.createSpaceFillingRowMorph(content, this.defaultStyle.internalPadding);
-    r.wasJustShown = function(evt) { m.wasJustShown(evt); };
+    r.wasJustAdded = function(evt) { m.wasJustAdded(evt); };
     return r;
   }, {category: ['creating']});
 
@@ -246,7 +246,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     if (parentSlotMorph) { parentSlotMorph.setScale(this.shouldUseZooming() ? 0.5 : 1.0); }
     var content = this.shouldUseZooming() ? [parentSlotMorph, avocado.ui.createSpacer(), annoMorph].compact() : [parentSlotMorph, annoMorph, avocado.ui.createSpacer()].compact();
     var r = this._annotationRow = avocado.table.createSpaceFillingRowMorph(content, this.defaultStyle.internalPadding);
-    r.wasJustShown = function(evt) { annoMorph.wasJustShown(evt); };
+    r.wasJustAdded = function(evt) { annoMorph.wasJustAdded(evt); };
 
     return r;
   }, {category: ['annotation']});
@@ -324,7 +324,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     
     var e = new avocado.EvaluatorMorph(this);
     this.evaluatorsPanel().layout().addCell(e);
-    e.wasJustShown(evt);
+    e.wasJustAdded(evt);
     return e;
   }, {category: ['evaluators']});
 

@@ -32,7 +32,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   add.method('createTitleLabel', function () {
     var titleAccessors = this.titleAccessors();
     if (titleAccessors) {
-      this._titleLabelMorph = avocado.infrequentlyEditedText.create(titleAccessors).setEmphasis(this.titleEmphasis()).setNameOfEditCommand("rename").newMorph();
+      this._titleLabelMorph = avocado.infrequentlyEditedText.newMorphFor(titleAccessors, "rename", this.titleEmphasis());
       return this._titleLabelMorph;
     }
     return null;
@@ -54,7 +54,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   
   add.method('addTitleEditingCommandsTo', function (cmdList) {
     var titleLabel = this.findTitleLabel();
-    if (titleLabel) {
+    if (titleLabel && typeof(titleLabel.editingCommands) === 'function') {
       cmdList.addAllCommands(titleLabel.editingCommands());
     }
   }, {category: ['title']});

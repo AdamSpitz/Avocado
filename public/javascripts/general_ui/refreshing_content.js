@@ -131,11 +131,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     // children can override
   }, {category: ['updating']});
 
-  add.method('wasJustShown', function (evt) {
+  add.method('wasJustAdded', function (evt) {
     // aaa - not sure this really belongs here, used to be on TreeNodeMorph
     this.ensureVisible();
     var titleLabel = this.findTitleLabel();
-    if (titleLabel) { titleLabel.wasJustShown(evt); }
+    if (titleLabel) { titleLabel.wasJustAdded(evt); }
   }, {category: ['events']});
   
 });

@@ -118,7 +118,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.method('addSubcategory', function () {
     var c = this.subcategory("");
     this.mirror().annotationForWriting().getCategoryCache(c.parts()); // this should make sure the category "exists"
-    avocado.ui.currentWorld().morphFor(c).wasJustShown();
+    avocado.ui.currentWorld().morphFor(c).wasJustAdded();
     return c;
   }, {category: ['categories']});
 

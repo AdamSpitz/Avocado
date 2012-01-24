@@ -90,6 +90,15 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   add.method('smoothlyScaleVerticallyTo', function (desiredScale, functionToCallWhenDone) {
     this.startAnimating(avocado.animation.newVerticalScaler(this, desiredScale), functionToCallWhenDone);
   }, {category: ['scaling']});
+  
+  add.method('startTinyAndSmoothlyGrowTo', function (desiredScale, functionToCallWhenDone) {
+    this.setScale(desiredScale * 0.01);
+    this.smoothlyScaleTo(desiredScale, functionToCallWhenDone);
+  });
+  
+  add.method('smoothlyShrinkDownToNothing', function (functionToCallWhenDone) {
+    this.smoothlyScaleTo(0.01, functionToCallWhenDone);
+  });
 
 });
 

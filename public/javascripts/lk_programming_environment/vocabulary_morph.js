@@ -91,7 +91,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     evt = evt || Event.createFake();
     var e = new avocado.EvaluatorMorph(this);
     this._evaluatorsPanel.layout().addCell(e);
-    e.wasJustShown(evt);
+    e.wasJustAdded(evt);
     return e;
   }, {category: ['evaluators']});
 

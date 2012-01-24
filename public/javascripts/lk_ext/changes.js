@@ -83,6 +83,8 @@ Morph.addMethods({
   setTopLeftPositionXYZ: function(x, y, z) { return this.setTopLeftPositionXY(x, y); },
   
   getOriginAAAHack: function() { return pt(0,0); }, // aaa for compatibility with 3D, but it's a bug, I need to just fix it
+  
+  rotateToFaceTheCamera: function() {}, // nothing necessary here, just for compatibility with 3D
 });
 
 Morph.addMethods({

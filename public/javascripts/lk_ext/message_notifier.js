@@ -22,13 +22,17 @@ thisModule.addSlots(avocado.label, function(add) {
 
 thisModule.addSlots(avocado.infrequentlyEditedText, function(add) {
 
-  add.method('newMorph', function () {
-    var m = new avocado.TwoModeTextMorph(this._stringSpecifier);
-    if (this._emphasis) { m.setEmphasis(this._emphasis); }
-    if (this._nameOfEditCommand) { m.setNameOfEditCommand(this._nameOfEditCommand); }
+  add.method('newMorphFor', function (stringSpecifier, nameOfEditCommand, emphasis) {
+    var m = new avocado.TwoModeTextMorph(stringSpecifier);
+    if (emphasis) { m.setEmphasis(emphasis); }
+    if (nameOfEditCommand) { m.setNameOfEditCommand(nameOfEditCommand); }
     m.backgroundColorWhenWritable = null;
     m.ignoreEvents();
     return m;
+  }, {category: ['user interface']});
+
+  add.method('newMorph', function () {
+    return this.newMorphFor(this._stringSpecifier, this._nameOfEditCommand, this._emphasis);
   }, {category: ['user interface']});
 
 });

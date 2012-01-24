@@ -49,7 +49,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     });
 
   add.method('setCenterPosition', function (p) {
-    return this.setPosition(this.getExtent().scaleBy(this.getScale() * -0.5));
+    return this.setPosition(p.addPt(this.getExtent().scaleBy(this.getScale() * -0.5)));
   });
 
   add.method('showInCenterOfUsersFieldOfVision', function (w, callback) {
@@ -72,15 +72,6 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var p = morphToBeLabelled.worldPoint(this.positionToCenterIn(morphToBeLabelled));
     this.setPosition(p);
     world.addMorphFront(this);
-  });
-  
-  add.method('startTinyAndSmoothlyGrowTo', function (desiredScale, functionToCallWhenDone) {
-    this.setScale(desiredScale * 0.01);
-    this.smoothlyScaleTo(desiredScale, functionToCallWhenDone);
-  });
-  
-  add.method('smoothlyShrinkDownToNothing', function (functionToCallWhenDone) {
-    this.smoothlyScaleTo(0.01, functionToCallWhenDone);
   });
 
   add.method('setPositionAndDoMotionBlurIfNecessary', function (newPos, blurTime) {

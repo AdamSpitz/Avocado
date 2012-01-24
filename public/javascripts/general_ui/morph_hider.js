@@ -54,14 +54,14 @@ thisModule.addSlots(avocado.morphHider, function(add) {
 
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
-  add.method('wasJustShown', function (evt) { });
+  add.method('wasJustAdded', function (evt) { });
 
 });
 
 
 thisModule.addSlots(avocado.morphMixins.TextMorph, function(add) {
 
-  add.method('wasJustShown', function (evt) { this.requestKeyboardFocus(evt.hand); });
+  add.method('wasJustAdded', function (evt) { this.requestKeyboardFocus(evt.hand); });
 
 });
 

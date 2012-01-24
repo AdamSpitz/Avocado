@@ -55,7 +55,7 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
 
   add.method('textMorph', function () { return this._textMorph;  }, {category: ['accessing']});
 
-  add.method('wasJustShown', function (evt) { this._textMorph.wasJustShown(evt); }, {category: ['events']});
+  add.method('wasJustAdded', function (evt) { this._textMorph.wasJustAdded(evt); }, {category: ['events']});
 
   add.method('buttonCommands', function () {
     return [avocado.command.create("Do it",  function(evt) {this. doIt(evt);}.bind(this)).setHelpText('Run the code in the box'),

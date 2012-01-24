@@ -14,8 +14,20 @@ thisModule.addSlots(avocado.slots, function(add) {
 
 
 thisModule.addSlots(avocado.slots.userInterface, function(add) {
-  
-  
+
+  add.creator('defaultStyle', {}, {category: ['styles']});
+
+  add.creator('nonZoomingStyle', {}, {category: ['styles']});
+
+  add.creator('zoomingStyle', {}, {category: ['styles']});
+
+  add.creator('copyDownStyle', {}, {category: ['styles']});
+
+  add.creator('annotationStyle', {}, {category: ['styles']});
+
+  add.creator('sourceMorphStyle', {}, {category: ['styles']});
+
+  add.creator('signatureRowStyle', {}, {category: ['styles']});
   
 });
 
@@ -32,7 +44,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     // aaa - It'd be nice if we could just as the annotation for its own morph, but for now we
     // still have to ask the slot for its annotation-related info (because, for one thing, there's
     // that organization object in between).
-    var m = avocado.table.newTableMorph().beInvisible().applyStyle(this.Morph.prototype.annotationStyle);
+    var m = avocado.table.newTableMorph().beInvisible().applyStyle(avocado.slots.userInterface.annotationStyle);
     m.replaceContentWith(avocado.table.contents.createWithRows([
       [avocado.label.newMorphFor("Comment:"      ), new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'comment'))],
       [avocado.label.newMorphFor("Module:"       ), new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'moduleName'))],
@@ -85,8 +97,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     this.useTableLayout(avocado.table.contents.columnPrototype);
     this._model = slot;
 
-    this.applyStyle(this.defaultStyle);
-    this.applyStyle(this.shouldUseZooming() ? this.zoomingStyle : this.nonZoomingStyle);
+    this.applyStyle(avocado.slots.userInterface.defaultStyle);
+    this.applyStyle(this.shouldUseZooming() ? avocado.slots.userInterface.zoomingStyle : avocado.slots.userInterface.nonZoomingStyle);
     this.applyAppropriateStyles();
 
     add.data('fill', null);
@@ -135,32 +147,16 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
       signatureRowContent = [this.descriptionMorph(), optionalCommentButtonMorph, avocado.ui.createSpacer(), buttonChooserMorph].compact();
     }
 
-    this._signatureRow = avocado.table.createSpaceFillingRowMorph(function () { return signatureRowContent; }, this.signatureRowStyle.padding);
+    this._signatureRow = avocado.table.createSpaceFillingRowMorph(function () { return signatureRowContent; }, avocado.slots.userInterface.signatureRowStyle.padding);
     
     this.refreshContentOfMeAndSubmorphs(); // wasn't needed back when slot morphs were always part of a table morph, but now that we have free-form layout we need it
   }, {category: ['creating']});
   
   add.method('slot', function () { return this._model; }, {category: ['accessing']});
 
-  add.method('toString', function () { return this.slot().toString(); }, {category: ['accessing']});
-
   add.method('shouldUseZooming', function () {
     return avocado.shouldMirrorsUseZooming;
   }, {category: ['zooming']});
-
-  add.creator('defaultStyle', {}, {category: ['styles']});
-
-  add.creator('nonZoomingStyle', {}, {category: ['styles']});
-
-  add.creator('zoomingStyle', {}, {category: ['styles']});
-
-  add.creator('copyDownStyle', {}, {category: ['styles']});
-
-  add.creator('annotationStyle', {}, {category: ['styles']});
-
-  add.creator('sourceMorphStyle', {}, {category: ['styles']});
-
-  add.creator('signatureRowStyle', {}, {category: ['styles']});
 
   add.method('showContentsArrow', function (callWhenDone) {
     if (this._contentsPointerButton) {
@@ -189,20 +185,32 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     // Blecch, functions everywhere. But creating the row is expensive. Find a cleaner way to cache them.
     // Or even get rid of them, use the contents directly; the problem with that is that we can't make
     // TextMorphs SpaceFill yet.
-    var p = this.defaultStyle.internalPadding;
+    var p = avocado.slots.userInterface.defaultStyle.internalPadding;
     var row = null;
     return function() {
       if (row) { return row; }
       var spacer = avocado.ui.createSpacer();
       row = avocado.table.createSpaceFillingRowMorph(function() {return [getOrCreateContent(), spacer];}, p);
-      row.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
+      row.wasJustAdded = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
       return row;
     }.bind(this);
   }, {category: ['creating']});
+  
+  add.method('titleAccessors', function () {
+    // aaa - This could go on the model if setSlotName could.
+    if (!window.isInCodeOrganizingMode && typeof(this._model.rename) === 'function') {
+      return avocado.accessors.forMethods(this, 'slotName');
+    } else {
+      return null;
+    }
+  }, {category: ['signature']});
 
   add.method('nameMorph', function () {
-    // ignoreEvents so that the menu request passes through, though this breaks double-clicking-to-edit
-    return this._nameMorph || (this._nameMorph = new avocado.TwoModeTextMorph(avocado.accessors.forMethods(this, 'slotName')).setNameOfEditCommand("rename").ignoreEvents());
+    var m = this._titleLabelMorph;
+    if (!m) {
+      this._titleLabelMorph = m = this.createTitleLabel() || avocado.label.newMorphFor(this.slotName());
+    }
+    return m;
   }, {category: ['signature']});
 
   add.method('descriptionMorph', function () {
@@ -233,7 +241,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   add.method('sourceMorph', function () {
     var sm = this._sourceMorph;
     if (sm) { return sm; }
-    sm = this._sourceMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'sourceCode')).applyStyle(this.sourceMorphStyle);
+    sm = this._sourceMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'sourceCode')).applyStyle(avocado.slots.userInterface.sourceMorphStyle);
     if (this.shouldUseZooming()) { sm._maxSpace = pt(200,200); }
     return sm;
   }, {category: ['source']});
@@ -244,8 +252,10 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     return m;
   }, {category: ['annotation']});
 
-  add.method('wasJustShown', function (evt) {
+  add.method('wasJustAdded', function (evt) {
     this.ensureVisible();
+    
+    // aaa - this middle part of the method is what's different from the general Morph version.
     if (this.shouldUseZooming()) {
       // Make it auto-zoom in?
     } else {
@@ -253,7 +263,8 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
         this._sourceToggler.beOn(evt);
       }
     }
-    this._nameMorph.wasJustShown(evt);
+    
+    this._titleLabelMorph.wasJustAdded(evt);
   }, {category: ['events']});
 
   add.method('sourceCode', function () {
@@ -347,7 +358,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('applyAppropriateStyles', function () {
-    if (! this.slot().isReallyPartOfHolder()) { this.applyStyle(this.copyDownStyle); }
+    if (! this.slot().isReallyPartOfHolder()) { this.applyStyle(avocado.slots.userInterface.copyDownStyle); }
   }, {category: ['updating']});
 
   add.method('potentialContentMorphs', function () {
@@ -361,9 +372,10 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     return this._potentialContentMorphs;
   }, {category: ['updating']});
 
-  add.method('ensureVisible', function () {
-    avocado.ui.currentWorld().morphFor(this.slot().category()).ensureVisible();
-  });
+  add.method('morphsThatNeedToBeVisibleBeforeICanBeVisible', function () {
+    var catMorph = avocado.ui.currentWorld().morphFor(this.slot().category());
+    return avocado.compositeCollection.create([catMorph.morphsThatNeedToBeVisibleBeforeICanBeVisible(), [catMorph]]);
+  }, {category: ['updating']});
 
   add.method('grabCopyAndRemoveMe', function (evt) {
     this.grabCopy(evt);
@@ -371,14 +383,14 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
     var holder = this.slot().holder();
     if (holder) { avocado.ui.justChanged(holder); }
   }, {category: ['drag and drop']});
-
+  
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
     
     if (this.slot().isReallyPartOfHolder()) {
-      var isModifiable = !window.isInCodeOrganizingMode;
+      this.addTitleEditingCommandsTo(cmdList);
       
-      if (isModifiable && this.slot().rename) { cmdList.addAllCommands(this._nameMorph.editingCommands()); }
+      var isModifiable = !window.isInCodeOrganizingMode;
       cmdList.addItem({label: isModifiable ? "copy" : "move", go: function(evt) { this.grabCopy(evt); }, isApplicable: function() { return this.slot().copyTo; }.bind(this)});
       cmdList.addItem({label: "move", go: function(evt) { this.grabCopyAndRemoveMe(evt); }, isApplicable: function() { return isModifiable && this.slot().remove; }.bind(this)});
       if (! this.shouldUseZooming()) {
@@ -395,7 +407,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.defaultStyle, function(add) {
+thisModule.addSlots(avocado.slots.userInterface.defaultStyle, function(add) {
 
   add.data('borderColor', new Color(0.6, 0.6, 0.6));
 
@@ -410,7 +422,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.defaultStyle, func
 });
 
 
-thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.nonZoomingStyle, function(add) {
+thisModule.addSlots(avocado.slots.userInterface.nonZoomingStyle, function(add) {
 
   add.data('fill', null);
   
@@ -421,7 +433,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.nonZoomingStyle, f
 });
 
 
-thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.zoomingStyle, function(add) {
+thisModule.addSlots(avocado.slots.userInterface.zoomingStyle, function(add) {
 
   add.data('fillBase', new Color(0.8, 0.8, 0.8));
   
@@ -432,14 +444,14 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.zoomingStyle, func
 });
 
 
-thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.copyDownStyle, function(add) {
+thisModule.addSlots(avocado.slots.userInterface.copyDownStyle, function(add) {
 
   add.data('fillBase', new Color(0.95, 0.75, 0.75));
 
 });
 
 
-thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.annotationStyle, function(add) {
+thisModule.addSlots(avocado.slots.userInterface.annotationStyle, function(add) {
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 
@@ -448,7 +460,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.annotationStyle, f
 });
 
 
-thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.sourceMorphStyle, function(add) {
+thisModule.addSlots(avocado.slots.userInterface.sourceMorphStyle, function(add) {
 
   add.data('fontFamily', 'monospace');
 
@@ -457,7 +469,7 @@ thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.sourceMorphStyle, 
 });
 
 
-thisModule.addSlots(avocado.slots['abstract'].Morph.prototype.signatureRowStyle, function(add) {
+thisModule.addSlots(avocado.slots.userInterface.signatureRowStyle, function(add) {
 
   add.data('padding', {left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}'});
 

@@ -39,7 +39,7 @@ thisModule.addSlots(avocado.morphToggler, function(add) {
   add.method('update', function ($super, evt) {
     $super(evt);
     var m = this.actualMorphToShow();
-    if (m) { m.wasJustShown(evt); }
+    if (m) { m.wasJustAdded(evt); } // aaa this seems wrong, it wasn't just added
   });
 
   add.method('constructUIStateMemento', function () {
