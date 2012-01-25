@@ -125,6 +125,7 @@ thisModule.addSlots(avocado.treeNode, function(add) {
   }, {category: ['user interface', 'creating']});
 
   add.method('headerRowForMorph', function (morph) {
+    if (avocado.ui.is3D) { avocado.treeNode.headerRowPadding.bottom = 25; } // aaa HACK, just wanna see what it looks like
     return avocado.table.createSpaceFillingRowMorph(morph._morphFactory.headerRowContentsForMorph(morph), avocado.treeNode.headerRowPadding);
   }, {category: ['user interface', 'creating']});
   
@@ -182,7 +183,7 @@ thisModule.addSlots(avocado.treeNode.morphFactories.expanderBased, function(add)
   });
 
   add.method('headerRowContentsForMorph', function (morph) {
-    return [morph._expander, morph.createTitleLabel() || morph.createNameLabel(), avocado.ui.createSpacer()];
+    return [morph._expander, morph.createTitleLabel(), avocado.ui.createSpacer()];
   });
 
   add.method('dragAndDropCommandsForMorph', function (morph) {
@@ -209,7 +210,7 @@ thisModule.addSlots(avocado.treeNode.morphFactories.scalingBased, function(add) 
   });
 
   add.method('headerRowContentsForMorph', function (morph) {
-    return [morph.createTitleLabel() || morph.createNameLabel()];
+    return [morph.createTitleLabel()];
   });
 
   add.method('dragAndDropCommandsForMorph', function (morph) {

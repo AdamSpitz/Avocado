@@ -59,6 +59,10 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
   add.method('setSavedText', function(t)  {
     if (this._accessors) {
       this._accessors.set(t);
+
+      if (this._savedTextMightNotBeIdenticalToWhatWasTyped) {
+        this.cancelChanges(); // to make sure the editor doesn't stay red
+      }
     } else {
       this.savedTextString = t;
       if (this.notifier) {this.notifier.notifyAllObservers();}
@@ -71,6 +75,11 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
     return x;
   });
 
+  add.method('rememberThatSavedTextMightNotBeIdenticalToWhatWasTyped', function() {
+    this._savedTextMightNotBeIdenticalToWhatWasTyped = true;
+    return this;
+  });
+  
   add.method('updateLayoutIfNecessary', function() {
     this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
     this.minimumExtentMayHaveChanged();
@@ -178,6 +187,10 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
     var newText = this.getText();
     if (newText !== this.getSavedText()) {
       this.setSavedText(newText);
+      
+      if (avocado.ui.currentWorld().firstHand().keyboardFocus === this) { // setSavedText might have changed it, in which case we don't want to muck with it
+        this.passOnInputFocus();
+      }
     }
     this.justAcceptedOrCancelled();
   });

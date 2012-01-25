@@ -105,20 +105,19 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
     return ! this.noLongerNeedsToBeUpdated;
   }, {category: ['UI state']});
 
-  add.method('assumeUIState', function (uiState, evt) {
-    if (uiState) {
-      // aaa - Why isn't this using showMe() like toggleVisibility does?
-      this.needsToBeVisible();
-    } else {
-      this.noLongerNeedsToBeVisible();
-    }
+  add.method('assumeUIState', function (uiState, callWhenDone, evt) {
+    this.setVisibility(uiState, callWhenDone);
   }, {category: ['UI state']});
 
   add.method('toggleVisibility', function () {
-    if (this.noLongerNeedsToBeUpdated) {
-      this.showMe();
+    this.setVisibility(this.noLongerNeedsToBeUpdated);
+  }, {category: ['showing and hiding']});
+
+  add.method('setVisibility', function (b, callWhenDone) {
+    if (b) {
+      this.showMe(callWhenDone);
     } else {
-      this.noLongerNeedsToBeVisible();
+      this.noLongerNeedsToBeVisible(callWhenDone);
     }
   }, {category: ['showing and hiding']});
 
@@ -135,10 +134,11 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
     }
   }, {category: ['showing and hiding']});
 
-  add.method('noLongerNeedsToBeVisible', function () {
+  add.method('noLongerNeedsToBeVisible', function (callWhenDone) {
     this.noLongerNeedsToBeUpdated = true;
     this.disappear(function() {
       this.stopUpdating();
+      if (callWhenDone) { callWhenDone(); }
     }.bind(this));
   }, {category: ['showing and hiding']});
 

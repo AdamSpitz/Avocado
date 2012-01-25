@@ -3,18 +3,6 @@ avocado.transporter.module.create('lk_ext/shortcuts', function(requires) {
 }, function(thisModule) {
 
 
-thisModule.addSlots(lively.paint, function(add) {
-
-  add.method('defaultFillWithColor', function(c) {
-    if (!c) { return null; }
-    return new lively.paint.LinearGradient([new lively.paint.Stop(0, c),
-                                            new lively.paint.Stop(1, c.lighter())],
-                                           lively.paint.LinearGradient.SouthNorth);
-  }, {category: ['shortcuts']});
-
-});
-
-
 thisModule.addSlots(TextMorph, function(add) {
 
   add.method('createInputBox', function(initialText, extent) {

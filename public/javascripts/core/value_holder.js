@@ -69,6 +69,10 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
     return this.name();
   }, {category: ['naming']});
 
+  add.method('title', function () {
+    return this.readableName();
+  }, {category: ['naming']});
+
   add.method('type', function () {
     return this._type;
   }, {category: ['types']});
@@ -88,6 +92,11 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
     this.notifier.addObserver(o);
     return this;
   }, {category: ['observing']});
+  
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
+    return cmdList;
+  }, {category: ['commands']});
 
 });
 

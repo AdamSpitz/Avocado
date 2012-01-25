@@ -165,7 +165,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
 
   add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}'});
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(1, 0.8, 0.4980392156862745)), new lively.paint.Stop(1, new Color(1, 0.9019607843137255, 0.7490196078431373))], lively.paint.LinearGradient.SouthNorth));
+  add.data('fillBase', new Color(1, 0.8, 0.5));
 
   add.data('borderRadius', 10);
 

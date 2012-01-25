@@ -56,41 +56,17 @@ thisModule.addSlots(avocado.process.context, function(add) {
     if (! slot) { slot = reflect({ unknownFunction: this.rawFunction() }).slotAt('unknownFunction'); }
     var contextSlot = Object.create(slot);
     contextSlot._processContext = this;
-    var slotMorph = new avocado.process.context.Morph(contextSlot);
+    var slotMorph = avocado.slots.userInterface.newMorphFor(contextSlot);
     slotMorph.applyStyle(this.defaultMorphStyle);
     var m = avocado.table.createSpaceFillingRowMorph([slotMorph]);
     m._model = this;
     return m;
   }, {category: ['user interface']});
 
-  add.creator('defaultMorphStyle', {}, {category: ['user interface']});
-
-  add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
-
-});
-
-
-thisModule.addSlots(avocado.process.context.Morph, function(add) {
-
-  add.data('superclass', avocado.slots['abstract'].Morph);
-
-  add.data('type', 'avocado.process.context.Morph');
-
-  add.data('pointer', avocado.slots['abstract'].Morph.pointer);
-
-  add.creator('prototype', Object.create(avocado.slots['abstract'].Morph.prototype));
-
-});
-
-
-thisModule.addSlots(avocado.process.context.Morph.prototype, function(add) {
-
-  add.data('constructor', avocado.process.context.Morph);
-
-  add.method('descriptionMorph', function () {
+  add.method('createDescriptionMorphFor', function (slotMorph) {
     var m = avocado.table.newRowMorph().beInvisible();
-    var columns = [this.nameMorph()];
-    var context = this._model._processContext;
+    var columns = [slotMorph.findOrCreateTitleLabel()];
+    var context = this._processContext;
     var args = context.args();
     var argNames = context.argNames();
     if (args.length > argNames.length) {
@@ -102,14 +78,16 @@ thisModule.addSlots(avocado.process.context.Morph.prototype, function(add) {
     }
     m.layout().setCells(columns);
     return m;
-  }, {category: ['signature']});
+  }, {category: ['user interface']});
+
+  add.creator('defaultMorphStyle', {}, {category: ['user interface']});
 
 });
 
 
 thisModule.addSlots(avocado.process.defaultMorphStyle, function(add) {
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.4980392156862745, 0.9019607843137255, 0.4980392156862745)), new lively.paint.Stop(1, new Color(0.7490196078431373, 0.9529411764705882, 0.7490196078431373))], lively.paint.LinearGradient.SouthNorth));
+  add.data('fillBase', new Color(0.5, 0.9, 0.5));
 
 });
 

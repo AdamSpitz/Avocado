@@ -112,7 +112,7 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype.defaultStyle, function(ad
 
   add.data('padding', 10);
 
-  add.data('fill', lively.paint.defaultFillWithColor(Color.gray.darker()));
+  add.data('fillBase', new Color(0.4, 0.4, 0.4));
 
 });
 

@@ -77,13 +77,15 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   add.method('potentialContentMorphs', function () {
     // children can override, or specify a _potentialContentCreator, or call setPotentialContentMorphs or setPotentialContentMorphsFunction
     
+    if (this._potentialContentMorphs) { return this._potentialContentMorphs; }
+    
     if (this._potentialContentCreator) { return this._potentialContentCreator.potentialContentMorphsForMorph(this); }
     
     return null;
   }, {category: ['potential content']});
 
   add.method('setPotentialContentMorphs', function (content) {
-    this.setPotentialContentMorphsFunction(function() { return content; });
+    this._potentialContentMorphs = content;
   }, {category: ['potential content']});
 
   add.method('setPotentialContentMorphsFunction', function (contentFunction) {
@@ -112,7 +114,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   add.method('justChangedContent', function () {
     // children can override
     if (this._layout && typeof(this._layout.justChangedContent) === 'function') {
-      this._model.justChangedContent(this);
+      this._layout.justChangedContent(this);
     }
   }, {category: ['updating']});
   
@@ -134,6 +136,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   add.method('wasJustAdded', function (evt) {
     // aaa - not sure this really belongs here, used to be on TreeNodeMorph
     this.ensureVisible();
+
+    var uiState = this.desiredUIStateAfterBeingAdded;
+    if (typeof(uiState) === 'function') { uiState = uiState.call(this); }
+    this.assumeUIState(uiState, null, evt);
+    
     var titleLabel = this.findTitleLabel();
     if (titleLabel) { titleLabel.wasJustAdded(evt); }
   }, {category: ['events']});

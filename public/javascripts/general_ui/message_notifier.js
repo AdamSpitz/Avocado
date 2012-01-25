@@ -54,7 +54,7 @@ thisModule.addSlots(avocado.messageNotifier, function(add) {
   }, {category: ['showing']});
   
   add.method('updateFillOfMorph', function (m) {
-    m.setFill(avocado.ui.defaultFillWithColor(this._color || Color.red));
+    m.setFillBase(this._color || Color.red);
   }, {category: ['user interface']});
   
   add.method('newMorph', function () {

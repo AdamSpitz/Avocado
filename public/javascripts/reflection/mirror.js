@@ -408,6 +408,14 @@ thisModule.addSlots(avocado.mirror, function(add) {
     }.bind(this));
   }, {category: ['categories']});
 
+  add.method('updateCategoryCacheIfOlderThan', function (maxStalenessInMilliseconds) {
+    var now;
+    if (!this._categoryCacheTimestamp || (now = new Date().getTime()) - this._categoryCacheTimestamp > maxStalenessInMilliseconds) {
+      this._categoryCacheTimestamp = now;
+      this.updateCategoryCache();
+    }
+  }, {category: ['categories']});
+
   add.method('possiblyStaleSlotsInCategory', function (c) {
     var anno = this.annotationForReading();
     if (!anno) { return []; }

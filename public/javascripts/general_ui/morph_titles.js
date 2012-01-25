@@ -9,13 +9,13 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('createNameLabel', function() {
     // can't use "bind" because we can't transport closures, so instead use ownerWithAModel
-    return avocado.label.create({
+    return avocado.label.newMorphFor({
       initialText: this.nameUsingContextualInfoIfPossible(),
       calculateNewText: function() {
         var o = this.ownerWithAModel();
         return o ? o.nameUsingContextualInfoIfPossible() : "";
       }
-    }).newMorph();
+    });
   }, {category: ['title']});
 
 	add.method('nameUsingContextualInfoIfPossible', function() {
@@ -33,9 +33,10 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     var titleAccessors = this.titleAccessors();
     if (titleAccessors) {
       this._titleLabelMorph = avocado.infrequentlyEditedText.newMorphFor(titleAccessors, "rename", this.titleEmphasis());
-      return this._titleLabelMorph;
+    } else {
+      this._titleLabelMorph = this.createNameLabel();
     }
-    return null;
+    return this._titleLabelMorph;
   }, {category: ['title']});
   
   add.method('titleEmphasis', function () {
@@ -50,6 +51,10 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   
   add.method('findTitleLabel', function () {
     return this._titleLabelMorph;
+  }, {category: ['title']});
+  
+  add.method('findOrCreateTitleLabel', function () {
+    return this.findTitleLabel() || this.createTitleLabel();
   }, {category: ['title']});
   
   add.method('addTitleEditingCommandsTo', function (cmdList) {

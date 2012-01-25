@@ -100,7 +100,9 @@ thisModule.addSlots(avocado.wheelMenu, function(add) {
     menuMorph.rotateToFaceTheCamera();
     menuMorph.setCenterPosition(loc);
     parentMorph.addMorph(menuMorph);
-    menuMorph.takeInputFocus(parentMorph.world().firstHand());
+    var hand = parentMorph.world().firstHand();
+    menuMorph.takeInputFocus(hand);
+    hand.setMouseFocus(menuMorph);
     this.waitForABitAndThenBecomeActive(menuMorph);
     this.startOpeningAnimation(menuMorph);
   }, {category: ['user interface', 'opening']});
@@ -258,7 +260,9 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForMenu, function(add) {
   });
 
   add.method('onMouseMove', function (morph, evt) {
-    morph.takeInputFocus(evt.hand);
+    var hand = evt.hand || avocado.ui.currentWorld().firstHand();
+    morph.takeInputFocus(hand);
+    hand.setMouseFocus(morph);
     avocado.wheelMenu.highlightAppropriateCommandMorphs(morph, evt);
   });
 

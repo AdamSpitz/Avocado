@@ -52,7 +52,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     this._expander = new avocado.ExpanderMorph(this);
     this._titleLabel = this.createNameLabel();
     
-    if (window.avocado && avocado.EvaluatorMorph) {
+    if (window.avocado && avocado.evaluator) {
       this._evaluatorButton = avocado.command.create("E", function(evt) { this.openEvaluator(evt); }.bind(this)).setHelpText('Show an evaluator box').newMorph();
     }
 
@@ -89,7 +89,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
 
   add.method('openEvaluator', function (evt) {
     evt = evt || Event.createFake();
-    var e = new avocado.EvaluatorMorph(this);
+    var e = avocado.ui.currentWorld().morphFor(avocado.evaluator.create(this._model));
     this._evaluatorsPanel.layout().addCell(e);
     e.wasJustAdded(evt);
     return e;

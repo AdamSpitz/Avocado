@@ -11,11 +11,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     var m = shouldGoBackwards ? this._firstSubmorphToReceiveInputFocusBackwards : this._firstSubmorphToReceiveInputFocusForwards;
     if (m) {
       if (typeof(m) === 'function') { m = m(); }
-      m.takeInputFocus(hand, shouldGoBackwards);
+      if (m) { m.takeInputFocus(hand, shouldGoBackwards); }
     } else {
-      hand = hand || avocado.ui.currentWorld().firstHand();
-      hand.setMouseFocus(this);
-      hand.setKeyboardFocus(this);
+      var evt = Event.createFake(hand);
+      if (typeof(this.prepareForUserInput) === 'function') { this.prepareForUserInput(evt); }
+      evt.hand.setKeyboardFocus(this);
     }
   }, {category: ['input focus']});
 
@@ -23,14 +23,15 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     var m = shouldGoBackwards ? this._nextMorphToReceiveInputFocusBackwards : this._nextMorphToReceiveInputFocusForwards;
     if (m) {
       if (typeof(m) === 'function') { m = m(); }
-      m.takeInputFocus(hand, shouldGoBackwards);
+      if (m) { m.takeInputFocus(hand, shouldGoBackwards); }
     } else {
       m = shouldGoBackwards ? this._isFirstMorphInInputFocusOrderFor : this._isLastMorphInInputFocusOrderFor;
       if (m) {
         if (typeof(m) === 'function') { m = m(); }
-        m.passOnInputFocus(hand, shouldGoBackwards);
+        if (m) { m.passOnInputFocus(hand, shouldGoBackwards); }
       } else {
-        this.releaseInputFocus(hand);
+        // Actually, maybe it's better to just leave this morph with the input focus if it doesn't know where to pass it on to.
+        // this.releaseInputFocus(hand);
       }
     }
   }, {category: ['input focus']});

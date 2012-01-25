@@ -1,4 +1,4 @@
-avocado.transporter.module.create('lk_programming_environment/evaluator_morph', function(requires) {
+avocado.transporter.module.create('programming_environment/evaluator_morph', function(requires) {
 
 requires('general_ui/table_layout');
 
@@ -7,34 +7,46 @@ requires('general_ui/table_layout');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.method('EvaluatorMorph', function EvaluatorMorph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
+  add.creator('evaluator', {}, {category: ['ui']});
 
 });
 
 
-thisModule.addSlots(avocado.EvaluatorMorph, function(add) {
+thisModule.addSlots(avocado.evaluator, function(add) {
+  
+  add.method('create', function (context) {
+    return Object.newChildOf(this, context);
+  }, {category: ['creating']});
+  
+  add.method('initialize', function (context) {
+    this._context = context;
+  }, {category: ['creating']});
+  
+  add.method('mirror', function () {
+    if (typeof(this._context.mirror) === 'function') { return this._context.mirror(); }
+    return this._context;
+  }, {category: ['accessing']});
+  
+  add.method('mirrorMorph', function () {
+    // aaa - HACK
+    return avocado.ui.currentWorld().morphFor(this.mirror());
+  }, {category: ['user interface']});
+  
+  add.method('textMorph', function () {
+    // aaa - HACK
+    return avocado.ui.currentWorld().morphFor(this)._textMorph;
+  }, {category: ['user interface']});
+  
+  add.creator('defaultStyle', {}, {category: ['styles']});
 
-  add.data('superclass', Morph);
-
-  add.data('type', 'avocado.EvaluatorMorph');
-
-  add.creator('prototype', Object.create(Morph.prototype));
-
-});
-
-
-thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
-
-  add.data('constructor', avocado.EvaluatorMorph);
-
-  add.method('initialize', function ($super, mirrorMorph) {
-    $super(lively.scene.Rectangle.createWithIrrelevantExtent());
-    this.useTableLayout(avocado.table.contents.columnPrototype);
-    this._mirrorMorph = mirrorMorph;
+  add.creator('textStyle', {}, {category: ['styles']});
+  
+  add.method('newMorph', function () {
+    var m = avocado.ui.newMorph().setModel(this).useTableLayout(avocado.table.contents.columnPrototype);
     
-    this.applyStyle(this.defaultStyle);
+    m.applyStyle(avocado.evaluator.defaultStyle);
 
-    var tm = this._textMorph = TextMorph.createInputBox("", pt(150, 60)).applyStyle(this.textStyle);
+    var tm = m._textMorph = TextMorph.createInputBox("", pt(150, 60)).applyStyle(avocado.evaluator.textStyle);
     
     var thisEvaluator = this;
     tm.onKeyDown = function(evt) {
@@ -43,25 +55,23 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
         evt.stop();
         return;
       }
-      return TextMorph.prototype.onKeyDown.call(this, evt);
+      return TextMorph.prototype.onKeyDown.call(tm, evt);
     };
     
     var buttons = this.buttonCommands().map(function(c) { return c.newMorph(); });
 
-    this.layout().setCells([tm, avocado.table.createSpaceFillingRowMorph(buttons)]);
-  }, {category: ['creating']});
-  
-  add.method('mirrorMorph', function () { return this._mirrorMorph;  }, {category: ['accessing']});
-
-  add.method('textMorph', function () { return this._textMorph;  }, {category: ['accessing']});
-
-  add.method('wasJustAdded', function (evt) { this._textMorph.wasJustAdded(evt); }, {category: ['events']});
+    m.layout().setCells([tm, avocado.table.createSpaceFillingRowMorph(buttons)]);
+    
+    m.wasJustAdded = function (evt) { m._textMorph.wasJustAdded(evt); };
+    
+    return m;
+  }, {category: ['user interface']});
 
   add.method('buttonCommands', function () {
     return [avocado.command.create("Do it",  function(evt) {this. doIt(evt);}.bind(this)).setHelpText('Run the code in the box'),
             avocado.command.create("Get it", function(evt) {this.getIt(evt);}.bind(this)).setHelpText('Run the code in the box and get the result'),
             avocado.command.create("Close",  function(evt) {this.mirrorMorph().closeEvaluator(this);}.bind(this))];
-  }, {category: ['creating']});
+  }, {category: ['user interface']});
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
@@ -76,7 +86,7 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('runTheCode', function () {
-    return this.mirrorMorph().mirror().evalCodeString(this._textMorph.getText());
+    return this.mirror().evalCodeString(this.textMorph().getText());
   }, {category: ['running the code']});
 
   add.method('doIt', function (evt) {
@@ -85,13 +95,13 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
 
   add.method('getIt', function (evt) {
     avocado.ui.showMessageIfErrorDuring(function() {
-      var resultMirMorph = evt.hand.world().morphFor(reflect(this.runTheCode()));
+      var resultMirMorph = avocado.ui.worldFor(evt).morphFor(reflect(this.runTheCode()));
       this.mirrorMorph().grabResult(resultMirMorph, evt);
     }.bind(this), evt);
   }, {category: ['running the code']});
 
   add.method('startTicking', function (evt) {
-    var mir = this.mirrorMorph().mirror();
+    var mir = this.mirror();
     var f = mir.functionFromCodeString(this._textMorph.getText());
     this._ticker = new PeriodicalExecuter(function(pe) {
       avocado.ui.showMessageIfErrorDuring(function() {
@@ -115,14 +125,10 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype, function(add) {
     return !!this._ticker;
   }, {category: ['running the code']});
 
-  add.creator('defaultStyle', {}, {category: ['styles']});
-
-  add.creator('textStyle', {}, {category: ['styles']});
-
 });
 
 
-thisModule.addSlots(avocado.EvaluatorMorph.prototype.defaultStyle, function(add) {
+thisModule.addSlots(avocado.evaluator.defaultStyle, function(add) {
 
   add.data('padding', 10);
 
@@ -141,7 +147,7 @@ thisModule.addSlots(avocado.EvaluatorMorph.prototype.defaultStyle, function(add)
 });
 
 
-thisModule.addSlots(avocado.EvaluatorMorph.prototype.textStyle, function(add) {
+thisModule.addSlots(avocado.evaluator.textStyle, function(add) {
 
   add.data('fill', new Color(1, 1, 1));
 

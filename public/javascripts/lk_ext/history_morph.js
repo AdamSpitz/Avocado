@@ -36,7 +36,7 @@ thisModule.addSlots(avocado.history, function(add) {
 
 thisModule.addSlots(avocado.history.defaultMorphStyle, function(add) {
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.2, 0.5, 0.5)), new lively.paint.Stop(1, new Color(0.3, 0.75, 0.75))], lively.paint.LinearGradient.SouthNorth));
+  add.data('fillBase', new Color(0.2, 0.5, 0.5));
 
 });
 

@@ -426,9 +426,9 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     this.clearResults();
     avocado.ui.justChanged(this);
     
-    avocado.callbackWaiter.on(function(finalCallback) {
+    avocado.callbackWaiter.on(function(generateIntermediateCallback) {
       thisSuite.subtests().each(function(t) {
-        var callbackForThisOne = finalCallback();
+        var callbackForThisOne = generateIntermediateCallback();
         t.createAndRunAndUpdateAppearance(function() {
           avocado.ui.justChanged(thisSuite);
           callbackForThisOne();

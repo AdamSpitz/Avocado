@@ -1,7 +1,7 @@
 avocado.transporter.module.create('lk_programming_environment/mirror_morph', function(requires) {
 
 requires('reflection/reflection');
-requires('lk_programming_environment/category_morph');
+requires('programming_environment/category_morph');
 requires('lk_programming_environment/slot_morph');
 
 }, function(thisModule) {
@@ -16,6 +16,14 @@ thisModule.addSlots(avocado.mirror, function(add) {
   }, {category: ['user interface']});
 
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
+
+  add.creator('defaultStyle', {}, {category: ['styles']});
+
+  add.creator('annotationStyle', {}, {category: ['styles']});
+
+  add.creator('commentStyle', {}, {category: ['styles']});
+
+  add.creator('copyDownParentsStyle', {}, {category: ['styles']});
 
   add.method('justRenamedCategory', function (oldCat, newCat, isEmpty) {
     // aaa - I don't think this code could ever have really worked right. When we
@@ -58,7 +66,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     this._mirror = m;
     this._model = m;
 
-    this.applyStyle(this.defaultStyle);
+    this.applyStyle(avocado.mirror.defaultStyle);
 
     this._nameMorph = this.createNameLabel();
     this._nameMorph.setEmphasis({style: 'bold'});
@@ -98,11 +106,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['zooming']});
 
   add.method('refreshContent', function ($super) {
-    var now;
-    if (!this._categoryCacheTimestamp || (now = new Date().getTime()) - this._categoryCacheTimestamp > 8000) {
-      this._categoryCacheTimestamp = now;
-      this.mirror().updateCategoryCache();
-    }
+    this.mirror().updateCategoryCacheIfOlderThan(8000);
     return $super();
   }, {category: ['updating']});
   
@@ -126,7 +130,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
           var parentButton = avocado.command.create("^", function(evt) { this.mirror().getParent(evt); }.bind(this)).setHelpText('Get my parent').newMorph();
         }
 
-        if (window.avocado && avocado.EvaluatorMorph) {
+        if (window.avocado && avocado.evaluator) {
           var evaluatorButton = avocado.command.create("E", function(evt) { this.openEvaluator(evt); }.bind(this)).setHelpText('Show an evaluator box').newMorph();
         }
       }
@@ -142,7 +146,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       var descInHeader = this.shouldUseZooming() ? null : this._descMorph;
       
       var headerRowContents = [this.shouldUseZooming() ? avocado.ui.createSpacer() : null, this.expander(), this._nameMorph, descInHeader, optionalAKAButtonMorph, optionalCommentButtonMorph, avocado.ui.createSpacer(), parentButton, evaluatorButton, optionalDismissButtonMorph].compact();
-      this._headerRow = avocado.table.createSpaceFillingRowMorph(function() { return headerRowContents; }, this.defaultStyle.headerRowPadding);
+      this._headerRow = avocado.table.createSpaceFillingRowMorph(function() { return headerRowContents; }, avocado.mirror.defaultStyle.headerRowPadding);
       this._headerRow.refreshContentOfMeAndSubmorphs();
     }
     return this._headerRow;
@@ -182,7 +186,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     //       The transporter should be able to handle them. But for now it's
     //       choking for some reason, so let's do this for now. -- Adam, Mar. 2011
     return [
-      "WorldMorph.current().morphFor(",
+      "avocado.ui.currentWorld().morphFor(",
       this.mirror().storeString(),
       ").setBasicMorphProperties(",
       this.basicMorphPropertiesStoreString(),
@@ -206,17 +210,9 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     return true;
   }, {category: ['poses']});
 
-  add.creator('defaultStyle', {}, {category: ['styles']});
-
-  add.creator('annotationStyle', {}, {category: ['styles']});
-
-  add.creator('commentStyle', {}, {category: ['styles']});
-
-  add.creator('copyDownParentsStyle', {}, {category: ['styles']});
-
   add.method('createRow', function (m) {
     var content = this.shouldUseZooming() ? [avocado.ui.createSpacer(), m, avocado.ui.createSpacer()] : [m, avocado.ui.createSpacer()];
-    var r = avocado.table.createSpaceFillingRowMorph(content, this.defaultStyle.internalPadding);
+    var r = avocado.table.createSpaceFillingRowMorph(content, avocado.mirror.defaultStyle.internalPadding);
     r.wasJustAdded = function(evt) { m.wasJustAdded(evt); };
     return r;
   }, {category: ['creating']});
@@ -224,11 +220,11 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = avocado.table.newColumnMorph().beInvisible().applyStyle(this.annotationStyle);
+    m = this._annotationMorph = avocado.table.newColumnMorph().beInvisible().applyStyle(avocado.mirror.annotationStyle);
     if (this.shouldUseZooming()) { m.setScale(0.25); }
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
-    this._copyDownParentsLabel = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString')).applyStyle(this.copyDownParentsStyle);
+    this._copyDownParentsLabel = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'copyDownParentsString')).applyStyle(avocado.mirror.copyDownParentsStyle);
 
     var rows = [];
     if (this.shouldUseZooming()) { rows.push(avocado.table.createSpaceFillingRowMorph([avocado.label.newMorphFor("Comment:"), this.commentMorph()])); }
@@ -245,7 +241,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     var parentSlotMorph = this.mirror().hasAccessibleParent() ? this.slotMorphFor(this.mirror().parentSlot()) : null;
     if (parentSlotMorph) { parentSlotMorph.setScale(this.shouldUseZooming() ? 0.5 : 1.0); }
     var content = this.shouldUseZooming() ? [parentSlotMorph, avocado.ui.createSpacer(), annoMorph].compact() : [parentSlotMorph, annoMorph, avocado.ui.createSpacer()].compact();
-    var r = this._annotationRow = avocado.table.createSpaceFillingRowMorph(content, this.defaultStyle.internalPadding);
+    var r = this._annotationRow = avocado.table.createSpaceFillingRowMorph(content, avocado.mirror.defaultStyle.internalPadding);
     r.wasJustAdded = function(evt) { annoMorph.wasJustAdded(evt); };
 
     return r;
@@ -259,7 +255,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['comment']});
   
   add.method('commentMorph', function () {
-    return this._commentMorph || (this._commentMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.mirror(), 'comment')).applyStyle(this.commentStyle));
+    return this._commentMorph || (this._commentMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this.mirror(), 'comment')).applyStyle(avocado.mirror.commentStyle));
   }, {category: ['comment']});
 
   add.method('copyDownParentsString', function () {
@@ -286,7 +282,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['expanding']});
 
   add.method('slotMorphFor', function (s) {
-    return WorldMorph.current().morphFor(s);
+    return avocado.ui.currentWorld().morphFor(s);
   }, {category: ['contents panel']});
 
   add.method('existingCategoryMorphFor', function (c) {
@@ -294,7 +290,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
   }, {category: ['categories']});
 
   add.method('categoryMorphFor', function (c) {
-    return WorldMorph.current().morphFor(c.ofMirror(this.mirror()));
+    return avocado.ui.currentWorld().morphFor(c.ofMirror(this.mirror()));
   }, {category: ['categories']});
   
   add.method('evaluatorsPanel', function () {
@@ -322,7 +318,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     }
     
     
-    var e = new avocado.EvaluatorMorph(this);
+    var e = avocado.ui.currentWorld().morphFor(avocado.evaluator.create(this.mirror()));
     this.evaluatorsPanel().layout().addCell(e);
     e.wasJustAdded(evt);
     return e;
@@ -371,8 +367,8 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
         newParentMorph.refreshContentOfMeAndSubmorphs(); // just so that the proper name shows up immediately
         newParentMorph.ensureParentSlotIsVisible(evt);
         this.ensureParentSlotIsVisible(evt);
-        newParentMorph.slotMorphFor(    newParent.parentSlot()).showContentsArrow();
-                  this.slotMorphFor(this.mirror().parentSlot()).showContentsArrow();
+        newParentMorph.slotMorphFor(    newParent.parentSlot()).assumeUIState({isArrowVisible: true});
+                  this.slotMorphFor(this.mirror().parentSlot()).assumeUIState({isArrowVisible: true});
       }.bind(this));
     }.bind(this));
   }, {category: ['menu']});
@@ -469,7 +465,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     childMirMorph.growFromNothing(evt, function() {
       childMirMorph.ensureParentSlotIsVisible(evt);
       var parentSlotMorph = childMirMorph.slotMorphFor(child.parentSlot());
-      parentSlotMorph.showContentsArrow();
+      parentSlotMorph.assumeUIState({isArrowVisible: true});
     });
   }, {category: ['creating children']});
 
@@ -480,7 +476,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     // might as well show the arrow from the subclass to the superclass
     subclassMirMorph.expand();
     var superclassSlotMorph = subclassMirMorph.slotMorphFor(subclass.slotAt('superclass'));
-    superclassSlotMorph.showContentsArrow();
+    superclassSlotMorph.assumeUIState({isArrowVisible: true});
   }, {category: ['creating children']});
 
   add.method('showCreatorPath', function (evt, callWhenDone) {
@@ -492,9 +488,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
       var mirMorphForCreator = evt.hand.world().morphFor(creatorSlot.holder());
       mirMorphForCreator.showCreatorPath(evt, function() {
         avocado.ui.ensureVisible(creatorSlot.category(), evt);
-        mirMorphForCreator.slotMorphFor(creatorSlot).showContentsArrow(function() {
-          if (callWhenDone) { callWhenDone(); }
-        }.bind(this));
+        mirMorphForCreator.slotMorphFor(creatorSlot).assumeUIState({isArrowVisible: true}, callWhenDone);
       }.bind(this));
     }
   }, {category: ['creator slots']});
@@ -516,7 +510,7 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(avocado.mirror.Morph.prototype.defaultStyle, function(add) {
+thisModule.addSlots(avocado.mirror.defaultStyle, function(add) {
 
   add.data('borderColor', new Color(0.6, 0.6, 0.6));
 
@@ -537,21 +531,21 @@ thisModule.addSlots(avocado.mirror.Morph.prototype.defaultStyle, function(add) {
 });
 
 
-thisModule.addSlots(avocado.mirror.Morph.prototype.annotationStyle, function(add) {
+thisModule.addSlots(avocado.mirror.annotationStyle, function(add) {
 
   add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
 
 });
 
 
-thisModule.addSlots(avocado.mirror.Morph.prototype.commentStyle, function(add) {
+thisModule.addSlots(avocado.mirror.commentStyle, function(add) {
 
   add.data('suppressHandles', true);
 
 });
 
 
-thisModule.addSlots(avocado.mirror.Morph.prototype.copyDownParentsStyle, function(add) {
+thisModule.addSlots(avocado.mirror.copyDownParentsStyle, function(add) {
 
   add.data('suppressHandles', true);
 

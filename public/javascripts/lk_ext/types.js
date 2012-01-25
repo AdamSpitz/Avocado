@@ -33,7 +33,9 @@ thisModule.addSlots(avocado.types.boolean, function(add) {
 thisModule.addSlots(avocado.types.shortString, function(add) {
 
   add.method('createInputMorph', function (slot) {
-    return new avocado.TwoModeTextMorph(avocado.accessors.forMethods(slot, 'contents')).ignoreEvents();
+    //return new avocado.TwoModeTextMorph(avocado.accessors.forMethods(slot, 'contents')).ignoreEvents();
+    var tm = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(slot, 'contents'));
+    return tm;
   }, {category: ['input']});
   
 });

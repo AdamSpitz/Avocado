@@ -1,7 +1,7 @@
-avocado.transporter.module.create('lk_programming_environment/category_morph', function(requires) {
+avocado.transporter.module.create('programming_environment/category_morph', function(requires) {
 
 requires('reflection/reflection');
-requires('lk_ext/tree_node_morph');
+requires('general_ui/tree_node');
 
 }, function(thisModule) {
 
@@ -37,7 +37,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['user interface', 'title']});
 
   add.method('titleEmphasis', function () {
-    return {style: 'italic'}
+    return {style: 'italic'};
   }, {category: ['user interface', 'title']});
 
   add.method('aaa_unused_createContentsSummaryMorph', function () {

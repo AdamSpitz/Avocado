@@ -46,8 +46,9 @@ thisModule.addSlots(avocado.morphToggler, function(add) {
     return this.isOn();
   }, {category: ['UI state']});
 
-  add.method('assumeUIState', function (uiState, evt) {
+  add.method('assumeUIState', function (uiState, callWhenDone, evt) {
     this.setValue(uiState, evt || Event.createFake());
+    if (callWhenDone) { callWhenDone(); }
   }, {category: ['UI state']});
 
   add.method('commandForToggling', function (name, label) {

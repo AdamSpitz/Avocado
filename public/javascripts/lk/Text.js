@@ -2458,7 +2458,7 @@ BoxMorph.subclass('TextMorph', {
 			case "e": { this.doExchange(); return true; } // Exchange
 			case "f": { this.doFind(); return true; } // Find
 			case "g": { this.doFindNext(); return true; } // Find aGain
-			case "w": { this.doSearch(); return true; } // Where (search in system source code)
+			// case "w": { this.doSearch(); return true; } // Where (search in system source code)  // commented out because I want to close the window with cmd-w -- Adam
 			case "d": { this.doDoit(); return true; } // Doit
 			case "p": { this.doPrintit(); return true; } // Printit
 			case "s": { this.doSave(); return true; } // Save

@@ -9,7 +9,6 @@ requires('lk_ext/morph_factories');
 requires('lk_programming_environment/mirror_morph');
 requires('lk_programming_environment/vocabulary_morph');
 requires('lk_programming_environment/process_morph');
-requires('lk_programming_environment/evaluator_morph');
 requires('lk_programming_environment/searching');
 requires('lk_programming_environment/db_morph');
 requires('lk_programming_environment/project_morph');

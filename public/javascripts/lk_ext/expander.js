@@ -70,8 +70,9 @@ thisModule.addSlots(avocado.ExpanderMorph.prototype, function(add) {
     return this.isExpanded();
   });
 
-  add.method('assumeUIState', function (uiState, evt) {
+  add.method('assumeUIState', function (uiState, callWhenDone, evt) {
     this.setExpanded(uiState);
+    if (callWhenDone) { callWhenDone(); }
   });
 
 });

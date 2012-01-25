@@ -62,26 +62,32 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     return null;
   }, {category: ['poses']});
 
-  add.method('assumeUIState', function (uiState, evt) {
+  add.method('assumeUIState', function (uiState, callWhenDone, evt) {
     // override constructUIStateMemento and assumeUIState, or uiStateParts, in children if you want them to be recalled in a particular state
 
     if (this.partsOfUIState) {
       if (!uiState) { return; }
       evt = evt || Event.createFake();
       var parts = typeof(this.partsOfUIState) === 'function' ? this.partsOfUIState() : this.partsOfUIState;
-      reflect(parts).normalSlots().each(function(slot) {
-        var partName = slot.name();
-        var part = slot.contents().reflectee();
-        if (part) {
-          if (!(part.isMorph) && part.collection && part.keyOf && part.getPartWithKey) {
-            uiState[partName].each(function(elemKeyAndUIState) {
-              part.getPartWithKey(this, elemKeyAndUIState.key).assumeUIState(elemKeyAndUIState.uiState);
-            }.bind(this));
-          } else {
-            part.assumeUIState(uiState[partName], evt);
+      
+      avocado.callbackWaiter.on(function(generateIntermediateCallback) {
+        reflect(parts).normalSlots().each(function(slot) {
+          var partName = slot.name();
+          var part = slot.contents().reflectee();
+          if (part) {
+            var uiStateForThisPart = uiState[partName];
+            if (typeof(uiStateForThisPart) !== 'undefined') {
+              if (!(part.isMorph) && part.collection && part.keyOf && part.getPartWithKey) {
+                uiStateForThisPart.each(function(elemKeyAndUIState) {
+                  part.getPartWithKey(this, elemKeyAndUIState.key).assumeUIState(elemKeyAndUIState.uiState, generateIntermediateCallback());
+                }.bind(this));
+              } else {
+                part.assumeUIState(uiStateForThisPart, generateIntermediateCallback(), evt);
+              }
+            }
           }
-        }
-      }.bind(this));
+        }.bind(this));
+      }, callWhenDone, "assuming UI state");
     }
   }, {category: ['poses']});
 

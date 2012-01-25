@@ -184,9 +184,25 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
     var m = this.worldFor(evt).morphFor(obj);
     if (m.ensureVisible) { m.ensureVisible(); }
   });
+
+  add.method('transferUIState', function (oldObj, newObj, evt) {
+    var world = this.worldFor(evt);
+    var oldMorph = world.existingMorphFor(oldObj);
+    if (oldMorph) {
+      var newMorph = world.morphFor(newObj);
+      oldMorph.transferUIStateTo(newMorph);
+      world.forgetAboutExistingMorphFor(oldObj, oldMorph);
+      return newMorph;
+    } else {
+      return null;
+    }
+  });
   
   add.method('defaultFillWithColor', function (c) {
-    return lively.paint.defaultFillWithColor(c);
+    if (!c) { return null; }
+    return new lively.paint.LinearGradient([new lively.paint.Stop(0, c),
+                                            new lively.paint.Stop(1, c.lighter())],
+                                           lively.paint.LinearGradient.SouthNorth);
   });
   
   add.method('newMorph', function (shape) {

@@ -45,8 +45,9 @@ thisModule.addSlots(avocado.morphHider, function(add) {
     return undefined;
   }, {category: ['UI state']});
 
-  add.method('assumeUIState', function (uiState, evt) {
+  add.method('assumeUIState', function (uiState, callWhenDone, evt) {
     // no UI state
+    if (callWhenDone) { callWhenDone(); }
   }, {category: ['UI state']});
 
 });
