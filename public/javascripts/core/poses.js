@@ -309,7 +309,7 @@ thisModule.addSlots(avocado.poses.snapshot, function(add) {
     for (var i = 0, n = this._elements.length; i < n; ++i) {
       var elem = this._elements[i];
       // aaa - handle other kinds of posers, not just mirrors
-      params["poser"   + i] = elem.poser instanceof avocado.mirror.Morph ? "mirror(" + org.nameOfReflecteeOf(elem.poser.mirror()) + ")" : "unknown";
+      params["poser"   + i] = elem.poser.isMirrorMorph ? "mirror(" + org.nameOfReflecteeOf(elem.poser.mirror()) + ")" : "unknown";
       params["pos"     + i] = elem.position.toString();
       params["uiState" + i] = Object.toJSON(elem.uiState);
     }

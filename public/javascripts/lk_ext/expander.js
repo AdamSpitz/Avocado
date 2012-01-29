@@ -62,8 +62,6 @@ thisModule.addSlots(avocado.ExpanderMorph.prototype, function(add) {
   });
 
   add.method('isExpanded', function( ) {return !!this.getModel().getValue();});
-  add.method('expand', function( ) {this.setExpanded(true );});
-  add.method('collapse', function( ) {this.setExpanded(false);});
   add.method('setExpanded', function(b) {if (this.isExpanded() !== !!b) {this.setValue(!!b); this.updateView("all");}});
 
   add.method('constructUIStateMemento', function () {

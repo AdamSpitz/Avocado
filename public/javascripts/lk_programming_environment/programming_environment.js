@@ -151,7 +151,7 @@ thisModule.addSlots(avocado, function(add) {
       var posersByGroupID = avocado.dictionary.copyRemoveAll();
       w.eachSubmorph(function(m) {
         var poseName = "Other";
-        if ((m instanceof avocado.mirror.Morph) && m.mirror().isReflecteeNumber()) {
+        if (m.isMirrorMorph && m.mirror().isReflecteeNumber()) {
           poseName = (m.mirror().primitiveReflectee() % 5).toString() + " mod 5";
         }
         var posers = posersByGroupID.getOrIfAbsentPut(poseName, function() { return []; });
@@ -209,7 +209,7 @@ thisModule.addSlots(avocado, function(add) {
       var w = evt.hand.world();
       var m = w.morphFor(reflect(TextMorph.prototype));
       m.ensureIsInWorld(w, pt(300,200), true, false, false, function() {
-        m.expander().expand(evt);
+        m.assumeUIState({isExpanded: true}, null, evt);
       });
     }.bind(this)]);
 

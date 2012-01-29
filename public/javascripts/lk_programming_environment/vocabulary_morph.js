@@ -68,10 +68,6 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
 
   add.method('mirror', function () { return this._model.mirror(); }, {category: ['accessing']});
 
-  add.method('expand', function () {
-    this._expander.expand();
-  }, {category: ['updating']});
-
   add.method('potentialContentMorphs', function () {
     var rows = [this._headerRow];
     if (this._expander.isExpanded()) { rows.push(this._mirrorsPanel); }
@@ -108,7 +104,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   }, {category: ['evaluators']});
 
   add.method('doIWantToLeaveAPlaceholderWhenRemoving', function (m) {
-    return m.owner === this._mirrorsPanel && m instanceof avocado.mirror.Morph;
+    return m.owner === this._mirrorsPanel && m.isMirrorMorph;
   }, {category: ['placeholders']});
 
   add.method('placeholderForMirror', function (mir) {

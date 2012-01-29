@@ -898,6 +898,10 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return reflect(Object.deepCopyRecursingIntoCreatorSlots(this.reflectee()));
   }, {category: ['user interface']});
 
+  add.method('eachAssociatedObject', function (f) {
+    f(this.reflectee());
+  }, {category: ['associated objects']});
+
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
 
@@ -931,7 +935,85 @@ thisModule.addSlots(avocado.mirror, function(add) {
       avocado.ui.grab(this.deepCopyOfReflecteeRecursingIntoCreatorSlots(), evt);
     }, this));
     
+    if (this.shouldAllowModification()) {
+      var creationCommands = [];
+      if (this.canHaveChildren()) {
+        creationCommands.push(avocado.command.create("create child", function(evt) { this.createAndShowChild(evt); }, this));
+      }
+
+      if (this.isReflecteeProbablyAClass()) {
+        creationCommands.push(avocado.command.create("create subclass", function(evt) { this.createAndShowSubclass(evt); }, this));
+      }
+
+      if (this.hasAccessibleParent()) {
+        creationCommands.push(avocado.command.create("interpose new parent", function(evt) { this.interposeAndShowNewParent(evt); }, this));
+      }
+
+      if (creationCommands.length > 0) {
+        cmdList.addItem(avocado.command.create("create", creationCommands));
+      }
+    }
+    
     return cmdList;
+  }, {category: ['user interface', 'commands']});
+
+  add.method('createAndShowChild', function (evt) {
+    var world = avocado.ui.worldFor(evt);
+    var child = this.createChild();
+    var childMirMorph = world.morphFor(child);
+    
+    // might as well show the arrow from the child to the parent
+
+    evt.hand.world().addMorphAt(childMirMorph, pt(-1000, -1000));
+    childMirMorph.assumeUIState({isExpanded: true}, function() {
+      childMirMorph.growFromNothing(evt, function() {
+        childMirMorph.assumeUIState({isAnnotationOpen: true}, function() {
+          var parentSlotMorph = world.morphFor(child.parentSlot());
+          parentSlotMorph.assumeUIState({isArrowVisible: true});
+        }, evt);
+      });
+    }, evt);
+  }, {category: ['user interface', 'commands']});
+
+  add.method('createAndShowSubclass', function (evt) {
+    var subclass = this.createSubclass();
+    var subclassMirMorph = avocado.ui.grab(subclass, evt);
+
+    // might as well show the arrow from the subclass to the superclass
+    subclassMirMorph.assumeUIState({isExpanded: true}, function() {
+      var superclassSlotMorph = avocado.ui.currentWorld().morphFor(subclass.slotAt('superclass'));
+      superclassSlotMorph.assumeUIState({isArrowVisible: true});
+    }, evt);
+  }, {category: ['user interface', 'commands']});
+
+  add.method('interposeAndShowNewParent', function (evt) {
+    var world = avocado.ui.worldFor(evt);
+    var oldParent = this.parent();
+    var newParent = oldParent.createChild();
+    var oldParentMorph  = world.morphFor(oldParent);
+    var newParentMorph  = world.morphFor(newParent);
+    var thisMirrorMorph = world.morphFor(this);
+    
+    oldParentMorph.ensureIsInWorld(world, thisMirrorMorph.getPosition().addXY(0, -150), false, false, false, function() {
+      world.addMorphAt(newParentMorph, pt(-1000, -1000));
+      thisMirrorMorph.assumeUIState({isExpanded: true}, null, evt);
+       newParentMorph.assumeUIState({isExpanded: true}, null, evt);
+      newParentMorph.growFromNothingAt(thisMirrorMorph.getPosition().midPt(oldParentMorph.getPosition()).addPt(newParentMorph.getExtent().scaleBy(0.5)), function() {
+        this.setParent(newParent);
+        this.parentSlot().beCreator();
+        newParentMorph.refreshContentOfMeAndSubmorphs(); // just so that the proper name shows up immediately
+        
+        newParentMorph._annotationToggler.beOn(evt);
+        //newParentMorph.assumeUIState({isAnnotationOpen: true}, function() {
+          world.morphFor(newParent.parentSlot()).assumeUIState({isArrowVisible: true});
+        //}, evt);
+        
+        thisMirrorMorph._annotationToggler.beOn(evt);
+        //thisMirrorMorph.assumeUIState({isAnnotationOpen: true}, function() {
+          world.morphFor(this.parentSlot()).assumeUIState({isArrowVisible: true});
+        //}.bind(this), evt);
+      }.bind(this));
+    }.bind(this));
   }, {category: ['user interface', 'commands']});
 
   add.method('canHaveAnnotation', function () {

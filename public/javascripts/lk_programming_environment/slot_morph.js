@@ -76,9 +76,9 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
           contentsMorph.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore();
           return contentsMorph;
         },
-        function() { avocado.slots.userInterface.createContentsPointerPaneFor(slotMorph, getOrCreateSourcePane()); }.memoize()
+        function() { return avocado.slots.userInterface.createContentsPointerPaneFor(slotMorph, getOrCreateSourcePane()); }.memoize()
       ], function() {
-        return (slot.type() && slot.type().canCreateInputMorph()) ? 0 : (slot.shouldBeShownAsJustSourceCode() ? 1 : (slot.shouldBeShownAsContainingItsContents() ? 2 : 3));
+        return (slot.type() && slot.type().canCreateInputMorph && slot.type().canCreateInputMorph()) ? 0 : (slot.shouldBeShownAsJustSourceCode() ? 1 : (slot.shouldBeShownAsContainingItsContents() ? 2 : 3));
       }).applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
       //}, slotMorph, 1.5, pt(10,10));
       signatureRowContent = [descriptionMorph, avocado.ui.createSpacer(), slotMorph._annotationToggler].compact();
@@ -480,6 +480,10 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
 
   add.method('createDescriptionMorphFor', function (slotMorph) {
     return slotMorph.findOrCreateTitleLabel();
+  }, {category: ['pretending to be a slot']});
+  
+  add.method('titleAccessors', function () {
+    return avocado.accessors.forMethods(this, 'title');
   }, {category: ['pretending to be a slot']});
   
 });

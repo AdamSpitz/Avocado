@@ -168,7 +168,13 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('eachAssociatedObject', function (f) {
     // Children can override.
-    if (typeof(this._model) !== 'undefined') { f(this._model); }
+    var model = this._model;
+    if (typeof(model) !== 'undefined') {
+      f(model);
+      if (model !== null && typeof(model.eachAssociatedObject) === 'function') {
+        model.eachAssociatedObject(f);
+      }
+    }
   }, {category: ['associated objects']});
 
   add.method('associatedObjectSatisfying', function (criterion) {
@@ -243,10 +249,11 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
   add.method('commands', function () {
     var cmdList;
     if (this._model && typeof(this._model.commands) === 'function') {
-      cmdList = this._model.commands().wrapForMorph(this);
-    } else {
-      cmdList = avocado.command.list.create();
+      var modelCommands = this._model.commands();
+      if (modelCommands) { cmdList = modelCommands.wrapForMorph(this); }
     }
+    if (!cmdList) { cmdList = avocado.command.list.create(); }
+    
     this.addTitleEditingCommandsTo(cmdList);
     this.addModelSpecificUICommandsTo(cmdList);
     return cmdList;

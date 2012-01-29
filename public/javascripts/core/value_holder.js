@@ -41,6 +41,12 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
   }, {category: ['value']});
 
   add.method('setValue', function (v, evt) {
+    var changed = this.justSetValue(v);
+    if (changed) {this.notifier.notifyAllObservers(evt);}
+    return v;
+  }, {category: ['value']});
+
+  add.method('justSetValue', function (v) {
     if (! this.checkType(v)) {
       throw new Error("Type mismatch for " + this.name() + ": " + v);
     }
@@ -48,8 +54,7 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
     var oldValue = this.value;
     var changed = this.areValuesDifferent(oldValue, v);
     this.value = v;
-    if (changed) {this.notifier.notifyAllObservers(evt);}
-    return v;
+    return changed;
   }, {category: ['value']});
 
   add.method('areValuesDifferent', function (v1, v2) {
