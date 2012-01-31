@@ -375,17 +375,11 @@ thisModule.addSlots(avocado.mirror.Morph.prototype, function(add) {
     return cmdList;
   }, {category: ['menu']});
 
-  add.method('dragAndDropCommands', function () {
-    var cmdList = avocado.command.list.create(this);
+  add.method('dragAndDropCommands', function ($super) {
+    var cmdList = $super();
     
     var rootCatCmdList = this.rootCategoryMorph().dragAndDropCommands();
     if (rootCatCmdList) { cmdList.addAllCommands(rootCatCmdList); }
-    
-    cmdList.addItem(avocado.command.create("make attribute point to me", function(evt, arrowEndpoint) {
-      arrowEndpoint.wasJustDroppedOnMirror(this);
-    }).setArgumentSpecs([avocado.command.argumentSpec.create('arrowEndpoint').onlyAccepts(function(m) {
-      return typeof(m.wasJustDroppedOnMirror) === 'function';
-    })]));
     
     return cmdList;
   }, {category: ['drag and drop']});

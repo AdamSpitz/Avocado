@@ -78,6 +78,10 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
     return this.readableName();
   }, {category: ['naming']});
 
+  add.method('toString', function () {
+    return this.readableName();
+  }, {category: ['naming']});
+
   add.method('type', function () {
     return this._type;
   }, {category: ['types']});

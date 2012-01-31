@@ -221,7 +221,7 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     world.hands.each(function(m) { m.setScale(1 / s); });
     world.stickyMorphs().each(function(m) { m.setScale(1 / s); m.moveBy(m.origin.translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor)); });
     world.eachSubmorph(function(m) {
-      if (typeof(m.justScaledWorld) === 'function') {
+      if (m && typeof(m.justScaledWorld) === 'function') {
         m.justScaledWorld(s);
       }
     });

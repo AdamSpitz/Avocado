@@ -50,25 +50,37 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
 
   add.data('constructor', avocado.PlaceholderMorph);
 
-  add.method('initialize', function ($super, originalMorph) {
-    $super(originalMorph.shape.copy());
-		this.applyStyle(originalMorph.makeStyleSpec());
-    this.applyStyle(this.defaultStyle);
-    this._originalMorph = originalMorph;
-    this._labelMorph = avocado.label.newMorphFor(originalMorph.inspect());
+  add.method('initialize', function ($super, originalMorphOrFn) {
+    $super(avocado.ui.shapeFactory.newRectangle(pt(0,0).extent(pt(150,100))));
+    this._originalMorphOrFn = originalMorphOrFn;
+    this._labelMorph = avocado.label.newMorphFor("");
     this._labelMorph.setTextColor(this.defaultStyle.textColor);
-    this.animatedAddMorphCentered(this._labelMorph);
+    this.refreshContent();
   }, {category: ['creating']});
 
   add.creator('defaultStyle', {}, {category: ['styles']});
 
-  add.method('originalMorph', function () { return this._originalMorph; }, {category: ['accessing']});
+  add.method('originalMorph', function () {
+    var m = typeof(this._originalMorphOrFn) === 'function' ? this._originalMorphOrFn() : this._originalMorphOrFn;
+    m.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore();
+    return m;
+  }, {category: ['accessing']});
   
   add.method('relatedMorphs', function () { return [this.originalMorph()]; });
   
   add.method('toString', function () {
-    return "placeholder for " + this._originalMorph;
+    return "placeholder for " + this.originalMorph();
   }, {category: ['printing']});
+  
+  add.method('refreshContent', function () {
+    var originalMorph = this.originalMorph();
+    this.setShape(originalMorph.shape.copy());
+		this.applyStyle(originalMorph.makeStyleSpec());
+    this.applyStyle(this.defaultStyle);
+    this._labelMorph.setText(originalMorph.inspect());
+    this.addMorphCentered(this._labelMorph);
+    this.minimumExtentMayHaveChanged();
+  }, {category: ['updating']});
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
@@ -79,28 +91,39 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
   add.method('putOriginalMorphBack', function (callWhenDone) {
     if (this._puttingOriginalMorphBack) { return; }
 	  this._puttingOriginalMorphBack = true;
-    this.owner.animatedReplaceMorph(this, this._originalMorph, function() {
-      delete this._originalMorph._placeholderMorphIJustCameFrom;
-      this._originalMorph.refreshContentOfMeAndSubmorphs();
+	  var originalMorph = this.originalMorph();
+    this.owner.animatedReplaceMorph(this, originalMorph, function() {
+      delete originalMorph._placeholderMorphIJustCameFrom;
+      originalMorph.refreshContentOfMeAndSubmorphs();
       delete this._puttingOriginalMorphBack;
       if (callWhenDone) { callWhenDone(this); }
     }.bind(this));
   }, {category: ['putting in place']});
 
   add.method('putOriginalMorphBackWithoutAnimation', function () {
-    this.owner.replaceMorph(this, this._originalMorph);
-    delete this._originalMorph._placeholderMorphIJustCameFrom;
-    this._originalMorph.refreshContentOfMeAndSubmorphs();
+	  var originalMorph = this.originalMorph();
+    this.owner.replaceMorph(this, originalMorph);
+    delete originalMorph._placeholderMorphIJustCameFrom;
+    originalMorph.refreshContentOfMeAndSubmorphs();
   }, {category: ['putting in place']});
 
   add.method('putInPlaceOfOriginalMorph', function () {
-    this._originalMorph.owner.replaceMorph(this._originalMorph, this);
-    this._originalMorph._placeholderMorphIJustCameFrom = this;
+	  var originalMorph = this.originalMorph();
+    originalMorph.owner.replaceMorph(originalMorph, this);
+    originalMorph._placeholderMorphIJustCameFrom = this;
   }, {category: ['putting in place']});
 
   add.method('onMouseDown', function ($super, evt) {
+		if (this.checkForDoubleClick(evt)) {
+		  return true;
+		} else {
+		  this.arrow.toggleVisibility();
+		}
+	}, {category: ['event handling']});
+
+  add.method('onDoubleClick', function (evt) {
 	  this.putOriginalMorphBack();
-	  return $super(evt);
+	  return true;
 	}, {category: ['event handling']});
 
   add.method('handlesMouseDown', function (evt) {
@@ -117,6 +140,8 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype.defaultStyle, function(ad
   add.data('openForDragAndDrop', false);
 
   add.data('suppressGrabbing', true);
+
+  add.data('suppressHandles', true);
 
   add.data('grabsShouldFallThrough', false, {comment: 'Otherwise clicking on it doesn\'t work.'});
 

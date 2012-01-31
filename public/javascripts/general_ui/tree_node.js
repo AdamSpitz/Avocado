@@ -214,7 +214,11 @@ thisModule.addSlots(avocado.treeNode.morphFactories.scalingBased, function(add) 
   });
 
   add.method('dragAndDropCommandsForMorph', function (morph) {
-    return null; // let the content panel be the drop target
+    // Let the content panel be the drop target. Except for making arrows point at me.
+    // aaa - Seriously, is this complication really necessary? Why not just let stuff be dropped on the whole tree-node morph? I forget the motivation for this.
+    var cmdList = avocado.command.list.create(morph);
+    morph.addArrowDroppingCommandTo(cmdList);
+    return cmdList;
   });
   
 });
@@ -251,11 +255,7 @@ thisModule.addSlots(avocado.treeNode.morphMixin_aaa_becauseIDoNotFeelLikeGeneral
   }, {category: ['drag and drop']});
   
   add.method('dragAndDropCommandsForTreeContents', function () {
-    if (typeof(this._model.dragAndDropCommands) === 'function') {
-      return this.model.dragAndDropCommands().wrapForMorph(this);
-    } else {
-      return null;
-    }
+    return avocado.morphMixins.Morph.dragAndDropCommands.call(this);
   }, {category: ['drag and drop']});
 
 });

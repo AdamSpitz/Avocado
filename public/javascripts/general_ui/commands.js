@@ -193,13 +193,29 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   }, {category: ['commands']});
 
   add.method('dragAndDropCommands', function () {
-    if (this._model && typeof(this._model.dragAndDropCommands) === 'function') {
-      var cmdList = this._model.dragAndDropCommands();
-      if (cmdList) {
-        return cmdList.wrapForMorph(this);
+    if (this._model) {
+      var cmdList = avocado.command.list.create(this);
+
+      if (typeof(this._model.dragAndDropCommands) === 'function') {
+        var modelCmdList = this._model.dragAndDropCommands();
+        if (modelCmdList) { cmdList.addAllCommands(modelCmdList.wrapForMorph(this)); }
       }
+      
+      this.addArrowDroppingCommandTo(cmdList);
+      
+      return cmdList;
+    } else {
+      return null;
     }
-    return null;
+  }, {category: ['commands']});
+
+  add.method('addArrowDroppingCommandTo', function (cmdList) {
+    cmdList.addItem(avocado.command.create("make arrow point to me", function(evt, arrowEndpoint) {
+      arrowEndpoint.wasJustDroppedOn(this);
+    }, this).setArgumentSpecs([avocado.command.argumentSpec.create('arrowEndpoint').onlyAccepts(function(m) {
+      if (!m.isArrowEndpoint) { return false; }
+      return avocado.types.checkToSeeIfTypeMatches(m.association.arrowTargetType(), this._model);
+    }.bind(this))]));
   }, {category: ['commands']});
 
 });

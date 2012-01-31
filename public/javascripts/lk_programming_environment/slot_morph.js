@@ -111,7 +111,11 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
 
   add.method('createContentsPointerPaneFor', function (slotMorph, sourcePane) {
     var m = avocado.table.newRowMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
+    /* aaa delete this after the new placeholder way works
     m.layout().setCells([Morph.wrapToTakeUpConstantHeight(10, sourcePane), avocado.ui.createSpacer(), slotMorph.contentsPointerButton()]);
+    */
+    // aaa - why do I need to wrap it in this row morph? if I don't, the actualMorphToShow placeholder mechanism messes up, but maybe I can fix that.
+    m.layout().setCells([avocado.ui.createSpacer(), slotMorph.contentsPointerButton(), avocado.ui.createSpacer()]);
     return m;
   }, {category: ['constructing morphs']});
 
@@ -178,6 +182,10 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   }, {category: ['user interface']});
 
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
+  
+  add.method('arrowTargetType', function () {
+    return avocado.types.mirror;
+  }, {category: ['user interface']});
   
   add.method('titleAccessors', function () {
     if (!window.isInCodeOrganizingMode) {
@@ -383,51 +391,55 @@ thisModule.addSlots(avocado.slots.userInterface.pointer, function(add) {
   }, {category: ['creating']});
 
   add.method('initialize', function (slotMorph) {
-    this._associationMorph = slotMorph;
+    this._slotMorph = slotMorph;
   }, {category: ['creating']});
 
-  add.method('association', function () { return this._associationMorph._model; }, {category: ['accessing']});
+  add.method('slot', function () { return this._slotMorph._model; }, {category: ['accessing']});
 
   add.method('setTarget', function (targetMorph) {
-    this.association().explicitlySetContents(targetMorph.mirror());
+    this.slot().explicitlySetContents(targetMorph._model);
   }, {category: ['setting']});
 
   add.method('labelMorph', function () {
     return Morph.makePolygon([pt(0,5), pt(10,5), pt(5,0), pt(10,5), pt(5,10), pt(10,5)], 1, Color.black, Color.black).ignoreEvents();
   }, {category: ['creating a morph']});
 
-  add.method('inspect', function () { return this.association().name() + " contents"; }, {category: ['printing']});
+  add.method('inspect', function () { return this.slot().name() + " contents"; }, {category: ['printing']});
 
   add.method('helpTextForShowing', function () { return "Show my contents"; }, {category: ['help text']});
 
   add.method('helpTextForHiding', function () { return "Hide arrow"; }, {category: ['help text']});
 
   add.method('prepareToBeShown', function (callWhenDone) {
-    var w = this._associationMorph.world() || avocado.ui.currentWorld();
-    var contents = this.association().contents();
+    var w = this._slotMorph.world() || avocado.ui.currentWorld();
+    var contents = this.slot().contents();
     var contentsMorph = w.morphFor(contents);
-    contentsMorph.smoothlyScaleTo(1 / w.getScale()); // aaa - not sure this is a good idea, but maybe
-    contentsMorph.ensureIsInWorld(w, this._associationMorph.worldPoint(pt(this._associationMorph.getExtent().x + 125, 0)), false, true, true, callWhenDone);
+    if (contentsMorph.world() === w) {
+      if (callWhenDone) { callWhenDone(); }
+    } else {
+      contentsMorph.smoothlyScaleTo(1 / w.getScale()); // aaa - not sure this is a good idea, but maybe
+      contentsMorph.ensureIsInWorld(w, this._slotMorph.worldPoint(pt(this._slotMorph.getExtent().x + 125, 0)), false, true, true, callWhenDone);
+    }
   }, {category: ['showing']});
 
   add.method('notifiersToUpdateOn', function () {
-    var holder = this.association().holder();
+    var holder = this.slot().holder();
     if (! holder) { return []; }
     var holderMorph = avocado.ui.currentWorld().existingMorphFor(holder);
     return holderMorph ? [holderMorph.changeNotifier()] : [];
   }, {category: ['updating']});
 
   add.method('addExtraCommandsTo', function (cmdList) {
-    var assoc = this.association();
+    var assoc = this.slot();
     var c = assoc.contents();
-    if (c.isReflecteeBoolean()) {
-      cmdList.addItem({label: "set to " + (c.oppositeBoolean().reflecteeToString()), go: function(evt) { assoc.setContents(c.oppositeBoolean()); } });
+    if (c && typeof(c.isReflecteeBoolean) === 'function' && c.isReflecteeBoolean()) {
+      cmdList.addItem(avocado.command.create("set to " + (c.oppositeBoolean().reflecteeToString()), function(evt) { assoc.setContents(c.oppositeBoolean()); }));
     }
   }, {category: ['commands']});
 
   add.method('newMorph', function () {
     var m = avocado.ArrowMorph.createButtonForToggling(this);
-    m.arrow.endpoint2.wasJustDroppedOnMirror = function(mirMorph) { this.setTarget(mirMorph); }.bind(this);
+    m.arrow.endpoint2.wasJustDroppedOn = function(targetMorph) { this.setTarget(targetMorph); }.bind(this);
     return m;
   }, {category: ['creating a morph']});
 
@@ -461,9 +473,13 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
     this.setValue(c);
   }, {category: ['pretending to be a slot']});
 
-  add.method('explicitlySetContents', function (c) {
+  add.method('explicitlySetContents', function (c, evt) {
     // aaa - blecch, maybe I should just make valueHolders have a common parent with slots.
-    avocado.slots['abstract'].explicitlySetContents.call(this, c);
+    avocado.slots['abstract'].explicitlySetContents.call(this, c, evt);
+  }, {category: ['pretending to be a slot']});
+  
+  add.method('justExplicitlySetContents', function (evt) {
+    // nothing necessary here
   }, {category: ['pretending to be a slot']});
 
   add.method('shouldBeShownAsContainingItsContents', function () {
@@ -477,6 +493,18 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
   add.method('setSourceCode', function (s) {
     this.explicitlySetContents(this.newContentsForSourceCode(s));
   }, {category: ['pretending to be a slot']});
+  
+  add.method('canSetContentsFromSourceCode', function () {
+    var type = this.type();
+    return type && typeof(type.objectForString) === 'function';
+  }, {category: ['pretending to be a slot']});
+  
+  add.method('newContentsForSourceCode', function (s) {
+    if (this.canSetContentsFromSourceCode()) {
+      return this.type().objectForString(s);
+    }
+    throw new Error("Don't know how to set the contents of " + this + " from a string.");
+  }, {category: ['pretending to be a slot']});
 
   add.method('createDescriptionMorphFor', function (slotMorph) {
     return slotMorph.findOrCreateTitleLabel();
@@ -484,6 +512,10 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
   
   add.method('titleAccessors', function () {
     return avocado.accessors.forMethods(this, 'title');
+  }, {category: ['pretending to be a slot']});
+
+  add.method('arrowTargetType', function () {
+    return this.type();
   }, {category: ['pretending to be a slot']});
   
 });

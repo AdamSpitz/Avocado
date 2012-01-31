@@ -12,6 +12,17 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.types, function(add) {
 
+  add.method('checkToSeeIfTypeMatches', function (type, obj) {
+    if (!type) { return false; } // Or should it return true? But I think I'd kinda rather have to explicitly specify an "anything" type.
+    if (typeof(type.doesTypeMatch) === 'function') {
+      return type.doesTypeMatch(obj);
+    } else if (typeof(type) === 'function') {
+      return type(obj);
+    } else {
+      return Object.inheritsFrom(type, obj);
+    }
+  }, {category: ['checking']});
+
   add.creator('general', {});
 
   add.creator('boolean', Object.create(avocado.types.general));
@@ -58,6 +69,10 @@ thisModule.addSlots(avocado.types.string, function(add) {
   add.method('doesTypeMatch', function (o) {
     return typeof(o) === 'string';
   }, {category: ['testing']});
+
+  add.method('objectForString', function (s) {
+    return s;
+  }, {category: ['converting']});
   
 });
 
@@ -100,7 +115,7 @@ thisModule.addSlots(avocado.types.mirror, function(add) {
   add.method('doesTypeMatch', function (o) {
     if (!o) { return false; }
     if (typeof(o.reflectee) !== 'function') { return false; }
-    return this._reflecteeType.doesTypeMatch(o.reflectee());
+    return !this._reflecteeType || this._reflecteeType.doesTypeMatch(o.reflectee());
   }, {category: ['testing']});
 
 });

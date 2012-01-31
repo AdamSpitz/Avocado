@@ -24,10 +24,16 @@ thisModule.addSlots(avocado.ArrowMorph, function(add) {
     // aaa - This is still a bit of a mess.
 
     var arrow;
-    var m = avocado.command.create("Toggle arrow", function() { arrow.toggleVisibility(); }).newMorph(pointer.labelMorph(), 0, pt(2,2));
+    var shouldUsePlaceholdersAsArrowTogglingButtons = false; // aaa get rid of the old way after the new placeholder way is working.
+    if (shouldUsePlaceholdersAsArrowTogglingButtons && pointer._slotMorph._shouldUseZooming) {
+      var m = new avocado.PlaceholderMorph(function() { return avocado.ui.currentWorld().morphFor(pointer.slot().contents()); });
+      m.setScale(0.25);
+    } else {
+      var m = avocado.command.create("Toggle arrow", function() { arrow.toggleVisibility(); }).newMorph(pointer.labelMorph(), 0, pt(2,2));
+    }
     m.beArrowEndpoint();
 
-    arrow = m.arrow = new avocado.ArrowMorph(pointer.association(), m, null);
+    arrow = m.arrow = new avocado.ArrowMorph(pointer.slot(), m, null);
     arrow.noLongerNeedsToBeUpdated = true;
     arrow.prepareToBeShown = pointer.prepareToBeShown.bind(pointer);
 
@@ -67,7 +73,10 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
   add.method('initialize', function ($super, assoc, ep1, ep2) {
     $super(new lively.scene.Polyline([pt(0,0), pt(0,0)]));
     this.applyStyle(this.defaultStyle);
+    
+    // Optimization: create this notificationFunction once, rather than needing to bind a new function every time it's called.
     this.notificationFunction = function() {setTimeout(this.putVerticesInTheRightPlace.bind(this), 0);}.bind(this);
+    
     this.endpoint1 = ep1 || new avocado.ArrowEndpoint(assoc, this);
     this.endpoint2 = ep2 || new avocado.ArrowEndpoint(assoc, this);
     this.endpoint1.otherEndpoint = this.endpoint2;
@@ -152,7 +161,7 @@ thisModule.addSlots(avocado.ArrowMorph.prototype, function(add) {
       this.endpoint1.attachToTheRightPlace();
       this.endpoint2.attachToTheRightPlace();
       if (! this.owner) {
-        var w = WorldMorph.current();
+        var w = avocado.ui.currentWorld();
         this.adjustScaleBasedOnWorldScale(w.getScale());
         w.addMorph(this);
       }
@@ -449,11 +458,6 @@ thisModule.addSlots(avocado.ArrowEndpoint.prototype, function(add) {
   }, {category: ['attaching']});
 
   add.method('okToBeGrabbedBy', function (evt) { return this.arrow.isReadOnly ? null : this; }, {category: ['grabbing']});
-
-  add.method('wasJustDroppedOn', function (m) {
-    this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = false;
-    this.vectorFromOtherEndpoint = null;
-  }, {category: ['dropping']});
 
 });
 
