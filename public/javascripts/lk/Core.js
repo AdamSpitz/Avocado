@@ -2518,6 +2518,8 @@ Morph.addMethods({
 		this.changed();
 		this.owner.removeMorph(this);
 
+    this.detachArrowEndpoints(); // added by Adam
+
 		return this;
 	},
 
@@ -3861,6 +3863,8 @@ Morph.addMethods({
 		// Note most morphs don't need this in SVG, but text needs the 
 		// call on bounds() to trigger layout on new bounds
 		if(this.owner) this.owner.invalidRect(this.bounds());
+
+    if (this._changeNotifier) { this._changeNotifier.notifyAllObservers(); } // Added by Adam
 	},
 
 	invalidRect: function() {

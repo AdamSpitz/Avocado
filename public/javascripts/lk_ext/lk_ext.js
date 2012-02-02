@@ -3,7 +3,6 @@ avocado.transporter.module.create('lk_ext/lk_ext', function(requires) {
 requires('core/math');
 requires('general_ui/general_ui');
 requires('lk_ext/changes');
-requires('lk_ext/change_notification');
 requires('lk_ext/menus');
 requires('lk_ext/commands');
 requires('lk_ext/grabbing');
@@ -12,7 +11,6 @@ requires('lk_ext/text_morph_variations');
 requires('lk_ext/shortcuts');
 requires('lk_ext/check_box');
 requires('lk_ext/combo_box');
-requires('lk_ext/toggler');
 requires('lk_ext/layout');
 requires('lk_ext/collection_morph');
 requires('lk_ext/tree_node_morph');
@@ -21,7 +19,6 @@ requires('lk_ext/animation');
 requires('lk_ext/scatter');
 requires('lk_ext/expander');
 requires('lk_ext/message_notifier');
-requires('lk_ext/arrows');
 requires('lk_ext/poses');
 requires('lk_ext/morph_factories');
 requires('lk_ext/core_sampler');
@@ -249,6 +246,14 @@ thisModule.addSlots(avocado.livelyKernelUI.shapeFactory, function(add) {
 		cmds.push(new g.LineTo(true, p0.x,  p0.y));
 		return new g.Path(cmds);
   }, {category: ['layout']});
+
+  add.method('newPolygon', function (vertices) {
+    return new lively.scene.Polygon(vertices);
+  });
+
+  add.method('newPolyLine', function (vertices) {
+    return new lively.scene.Polyline(vertices);
+  });
 
 });
 

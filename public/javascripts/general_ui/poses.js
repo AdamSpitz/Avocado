@@ -34,7 +34,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   });
 
   add.method('shouldIgnorePoses', function () {
-    return false;
+    if (this._layout && typeof(this._layout.shouldIgnorePoses) === 'function') {
+      return this._layout.shouldIgnorePoses();
+    } else {
+      return false;
+    }
   }, {category: ['poses']});
 
   add.method('constructUIStateMemento', function () {
@@ -57,6 +61,10 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
         }
       });
       return uiState;
+    }
+    
+    if (this._layout && typeof(this._layout.constructUIStateMemento) === 'function') {
+      return this._layout.constructUIStateMemento(this);
     }
     
     return null;
@@ -88,6 +96,8 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
           }
         }.bind(this));
       }, callWhenDone, "assuming UI state");
+    } else if (this._layout && typeof(this._layout.assumeUIState) === 'function') {
+      this._layout.assumeUIState(this, uiState, callWhenDone, evt);
     }
   }, {category: ['poses']});
 

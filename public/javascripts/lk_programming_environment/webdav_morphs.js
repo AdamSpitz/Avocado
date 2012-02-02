@@ -29,7 +29,7 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
     var m = avocado.table.newColumnMorph();
     var titleLabel = new avocado.TwoModeTextMorph(avocado.accessors.forMethods(this, 'fileName'));
     titleLabel.setFill(null);
-    var contentsTextMorph = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'contentText'));
+    var contentsTextMorph = avocado.frequentlyEditedText.newMorphFor(avocado.accessors.forMethods(this, 'contentText'));
     //contentsTextMorph._maxSpace = pt(100,200);
     //contentsTextMorph.adjustScale();
     contentsTextMorph.setScale(0.3);

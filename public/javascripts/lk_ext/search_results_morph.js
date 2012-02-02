@@ -56,7 +56,7 @@ thisModule.addSlots(avocado.searchResults.Morph.prototype, function(add) {
 
     this._headerRow = avocado.table.createSpaceFillingRowMorph([this._expander, this._titleLabel, avocado.ui.createSpacer(), redoButton, dismissButton], avocado.searchResults.headerRowStyle.padding);
 
-    this.layout().setPotentialCells([this._headerRow, Morph.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
+    this.layout().setPotentialCells([this._headerRow, avocado.table.createOptionalMorph(this._resultsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
     this.refreshContent();
   });
   

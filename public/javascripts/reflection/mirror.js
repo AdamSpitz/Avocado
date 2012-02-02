@@ -953,6 +953,12 @@ thisModule.addSlots(avocado.mirror, function(add) {
         cmdList.addItem(avocado.command.create("create", creationCommands));
       }
     }
+
+    cmdList.addLine();
+    
+    cmdList.addItem(avocado.command.create("show inheritance hierarchy", function(evt) {
+      this.showInheritanceHierarchy(evt);
+    }));
     
     return cmdList;
   }, {category: ['user interface', 'commands']});
@@ -1014,6 +1020,28 @@ thisModule.addSlots(avocado.mirror, function(add) {
         //}.bind(this), evt);
       }.bind(this));
     }.bind(this));
+  }, {category: ['user interface', 'commands']});
+
+  add.method('showCreatorPath', function (evt, callWhenDone) {
+    var world = avocado.ui.worldFor(evt);
+    if (this.equals(reflect(window))) {
+      var mirMorph = world.morphFor(this);
+      mirMorph.ensureIsInWorld(world, pt(50,50), true, false, true, callWhenDone);
+    } else {
+      var creatorSlot = this.probableCreatorSlot();
+      var mirMorphForCreator = world.morphFor(creatorSlot.holder());
+      mirMorphForCreator.showCreatorPath(evt, function() {
+        avocado.ui.ensureVisible(creatorSlot.category(), evt);
+        world.morphFor(creatorSlot).assumeUIState({isArrowVisible: true}, callWhenDone);
+      });
+    }
+  }, {category: ['user interface', 'commands']});
+
+  add.method('showInheritanceHierarchy', function (evt) {
+    var w = evt.hand.world();
+    var parentFunction = function(o) { return o.mirror().hasParent() ? w.morphFor(o.mirror().parent()) : null; };
+    var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.morphFor(reflect(child)); }); };
+    avocado.ui.poseManager(evt).assumePose(Object.newChildOf(avocado.poses.tree, this.inspect() + " inheritance tree", w.morphFor(this), parentFunction, childrenFunction));
   }, {category: ['user interface', 'commands']});
 
   add.method('canHaveAnnotation', function () {

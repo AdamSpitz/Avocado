@@ -9,7 +9,7 @@ thisModule.addSlots(avocado.stringBuffer, function(add) {
   
   add.method('newMorph', function () {
     this.startNotifyingUIWheneverChanged();
-    var tm = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'toString'));
+    var tm = avocado.frequentlyEditedText.newMorphFor(avocado.accessors.forMethods(this, 'toString'));
     tm.setScale(0.3);
     tm.setFill(Color.white);
     return ScrollPane.containing(tm, pt(100,150));

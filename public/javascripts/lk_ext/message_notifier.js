@@ -20,6 +20,18 @@ thisModule.addSlots(avocado.label, function(add) {
 });
 
 
+thisModule.addSlots(avocado.frequentlyEditedText, function(add) {
+
+  add.method('newMorphFor', function (stringSpecifier, nameOfEditCommand, emphasis) {
+    var m = avocado.frequentlyEditedText.newMorphFor(stringSpecifier);
+    if (emphasis) { m.setEmphasis(emphasis); }
+    if (nameOfEditCommand) { m.setNameOfEditCommand(nameOfEditCommand); }
+    return m;
+  }, {category: ['user interface']});
+
+});
+
+
 thisModule.addSlots(avocado.infrequentlyEditedText, function(add) {
 
   add.method('newMorphFor', function (stringSpecifier, nameOfEditCommand, emphasis) {
@@ -27,12 +39,7 @@ thisModule.addSlots(avocado.infrequentlyEditedText, function(add) {
     if (emphasis) { m.setEmphasis(emphasis); }
     if (nameOfEditCommand) { m.setNameOfEditCommand(nameOfEditCommand); }
     m.backgroundColorWhenWritable = null;
-    m.ignoreEvents();
     return m;
-  }, {category: ['user interface']});
-
-  add.method('newMorph', function () {
-    return this.newMorphFor(this._stringSpecifier, this._nameOfEditCommand, this._emphasis);
   }, {category: ['user interface']});
 
 });

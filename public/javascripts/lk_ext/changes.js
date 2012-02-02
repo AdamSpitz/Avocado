@@ -337,6 +337,16 @@ Morph.addMethods({
 
 
 Morph.addMethods({
+  changeNotifier: function() {
+    // aaa - A hack to allow someone to ask to be notified when a particular morph
+    // changes. Useful for arrows - we can make sure to update the arrow the instant
+    // its endpoint moves.
+    return this._changeNotifier || (this._changeNotifier = avocado.notifier.on(this));
+  }
+});
+
+
+Morph.addMethods({
   animatedAddMorphCentered: function(m, callWhenDone) {
     this.animatedAddMorphCenteredAt(m, this.getExtent().scaleBy(0.5), callWhenDone);
   },

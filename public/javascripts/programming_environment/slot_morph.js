@@ -1,4 +1,4 @@
-avocado.transporter.module.create('lk_programming_environment/slot_morph', function(requires) {
+avocado.transporter.module.create('programming_environment/slot_morph', function(requires) {
 
 requires('reflection/reflection');
 requires('general_ui/table_layout');
@@ -56,7 +56,7 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
         slotMorph._annotationToggler = avocado.morphToggler.create(slotMorph, annotationRow);
 
         var commentButton = slotMorph._annotationToggler.commandForToggling('my comment', "'...'").newMorph();
-        optionalCommentButtonMorph = Morph.createOptionalMorph(commentButton, function() { return slotMorph._annotationToggler.isOn() || (slot.comment && slot.comment()); });
+        optionalCommentButtonMorph = avocado.table.createOptionalMorph(commentButton, function() { return slotMorph._annotationToggler.isOn() || (slot.comment && slot.comment()); });
       }
     }
     
@@ -67,9 +67,9 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
     var signatureRowContent, contentsChooserMorph;
     if (shouldUseZooming) {
       /* aaa why does this produce weird shrinking behaviour?   avocado.scaleBasedMorphHider.create(slotMorph, function() { */
-      contentsChooserMorph = Morph.createEitherOrMorph([
+      contentsChooserMorph = avocado.table.createEitherOrMorph([
         function() { return avocado.slots.userInterface.createTypeSpecificInputMorphForSlot(slot); }.memoize(),
-        function() { return Morph.wrapToTakeUpConstantSpace(pt(100, 50), getOrCreateSourcePane()); }.memoize(),
+        function() { return avocado.table.wrapToTakeUpConstantSpace(pt(100, 50), getOrCreateSourcePane()); }.memoize(),
         function() {
           var contentsMorph = avocado.ui.currentWorld().morphFor(slot.contents());
           contentsMorph.setScale(0.65);
@@ -84,7 +84,7 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
       signatureRowContent = [descriptionMorph, avocado.ui.createSpacer(), slotMorph._annotationToggler].compact();
     } else {
       slotMorph._sourceToggler = avocado.morphToggler.create(slotMorph, avocado.slots.userInterface.createRow(getOrCreateSourcePane));
-      var buttonChooserMorph = Morph.createEitherOrMorph([
+      var buttonChooserMorph = avocado.table.createEitherOrMorph([
         slotMorph._sourceToggler.commandForToggling("code").newMorph(avocado.slots.userInterface.createSourceButtonIcon(), 1, pt(3,3)),
         slotMorph.contentsPointerButton()
       ], function() {
@@ -112,7 +112,7 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
   add.method('createContentsPointerPaneFor', function (slotMorph, sourcePane) {
     var m = avocado.table.newRowMorph().beInvisible().applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill});
     /* aaa delete this after the new placeholder way works
-    m.layout().setCells([Morph.wrapToTakeUpConstantHeight(10, sourcePane), avocado.ui.createSpacer(), slotMorph.contentsPointerButton()]);
+    m.layout().setCells([avocado.table.wrapToTakeUpConstantHeight(10, sourcePane), avocado.ui.createSpacer(), slotMorph.contentsPointerButton()]);
     */
     // aaa - why do I need to wrap it in this row morph? if I don't, the actualMorphToShow placeholder mechanism messes up, but maybe I can fix that.
     m.layout().setCells([avocado.ui.createSpacer(), slotMorph.contentsPointerButton(), avocado.ui.createSpacer()]);
@@ -120,12 +120,12 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
   }, {category: ['constructing morphs']});
 
   add.method('createSourceMorphFor', function (slotMorph) {
-    var sm = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(slotMorph._model, 'sourceCode'));
+    var sm = avocado.frequentlyEditedText.newMorphFor(avocado.accessors.forMethods(slotMorph._model, 'sourceCode'));
     sm.applyStyle(avocado.slots.userInterface.sourceMorphStyle);
     sm.rememberThatSavedTextMightNotBeIdenticalToWhatWasTyped();
     slotMorph.findOrCreateTitleLabel()._nextMorphToReceiveInputFocusForwards = sm;
     if (slotMorph._shouldUseZooming) { sm._maxSpace = pt(200,200); }
-    return ScrollPane.ifNecessaryToContain(sm, pt(400,300));
+    return sm.wrappedInScrollPaneIfNecessaryToFitWithin(pt(400,300));
   }, {category: ['constructing morphs']});
 
   add.method('createAnnotationMorphFor', function (slotMorph) {
@@ -169,9 +169,9 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     // that organization object in between).
     var m = avocado.table.newTableMorph().beInvisible().applyStyle(avocado.slots.userInterface.annotationStyle);
     m.replaceContentWith(avocado.table.contents.createWithRows([
-      [avocado.label.newMorphFor("Comment:"      ), new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'comment'))],
-      [avocado.label.newMorphFor("Module:"       ), new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'moduleName'))],
-      [avocado.label.newMorphFor("Initialize to:"), new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(this, 'initializationExpression'))]
+      [avocado.label.newMorphFor("Comment:"      ), avocado.frequentlyEditedText.newMorphFor(avocado.accessors.forMethods(this, 'comment'))],
+      [avocado.label.newMorphFor("Module:"       ), avocado.frequentlyEditedText.newMorphFor(avocado.accessors.forMethods(this, 'moduleName'))],
+      [avocado.label.newMorphFor("Initialize to:"), avocado.frequentlyEditedText.newMorphFor(avocado.accessors.forMethods(this, 'initializationExpression'))]
     ]));
     return m;
   }, {category: ['user interface']});
@@ -401,7 +401,8 @@ thisModule.addSlots(avocado.slots.userInterface.pointer, function(add) {
   }, {category: ['setting']});
 
   add.method('labelMorph', function () {
-    return Morph.makePolygon([pt(0,5), pt(10,5), pt(5,0), pt(10,5), pt(5,10), pt(10,5)], 1, Color.black, Color.black).ignoreEvents();
+		var morph = avocado.ui.newMorph(avocado.ui.shapeFactory.newPolyLine([pt(0,5), pt(10,5), pt(5,0), pt(10,5), pt(5,10), pt(10,5)]));
+    return morph.applyStyle({fill: Color.black, borderWidth: 1, borderColor: Color.black, suppressHandles: true, shouldIgnoreEvents: true});
   }, {category: ['creating a morph']});
 
   add.method('inspect', function () { return this.slot().name() + " contents"; }, {category: ['printing']});
@@ -438,8 +439,8 @@ thisModule.addSlots(avocado.slots.userInterface.pointer, function(add) {
   }, {category: ['commands']});
 
   add.method('newMorph', function () {
-    var m = avocado.ArrowMorph.createButtonForToggling(this);
-    m.arrow.endpoint2.wasJustDroppedOn = function(targetMorph) { this.setTarget(targetMorph); }.bind(this);
+    var m = avocado.arrow.createButtonForToggling(this);
+    m.arrow._layout.endpoint2.wasJustDroppedOn = function(targetMorph) { this.setTarget(targetMorph); }.bind(this);
     return m;
   }, {category: ['creating a morph']});
 

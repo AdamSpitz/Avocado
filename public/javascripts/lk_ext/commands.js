@@ -20,7 +20,7 @@ thisModule.addSlots(avocado.command, function(add) {
     
     var af = this.applicabilityFunction();
     if (af) {
-      m = Morph.createOptionalMorph(m, af);
+      m = avocado.table.createOptionalMorph(m, af);
       m.refreshContent();
     }
     

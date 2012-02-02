@@ -102,7 +102,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
         }
       }
       this.setPosition(newPos);
-      if (this.justDidAnimatedPositionChange) { this.justDidAnimatedPositionChange(); }
+      if (this._layout && this._layout.justDidAnimatedPositionChange) { this._layout.justDidAnimatedPositionChange(); }
     }, {category: ['motion blur']});
 
   add.method('animatedAddMorphAt', function (m, p, callWhenDone) {
@@ -141,7 +141,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('createDismissButtonThatOnlyAppearsIfTopLevel', function () {
-    return Morph.createOptionalMorph(this.createDismissButton.bind(this).memoize(), function() {
+    return avocado.table.createOptionalMorph(this.createDismissButton.bind(this).memoize(), function() {
       return (! this.owner) || (this.owner instanceof WorldMorph) || (this.owner instanceof HandMorph) || (this.owner instanceof avocado.CarryingHandMorph);
     }.bind(this));
   }, {category: ['adding and removing']});

@@ -2,7 +2,7 @@ avocado.transporter.module.create('lk_programming_environment/process_morph', fu
 
 requires('general_ui/table_layout');
 requires('reflection/process');
-requires('lk_programming_environment/slot_morph');
+requires('programming_environment/slot_morph');
 
 }, function(thisModule) {
 
@@ -33,7 +33,7 @@ thisModule.addSlots(avocado.process, function(add) {
     var moreButton = avocado.command.create('More', function(evt) { m._numberToShow += 10; contentColumn.refreshContent(); }).newMorph();
     var moreOrLessRow = avocado.table.createSpaceFillingRowMorph([
       avocado.ui.createSpacer(),
-      Morph.createOptionalMorph(moreButton, function() { return m._hasMore; }),
+      avocado.table.createOptionalMorph(moreButton, function() { return m._hasMore; }),
       avocado.ui.createSpacer()
     ]).applyStyle({padding: 3});
     

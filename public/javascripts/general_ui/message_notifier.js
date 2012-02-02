@@ -13,7 +13,11 @@ thisModule.addSlots(avocado, function(add) {
   
   add.creator('label', {}, {category: ['ui']});
   
-  add.creator('infrequentlyEditedText', Object.create(avocado.label), {category: ['ui']});
+  add.creator('editableText', Object.create(avocado.label), {category: ['ui']});
+  
+  add.creator('frequentlyEditedText', Object.create(avocado.editableText), {category: ['ui']});
+  
+  add.creator('infrequentlyEditedText', Object.create(avocado.editableText), {category: ['ui']});
 
 });
 
@@ -116,12 +120,16 @@ thisModule.addSlots(avocado.label, function(add) {
 });
 
 
-thisModule.addSlots(avocado.infrequentlyEditedText, function(add) {
+thisModule.addSlots(avocado.editableText, function(add) {
   
   add.method('setNameOfEditCommand', function (n) {
     this._nameOfEditCommand = n;
     return this;
   }, {category: ['accessing']});
+
+  add.method('newMorph', function () {
+    return this.newMorphFor(this._stringSpecifier, this._nameOfEditCommand, this._emphasis);
+  }, {category: ['user interface']});
   
 });
 

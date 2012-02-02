@@ -1,4 +1,4 @@
-avocado.transporter.module.create('lk_ext/toggler', function(requires) {
+avocado.transporter.module.create('general_ui/toggler', function(requires) {
 
 requires('general_ui/morph_hider');
 

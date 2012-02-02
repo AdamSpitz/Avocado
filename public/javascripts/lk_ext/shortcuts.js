@@ -64,51 +64,6 @@ thisModule.addSlots(DisplayThemes.lively.button, function(add) {
 });
 
 
-thisModule.addSlots(Morph, function(add) {
-  
-  add.method('createEitherOrMorph', function(morphs, functionReturningTheIndexOfTheOneToShow) {
-    // aaa - callers that are TableMorphs already and just need two choices should just use the new enhanced morphToggler, don't need to wrap it in this RowMorph anymore
-    var r = avocado.table.newRowMorph().beInvisible();
-    r.typeName = 'either-or morph';
-    var togglers = morphs.map(function(m) { return avocado.morphToggler.create(null, m); });
-    r.layout().setPotentialCells(togglers);
-    r.refreshContent = avocado.makeSuperWork(r, "refreshContent", function($super) {
-      var i = functionReturningTheIndexOfTheOneToShow();
-      var evt = Event.createFake();
-      togglers.each(function(t, ti) {
-        t.setValue(i === ti, evt);
-      });
-      return $super();
-    });
-    return r;
-  }, {category: ['shortcuts']});
-
-  add.method('createOptionalMorph', function(m, condition, layoutModes) {
-    var om = Morph.createEitherOrMorph([m, avocado.table.newRowMorph().beInvisible()], function() { return condition() ? 0 : 1; });
-    om.typeName = 'optional morph';
-    om.horizontalLayoutMode = (layoutModes || m).horizontalLayoutMode;
-    om.verticalLayoutMode   = (layoutModes || m).verticalLayoutMode;
-    return om;
-  }, {category: ['shortcuts']});
-
-  add.method('wrapToTakeUpConstantWidth', function(width, morph) {
-    return this.wrapToTakeUpConstantSpace(pt(width, null), morph);
-  }, {category: ['shortcuts']});
-
-  add.method('wrapToTakeUpConstantHeight', function(height, morph) {
-    return this.wrapToTakeUpConstantSpace(pt(null, height), morph);
-  }, {category: ['shortcuts']});
-
-  add.method('wrapToTakeUpConstantSpace', function(space, morph) {
-    var wrapper = avocado.table.newRowMorph().beInvisible();
-    wrapper.layout()._desiredSpaceToScaleTo = space;
-    wrapper.layout().setCells([morph]);
-    return wrapper;
-  }, {category: ['shortcuts']});
-
-});
-
-
 thisModule.addSlots(Event, function(add) {
   
   add.method('createFake', function (hand) {
@@ -138,12 +93,17 @@ thisModule.addSlots(ButtonMorph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(ScrollPane, function(add) {
+thisModule.addSlots(Morph.prototype, function(add) {
 
-  add.method('ifNecessaryToContain', function(morph, maxExtent) {
-    if (morph.getExtent().y <= maxExtent.y) { return morph; }
-    return this.containing(morph, maxExtent);
-  }, {category: ['shortcuts']});
+  add.method('wrappedInScrollPaneIfNecessaryToFitWithin', function(maxExtent) {
+    if (this.getExtent().y <= maxExtent.y) { return this; }
+    return ScrollPane.containing(this, maxExtent);
+  }, {category: ['scrolling']});
+  
+});
+
+
+thisModule.addSlots(ScrollPane, function(add) {
 
   add.method('containing', function(morph, extent) {
     var sp = new this(morph, extent.extentAsRectangle());

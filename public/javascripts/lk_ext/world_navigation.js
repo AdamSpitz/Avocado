@@ -221,9 +221,7 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     world.hands.each(function(m) { m.setScale(1 / s); });
     world.stickyMorphs().each(function(m) { m.setScale(1 / s); m.moveBy(m.origin.translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy(scalingFactor)); });
     world.eachSubmorph(function(m) {
-      if (m && typeof(m.justScaledWorld) === 'function') {
-        m.justScaledWorld(s);
-      }
+      if (m) { m.justScaledWorld(s); }
     });
     
     // Need to refresh, but don't want to do it too often - it's unnecessary and noticeably slows things down.
@@ -298,6 +296,12 @@ thisModule.addSlots(Morph.prototype, function(add) {
     
     if (functionToCallWhenDone) { functionToCallWhenDone(); }
   }, {category: ['navigating']});
+  
+  add.method('justScaledWorld', function (worldScale) {
+    if (this._layout && typeof(this._layout.justScaledWorld) === 'function') {
+      this._layout.justScaledWorld(worldScale);
+    }
+  }, {category: ['scaling']});
 
 });
 

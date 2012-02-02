@@ -89,8 +89,9 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       if (e.uiState) { e.poser.assumeUIState(e.uiState); }
       
       // Keep track of how much space the pose is taking up, so that the pose can answer getExtent(). -- Adam, June 2011
-      var poserExtent = e.poser.getExtent().scaleBy(e.poser.getScale());
-      var poserBounds = e.position.extent(poserExtent);
+      var poserExtent = e.poser.getExtent();
+      var poserSpace = poserExtent.scaleBy(e.poser.getScale());
+      var poserBounds = e.position.extent(poserSpace);
       this._bounds = this._bounds.union(poserBounds);
       if (this._debugMode) { console.log("Adding poser with bounds: " + poserBounds + " and scale " + e.poser.getScale()); }
     }.bind(this), startingPos);

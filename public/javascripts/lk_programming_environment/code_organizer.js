@@ -3,7 +3,7 @@ avocado.transporter.module.create('lk_programming_environment/code_organizer', f
 requires('avocado_lib');
 requires('lk_ext/poses');
 requires('programming_environment/categorize_libraries');
-requires('lk_programming_environment/mirror_morph');
+requires('programming_environment/mirror_morph');
 requires('lk_programming_environment/searching');
 
 }, function(thisModule) {

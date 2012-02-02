@@ -117,7 +117,7 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
 		if (this.checkForDoubleClick(evt)) {
 		  return true;
 		} else {
-		  this.arrow.toggleVisibility();
+		  this.arrow._layout.toggleVisibility();
 		}
 	}, {category: ['event handling']});
 

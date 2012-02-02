@@ -33,9 +33,7 @@ thisModule.addSlots(avocado.types.boolean, function(add) {
 thisModule.addSlots(avocado.types.shortString, function(add) {
 
   add.method('createInputMorph', function (slot) {
-    //return new avocado.TwoModeTextMorph(avocado.accessors.forMethods(slot, 'contents')).ignoreEvents();
-    var tm = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(slot, 'contents'));
-    return tm;
+    return avocado.frequentlyEditedText.newMorphFor(avocado.accessors.forMethods(slot, 'contents'));
   }, {category: ['input']});
   
 });
@@ -44,7 +42,7 @@ thisModule.addSlots(avocado.types.shortString, function(add) {
 thisModule.addSlots(avocado.types.longString, function(add) {
 
   add.method('createInputMorph', function (slot) {
-    var tm = new avocado.TextMorphRequiringExplicitAcceptance(avocado.accessors.forMethods(slot, 'contents'));
+    var tm = avocado.frequentlyEditedText.newMorphFor(avocado.accessors.forMethods(slot, 'contents'));
     tm.setScale(0.3);
     tm.setFill(null);
     return ScrollPane.containing(tm, pt(100,150));

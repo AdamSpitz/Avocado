@@ -20,6 +20,8 @@ requires('general_ui/invisibility');
 requires('general_ui/morph_structure');
 requires('general_ui/scaling');
 requires('general_ui/poses');
+requires('general_ui/toggler');
+requires('general_ui/arrows');
 
 }, function(thisModule) {
 
