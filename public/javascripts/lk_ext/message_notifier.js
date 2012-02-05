@@ -23,7 +23,7 @@ thisModule.addSlots(avocado.label, function(add) {
 thisModule.addSlots(avocado.frequentlyEditedText, function(add) {
 
   add.method('newMorphFor', function (stringSpecifier, nameOfEditCommand, emphasis) {
-    var m = avocado.frequentlyEditedText.newMorphFor(stringSpecifier);
+    var m = new avocado.TextMorphRequiringExplicitAcceptance(stringSpecifier);
     if (emphasis) { m.setEmphasis(emphasis); }
     if (nameOfEditCommand) { m.setNameOfEditCommand(nameOfEditCommand); }
     return m;

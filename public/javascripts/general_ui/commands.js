@@ -214,7 +214,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
       arrowEndpoint.wasJustDroppedOn(this);
     }, this).setArgumentSpecs([avocado.command.argumentSpec.create('arrowEndpoint').onlyAccepts(function(m) {
       if (!m.isArrowEndpoint) { return false; }
-      return avocado.types.checkToSeeIfTypeMatches(m.association.arrowTargetType(), this._model);
+      return avocado.types.checkToSeeIfTypeMatches(m._layout._association.arrowTargetType(), this._model);
     }.bind(this))]));
   }, {category: ['commands']});
 
