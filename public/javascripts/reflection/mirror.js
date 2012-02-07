@@ -697,11 +697,6 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return this.primitiveContentsAt('length');
   }, {category: ['arrays']});
 
-  add.method('oppositeBoolean', function () {
-    if (! this.isReflecteeBoolean()) { throw new Error("not a boolean"); }
-    return ! this.reflectee();
-  }, {category: ['booleans']});
-
   add.method('canHaveCreatorSlot', function () {
     return this.canHaveSlots();
   }, {category: ['annotations', 'creator slot']});

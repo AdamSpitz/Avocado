@@ -13,23 +13,15 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.placeholder, function(add) {
-  
-  add.method('create', function () {
-    var p = Object.create(this);
-    p.initialize.apply(p, arguments);
-    return p;
-  }, {category: ['creating']});
 
-  add.method('initialize', function (o) {
-    this._realObject = o;
-  }, {category: ['creating']});
-
-  add.method('toString', function () {
-    return this._realObject.toString();
-  }, {category: ['printing']});
+  add.method('newPlaceholderMorphForMorph', function (originalMorphOrFn) {
+    return new avocado.PlaceholderMorph(originalMorphOrFn);
+  }, {category: ['user interface']});
   
-  add.method('newMorph', function () {
-    return new avocado.PlaceholderMorph(WorldMorph.current().morphFor(this._realObject)).setModel(this);
+  add.method('newPlaceholderMorphForSlot', function (slot) {
+    var m = avocado.placeholder.newPlaceholderMorphForMorph(function() { return avocado.ui.currentWorld().morphFor(slot.contents()); });
+    m._arrow = avocado.arrow.newMorphFor(slot, m, null);
+    return m;
   }, {category: ['user interface']});
   
 });
@@ -84,7 +76,9 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
-    cmdList.addItem(avocado.command.create('come back!', function(evt) { this.putOriginalMorphBack(); }));
+    if (this._arrow) { this._arrow._layout.addArrowGrabbingCommandTo(cmdList); }
+    cmdList.addItem(avocado.command.create('bring it here', function(evt) { this.putOriginalMorphBack(); }));
+    cmdList.addItem(avocado.command.create('take me there', function(evt) { this.originalMorph().navigateToMe(evt); }));
     return cmdList;
   }, {category: ['commands']});
 
@@ -117,12 +111,15 @@ thisModule.addSlots(avocado.PlaceholderMorph.prototype, function(add) {
 		if (this.checkForDoubleClick(evt)) {
 		  return true;
 		} else {
-		  this.arrow._layout.toggleVisibility();
+		  if (this._arrow) {
+  		  this._arrow._layout.toggleVisibility();
+		  }
 		}
 	}, {category: ['event handling']});
 
   add.method('onDoubleClick', function (evt) {
-	  this.putOriginalMorphBack();
+	  // this.putOriginalMorphBack();
+	  this.originalMorph().navigateToMe(evt); // maybe this is better
 	  return true;
 	}, {category: ['event handling']});
 

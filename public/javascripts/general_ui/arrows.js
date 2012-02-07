@@ -21,48 +21,55 @@ thisModule.addSlots(avocado.arrow, function(add) {
 
   add.creator('defaultStyle', {}, {category: ['styles']});
 
-  add.method('createButtonForToggling', function (pointer) {
-    // aaa - This is still a bit of a mess.
-
-    var arrow;
-    var shouldUsePlaceholdersAsArrowTogglingButtons = false; // aaa get rid of the old way after the new placeholder way is working.
-    if (shouldUsePlaceholdersAsArrowTogglingButtons && pointer._slotMorph._shouldUseZooming) {
-      var m = new avocado.PlaceholderMorph(function() { return avocado.ui.currentWorld().morphFor(pointer.slot().contents()); });
-      m.setScale(0.25);
+  add.method('createButtonForToggling', function (slot) {
+    var shouldUsePlaceholdersAsArrowTogglingButtons = true; // aaa get rid of the old way after the new placeholder way is working.
+    if (shouldUsePlaceholdersAsArrowTogglingButtons && avocado.shouldMirrorsUseZooming) {
+      var m = avocado.placeholder.newPlaceholderMorphForSlot(slot).setScale(0.25);
     } else {
-      var m = avocado.command.create("Toggle arrow", function() { arrow._layout.toggleVisibility(); }).newMorph(pointer.labelMorph(), 0, pt(2,2));
+      var m = avocado.command.create("Toggle arrow", function() { this._arrow._layout.toggleVisibility(); }, m).newMorph(avocado.arrow.createArrowIconLabelMorph(), 0, pt(2,2));
+
+      m.commands = function() {
+        var cmdList = avocado.command.list.create();
+        this._arrow._layout.addArrowGrabbingCommandTo(cmdList);
+        return cmdList;
+      };
+
+      m.inspect = function() { return slot.inspect() + " contents"; };
+      m.getHelpText = function() { return this._arrow._layout.noLongerNeedsToBeUpdated ? "Show arrow" : "Hide arrow"; };
+
+      m._arrow = avocado.arrow.newMorphFor(slot, m, null);
     }
-
-    arrow = m.arrow = avocado.ui.newMorph(avocado.ui.shapeFactory.newPolyLine([pt(0,0), pt(0,0)]));
-    arrow.applyStyle(avocado.arrow.defaultStyle);
-    arrow.setLayout(Object.newChildOf(avocado.arrow.layout, arrow, pointer.slot(), m, null));
-
-    arrow._layout.noLongerNeedsToBeUpdated = true;
-    arrow._layout.prepareToBeShown = pointer.prepareToBeShown.bind(pointer);
-
-    pointer.notifiersToUpdateOn().each(function(notifier) { notifier.addObserver(arrow._layout.notificationFunction); });
-
-    m.commands = function() {
-      var cmdList = avocado.command.list.create();
-
-      // aaa - To do "grab pointer" properly I think I need to do a more general drag-and-drop thing. Right
-      // now nothing will get called if I drop the endpoint on something invalid (like the world or some
-      // other morph), so the visibility will need to be toggled an extra time to get it back to normal.
-      cmdList.addItem({label: "grab pointer", go: function(evt) {
-        arrow._layout.needsToBeVisible();
-        arrow._layout.endpoint2.grabMeWithoutZoomingAroundFirst(evt);
-      }});
-
-      pointer.addExtraCommandsTo(cmdList);
-
-      return cmdList;
-    };
-
-    m.inspect = function() { return pointer.inspect(); };
-    m.getHelpText = function() { return arrow._layout.noLongerNeedsToBeUpdated ? pointer.helpTextForShowing() : pointer.helpTextForHiding(); };
 
     return m;
   }, {category: ['toggling buttons']});
+
+  add.method('createArrowIconLabelMorph', function () {
+		var morph = avocado.ui.newMorph(avocado.ui.shapeFactory.newPolyLine([pt(0,5), pt(10,5), pt(5,0), pt(10,5), pt(5,10), pt(10,5)]));
+    return morph.applyStyle({fill: Color.black, borderWidth: 1, borderColor: Color.black, suppressHandles: true, shouldIgnoreEvents: true});
+  }, {category: ['creating morphs']});
+  
+  add.method('newMorphFor', function (slot, optionalEndpoint1, optionalEndpoint2) {
+    var arrow = avocado.ui.newMorph(avocado.ui.shapeFactory.newPolyLine([pt(0,0), pt(0,0)]));
+    arrow.applyStyle(avocado.arrow.defaultStyle);
+    arrow.setLayout(Object.newChildOf(avocado.arrow.layout, arrow, slot, optionalEndpoint1, optionalEndpoint2));
+
+    arrow._layout.noLongerNeedsToBeUpdated = true;
+
+    arrow._layout.endpoint2.wasJustDroppedOn = function(targetMorph) {
+      slot.explicitlySetContents(targetMorph._model);
+    };
+
+    // aaa - Wait a sec, do I really want the holder's morph? What if it's embedded in something else? Maybe I want the topmostOwnerBesidesTheWorldAndTheHand.
+    var holder = slot.holder();
+    if (holder) {
+      var holderMorph = avocado.ui.currentWorld().existingMorphFor(holder);
+      if (holderMorph) {
+        holderMorph.changeNotifier().addObserver(arrow._layout.notificationFunction);
+      }
+    }
+    
+    return arrow;
+  }, {category: ['creating morphs']});
 
 });
 
@@ -71,6 +78,7 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
   
   add.method('initialize', function (arrowMorph, assoc, ep1, ep2) {
     this._arrowMorph = arrowMorph;
+    this._association = assoc;
     
     this._arrowMorph.shouldNotMoveWhenSlidingTheWorld = true; // Hack, not sure what exactly is going on.
     
@@ -133,8 +141,16 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
   }, {category: ['showing and hiding']});
 
   add.method('prepareToBeShown', function (callWhenDone) {
-    callWhenDone();
-  }, {category: ['showing and hiding'], comment: 'Feel free to override me.'});
+    var w = this.endpoint1.world() || avocado.ui.currentWorld();
+    var contents = this._association.contents();
+    var contentsMorph = w.morphFor(contents);
+    if (contentsMorph.world() === w) {
+      if (callWhenDone) { callWhenDone(); }
+    } else {
+      contentsMorph.smoothlyScaleTo(1 / w.getScale()); // aaa - not sure this is a good idea, but maybe
+      contentsMorph.ensureIsInWorld(w, this.endpoint1.worldPoint(pt(this.endpoint1.getExtent().x + 125, 0)), false, true, true, callWhenDone);
+    }
+  }, {category: ['showing and hiding']});
 
   add.method('showMe', function (callWhenDone) {
     if (this.noLongerNeedsToBeUpdated) {
@@ -246,6 +262,16 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
   add.method('assumeUIState', function (morph, uiState, callWhenDone, evt) {
     this.setVisibility(uiState, callWhenDone);
   }, {category: ['UI state']});
+  
+  add.method('addArrowGrabbingCommandTo', function (cmdList) {
+    // aaa - To do "grab arrow" properly I think I need to do a more general drag-and-drop thing. Right
+    // now nothing will get called if I drop the endpoint on something invalid (like the world or some
+    // other morph), so the visibility will need to be toggled an extra time to get it back to normal.
+    cmdList.addItem(avocado.command.create("grab arrow", function(evt) {
+      this.needsToBeVisible();
+      this.endpoint2.grabMeWithoutZoomingAroundFirst(evt);
+    }, this));
+  }, {category: ['commands']});
 
 });
 

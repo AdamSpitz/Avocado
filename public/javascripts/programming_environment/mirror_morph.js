@@ -206,7 +206,7 @@ thisModule.addSlots(avocado.mirror.morphMixin_aaa_becauseIDoNotFeelLikeGeneraliz
         this._shouldUseZooming ? this._descMorph : null,
         this._annotationToggler,
         this._commentToggler,
-        this.mirror().canHaveSlots() ? this.rootCategoryMorph() : null,
+        this.rootCategoryMorph(),
         this.evaluatorsPanel()
       ].compact();
       this._potentialContentMorphs = avocado.table.contents.createWithColumns([potentialRows]);

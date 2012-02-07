@@ -29,8 +29,6 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
 
   add.creator('signatureRowStyle', {}, {category: ['styles']});
 
-  add.creator('pointer', {}, {category: ['arrows']});
-
   add.creator('morphMixin_aaa_becauseIDoNotFeelLikeGeneralizingTheseMethodsRightNow', {}, {category: ['constructing morphs']});
 
   add.method('newMorphFor', function (slot) {
@@ -263,7 +261,7 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
 thisModule.addSlots(avocado.slots.userInterface.morphMixin_aaa_becauseIDoNotFeelLikeGeneralizingTheseMethodsRightNow, function(add) {
 
   add.method('contentsPointerButton', function () {
-    return this._contentsPointerButton || (this._contentsPointerButton = avocado.slots.userInterface.pointer.create(this).newMorph());
+    return this._contentsPointerButton || (this._contentsPointerButton = avocado.arrow.createButtonForToggling(this._model));
   }, {category: ['contents']});
 
   add.data('desiredUIStateAfterBeingAdded', {isSourceOpen: true}, {initializeTo: '{isSourceOpen: true}', category: ['events']});
@@ -272,7 +270,7 @@ thisModule.addSlots(avocado.slots.userInterface.morphMixin_aaa_becauseIDoNotFeel
     return {
       isSourceOpen:     this._sourceToggler,
       isAnnotationOpen: this._annotationToggler,
-      isArrowVisible:   this._contentsPointerButton ? this._contentsPointerButton.arrow : null
+      isArrowVisible:   this._contentsPointerButton ? this._contentsPointerButton._arrow : null
     };
   }, {category: ['UI state']});
 
@@ -380,69 +378,6 @@ thisModule.addSlots(avocado.slots.userInterface.sourceMorphStyle, function(add) 
 thisModule.addSlots(avocado.slots.userInterface.signatureRowStyle, function(add) {
 
   add.data('padding', {left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}'});
-
-});
-
-
-thisModule.addSlots(avocado.slots.userInterface.pointer, function(add) {
-
-  add.method('create', function (slotMorph) {
-    return Object.newChildOf(this, slotMorph);
-  }, {category: ['creating']});
-
-  add.method('initialize', function (slotMorph) {
-    this._slotMorph = slotMorph;
-  }, {category: ['creating']});
-
-  add.method('slot', function () { return this._slotMorph._model; }, {category: ['accessing']});
-
-  add.method('setTarget', function (targetMorph) {
-    this.slot().explicitlySetContents(targetMorph._model);
-  }, {category: ['setting']});
-
-  add.method('labelMorph', function () {
-		var morph = avocado.ui.newMorph(avocado.ui.shapeFactory.newPolyLine([pt(0,5), pt(10,5), pt(5,0), pt(10,5), pt(5,10), pt(10,5)]));
-    return morph.applyStyle({fill: Color.black, borderWidth: 1, borderColor: Color.black, suppressHandles: true, shouldIgnoreEvents: true});
-  }, {category: ['creating a morph']});
-
-  add.method('inspect', function () { return this.slot().name() + " contents"; }, {category: ['printing']});
-
-  add.method('helpTextForShowing', function () { return "Show my contents"; }, {category: ['help text']});
-
-  add.method('helpTextForHiding', function () { return "Hide arrow"; }, {category: ['help text']});
-
-  add.method('prepareToBeShown', function (callWhenDone) {
-    var w = this._slotMorph.world() || avocado.ui.currentWorld();
-    var contents = this.slot().contents();
-    var contentsMorph = w.morphFor(contents);
-    if (contentsMorph.world() === w) {
-      if (callWhenDone) { callWhenDone(); }
-    } else {
-      contentsMorph.smoothlyScaleTo(1 / w.getScale()); // aaa - not sure this is a good idea, but maybe
-      contentsMorph.ensureIsInWorld(w, this._slotMorph.worldPoint(pt(this._slotMorph.getExtent().x + 125, 0)), false, true, true, callWhenDone);
-    }
-  }, {category: ['showing']});
-
-  add.method('notifiersToUpdateOn', function () {
-    var holder = this.slot().holder();
-    if (! holder) { return []; }
-    var holderMorph = avocado.ui.currentWorld().existingMorphFor(holder);
-    return holderMorph ? [holderMorph.changeNotifier()] : [];
-  }, {category: ['updating']});
-
-  add.method('addExtraCommandsTo', function (cmdList) {
-    var assoc = this.slot();
-    var c = assoc.contents();
-    if (c && typeof(c.isReflecteeBoolean) === 'function' && c.isReflecteeBoolean()) {
-      cmdList.addItem(avocado.command.create("set to " + (c.oppositeBoolean().reflecteeToString()), function(evt) { assoc.setContents(c.oppositeBoolean()); }));
-    }
-  }, {category: ['commands']});
-
-  add.method('newMorph', function () {
-    var m = avocado.arrow.createButtonForToggling(this);
-    m.arrow._layout.endpoint2.wasJustDroppedOn = function(targetMorph) { this.setTarget(targetMorph); }.bind(this);
-    return m;
-  }, {category: ['creating a morph']});
 
 });
 

@@ -110,7 +110,7 @@ Morph.addMethods({
   
     checkForDoubleClick: function(evt) {
       var currentTime = new Date().getTime(); // Use evt.timeStamp? I just tried that and it didn't seem to work.
-      if (this.timeOfMostRecentDoubleClickCheck != null && currentTime - this.timeOfMostRecentDoubleClickCheck < 400) { // aaa magic number
+      if (this.timeOfMostRecentDoubleClickCheck !== null && currentTime - this.timeOfMostRecentDoubleClickCheck < 400) { // aaa magic number
         this.timeOfMostRecentDoubleClickCheck = null;
         this.onDoubleClick(evt);
         return true;
@@ -259,7 +259,7 @@ Morph.addMethods({
         var carryingHand = avocado.CarryingHandMorph.forWorld(this.world());
         var dropCmd = carryingHand.applicableCommandForDroppingOn(this);
         var handEmpty = !carryingHand.carriedMorph();
-        var disablePickUpAndDropExperiment = false;
+        var disablePickUpAndDropExperiment = true;
         var items = [
             disablePickUpAndDropExperiment ?
               ["grab", this.pickMeUpLeavingPlaceholderIfNecessary.curry(evt)] // need the placeholders -- Adam  // not needed now that we have "pick up"
