@@ -92,7 +92,7 @@ thisModule.addSlots(avocado.autoScaling.layout, function(add) {
     var contentMorphs = contentMorphsOrNull || this._morph.recalculateActualContent() || this._morph.submorphs;
     this._hasAlreadyBeenLaidOutAtLeastOnce = true;
     var pose = this._morph.poseManager().cleaningUpPose(contentMorphs).beUnobtrusive().beSquarish().whenDoneScaleToFitWithinCurrentSpace();
-    if (avocado.ui.is3D) { pose._extraZHack = 3000; } // aaa HACK, what's the right way to make the contents pop out?
+    if (avocado.ui.is3D) { pose._extraZHack = 1000; } // aaa HACK, what's the right way to make the contents pop out?
     this._morph.poseManager().assumePose(pose);
   }, {category: ['organizing']});
   

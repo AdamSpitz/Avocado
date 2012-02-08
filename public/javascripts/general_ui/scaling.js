@@ -69,6 +69,12 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     return s;
   }, {category: ['zooming interface']});
 
+  add.method('setOverallScale', function (desiredOverallScale, optionalAncestorToStopAt) {
+    var ownerOverallScale = this.getOwner() ? this.getOwner().overallScale(optionalAncestorToStopAt) : 1;
+    this.setScale(desiredOverallScale / ownerOverallScale);
+    return this;
+  }, {category: ['zooming interface']});
+
 });
 
 

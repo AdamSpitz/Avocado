@@ -49,6 +49,10 @@ thisModule.addSlots(Point.prototype, function(add) {
     return this.x.hashCode() + this.y.hashCode();
   });
 
+  add.method('approximatelyEqualsPt', function (other, maxDifference) {
+    return Math.abs(this.x - other.x) < maxDifference && Math.abs(this.y - other.y) < maxDifference;
+  });
+
   add.method('storeString', function () {
     return ['new Point(', this.x, ', ', this.y, ')'].join('');
   }, {category: ['transporting']});

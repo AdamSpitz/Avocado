@@ -255,6 +255,18 @@ Morph.addMethods({
   	  this.pickMeUp(evt);
 	  },
 	  
+	  grabAndPullMe: function(evt) {
+	    var world = evt.hand.world();
+	    this.becomeDirectSubmorphOfWorld(world);
+	    var space = this.getExtent().scaleBy(this.getScale());
+	    var worldExtent = world.getExtent();
+	    var desiredScale = this.getScale() * Math.max(1, Math.min(worldExtent.x / space.x, worldExtent.y / space.y) * 0.8);
+	    // console.log("this.getExtent(): " + this.getExtent() + ", this.getScale(): " + this.getScale() + ", world.getExtent(): " + world.getExtent() + ", world.getScale(): " + world.getScale());
+	    this.smoothlyScaleTo(desiredScale, function() {
+    	  this.grabMeWithoutZoomingAroundFirst(evt);
+	    }.bind(this));
+	  },
+	  
     morphMenu: function(evt) {
         var carryingHand = avocado.CarryingHandMorph.forWorld(this.world());
         var dropCmd = carryingHand.applicableCommandForDroppingOn(this);
@@ -269,11 +281,13 @@ Morph.addMethods({
             ["remove", function() { this.startWhooshingOuttaHere(); }.bind(this)], // so much cooler this way -- Adam
             this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
             ["zoom to me", function(evt) { this.navigateToMe(evt); }.bind(this)], // Added by Adam
+            ["grab and pull", function(evt) { this.grabAndPullMe(evt); }.bind(this)], // Added by Adam
             // ["drill", this.showOwnerChain.curry(evt)], // not needed now that we have core samplers. -- Adam
             // ["drag", this.dragMe.curry(evt)], // This menu has too much stuff in it. -- Adam
+            
             this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
                                 : ["turn on edit mode" , function() { this.switchEditModeOn (); }.bind(this)],
-            ["edit style", function() { new StylePanel(this).open()}],
+            // ["edit style", function() { new StylePanel(this).open()}],  // aaa - don't use this very often  -- Adam
             ["inspect...",
              [
                this._model ? ["object",       function(evt) { this.world().morphFor(reflect(this._model)).grabMe(evt); }] : ["", function() {}],

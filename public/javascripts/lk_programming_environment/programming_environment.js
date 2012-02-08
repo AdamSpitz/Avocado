@@ -21,7 +21,7 @@ thisModule.addSlots(avocado, function(add) {
 
   add.data('isZoomingEnabled', true, {category: ['zooming']});
 
-  add.data('shouldMirrorsUseZooming', false, {category: ['zooming']});
+  add.data('shouldMirrorsUseZooming', true, {category: ['zooming']});
   
   add.data('shouldBreakCreatorSlotsInOrderToImprovePerformance', false, {category: ['zooming'], comment: 'aaa - figure out a way to do this creator-slot stuff without wrecking performance of the zooming UI'});
 

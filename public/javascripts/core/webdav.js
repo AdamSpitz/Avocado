@@ -90,23 +90,17 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
 
   add.method('contentText', function (callback) {
     if (typeof(this._cachedContents) === 'undefined' && !this._contentsReq) {
-      try {
-        var thisFile = this;
-        var req = new XMLHttpRequest();
-        this._contentsReq = req;
-        req.open("GET", this.urlString(), true);
-        req.onreadystatechange = function() {
-          if (req.readyState === 4) {
-            thisFile._cachedContents = req.responseText;
-            delete thisFile._contentsReq;
-            avocado.ui.justChanged(thisFile);
-            if (callback) { callback(thisFile._cachedContents); }
-          }
-        };
-        req.send();
-      } catch (ex) {
-        return "cannot get contents"
-      }
+      var thisFile = this;
+      var req = Object.newChildOf(avocado.http.request, this.urlString());
+      this._contentsReq = req;
+      req.send(function(responseText) {
+        thisFile._cachedContents = responseText;
+        delete thisFile._contentsReq;
+        avocado.ui.justChanged(thisFile);
+        if (callback) { callback(responseText); }
+      }, function(err) {
+        console.log("Error getting contents of " + thisFile.urlString() + " - " + err);
+      });
     }
     return this._cachedContents || "";
   }, {category: ['accessing']});
@@ -114,21 +108,16 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
   add.method('setContentText', function (t, callback) {
     this._cachedContents = t || "";
     if (!this._contentsSetterReq) {
-      try {
-        var thisFile = this;
-        var req = new XMLHttpRequest();
-        this._contentsSetterReq = req;
-        req.open("PUT", this.urlString(), true);
-        req.onreadystatechange = function() {
-          if (req.readyState === 4) {
-            delete thisFile._contentsSetterReq;
-            if (callback) { callback(); }
-          }
-        };
-        req.send(this._cachedContents);
-      } catch (ex) {
-        return "cannot get contents"
-      }
+      var thisFile = this;
+      var req = Object.newChildOf(avocado.http.request, this.urlString()).setHTTPMethod("PUT");
+      this._contentsSetterReq = req;
+      req.send(function() {
+        delete thisFile._contentsSetterReq;
+        if (callback) { callback(); }
+      }, function(err) {
+        console.log("Error setting contents of " + thisFile.urlString() + " - " + err);
+      });
+      req.send(this._cachedContents);
     }
     avocado.ui.justChanged(thisFile);
   }, {category: ['accessing']});

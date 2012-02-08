@@ -27,6 +27,8 @@ thisModule.addSlots(avocado.types, function(add) {
 
   add.creator('boolean', Object.create(avocado.types.general));
 
+  add.creator('number', Object.create(avocado.types.general));
+
   add.creator('string', Object.create(avocado.types.general));
   
   add.creator('shortString', Object.create(avocado.types.string));
@@ -60,6 +62,19 @@ thisModule.addSlots(avocado.types.boolean, function(add) {
   add.method('doesTypeMatch', function (o) {
     return typeof(o) === 'boolean';
   }, {category: ['testing']});
+  
+});
+
+
+thisModule.addSlots(avocado.types.number, function(add) {
+
+  add.method('doesTypeMatch', function (o) {
+    return typeof(o) === 'number';
+  }, {category: ['testing']});
+
+  add.method('objectForString', function (s) {
+    return Number(s);
+  }, {category: ['converting']});
   
 });
 

@@ -30,6 +30,15 @@ thisModule.addSlots(avocado.types.boolean, function(add) {
 });
 
 
+thisModule.addSlots(avocado.types.number, function(add) {
+
+  add.method('createInputMorph', function (slot) {
+    return avocado.frequentlyEditedText.newMorphFor(avocado.accessors.forMethods(slot, 'contents'));
+  }, {category: ['input']});
+  
+});
+
+
 thisModule.addSlots(avocado.types.shortString, function(add) {
 
   add.method('createInputMorph', function (slot) {

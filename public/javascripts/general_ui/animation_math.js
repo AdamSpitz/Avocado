@@ -438,21 +438,22 @@ thisModule.addSlots(avocado.animation.speedStepper, function(add) {
 
 thisModule.addSlots(avocado.animation.wiggler, function(add) {
 
-  add.method('initialize', function (centerFnOrPt) {
+  add.method('initialize', function (centerFnOrPt, wiggleSize) {
     this._isMovingTowardExtreme1 = false;
     this._centerFnOrPt = centerFnOrPt;
-    this._wiggleSize = 3;
-    this._distanceToMovePerStep = this._wiggleSize * 1.5;
   });
 
-  add.method('calculatePoints', function () {
+  add.method('calculatePoints', function (morph) {
+    var wiggleSize = morph.getScale() * morph.getExtent().x / 50;
+    this._distanceToMovePerStep = wiggleSize * 1.5;
+    
     this._centerPt = (typeof this._centerFnOrPt === 'function') ? this._centerFnOrPt() : this._centerFnOrPt;
-    this._extreme1 = this._centerPt.addXY(-(this._wiggleSize), 0);
-    this._extreme2 = this._centerPt.addXY(  this._wiggleSize , 0);
+    this._extreme1 = this._centerPt.addXY(-wiggleSize, 0);
+    this._extreme2 = this._centerPt.addXY( wiggleSize, 0);
   });
 
   add.method('doOneStep', function (morph, timeElapsedForThisStep) {
-    if (!this._centerPt) { this.calculatePoints(); }
+    if (!this._centerPt) { this.calculatePoints(morph); }
     var curPos = morph.getPosition();
     var dstPos = this._isMovingTowardExtreme1 ? this._extreme1 : this._extreme2;
     if (curPos.subPt(dstPos).rSquared() < 0.01) {

@@ -99,6 +99,7 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
     m.shouldNotBePartOfRowOrColumn = true;
     m.suppressHandles = true;
     m.setFill(Color.black);
+    m._cachedRelativeLineEndpoint = pt(0,0);
 
     m.okToDuplicate = function () { return false; };
     m.okToBeGrabbedBy = function (evt) { return this; };
@@ -193,9 +194,9 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
 
   add.method('changeVerticesIfNecessary', function () {
     var oldVertices = this._arrowMorph.shape.vertices();
-    // Rounding seems to be necessary to make sure the floats are precisely equal.
-    var newVertices = [this.endpoint1.lineEndpoint().round(), this.endpoint2.lineEndpoint().round()];
-    if (oldVertices[0].round().eqPt(newVertices[0]) && oldVertices[1].round().eqPt(newVertices[1])) {
+    var newVertices = [this.endpoint1.lineEndpoint(), this.endpoint2.lineEndpoint()];
+    if (oldVertices[0].approximatelyEqualsPt(newVertices[0], 1) && oldVertices[1].approximatelyEqualsPt(newVertices[1], 1)) {
+      this.changeVertices(newVertices);
       this.tickSlowly();
     } else {
       this.changeVertices(newVertices);
@@ -224,8 +225,8 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
   add.method('adjustScaleBasedOnWorldScale', function (worldScale) {
     var inverse = 1 / worldScale;
     this._arrowMorph.setBorderWidth(inverse);
-    if (this.endpoint1.isArrowEndpoint) { this.endpoint1.setScale(inverse); }
-    if (this.endpoint2.isArrowEndpoint) { this.endpoint2.setScale(inverse); }
+    if (this.endpoint1.isArrowEndpoint) { this.endpoint1.setOverallScale(1); }
+    if (this.endpoint2.isArrowEndpoint) { this.endpoint2.setOverallScale(1); }
   }, {category: ['scaling']});
     
   add.method('justScaledWorld', function (worldScale) {
@@ -336,7 +337,7 @@ thisModule.addSlots(avocado.arrow.endpointLayout, function(add) {
         var globalCenterOfMorphToAttachTo = morphToAttachTo.worldPoint(localCenterOfMorphToAttachTo);
         var vectorFromCenterToOtherEndpoint = otherEndpointLoc.subPt(globalCenterOfMorphToAttachTo);
         var localPositionOfOtherEndpoint = localCenterOfMorphToAttachTo.addPt(vectorFromCenterToOtherEndpoint);
-        var localNewLoc = this.localPositionClosestTo(localPositionOfOtherEndpoint, localCenterOfMorphToAttachTo).round();
+        var localNewLoc = this.localPositionClosestTo(localPositionOfOtherEndpoint, localCenterOfMorphToAttachTo);
         var globalNewLoc = morphToAttachTo.worldPoint(localNewLoc);
         
         var world = this._arrowEndpointMorph.world();
@@ -485,12 +486,13 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   }, {category: ['geometry']});
 
   add.method('relativeCenterpoint', function () {
-    return this.shape.bounds().extent().scaleBy(0.5);
+    return this.getExtent().scaleBy(0.5);
   }, {category: ['geometry']});
 
   add.method('lineEndpoint', function () {
     if (! this.world()) {return pt(0,0);}
-    return this.worldPoint(this.relativeLineEndpoint());
+    var relative = this.relativeLineEndpoint();
+    return this.worldPoint(relative);
   }, {category: ['arrows']});
 
 });
