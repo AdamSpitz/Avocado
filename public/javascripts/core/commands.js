@@ -16,6 +16,8 @@ thisModule.addSlots(avocado.command, function(add) {
 
   add.creator('argumentSpec', {});
 
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+
   add.method('create', function () {
     var c = Object.create(this);
     c.initialize.apply(c, arguments);
@@ -505,6 +507,52 @@ thisModule.addSlots(String.prompter, function(add) {
     }, '');
   }, {category: ['prompting']});
 
+});
+
+
+thisModule.addSlots(avocado.command.tests, function(add) {
+  
+  add.method('doughnutEatingCommand', function (answer) {
+    return avocado.command.create('eat doughnuts', function (howMany, whatKind) {
+      if (whatKind.indexOf('chocolate') < 0) {
+        this.whatDoYouSay = "blecch";
+      } else {
+        this.whatDoYouSay = "om";
+        for (var i = 0; i < howMany; ++i) { this.whatDoYouSay += " nom"; }
+      }
+    }, answer).setArgumentSpecs([
+      avocado.command.argumentSpec.create("how many").onlyAccepts(function(n) { return typeof(n) === 'number' && n > 0; }),
+      avocado.command.argumentSpec.create("what kind").onlyAcceptsType(avocado.types.string)
+    ]);
+  });
+  
+  add.method('testAcceptingArguments', function () {
+    var answer = {};
+    var c = this.doughnutEatingCommand(answer);
+    
+    this.assert( c.canAcceptArguments([3, "chocolate dip"]));
+    this.assert(!c.canAcceptArguments([0, "chocolate dip"]));
+    this.assert(!c.canAcceptArguments([12, 89]));
+    this.assert(!c.canAcceptArguments(['not a number', "jelly"]));
+    c.go(2, "double chocolate");
+    this.assertEqual("om nom nom", answer.whatDoYouSay);
+    c.go(3, "pink");
+    this.assertEqual("blecch", answer.whatDoYouSay);
+  });
+
+  add.method('aaa_testPromptingForArguments', function () {
+    // aaa - there are are some annoying complications because of that "evt" argument that we assume is there... blecch, simplify this, but later
+    
+    var answer = {};
+    var c = this.doughnutEatingCommand(answer);
+    c.argumentSpecs()[0].setPrompter({prompt: function(name, context, evt, callback) { callback(3); }});
+    c.argumentSpecs()[1].setPrompter({prompt: function(name, context, evt, callback) { callback("chocolate glazed"); }});
+    
+    var c2 = c.wrapWithPromptersForArguments();
+    c2.go();
+    this.assertEqual("om nom nom nom", answer.whatDoYouSay);
+  });
+  
 });
 
 
