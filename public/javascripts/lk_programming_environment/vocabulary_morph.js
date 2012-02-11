@@ -77,8 +77,8 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
 
   add.method('getAllMirrors', function () {
     this._mirrorsPanel.submorphsParticipatingInLayout().forEach(function(m) {
-      if (m.putOriginalMorphBack) {
-        m.putOriginalMorphBack();
+      if (m.layout() && m.layout().putOriginalMorphBack) {
+        m.layout().putOriginalMorphBack();
       }
     });
   }, {category: ['evaluators']});
@@ -108,11 +108,11 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
   }, {category: ['placeholders']});
 
   add.method('placeholderForMirror', function (mir) {
-    return this.placeholderMorphs().find(function(placeholderMorph) { return mir.equals(placeholderMorph.originalMorph().mirror()); });
+    return this.placeholderMorphs().find(function(placeholderMorph) { return mir.equals(placeholderMorph.layout().originalMorph().mirror()); });
   }, {category: ['placeholders']});
 
   add.method('placeholderMorphs', function () {
-    return this._mirrorsPanel.submorphsParticipatingInLayout().select(function(m) { return m instanceof avocado.PlaceholderMorph; });
+    return this._mirrorsPanel.submorphsParticipatingInLayout().select(function(m) { return m.layout() && m.layout().isPlaceholder; });
   }, {category: ['placeholders']});
 
 });

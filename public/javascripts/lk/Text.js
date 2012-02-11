@@ -1086,6 +1086,7 @@ BoxMorph.subclass('TextMorph', {
 		this.textColor = color;
 		this.layoutChanged();
 		this.changed();
+		return this; // added by Adam
 	},
 	
 	getTextColor: function() {
@@ -2853,7 +2854,8 @@ TextMorph.addMethods({
 		var sp = this.enclosingScrollPane();
 		if (! sp) return;
 		var selRect = this.getCharBoundsWithoutCopying(this.selectionRange[this.hasNullSelection() ? 0 : 1]);
-
+    if (!selRect) { return; } // added by Adam, not sure it's right
+    
     // added the scaling code -- Adam
     var scale = this.getScale();
     var scaledSelRect = new Rectangle(selRect.x * scale, selRect.y * scale, selRect.width * scale, selRect.height * scale);

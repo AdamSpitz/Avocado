@@ -65,7 +65,7 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
       }
     } else {
       this.savedTextString = t;
-      if (this.notifier) {this.notifier.notifyAllObservers();}
+      if (this._notifier) {this._notifier.notifyAllObservers();} // aaa is this even used?
     }
   });
 
@@ -297,7 +297,9 @@ thisModule.addSlots(avocado.TwoModeTextMorph.prototype, function(add) {
     if (this.canBecomeWritable()) {
       this.beWritable();
       this.onMouseDown(evt);
+      return true;
     }
+    return false;
   });
   
   add.data('nameOfEditCommand', 'edit');

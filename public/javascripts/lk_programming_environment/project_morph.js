@@ -29,7 +29,7 @@ thisModule.addSlots(avocado.project, function(add) {
     var privacyLabel = avocado.label.newMorphFor("Private: ");
     var privacyCheckbox = new avocado.CheckBoxMorph();
     privacyRow.layout().setCells([privacyLabel, privacyCheckbox]);
-    privacyCheckbox.notifier.addObserver(function(a, b, c) {
+    privacyCheckbox.notifier().addObserver(function(a, b, c) {
       console.log("Clicked the checkbox: " + a + ", " + b + ", " + c);
     });
     */

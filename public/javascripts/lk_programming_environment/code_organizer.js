@@ -36,6 +36,8 @@ thisModule.addSlots(jsQuiche, function(add) {
 
   add.data('isReflectionEnabled', false, {category: ['enabling reflection']});
 
+  add.data('isMorphMenuEnabled', false, {category: ['enabling reflection']});
+
   add.data('debugMode', false, {category: ['debug mode']});
 
   add.creator('menuItemContributors', [], {category: ['menu']});

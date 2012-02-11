@@ -29,7 +29,7 @@ thisModule.addSlots(avocado.command, function(add) {
           if (i > 0) {
             if ((arg.getOwner() instanceof HandMorph || arg.getOwner() instanceof avocado.CarryingHandMorph) && arg._placeholderMorphIJustCameFrom && arg._placeholderMorphIJustCameFrom.world()) {
               var hand = arg.getOwner();
-              arg._placeholderMorphIJustCameFrom.putOriginalMorphBack(function() {
+              arg._placeholderMorphIJustCameFrom.layout().putOriginalMorphBack(function() {
                 if (typeof(hand.hideIfEmpty) === 'function') { hand.hideIfEmpty(); }
               });
             } else if (arg._shouldDisappearAfterCommandIsFinished) {
@@ -86,7 +86,10 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
       var tryMorphs = function(availableMorphs) {
         var possibleArgMorphs = [];
         availableMorphs.forEach(function(morph) {
-          var morphAndRelatedMorphs = typeof(morph.relatedMorphs) === 'function' ? [morph].concat(morph.relatedMorphs()) : [morph];
+          var morphAndRelatedMorphs = [morph];
+          if (morph.layout() && typeof(morph.layout().relatedMorphs) === 'function') {
+            morphAndRelatedMorphs = morphAndRelatedMorphs.concat(morph.layout().relatedMorphs());
+          }
           morphAndRelatedMorphs.forEach(function(morphOrRelatedMorph) {
             if (thisArgSpec.canAccept(morphOrRelatedMorph)) {
               // console.log("Found an argument: " + morphOrRelatedMorph);
@@ -225,13 +228,13 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
 
   add.method('showMorphMenu', function(evt) {
     // Disable the reflective stuff in deployed apps. -- Adam
-    var isReflectionEnabled = false;
-    avocado.ui.currentWorld().applicationList().applications().each(function(app) { if (app.isReflectionEnabled) { isReflectionEnabled = true; }; });
-    if (!isReflectionEnabled) { return false; }
+    var isMorphMenuEnabled = false;
+    avocado.ui.currentWorld().applicationList().applications().each(function(app) { if (app.isMorphMenuEnabled) { isMorphMenuEnabled = true; }; });
+    if (!isMorphMenuEnabled) { return false; }
 
     var menu = this.morphMenu(evt);
     var world = this.world();
-    menu.openIn(world, world.worldPointCorrespondingToScreenPoint(evt.point()), false, (Object.inspect(this) || "").truncate()); // added || "" -- Adam
+    menu.openIn(world, world.worldPointCorrespondingToScreenPoint(evt.point(), 100), false, (Object.inspect(this) || "").truncate()); // added || "" -- Adam
     return true;
   }, {category: ['menus']});
 
@@ -252,7 +255,7 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
     }
     
     var world = this.world();
-    menu.openIn(world, world.worldPointCorrespondingToScreenPoint(evt.point()), false, (Object.inspect(this) || "").truncate()); // added || "" -- Adam
+    menu.openIn(world, world.worldPointCorrespondingToScreenPoint(evt.point(), 100), false, (Object.inspect(this) || "").truncate()); // added || "" -- Adam
     return true;
   }, {category: ['menus']});
 
@@ -275,6 +278,77 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
     return cmdList;
   }, {category: ['menus']});
   
+  add.method('addExtraMorphMenuItemsTo', function (cmdList) {
+    // children can override
+    
+    if (this.layout() && typeof(this.layout().addExtraMorphMenuItemsTo) === 'function') {
+      this.layout().addExtraMorphMenuItemsTo(cmdList);
+    }
+  }, {category: ['menus']});
+	  
+  add.method('morphMenu', function (evt) {
+    var cmdList = avocado.command.list.create(this);
+    
+    if (this._placeholderMorphIJustCameFrom) {
+      cmdList.addItem(avocado.command.create("put back", function() { this._placeholderMorphIJustCameFrom.layout().putOriginalMorphBack(); }));
+    } else if (this.shouldBeEasilyGrabbable()) {
+      cmdList.addItem(avocado.command.create("grab and pull", function() { this.grabAndPullMe(evt); }));
+    } else {
+      cmdList.addItem(avocado.command.create("", function() {}));
+    }
+    
+    cmdList.addItem(avocado.command.create("remove", function() { this.startWhooshingOuttaHere(); }));
+    
+    var disablePickUpAndDropExperiment = true;
+    if (disablePickUpAndDropExperiment) {
+      cmdList.addItem(avocado.command.create("grab", function() { this.pickMeUpLeavingPlaceholderIfNecessary(evt); }));
+    } else {
+      var carryingHand = avocado.CarryingHandMorph.forWorld(this.world());
+      var dropCmd = carryingHand.applicableCommandForDroppingOn(this);
+      var handEmpty = !carryingHand.carriedMorph();
+      if (dropCmd) {
+        cmdList.addItem(avocado.command.create("drop", function() { carryingHand.dropOn(this, evt); }));
+      } else if (handEmpty) {
+        cmdList.addItem(avocado.command.create("pick up", function() { carryingHand.pickUp(this, evt); }));
+      } else {
+        cmdList.addItem(null);
+      }
+    }
+    
+    cmdList.addItem(avocado.command.create("zoom to me", function(evt) { this.navigateToMe(evt); }));
+    
+    // aaa not really usable yet -- Adam: cmdList.addItem(["tagging...", this.taggingCommands()]);
+    
+    this.addExtraMorphMenuItemsTo(cmdList);
+    
+    // aaa - Not really sure what to do with this stuff, but if we leave it in the UI, users end up thinking
+    // that the morph menu is for scary stuff that they shouldn't touch.
+    if (avocado.isReflectionEnabled) {
+      cmdList.addItem(this.okToDuplicate() ? avocado.command.create("duplicate", function(evt) { this.copyToHand(evt.hand); }) : null);
+    
+      cmdList.addItem(this.isInEditMode() ? avocado.command.create("turn off edit mode", function() { this.switchEditModeOff(); })
+                                          : avocado.command.create("turn on edit mode" , function() { this.switchEditModeOn (); }));
+      // cmdList.addItem(avocado.command.create("edit style", function() { new StylePanel(this).open()}));  // aaa - don't use this very often
+      cmdList.addItem(avocado.command.create("inspect...", [
+         this._model ? ["object", function(evt) { this.world().morphFor(reflect(this._model)).grabMe(evt); }] : ["", function() {}],
+                       ["morph",  function(evt) { this.world().morphFor(reflect(this       )).grabMe(evt); }],
+      ]));
+      cmdList.addItem(avocado.command.create("script me", function(evt) {
+        var mir = reflect(avocado.morphScripter.create(this));
+        var mirMorph = this.world().morphFor(mir);
+        mirMorph.openEvaluator(evt);
+        mirMorph.grabMe(evt);
+      })); // simple scripting interface -- Adam
+
+      cmdList.addLine();
+      cmdList.addItems(this.subMenuItems(evt));
+    }
+    
+    var menu = cmdList.createMenu(this);
+		menu.commandStyle = menu.morphCommandStyle;
+    return menu;
+  }, {category: ['menus']});
+    
 });
 
 

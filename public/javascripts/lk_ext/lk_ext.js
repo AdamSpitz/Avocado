@@ -24,7 +24,6 @@ requires('lk_ext/morph_factories');
 requires('lk_ext/core_sampler');
 requires('lk_ext/edit_mode');
 requires('lk_ext/world_navigation');
-requires('lk_ext/placeholder_morph');
 requires('lk_ext/scripting');
 requires('lk_ext/carrying_hand');
 requires('lk_ext/history_morph');
@@ -105,7 +104,9 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
   add.method('showCentered', function (obj, callback, evt) {
     var w = this.worldFor(evt);
     var m = w.morphFor(obj);
-    m.showInCenterOfUsersFieldOfVision(w, callback);
+    m.showInCenterOfUsersFieldOfVision(w, function() {
+      if (callback) { callback(m); }
+    });
   });
 
   add.method('showMessageIfErrorDuring', function (f, evt) {

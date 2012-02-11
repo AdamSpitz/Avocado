@@ -58,6 +58,13 @@ thisModule.addSlots(avocado.animation, function(add) {
   });
 
   add.method('newMovement', function (morph, kindOfPath, destinationFnOrPt, speed, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd) {
+    
+    
+    // I should really try replacing a bunch of this ad-hoc code with something more solid, like:
+    // http://learningthreejs.com/blog/2011/08/17/tweenjs-for-smooth-animation/
+    
+    
+    
     var currentPt = morph.getPosition();
     var destinationPt = (typeof destinationFnOrPt === 'function') ? destinationFnOrPt() : destinationFnOrPt;
     var vector = destinationPt.subPt(currentPt);

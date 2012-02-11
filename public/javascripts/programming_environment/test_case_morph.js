@@ -19,7 +19,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
   
-  add.method('updateFillOfMorph', function (m) {
+  add.method('updateStyleOfMorph', function (m) {
     var r = m._model.result();
     if (r && r.hasFinished()) {
       if (r.anyFailed()) {
@@ -48,8 +48,8 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
 
   add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
   
-  add.method('updateFillOfMorph', function (m) {
-    avocado.testCase.updateFillOfMorph(m);
+  add.method('updateStyleOfMorph', function (m) {
+    avocado.testCase.updateStyleOfMorph(m);
   }, {category: ['user interface']});
 
 });
@@ -61,8 +61,8 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
     return avocado.messageNotifier.create(this.toString(), Color.gray).newMorph().setModel(this);
   }, {category: ['user interface']});
   
-  add.method('updateFillOfMorph', function (m) {
-    avocado.testCase.updateFillOfMorph(m);
+  add.method('updateStyleOfMorph', function (m) {
+    avocado.testCase.updateStyleOfMorph(m);
   }, {category: ['user interface']});
 
   add.creator('defaultMorphStyle', {}, {category: ['user interface']});

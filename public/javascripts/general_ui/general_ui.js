@@ -11,6 +11,7 @@ requires('general_ui/table_layout');
 requires('general_ui/animation');
 requires('general_ui/commands');
 requires('general_ui/events');
+requires('general_ui/placeholder_morph');
 requires('general_ui/input_focus');
 requires('general_ui/wheel_menus');
 requires('general_ui/grabbing');

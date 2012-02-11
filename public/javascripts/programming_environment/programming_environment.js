@@ -34,6 +34,8 @@ thisModule.addSlots(avocado, function(add) {
 
   add.data('isReflectionEnabled', true, {category: ['enabling reflection']});
 
+  add.data('isMorphMenuEnabled', true, {category: ['enabling reflection']});
+
   add.creator('menuItemContributors', [], {category: ['menu']});
 
   add.method('addGlobalCommandsTo', function (cmdList) {

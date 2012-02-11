@@ -28,6 +28,10 @@ thisModule.addSlots(avocado.transporter.nodeInitializer, function(add) {
   add.method('doneLoadingWindow', function () {
   }, {category: ['bootstrapping']});
   
+  add.method('doneLoadingAllAvocadoCode', function () {
+    avocado.ui = avocado.nodeJS.ui;
+  }, {category: ['bootstrapping']});
+  
   add.method('loadTopLevelEnvironment', function (callWhenDone) {
     // aaa - anything that should be done here?
     if (callWhenDone) { callWhenDone(); }

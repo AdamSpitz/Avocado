@@ -57,7 +57,7 @@ thisModule.addSlots(avocado.messageNotifier, function(add) {
     m.showTemporarilyInCenterOfUsersFieldOfVision(world);
   }, {category: ['showing']});
   
-  add.method('updateFillOfMorph', function (m) {
+  add.method('updateStyleOfMorph', function (m) {
     m.setFillBase(this._color || Color.red);
   }, {category: ['user interface']});
   
@@ -65,7 +65,7 @@ thisModule.addSlots(avocado.messageNotifier, function(add) {
     var rows = [avocado.label.create(this._message.toString())];
     if (this._heading) { rows.unshift(avocado.label.create(this._heading).setEmphasis({style: 'bold'})); }
     var m = avocado.table.contents.createWithColumns([rows]).newMorph().setModel(this);
-    this.updateFillOfMorph(m);
+    this.updateStyleOfMorph(m);
     return m;
   }, {category: ['user interface']});
   

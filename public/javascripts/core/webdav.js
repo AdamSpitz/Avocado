@@ -109,7 +109,7 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
     this._cachedContents = t || "";
     if (!this._contentsSetterReq) {
       var thisFile = this;
-      var req = Object.newChildOf(avocado.http.request, this.urlString()).setHTTPMethod("PUT");
+      var req = Object.newChildOf(avocado.http.request, this.urlString()).setHTTPMethod("PUT").setPostBody(this._cachedContents);
       this._contentsSetterReq = req;
       req.send(function() {
         delete thisFile._contentsSetterReq;
@@ -117,7 +117,6 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
       }, function(err) {
         console.log("Error setting contents of " + thisFile.urlString() + " - " + err);
       });
-      req.send(this._cachedContents);
     }
     avocado.ui.justChanged(thisFile);
   }, {category: ['accessing']});

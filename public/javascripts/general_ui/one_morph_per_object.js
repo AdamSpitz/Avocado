@@ -34,7 +34,7 @@ thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
       return obj.newMorph();
     } else {
       var str = isNullOrUndefined ? "" + obj : obj.toString();
-      return avocado.messageNotifier.create(str, Color.yellow).newMorph().setModel(obj);
+      return avocado.messageNotifier.create(str, Color.yellow.lighter()).newMorph().setModel(obj);
     }
   }, {category: ['one morph per object']});
 
@@ -84,7 +84,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   }, {category: ['one morph per object']});
   
   add.method('placeholderForMorph', function (morph) {
-    return this.placeholdersByMorph().getOrIfAbsentPut(morph, function() { console.log("Showing placeholder instead of " + morph); return new avocado.PlaceholderMorph(morph); });
+    return this.placeholdersByMorph().getOrIfAbsentPut(morph, function() { return avocado.placeholder.newPlaceholderMorphForMorph(morph); });
   }, {category: ['one morph per object']});
 
 });

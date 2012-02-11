@@ -79,6 +79,22 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     return enclosingName ? enclosingName + "." + n : n;
   }, {category: ['printing']});
 
+  add.method('get', function () {
+    return this.contents();
+  }, {category: ['compatibility with value holders']});
+
+  add.method('set', function (c) {
+    return this.setContents(c);
+  }, {category: ['compatibility with value holders']});
+  
+  add.method('canGet', function () {
+    return typeof(this.contents) === 'function';
+  }, {category: ['compatibility with value holders']});
+  
+  add.method('canSet', function () {
+    return typeof(this.setContents) === 'function';
+  }, {category: ['compatibility with value holders']});
+  
   add.method('sortOrder', function () { return this.name().toUpperCase(); }, {category: ['sorting']});
 
   add.method('type', function () { return null; }, {category: ['types']});

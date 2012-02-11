@@ -26,20 +26,24 @@ thisModule.addSlots(FileDirectory.prototype, function(add) {
 thisModule.addSlots(avocado.webdav.file, function(add) {
   
   add.method('newMorph', function () {
-    var m = avocado.table.newColumnMorph();
-    var titleLabel = new avocado.TwoModeTextMorph(avocado.accessors.forMethods(this, 'fileName'));
-    titleLabel.setFill(null);
-    var contentsTextMorph = avocado.frequentlyEditedText.newMorphFor(avocado.accessors.forMethods(this, 'contentText'));
-    //contentsTextMorph._maxSpace = pt(100,200);
-    //contentsTextMorph.adjustScale();
-    contentsTextMorph.setScale(0.3);
-    contentsTextMorph.setFill(null);
-    var contentsMorph = ScrollPane.containing(contentsTextMorph, pt(100,150));
+    var m = avocado.table.newColumnMorph().applyStyle(this.defaultMorphStyle);
+    var titleLabel = avocado.infrequentlyEditedText.newMorphFor(avocado.accessors.forMethods(this, 'fileName'));
+    var contentsMorph = avocado.types.longString.createInputMorph(avocado.accessors.forMethods(this, 'contentText'));
     m.layout().setCells([titleLabel, contentsMorph]);
-    m.setFill(Color.red.lighter());
     //m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});
+  
+  add.creator('defaultMorphStyle', {}, {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(avocado.webdav.file.defaultMorphStyle, function(add) {
+
+  add.data('borderRadius', 10);
+  
+  add.data('fillBase', new Color(0.9, 0.5, 0.5));
 
 });
 

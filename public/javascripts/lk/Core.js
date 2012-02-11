@@ -2568,7 +2568,14 @@ Morph.addMethods({
 		this.remove();
 	},
 
-	okToDuplicate: Functions.True  // default is OK
+	okToDuplicate: function() {
+	  // Changed by Adam to check the model.
+	  if (typeof(this._model) !== 'undefined' && this._model !== null && typeof(this._model.okToDuplicate) === 'function') {
+	    return this._model.okToDuplicate();
+	  } else {
+  	  return true;
+	  }
+  },
 
 });
 
@@ -3054,17 +3061,18 @@ Morph.addMethods({
 	},
 
 	handlesMouseDown: function(evt) {
+	  if (this._eventHandler && typeof(this._eventHandler.onMouseDown) === 'function') { return true; } // added by Adam
 		if (this.mouseHandler == null || evt.isCommandKey()) return false;	//default behavior
 		if (this.shouldAllowSelecting()) { return true; } // added by Adam
 		return this.mouseHandler.handlesMouseDown(); 
 	},
 
-  // aaa hack added by Adam, this'll be overwritten later when the Avocado code is loaded
   runAvocadoEventHandler: function (handlerMethodName, evt) {
+    // aaa hack added by Adam, this'll be overwritten later when the Avocado code is loaded
   },
   
-	onMouseDown: function(evt) { 
-		if (UserAgent.isTouch && this.checkForDoubleClick(evt)) { return true; } // Added by Adam
+	onMouseDown: function(evt) {
+		if (this.checkForDoubleClick(evt)) { return true; } // Added by Adam
 		this.hideHelp();
 		if (this.shouldAllowSelecting()) { this.makeSelection(evt); } // Added by Adam
     return this.runAvocadoEventHandler('onMouseDown', evt); // added by Adam

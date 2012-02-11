@@ -62,6 +62,8 @@ PasteUpMorph.addMethods({
 
 Morph.addMethods({
   getOwner: function() { return this.owner; },
+
+  getShape: function() { return this.shape; },
   
   eachSubmorph: function(f) {
     for (var i = 0, n = this.submorphs.length; i < n; ++i) {
@@ -112,8 +114,7 @@ Morph.addMethods({
       var currentTime = new Date().getTime(); // Use evt.timeStamp? I just tried that and it didn't seem to work.
       if (this.timeOfMostRecentDoubleClickCheck !== null && currentTime - this.timeOfMostRecentDoubleClickCheck < 400) { // aaa magic number
         this.timeOfMostRecentDoubleClickCheck = null;
-        this.onDoubleClick(evt);
-        return true;
+        return this.onDoubleClick(evt);
       } else {
         this.timeOfMostRecentDoubleClickCheck = currentTime;
         return false;
@@ -121,8 +122,14 @@ Morph.addMethods({
     },
 
     onDoubleClick: function(evt) {
-      if (UserAgent.isTouch) {
+      if (this._eventHandler && this._eventHandler.onDoubleClick) {
+        return this._eventHandler.onDoubleClick(this, evt);
+      } else if (window.avocado && avocado.defaultDoubleClickHandler) {
+        return avocado.defaultDoubleClickHandler(this, evt);
+      } else if (UserAgent.isTouch) {
         return this.showContextMenu(evt);
+      } else {
+        return false;
       }
     },
 
@@ -255,73 +262,29 @@ Morph.addMethods({
   	  this.pickMeUp(evt);
 	  },
 	  
-	  grabAndPullMe: function(evt) {
+	  shouldBeEasilyGrabbable: function() {
+	    if (avocado.shouldMorphsOnlyBeEasilyGrabbableIfTheyExplicitlySaySo) {
+  	    if (this._model && typeof(this._model.shouldBeEasilyGrabbable) === 'function') {
+  	      return this._model.shouldBeEasilyGrabbable();
+  	    }
+  	    return false;
+	    } else {
+	      return !this.isWorld;
+	    }
+    },
+    
+	  grabAndPullMe: function(evt, callback) {
 	    var world = evt.hand.world();
 	    this.becomeDirectSubmorphOfWorld(world);
 	    var space = this.getExtent().scaleBy(this.getScale());
 	    var worldExtent = world.getExtent();
-	    var desiredScale = this.getScale() * Math.max(1, Math.min(worldExtent.x / space.x, worldExtent.y / space.y) * 0.8);
+	    var desiredScale = this.getScale() * Math.max(1, Math.min(worldExtent.x / space.x, worldExtent.y / space.y) * 0.5);
 	    // console.log("this.getExtent(): " + this.getExtent() + ", this.getScale(): " + this.getScale() + ", world.getExtent(): " + world.getExtent() + ", world.getScale(): " + world.getScale());
-	    this.smoothlyScaleTo(desiredScale, function() {
+  	  this.stayCenteredAndSmoothlyScaleTo(desiredScale, pt(0,0), function() {
     	  this.grabMeWithoutZoomingAroundFirst(evt);
-	    }.bind(this));
+    	  if (callback) { callback(); }
+  	  }.bind(this));
 	  },
-	  
-    morphMenu: function(evt) {
-        var carryingHand = avocado.CarryingHandMorph.forWorld(this.world());
-        var dropCmd = carryingHand.applicableCommandForDroppingOn(this);
-        var handEmpty = !carryingHand.carriedMorph();
-        var disablePickUpAndDropExperiment = true;
-        var items = [
-            disablePickUpAndDropExperiment ?
-              ["grab", this.pickMeUpLeavingPlaceholderIfNecessary.curry(evt)] // need the placeholders -- Adam  // not needed now that we have "pick up"
-              : dropCmd ? ["drop",    function() { carryingHand.dropOn(this, evt); }.bind(this)]
-                        : handEmpty ? ["pick up", function() { carryingHand.pickUp(this, evt); }.bind(this)]
-                                    : ["",        function() { }],
-            ["remove", function() { this.startWhooshingOuttaHere(); }.bind(this)], // so much cooler this way -- Adam
-            this.okToDuplicate() ? ["duplicate", this.copyToHand.curry(evt.hand)] : null,
-            ["zoom to me", function(evt) { this.navigateToMe(evt); }.bind(this)], // Added by Adam
-            ["grab and pull", function(evt) { this.grabAndPullMe(evt); }.bind(this)], // Added by Adam
-            // ["drill", this.showOwnerChain.curry(evt)], // not needed now that we have core samplers. -- Adam
-            // ["drag", this.dragMe.curry(evt)], // This menu has too much stuff in it. -- Adam
-            
-            this.isInEditMode() ? ["turn off edit mode", function() { this.switchEditModeOff(); }.bind(this)]
-                                : ["turn on edit mode" , function() { this.switchEditModeOn (); }.bind(this)],
-            // ["edit style", function() { new StylePanel(this).open()}],  // aaa - don't use this very often  -- Adam
-            ["inspect...",
-             [
-               this._model ? ["object",       function(evt) { this.world().morphFor(reflect(this._model)).grabMe(evt); }] : ["", function() {}],
-               ["morph", function(evt) { this.world().morphFor(reflect(this)).grabMe(evt); }], // OK, I just couldn't resist. -- Adam
-             ]
-            ],
-            /* Meh, I'm not using this right now, and I need the space in the menu. -- Adam
-            ["script me", function(evt) {
-              var mir = reflect(avocado.morphScripter.create(this));
-              var mirMorph = this.world().morphFor(mir);
-              mirMorph.openEvaluator(evt);
-              mirMorph.grabMe(evt);
-            }], // simple scripting interface -- Adam
-            */
-            /* No browser, mirrors are enough, plus this menu has too much stuff in it. -- Adam
-            ["show class in browser", function(evt) { var browser = new SimpleBrowser(this);
-                                              browser.openIn(this.world(), evt.point());
-                                              browser.getModel().setClassName(this.getType());
-            }]
-            */
-        ];
-
-        if (this.getModel() instanceof SyntheticModel)
-            items.push( ["show Model dump", this.addModelInspector.curry(this)]);
-
-        var cmdList = avocado.command.list.create(this, items);
-        cmdList.addItem(["tagging...", this.taggingCommands()]);
-        
-        cmdList.addLine();
-        cmdList.addItems(this.subMenuItems(evt));
-        var menu = cmdList.createMenu(this);
-    		menu.commandStyle = menu.morphCommandStyle;
-        return menu;
-    },
     
   	debugInspect: function() {
   	  var tos = this.toString();

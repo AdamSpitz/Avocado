@@ -283,7 +283,7 @@ thisModule.addSlots(avocado.treeNode.nonZoomingContentsPanelStyle, function(add)
 
 thisModule.addSlots(avocado.treeNode.zoomingStyle, function(add) {
 
-  add.data('fillBase', new Color(1, 0.8, 0.5));
+  add.data('fillBase', new Color(0.8, 0.8, 0.8));
 
   add.data('padding', {top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}, {initializeTo: '{top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}'});
   

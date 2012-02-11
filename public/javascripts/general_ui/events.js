@@ -18,6 +18,11 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
     }
     return false;
   }, {category: ['events']});
+  
+  add.method('setEventHandler', function (h) {
+    this._eventHandler = h;
+    return this;
+  }, {category: ['events']});
 
 });
 

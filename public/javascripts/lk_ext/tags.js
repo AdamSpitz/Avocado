@@ -204,7 +204,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var items = [];
 
     items.push(avocado.command.create("add tag", function(evt, targetMorph) {
-      var tagMorph = new avocado.PlaceholderMorph(targetMorph);
+      var tagMorph = avocado.placeholder.newPlaceholderMorphForMorph(targetMorph);
       this.aboutToReceiveDrop(tagMorph);
       this.addTagMorph(tagMorph);
       if (targetMorph.owner instanceof avocado.CarryingHandMorph) {
@@ -255,7 +255,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     var color = this.getOrCreateColorForTagType(tagType);
     this.eachSubmorph(function(m) {
       if (tagType.matchesMorph(m)) {
-        m.addTagMorph(new avocado.PlaceholderMorph(tagType));
+        m.addTagMorph(avocado.placeholder.newPlaceholderMorphForMorph(tagType));
       }
     });
   }, {category: ['tagging']});

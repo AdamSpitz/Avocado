@@ -27,7 +27,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   
   add.method('refreshContent', function() {
     // children can override
-    this.updateFill();
+    this.updateStyle();
+    
+    if (this._layout && typeof(this._layout.refreshContent) === 'function') {
+      this._layout.refreshContent(this);
+    }
     
     var recalculatedActualContent = this.recalculateActualContent();
     if (recalculatedActualContent) {
@@ -92,10 +96,10 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this.potentialContentMorphs = contentFunction;
   }, {category: ['potential content']});
 
-  add.method('updateFill', function() {
+  add.method('updateStyle', function() {
     // children can override
-    if (this._model && typeof(this._model.updateFillOfMorph) === 'function') {
-      this._model.updateFillOfMorph(this);
+    if (this._model && typeof(this._model.updateStyleOfMorph) === 'function') {
+      this._model.updateStyleOfMorph(this);
     }
   });
 

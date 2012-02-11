@@ -2604,7 +2604,7 @@ BoxMorph.subclass("ScrollPane", {
 
     description: "A scrolling container",
     style: { borderWidth: 2, fill: null},
-    scrollBarWidth: 14,
+    scrollBarWidth: 6, // used to say 14 -- Adam
     ScrollBarFormalRelay: Relay.create({Value: "ScrollPosition", SliderExtent: "-VisibleExtent"}), // a class for relays
 
     initialize: function($super, morphToClip, initialBounds) {

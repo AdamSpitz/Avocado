@@ -43,7 +43,6 @@ thisModule.addSlots(avocado.CheckBoxMorph.prototype, function(add) {
     this.setFill(Color.white);
     this.setFillOpacity(0.2);
     this.connectModel({model: this._model, getValue: "isChecked", setValue: "setChecked"});
-    this.notifier = this._model.notifier;
 
     this.refreshContentOfMeAndSubmorphs();
     return this;
@@ -60,6 +59,10 @@ thisModule.addSlots(avocado.CheckBoxMorph.prototype, function(add) {
 
   add.method('isChecked', function( ) {return this.getModel().getValue( );}, {category: ['accessing']});
   add.method('setChecked', function(b) {return this.getModel().setValue(b);}, {category: ['accessing']});
+  
+  add.method('notifier', function () {
+    return this._model.notifier();
+  }, {category: ['observing']});
 
   add.method('changeAppearanceFor', function(v) {
     if (v) {

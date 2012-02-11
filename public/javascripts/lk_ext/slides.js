@@ -78,7 +78,7 @@ thisModule.addSlots(avocado.signpost, function(add) {
     //titleLabel.grabsShouldFallThrough = true;
     titleLabel.handlesMouseDown = Functions.True;
   	titleLabel.onMouseDown = function(evt) { if (this.checkForDoubleClick(evt)) { return true; } return false; };
-    titleLabel.onDoubleClick = function(evt) { morph.navigateToMe(evt); };
+    titleLabel.onDoubleClick = function(evt) { morph.navigateToMe(evt); return true; };
     morph.addMorphAt(titleLabel, pt((morph.getExtent().x - titleLabel.getExtent().x) / 2, 10));
     morph._titleLabel = titleLabel;
     return this;

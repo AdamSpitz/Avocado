@@ -48,7 +48,7 @@ thisModule.addSlots(avocado.wheelMenu, function(add) {
 		menuMorph.applyStyle(this.defaultStyle);
 		var targetMorphFill = targetMorph && targetMorph.getFill();
 		if (targetMorphFill && targetMorphFill.isVeryLight()) { menuMorph.setFill(this.defaultStyle.fillToUseWhenTargetIsVeryLight); }
-		menuMorph._eventHandler = avocado.wheelMenu.eventHandlerForMenu;
+		menuMorph.setEventHandler(avocado.wheelMenu.eventHandlerForMenu);
 		menuMorph.openIn = function(parentMorph, loc, remainOnScreen, captionIfAny) { avocado.wheelMenu.openMenu(menuMorph, parentMorph, loc, remainOnScreen, captionIfAny); };
     menuMorph.focusHaloBorderWidth = 0;
     menuMorph.morphCommandStyle   = this.morphCommandStyle;
@@ -108,7 +108,7 @@ thisModule.addSlots(avocado.wheelMenu, function(add) {
   }, {category: ['user interface', 'opening']});
 
   add.method('startOpeningAnimation', function (menuMorph, callWhenDone) {
-    var desiredScale = (window.Config && Config.fatFingers ? 1.5 : 1) / menuMorph.world().getScale();
+    var desiredScale = (window.Config && Config.fatFingers ? 1.5 : 1) * (this._normalScale || 1) / menuMorph.world().getScale();
     menuMorph.startTinyAndSmoothlyGrowTo(desiredScale, function() {
       // aaa - Make sure the text is visible. Not sure why this is necessary - why isn't it already visible?
       menuMorph.eachSubmorph(function(cm) { cm.beHighlighted(); cm.beUnhighlighted(); });
@@ -143,11 +143,11 @@ thisModule.addSlots(avocado.wheelMenu, function(add) {
 		commandMorph._commandIndex = commandIndex;
 		commandMorph._menuMorph = menuMorph;
 
-		commandMorph._eventHandler = avocado.eventHandlers.composite.create([
+		commandMorph.setEventHandler(avocado.eventHandlers.composite.create([
 		  avocado.wheelMenu.eventHandlerForHighlightingOnMouseOver,
 		  avocado.wheelMenu.eventHandlerForRunningTheCommand,
 		  avocado.wheelMenu.eventHandlerForShowingPartialCommandMorph
-		]);
+		]));
     commandMorph.handlesMouseDown = function (evt) { return true; };
 
 		commandMorph.setStylist(avocado.wheelMenu.stylistToMatchTextColorWithMenuColor);
@@ -270,6 +270,7 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForMenu, function(add) {
     switch (evt.getKeyCode()) {
     	case Event.KEY_ESC: {
         avocado.wheelMenu.close(morph, evt);
+        avocado.ui.worldFor(evt).removeAllPartialCommandMorphs();
   			evt.stop();
   			return true;
       }
@@ -289,6 +290,7 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForMenu, function(add) {
     	  var cmdMorph = avocado.wheelMenu.commandMorphForIndex(morph, i);
     	  if (cmdMorph) {
           avocado.wheelMenu.runCommand(morph, cmdMorph._model, evt);
+          avocado.ui.worldFor(evt).removeAllPartialCommandMorphs();
           evt.stop();
           return true;
     	  }
@@ -336,16 +338,18 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForShowingPartialCommandMorph,
   add.method('onMouseDown', function (morph, evt) {
     var world = avocado.ui.worldFor(evt);
     var pcm = world._partialCommandMorph;
-    if (pcm && pcm._model.command() === morph._model) {
-      var menuMorph = morph._menuMorph;
-      setTimeout(function() {
-        pcm.smoothlyFadeTo(1);
-        world.grabPartialCommandMorphIfItIsStillThisOne(pcm);
-        avocado.wheelMenu.close(menuMorph, evt);
-      }, 750);
-      return true;
-    } else {
-      throw new Error("Why is the world's _partialCommandMorph not the one we expected?");
+    if (pcm) {
+      if (pcm._model.command() === morph._model) {
+        var menuMorph = morph._menuMorph;
+        setTimeout(function() {
+          pcm.smoothlyFadeTo(1);
+          world.grabPartialCommandMorphIfItIsStillThisOne(pcm);
+          avocado.wheelMenu.close(menuMorph, evt);
+        }, 750);
+        return true;
+      } else {
+        throw new Error("Why is the world's _partialCommandMorph not the one we expected?");
+      }
     }
   }, {category: ['events']});
 

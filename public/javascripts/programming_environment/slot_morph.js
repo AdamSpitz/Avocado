@@ -43,7 +43,7 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
 
     slotMorph.applyStyle(avocado.slots.userInterface.defaultStyle);
     slotMorph.applyStyle(shouldUseZooming ? avocado.slots.userInterface.zoomingStyle : avocado.slots.userInterface.nonZoomingStyle);
-    slotMorph.updateFill();
+    slotMorph.updateStyle();
 
     var optionalCommentButtonMorph;
     if (slot.annotationIfAny) {
@@ -274,7 +274,7 @@ thisModule.addSlots(avocado.slots.userInterface.morphMixin_aaa_becauseIDoNotFeel
     };
   }, {category: ['UI state']});
 
-  add.method('updateFill', function () {
+  add.method('updateStyle', function () {
     if (! this._model.isReallyPartOfHolder()) { this.applyStyle(avocado.slots.userInterface.copyDownStyle); }
   }, {category: ['updating']});
 

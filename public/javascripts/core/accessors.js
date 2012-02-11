@@ -1,11 +1,13 @@
 avocado.transporter.module.create('core/accessors', function(requires) {
 
+requires('core/value_holder');
+
 }, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('accessors', {}, {category: ['core']});
+  add.creator('accessors', Object.create(avocado.generalValueHolder), {category: ['core']});
 
   add.creator('methodAccessors', Object.create(avocado.accessors), {category: ['core']});
 

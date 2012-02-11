@@ -1408,7 +1408,8 @@ thisModule.addSlots(avocado.http.request, function(add) {
   }, {category: ['accessing']});
   
   add.method('body', function () {
-    if (this.httpMethod() === "POST") {
+    var method = this.httpMethod();
+    if (method === "POST" || method === "PUT") {
       if (this._postBody) {
         return this._postBody;
       } else {
@@ -1436,7 +1437,7 @@ thisModule.addSlots(avocado.http.request, function(add) {
           }
         }
       } else if (req.readyState === 4) {
-        if (req.status == 200) {
+        if (req.status >= 200 && req.status < 300) {
           callback(req.responseText);
         } else {
           errback("HTTP status: " + req.status);

@@ -109,6 +109,10 @@ Morph.addMethods({
     },
 
   grabMe: function(evt, callWhenDone) {
+    this.scaleAndGrabMe(1 / avocado.ui.worldFor(evt).getScale(), true, evt, callWhenDone);
+  },
+
+  scaleAndGrabMe: function(desiredScale, shouldAnticipateAtStart, evt, callWhenDone) {
     evt = evt || Event.createFake(); // just for convenience; I call this method from evaluators pretty often
 
     var shouldDoCoolAnimations = true;
@@ -119,10 +123,9 @@ Morph.addMethods({
     if (shouldDoCoolAnimations) {
       var world = avocado.ui.worldFor(evt);
       
-      var desiredScale = 1 / world.getScale();
-      var desiredPos = function() {return evt.hand.position().subPt(this.getExtent().scaleBy(desiredScale * 0.5));}.bind(this);
+      var desiredPos = function() {return evt.hand.position().subPt(this.getExtent().scaleBy((desiredScale || this.overallScale(world)) * 0.5));}.bind(this);
       desiredPos.desiredScale = desiredScale;  // aaa - Not sure at all that this is a good idea. But it might be.
-      this.ensureIsInWorld(world, desiredPos, true, true, false, function() {
+      this.ensureIsInWorld(world, desiredPos, true, shouldAnticipateAtStart, false, function() {
         this.grabMeWithoutZoomingAroundFirst(eventForFinalGrab);
         if (callWhenDone) { callWhenDone(this); }
       }.bind(this));

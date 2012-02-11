@@ -65,7 +65,7 @@ newModule('general_ui/arrows');
 newModule('lk_ext/core_sampler');
 newModule('lk_ext/edit_mode');
 newModule('lk_ext/morph_factories');
-newModule('lk_ext/placeholder_morph');
+newModule('general_ui/placeholder_morph');
 newModule('lk_ext/world_navigation');
 newModule('lk_ext/scripting');
 newModule('lk_ext/carrying_hand');
