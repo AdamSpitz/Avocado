@@ -1170,6 +1170,10 @@ thisModule.addSlots(avocado.transporter, function(add) {
     }
   }, {category: ['loading']});
 
+  add.method('shouldLoadModule', function (name) {
+    return true;
+  }, {category: ['bootstrapping']});
+  
   add.method('loadExternal', function (names, callWhenDone) {
     if (names.length === 0) { return callWhenDone(); }
     var name = names.shift();
@@ -1341,6 +1345,8 @@ thisModule.addSlots(avocado, function(add) {
 
   add.creator('http', {}, {category: ['HTTP']});
 
+  add.creator('generalUI', {}, {category: ['user interface'], comment: 'An extra layer of indirection, so that we can switch between LK and ThreeJS and various other UI systems.'});
+
 });
 
 
@@ -1422,7 +1428,11 @@ thisModule.addSlots(avocado.http.request, function(add) {
   
   add.method('send', function (callback, errback, partback) {
   	var req = new XMLHttpRequest();
-  	req.open(this.httpMethod(), this.url(), ! this._isSynchronous);
+  	var httpMethod = this.httpMethod();
+  	var url = this.url();
+  	var debugMode = this._debugMode;
+  	
+  	req.open(httpMethod, url, ! this._isSynchronous);
   	this.eachHeader(function(name, value) { req.setRequestHeader(name, value); });
 
     var index = 0;
@@ -1438,14 +1448,24 @@ thisModule.addSlots(avocado.http.request, function(add) {
         }
       } else if (req.readyState === 4) {
         if (req.status >= 200 && req.status < 300) {
-          callback(req.responseText);
+          var responseText = req.responseText;
+          if (debugMode) {
+            console.log("Received response from " + url);
+            if (responseText) { console.log(responseText); }
+          }
+          callback(responseText);
         } else {
           errback("HTTP status: " + req.status);
         }
       }
     }
     
-  	req.send(this.body());
+    var body = this.body();
+  	if (debugMode) {
+  	  console.log("Sending HTTP " + httpMethod + " to " + url);
+      if (body) { console.log(body); }
+  	}
+    req.send(body);
   }, {category: ['sending']});
 
 });

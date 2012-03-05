@@ -1,4 +1,4 @@
-avocado.transporter.module.create('lk_ext/scripting', function(requires) {
+avocado.transporter.module.create('general_ui/scripting', function(requires) {
 
 }, function(thisModule) {
 

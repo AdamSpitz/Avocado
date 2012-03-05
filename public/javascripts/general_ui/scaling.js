@@ -43,6 +43,7 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
   });
 
   add.method('shouldMorph1BeShown', function () {
+    if (avocado.shouldAlwaysShowVerySmallMorphs) { return true; }
     var b = false;
     var onScreen = this._owner.isOnScreen();
     if (onScreen) {

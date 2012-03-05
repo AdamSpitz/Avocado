@@ -38,8 +38,8 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('releaseInputFocus', function (hand) {
     hand = hand || avocado.ui.currentWorld().firstHand();
-    hand.setMouseFocus(null);
-    hand.setKeyboardFocus(null);
+    if (hand.getMouseFocus()    === this) { hand.setMouseFocus(null); }
+    if (hand.getKeyboardFocus() === this) { hand.setKeyboardFocus(null); }
   }, {category: ['input focus']});
   
   add.method('setOrderForInputFocus', function (morphs) {

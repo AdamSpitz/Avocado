@@ -1,4 +1,4 @@
-avocado.transporter.module.create('lk_ext/history_morph', function(requires) {
+avocado.transporter.module.create('general_ui/history_morph', function(requires) {
 
 requires('core/history');
 requires('general_ui/table_layout');
@@ -18,7 +18,7 @@ thisModule.addSlots(avocado.history, function(add) {
       var rows = [nameLabel];
       var latest = m._model.latest();
       if (latest !== null && typeof(latest) !== 'undefined') {
-        rows.push(WorldMorph.current().morphFor(latest));
+        rows.push(avocado.ui.currentWorld().morphFor(latest));
       } else {
         rows.push(avocado.messageNotifier.create("None", new Color(0.2, 0.5, 0.5)).newMorph());
       }

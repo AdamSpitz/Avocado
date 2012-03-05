@@ -1,4 +1,4 @@
-avocado.transporter.module.create('core/range', function(requires) {
+avocado.transporter.module.create('core/collections/range', function(requires) {
 
 }, function(thisModule) {
 

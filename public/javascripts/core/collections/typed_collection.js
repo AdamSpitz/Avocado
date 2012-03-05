@@ -1,4 +1,4 @@
-avocado.transporter.module.create('core/typed_collection', function(requires) {
+avocado.transporter.module.create('core/collections/typed_collection', function(requires) {
 
 }, function(thisModule) {
 
@@ -56,11 +56,26 @@ thisModule.addSlots(avocado.typedCollection, function(add) {
     return avocado.typedCollection.create(typeMapFn(this.elementType()), this.elements().map(elementMapFn));
   }, {category: ['accessing']});
 
+  add.method('push', function (element) {
+    this.elements().push(element);
+  }, {category: ['adding']});
+  
+  add.method('addANewOne', function () {
+    var newOne = this.elementType().createForAddingTo ? this.elementType().createForAddingTo(this) : this.elementType().create();
+    this.push(newOne);
+    return newOne;
+  }, {category: ['adding']});
+
+  add.method('ifNotAlreadyPresentAdd', function (element) {
+    if (! this._elements.include(element)) {
+      this.push(element);
+    }
+  }, {category: ['accessing']});
+
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
     cmdList.addItem(avocado.command.create("add", function(evt) {
-      var newOne = this.elementType().createForAddingTo ? this.elementType().createForAddingTo(this) : this.elementType().create();
-      this.elements().push(newOne);
+      this.addANewOne();
       avocado.ui.justChanged(this, function(morph) {
         morph.takeInputFocus(evt.hand);
       }, evt);

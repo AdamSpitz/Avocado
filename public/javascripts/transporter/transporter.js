@@ -26,8 +26,9 @@ thisModule.addSlots(avocado.transporter, function(add) {
         // Include the Unowned Attributes if there are any.
         var unownedSlotFinder = avocado.objectGraphWalker.visitors.unownedSlotFinder.create();
         var unownedSlotsMorph = avocado.ui.worldFor(evt).morphFor(avocado.searchResultsPresenter.create(unownedSlotFinder.createWalker(), evt)).redo();
-        if (unownedSlotsMorph.searcher().results().size() > 0) {
-          changedOnes.unshift(unownedSlotsMorph.searcher());
+        var unownedSlotsSearcher = unownedSlotsMorph._model;
+        if (unownedSlotsSearcher.results().size() > 0) {
+          changedOnes.unshift(unownedSlotsSearcher);
         }
         
         if (changedOnes.size() > 0) {
@@ -49,7 +50,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
         cmdList.addItem(["browse files...", function(evt) {
           var world = avocado.ui.worldFor(evt);
           //reposThatCanListFiles.forEach(function(repo) { avocado.ui.grab(repo, evt); });
-          var dirMorph = world.addMorphAt(world.morphFor(new FileDirectory(new URL("http://localhost/~adam/avocado/javascripts/text/"))), pt(100,100)).refreshContentOfMeAndSubmorphs();
+          avocado.ui.grab(new FileDirectory(new URL("http://localhost/~adam/avocado/javascripts/text/")));
           /* AAAAAAAAAAA
           var fileMorph = world.addMorphAt(world.morphFor(avocado.webdav.file.create(new URL("http://localhost/~adam/avocado/javascripts/reflection/slot.js"))), pt(100,100));
           */

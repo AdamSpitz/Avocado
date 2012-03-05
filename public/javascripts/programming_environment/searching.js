@@ -1,5 +1,7 @@
 avocado.transporter.module.create('programming_environment/searching', function(requires) {
 
+requires('general_ui/search_results_morph');
+
 }, function(thisModule) {
 
 
@@ -56,6 +58,14 @@ thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
     }
   }, {category: ['sorting']});
 
+  add.method('newMorph', function () {
+    if (this._searcher.resultsAreSlots()) {
+      return avocado.searchResults.newMorph(this);
+    } else {
+      throw new Error("What kind of morph should we make for " + this.inspect() + "?");
+    }
+  }, {category: ['creating morphs']});
+  
 });
 
 

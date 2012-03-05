@@ -1,4 +1,4 @@
-avocado.transporter.module.create('lk_programming_environment/webdav_morphs', function(requires) {
+avocado.transporter.module.create('programming_environment/webdav', function(requires) {
 
 requires('core/webdav');
 
@@ -6,15 +6,6 @@ requires('core/webdav');
 
 
 thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(add) {
-  
-  add.method('newMorph', function () {
-    return avocado.treeNode.newMorphFor(this);
-  }, {category: ['user interface']});
-
-});
-
-
-thisModule.addSlots(FileDirectory.prototype, function(add) {
   
   add.method('newMorph', function () {
     return avocado.treeNode.newMorphFor(this);

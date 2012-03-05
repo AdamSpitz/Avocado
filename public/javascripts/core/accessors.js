@@ -70,6 +70,7 @@ thisModule.addSlots(avocado.methodAccessors, function(add) {
     var setter = obj[this._setterName];
     if (!setter) { throw new Error("No attribute named " + this._setterName + " on " + obj); }
     setter.call(obj, v);
+    if (this._notifier) { this._notifier.notifyAllObservers(); }
   }, {category: ['accessing']});
   
   add.method('canGet', function () {

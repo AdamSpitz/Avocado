@@ -102,8 +102,13 @@ thisModule.addSlots(avocado.label, function(add) {
       } else if (typeof textOrFunctionOrObject === 'function') {
         calculateNewText = textOrFunctionOrObject;
       } else if (typeof textOrFunctionOrObject === 'object') {
-        initialText = textOrFunctionOrObject.initialText || "";
-        calculateNewText = textOrFunctionOrObject.calculateNewText;
+        if (typeof(textOrFunctionOrObject.get) === 'function') {
+          initialText = textOrFunctionOrObject.get() || "";
+          calculateNewText = textOrFunctionOrObject.get.bind(textOrFunctionOrObject);
+        } else {
+          initialText = textOrFunctionOrObject.initialText || "";
+          calculateNewText = textOrFunctionOrObject.calculateNewText;
+        }
       }
     }
     

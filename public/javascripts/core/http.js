@@ -68,6 +68,11 @@ thisModule.addSlots(avocado.http.request, function(add) {
     this._headers = headers;
     return this;
   }, {category: ['accessing']});
+  
+  add.method('beInDebugMode', function () {
+    this._debugMode = true;
+    return this;
+  }, {category: ['debugging']});
 
   add.method('get', function (callback, errback, partback) {
     // For compatibility with other kinds of asynchronousRequests.

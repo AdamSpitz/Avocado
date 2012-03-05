@@ -1,7 +1,7 @@
 avocado.transporter.module.create('reflection/organization', function(requires) {
 
 requires('reflection/category');
-requires('core/hash_table');
+requires('core/collections/hash_table');
 
 }, function(thisModule) {
 

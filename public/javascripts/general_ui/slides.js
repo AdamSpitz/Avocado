@@ -1,4 +1,4 @@
-avocado.transporter.module.create('lk_ext/slides', function(requires) {
+avocado.transporter.module.create('general_ui/slides', function(requires) {
 
 }, function(thisModule) {
 
@@ -53,11 +53,11 @@ thisModule.addSlots(avocado.signpost, function(add) {
   }, {category: ['linking']});
 
   add.method('existingMorph', function () {
-    return WorldMorph.current().existingMorphFor(this);
+    return avocado.ui.currentWorld().existingMorphFor(this);
   }, {category: ['user interface']});
 
   add.method('createMorph', function () {
-    var m = new Morph(new lively.scene.Rectangle(pt(0,0).extent(pt(800, 600))));
+    var m = avocado.ui.newMorph(avocado.ui.shapeFactory.newRectangle(pt(0,0).extent(pt(800, 600))));
     m.applyStyle(this.defaultStyle);
     return m;
   }, {category: ['user interface']});
@@ -65,7 +65,7 @@ thisModule.addSlots(avocado.signpost, function(add) {
   add.method('beModelOfMorph', function (morph, world) {
     morph._model = this;
     this.addNavigationMorphsTo(morph);
-    (world || WorldMorph.current()).rememberMorphFor(this, morph);
+    (world || avocado.ui.currentWorld()).rememberMorphFor(this, morph);
     return morph;
   }, {category: ['user interface']});
   
@@ -96,7 +96,7 @@ thisModule.addSlots(avocado.signpost, function(add) {
   }, {category: ['user interface']});
 
   add.method('createLinkButton', function (contents, target) {
-    return ButtonMorph.createButton(contents, function(evt) {WorldMorph.current().morphFor(target).navigateToMe(evt); }).applyStyle(this.linkButtonStyle);
+    return avocado.command.create(contents, function(evt) { avocado.ui.navigateTo(target, null, evt); }).newMorph().applyStyle(this.linkButtonStyle);
   }, {category: ['user interface']});
   
   add.creator('defaultStyle', {}, {category: ['user interface']});

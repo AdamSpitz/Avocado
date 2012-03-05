@@ -1,7 +1,6 @@
 avocado.transporter.module.create('general_ui/animation_math', function(requires) {
 
 requires('core/math');
-requires('core/quickhull');
 
 }, function(thisModule) {
 

@@ -1,6 +1,6 @@
 avocado.transporter.module.create('core/notifier', function(requires) {
 
-requires('core/hash_table');
+requires('core/collections/hash_table');
 
 }, function(thisModule) {
 

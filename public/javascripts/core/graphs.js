@@ -1,7 +1,7 @@
 avocado.transporter.module.create('core/graphs', function(requires) {
 
 requires('core/testFramework');
-requires('core/hash_table');
+requires('core/collections/hash_table');
 
 }, function(thisModule) {
 

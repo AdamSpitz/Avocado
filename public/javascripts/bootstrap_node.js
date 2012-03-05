@@ -7,10 +7,6 @@ thisModule.addSlots(avocado.transporter, function(add) {
   
   add.data('userInterfaceInitializer', avocado.transporter.nodeInitializer, {category: ['user interface']});
 
-  add.method('shouldLoadModule', function (name) {
-    return true;
-  }, {category: ['bootstrapping']});
-  
 });
 
 

@@ -328,7 +328,6 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
     
       cmdList.addItem(this.isInEditMode() ? avocado.command.create("turn off edit mode", function() { this.switchEditModeOff(); })
                                           : avocado.command.create("turn on edit mode" , function() { this.switchEditModeOn (); }));
-      // cmdList.addItem(avocado.command.create("edit style", function() { new StylePanel(this).open()}));  // aaa - don't use this very often
       cmdList.addItem(avocado.command.create("inspect...", [
          this._model ? ["object", function(evt) { this.world().morphFor(reflect(this._model)).grabMe(evt); }] : ["", function() {}],
                        ["morph",  function(evt) { this.world().morphFor(reflect(this       )).grabMe(evt); }],
@@ -343,6 +342,8 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
       cmdList.addLine();
       cmdList.addItems(this.subMenuItems(evt));
     }
+    
+    cmdList.addItem(avocado.command.create("edit style", function() { new StylePanel(this).open(); }));
     
     var menu = cmdList.createMenu(this);
 		menu.commandStyle = menu.morphCommandStyle;

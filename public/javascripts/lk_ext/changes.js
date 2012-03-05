@@ -31,32 +31,34 @@ Object.extend(Morph, {
 
 PasteUpMorph.addMethods({
     onMouseDown: function PasteUpMorph$onMouseDown($super, evt) {  //default behavior is to grab a submorph
-        $super(evt);
-        var m = this.morphToReceiveEvent(evt, null, true); // Modified to checkForDnD -- Adam, August 2008
-        if (Config.usePieMenus) {
-                if (m.handlesMouseDown(evt)) return false;
-                m.showPieMenu(evt, m);
-                return true;
-        }
-        if (m == null) {
-          if (evt.isLeftMouseButtonDown()) { // Added the isLeftMouseButtonDown check, 'cause I like it better that way. -- Adam, Jan. 2009
-	    if (! UserAgent.isTouch) { // don't want SelectionMorphs on touch-screens -- Adam
-	      this.makeSelection(evt);
-	    }
-            return true;
-          } else {
-            return false;
-          }
-        } else if (!evt.isForContextMenu() && !evt.isForMorphMenu()) { // Changed from a simple isCommandKey check. -- Adam, Jan. 2009
-            if (m === this.world()) {
-	      if (! UserAgent.isTouch) { // don't want SelectionMorphs on touch-screens -- Adam
-                this.makeSelection(evt);
-	      }
-	      return true;
-            } else if (m.handlesMouseDown(evt)) return false;
-        }
-        evt.hand.grabMorph(m, evt);
+      $super(evt);
+      var m = this.morphToReceiveEvent(evt, null, true); // Modified to checkForDnD -- Adam, August 2008
+      if (Config.usePieMenus) {
+        if (m.handlesMouseDown(evt)) return false;
+        m.showPieMenu(evt, m);
         return true;
+      }
+      if (m == null) {
+        if (evt.isLeftMouseButtonDown()) { // Added the isLeftMouseButtonDown check, 'cause I like it better that way. -- Adam, Jan. 2009
+          if (! UserAgent.isTouch) { // don't want SelectionMorphs on touch-screens -- Adam
+            this.makeSelection(evt);
+          }
+          return true;
+        } else {
+          return false;
+        }
+      } else if (!evt.isForContextMenu() && !evt.isForMorphMenu()) { // Changed from a simple isCommandKey check. -- Adam, Jan. 2009
+        if (m === this.world()) {
+          if (! UserAgent.isTouch) { // don't want SelectionMorphs on touch-screens -- Adam
+            this.makeSelection(evt);
+          }
+          return true;
+        } else if (m.handlesMouseDown(evt)) {
+          return false;
+        }
+      }
+      evt.hand.grabMorph(m, evt);
+      return true;
     },
 });
 
@@ -111,12 +113,9 @@ Morph.addMethods({
     
   
     checkForDoubleClick: function(evt) {
-      var currentTime = new Date().getTime(); // Use evt.timeStamp? I just tried that and it didn't seem to work.
-      if (this.timeOfMostRecentDoubleClickCheck !== null && currentTime - this.timeOfMostRecentDoubleClickCheck < 400) { // aaa magic number
-        this.timeOfMostRecentDoubleClickCheck = null;
+      if (evt.isDoubleClick()) {
         return this.onDoubleClick(evt);
       } else {
-        this.timeOfMostRecentDoubleClickCheck = currentTime;
         return false;
       }
     },
@@ -131,6 +130,13 @@ Morph.addMethods({
       } else {
         return false;
       }
+    },
+
+    handlesDoubleClick: function(evt) {
+      if (this._eventHandler && this._eventHandler.onDoubleClick) { return true; }
+      if (window.avocado && avocado.defaultDoubleClickHandler) { return true; }
+      if (UserAgent.isTouch) { return true; }
+      return false;
     },
 
     // Copied and adapted from PasteUpMorph - it's convenient to be able to allow any morph to do selecting. -- Adam, June 2011
@@ -154,6 +160,13 @@ Morph.addMethods({
   	shouldAllowSelecting: function() {
   	  return this._shouldAllowSelecting;
   	},
+});
+
+Object.extend(Event.prototype, {
+  isDoubleClick: function() {
+    var previous = this.hand.lastMouseDownEvent;
+    return previous && this.timeStamp && previous.timeStamp && this.timeStamp - previous.timeStamp < 400; // aaa magic number
+  }
 });
 
 HandMorph.addMethods({
@@ -291,6 +304,26 @@ Morph.addMethods({
   	  return "a " + this.constructor.type + (tos ? "(" + tos + ")" : "");
   	},
 
+    useBackgroundImage: function(url) {
+      if (!this._image) {
+        var extent = this.getExtent();
+    		this._image = new lively.scene.Image(url, extent.x, extent.y);
+    		this._image.rawNode.setAttribute("preserveAspectRatio", "none");
+    		this.addNonMorph(this._image.rawNode);
+    		/*
+    		How do I make it stay in the back?
+    		this._image = new ImageMorph(pt(0,0).extent(extent), url);
+    		this._image.ignoreEvents();
+    		this._image.image.rawNode.setAttribute("preserveAspectRatio", "none");
+    		this.addMorphBack(this._image);
+    		*/
+      } else {
+        var extent = this.getExtent();
+        this._image.setWidth (extent.x);
+        this._image.setHeight(extent.y);
+        //this._image.setExtent(extent);
+      }
+    },
 });
 
 avocado.morphWithAModel = {
@@ -524,4 +557,11 @@ Object.extend(lively.paint.RadialGradient.prototype, {
     focus: function() {
         return pt(this.getTrait('fx'), this.getTrait('fy'));
     }
+});
+
+
+Object.extend(FileDirectory.prototype, {
+  newMorph: function () {
+    return avocado.treeNode.newMorphFor(this);
+  }
 });

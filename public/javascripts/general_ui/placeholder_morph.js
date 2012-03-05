@@ -146,13 +146,13 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   }, {category: ['placeholders']});
 
   add.method('doIOrMyOwnersWantToLeaveAPlaceholderWhenRemoving', function (m) {
-    if (this.doIWantToLeaveAPlaceholderWhenRemoving(m)) { return true; }
+    if (this.doIWantToLeaveAPlaceholderWhenRemoving(m)) { return this; }
     return this.getOwner() && this.getOwner().doIOrMyOwnersWantToLeaveAPlaceholderWhenRemoving(m);
   }, {category: ['placeholders']});
 
   add.method('doIWantToLeaveAPlaceholderWhenRemoving', function (m) {
     // can override in children
-    return false;
+    return null;
   }, {category: ['placeholders']});
 
   add.method('hasPlaceholderToGoBackTo', function () {

@@ -89,7 +89,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     			var globalBounds = topLeft.extent(scaledExtent);
     			
           var allVertices = globalBounds.vertices().concat(globalBounds.translatedBy(difference).vertices());
-          var convexVertices = avocado.quickhull.getConvexHull(allVertices).map(function(a) {return a.pointA;});
+          var convexVertices = avocado.geometry.quickhull.getConvexHull(allVertices).map(function(a) {return a.pointA;});
           var motionBlurMorph = Morph.makePolygon(convexVertices, 0, Color.black, this.getFill());
           motionBlurMorph.doesNotNeedACreatorSlot = true; // aaa HACK to fix performance bug
           // could try adjusting the opacity based on the distance, but I tried that and

@@ -1,4 +1,4 @@
-avocado.transporter.module.create('core/linked_list', function(requires) {
+avocado.transporter.module.create('core/collections/linked_list', function(requires) {
 
 }, function(thisModule) {
 

@@ -26,8 +26,15 @@ thisModule.addSlots(avocado.applicationList, function(add) {
   }, {category: ['printing']});
 
   add.method('applications', function () {
-    this._applications = this._applications || [];
+    if (! this._applications) {
+      this.setApplications(this._applications || []);
+    }
     return this._applications;
+  }, {category: ['accessing']});
+
+  add.method('setApplications', function (apps) {
+    this._applications = apps;
+    return this;
   }, {category: ['accessing']});
 
   add.method('addApplication', function (app) {
@@ -51,7 +58,22 @@ thisModule.addSlots(avocado.applicationList, function(add) {
     if (cmdList.size() === 0) { return null; }
     return cmdList;
   }, {category: ['commands']});
+  
+  add.creator('adapter', {});
 
+});
+
+
+thisModule.addSlots(avocado.applicationList.adapter, function(add) {
+  
+  add.method('initialize', function (obj) {
+    this._objectWhoseCommandsShouldBeGlobal = obj;
+  }, {category: ['creating']});
+  
+  add.method('addGlobalCommandsTo', function (cmdList) {
+    cmdList.addAllCommands(this._objectWhoseCommandsShouldBeGlobal.commands());
+  }, {category: ['creating']});
+  
 });
 
 

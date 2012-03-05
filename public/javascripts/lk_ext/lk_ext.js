@@ -13,7 +13,6 @@ requires('lk_ext/check_box');
 requires('lk_ext/combo_box');
 requires('lk_ext/layout');
 requires('lk_ext/collection_morph');
-requires('lk_ext/tree_node_morph');
 requires('lk_ext/container_morph');
 requires('lk_ext/animation');
 requires('lk_ext/scatter');
@@ -24,20 +23,17 @@ requires('lk_ext/morph_factories');
 requires('lk_ext/core_sampler');
 requires('lk_ext/edit_mode');
 requires('lk_ext/world_navigation');
-requires('lk_ext/scripting');
 requires('lk_ext/carrying_hand');
-requires('lk_ext/history_morph');
 requires('lk_ext/types');
 requires('lk_ext/morph_chooser');
 requires('lk_ext/line_graph');
-requires('lk_ext/string_buffer_morph');
 
 }, function(thisModule) {
 
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('livelyKernelUI', {}, {category: ['user interface'], comment: 'An extra layer of indirection, in case we want to switch to a non-LK UI someday.\n\nDefinitely not complete yet. -- Adam, Oct. 2010'});
+  add.creator('livelyKernelUI', Object.create(avocado.generalUI), {category: ['user interface']});
 
 });
 
@@ -55,145 +51,12 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
     return WorldMorph.current();
   });
 
-  add.method('prompt', function (msg, callback, defaultValue, evtOrMorph) {
-    return this.worldFor(evtOrMorph).prompt(msg, function(value) {
-      if (value === null) { return null; }
-      return callback(value);
-    }, defaultValue);
-  });
-
-  add.method('confirm', function (message, callback, evtOrMorph) {
-    return this.worldFor(evtOrMorph).confirm(message, callback);
-  });
-
-  add.method('grab', function (obj, evt, callback) {
-    var m = this.worldFor(evt).morphFor(obj);
-    m.grabMe(evt, callback);
-    return m;
-  });
-
-  add.method('growFromNothing', function (obj, evt) {
-    var m = this.worldFor(evt).morphFor(obj);
-    m.grabMe(evt);
-    return m;
-  });
-
-  add.method('navigateTo', function (obj, callback, evt) {
-    var m = this.worldFor(evt).morphFor(obj);
-    m.navigateToMe(evt, callback);
-    return m;
-  });
-
-  add.method('poseManager', function (evt) {
-    return this.worldFor(evt).poseManager();
-  });
-
-  add.method('showObjects', function (objs, name, evt) {
-    var pm = this.poseManager(evt);
-    pm.assumePose(pm.listPoseOfMorphsFor(objs, name));
-  });
-
   add.method('showNextTo', function (objToBeNextTo, objToShow, callback, evt) {
     // This is maybe a bit too much abstraction. But let's try it for now. Un-abstract
     // it if this function starts needing a million arguments. -- Adam, Oct. 2010
     var w = this.worldFor(evt);
     var morphToBeNextTo = w.morphFor(objToBeNextTo);
     w.morphFor(objToShow).ensureIsInWorld(w, morphToBeNextTo.worldPoint(pt(morphToBeNextTo.getExtent().x + 50, 0)), true, true, true, callback);
-  });
-
-  add.method('showCentered', function (obj, callback, evt) {
-    var w = this.worldFor(evt);
-    var m = w.morphFor(obj);
-    m.showInCenterOfUsersFieldOfVision(w, function() {
-      if (callback) { callback(m); }
-    });
-  });
-
-  add.method('showMessageIfErrorDuring', function (f, evt) {
-    return avocado.messageNotifier.showIfErrorDuring(f, evt);
-  });
-
-  add.method('showMessageIfWarningDuring', function (f, evt) {
-    return avocado.messageNotifier.showIfErrorDuring(f, evt, new Color(1.0, 0.55, 0.0));
-  });
-
-  add.method('showError', function (err, evt) {
-    avocado.messageNotifier.showError(err, evt);
-  });
-
-  add.method('showErrorsThatOccurDuring', function (f, evt) {
-    var allErrors = [];
-    var errorMessage = "";
-    f(function(msg, errors) {
-      errorMessage += msg + "\n";
-      (errors || [msg]).each(function(e) { allErrors.push(e); });
-    });
-    if (allErrors.length > 0) {
-      this.showErrors(errorMessage, allErrors, evt);
-    }
-    return allErrors;
-  });
-
-  add.method('showErrors', function (msg, errors, evt) {
-    var objectsToShow = [];
-    errors.each(function(err) {
-      if (err.objectsToShow) {
-        err.objectsToShow.each(function(o) {
-          if (! objectsToShow.include(o)) {
-            objectsToShow.push(o);
-          }
-        });
-      } else {
-        objectsToShow.push(err);
-      }
-    });
-    this.showObjects(objectsToShow, "file-out errors", evt);
-    this.showError(msg, evt);
-  });
-
-  add.method('showMessage', function (msg, evt) {
-    this.worldFor(evt).showMessage(msg);
-  });
-
-  add.method('showMenu', function (cmdList, target, caption, evt) {
-    var world = this.worldFor(evt);
-    var targetMorph = world.existingMorphFor(target) || world;
-    var menu = cmdList.createMenu(targetMorph);
-    menu.openIn(world, (evt || Event.createFake()).point(), false, caption);
-  });
-
-  add.method('justChanged', function (obj, callback, evt) {
-    var ui = this;
-    setTimeout(function() {
-      var m = ui.worldFor(evt).existingMorphFor(obj);
-      if (m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); }
-      if (callback) { callback(m); }
-    }, 0);
-  });
-
-  add.method('justChangedContent', function (obj, evt) {
-    // aaa - I don't like that this method and justChanged are different.
-    var m = this.worldFor(evt).morphFor(obj);
-    m.refreshContentOfMeAndSubmorphs();
-    m.justChangedContent();
-  });
-
-  add.method('ensureVisible', function (obj, evt) {
-    var m = this.worldFor(evt).morphFor(obj);
-    if (m.ensureVisible) { m.ensureVisible(); }
-  });
-
-  add.method('transferUIState', function (oldObj, newObj, evt) {
-    var world = this.worldFor(evt);
-    var oldMorph = world.existingMorphFor(oldObj);
-    if (oldMorph) {
-      var newMorph = world.morphFor(newObj);
-      oldMorph.transferUIStateTo(newMorph);
-      world.forgetAboutExistingMorphFor(oldObj, oldMorph);
-      return newMorph;
-    } else {
-      return null;
-    }
   });
   
   add.method('defaultFillWithColor', function (c) {
@@ -205,10 +68,6 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
   
   add.method('newMorph', function (shape) {
     return new Morph(shape || lively.scene.Rectangle.createWithIrrelevantExtent());
-  });
-
-  add.method('createSpacer', function() {
-    return avocado.table.newRowMorph().beInvisible().beSpaceFilling();
   });
   
   add.method('currentWorld', function () {

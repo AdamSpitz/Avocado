@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_ext/carrying_hand', function(requires) {
 
-requires("core/hash_table");
+requires("core/collections/hash_table");
 
 }, function(thisModule) {
 

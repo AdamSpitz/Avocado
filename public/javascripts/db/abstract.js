@@ -1,6 +1,6 @@
 avocado.transporter.module.create('db/abstract', function(requires) {
 
-requires('core/hash_table');
+requires('core/collections/hash_table');
 
 }, function(thisModule) {
 

@@ -1,4 +1,4 @@
-avocado.transporter.module.create('core/hash_table', function(requires) {
+avocado.transporter.module.create('core/collections/hash_table', function(requires) {
 
 requires('core/identity_hash');
 requires('core/testFramework');

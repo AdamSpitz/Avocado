@@ -1,6 +1,6 @@
 avocado.transporter.module.create('reflection/mirror', function(requires) {
 
-requires('core/enumerator');
+requires('core/collections/enumerator');
 requires('core/identity_hash');
 requires('core/testFramework');
 requires('core/dom_stuff');

@@ -125,7 +125,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this.doIWantToLeaveAPlaceholderWhenRemoving = function (m) {
       // aaa - probably need to actually determine whether the submorph is part of
       // this morph's potential content (rather than just some transient thing)
-      return true;
+      return this;
     };
     
     this.setLayout(Object.newChildOf(avocado.autoScaling.layout, this, shouldAutoOrganize));

@@ -22,6 +22,15 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     this._name = name;
     this._immediateContents = contents;
   }, {category: ['creating']});
+  
+  add.method('name', function () {
+    return this._name;
+  }, {category: ['accessing']});
+  
+  add.method('setName', function (n) {
+    this._name = n;
+    return this;
+  }, {category: ['accessing']});
 
   add.method('toString', function () {
     return this._name;
@@ -44,14 +53,8 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     return this;
   }, {category: ['accessing']});
 
-  add.method('setImmediateContentsToResultOrErrorFrom', function (request) {
-    request.get(function(result) {
-      this.setImmediateContents(result);
-      avocado.ui.justChanged(this);
-    }.bind(this), function(err) {
-      this.setImmediateContents([Error.create(err)]);
-      avocado.ui.justChanged(this);
-    }.bind(this));
+  add.method('getNewContentsFrom', function (request, callback) {
+    request.get(callback, function(err) { callback([Error.create(err)]); });
   }, {category: ['accessing']});
 
   add.method('asynchronousContentRequest', function () {
@@ -69,7 +72,12 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     });
     
     var req = this.asynchronousContentRequest();
-    if (req) { this.setImmediateContentsToResultOrErrorFrom(req); }
+    if (req) {
+      this.getNewContentsFrom(req, function(newContents) {
+        this.setImmediateContents(newContents);
+        avocado.ui.justChanged(this);
+      }.bind(this));
+    }
     
     return this;
   }, {category: ['updating']});

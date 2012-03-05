@@ -1,4 +1,4 @@
-avocado.transporter.module.create('core/composite_collection', function(requires) {
+avocado.transporter.module.create('core/collections/composite_collection', function(requires) {
 
 }, function(thisModule) {
 

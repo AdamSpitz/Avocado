@@ -2805,8 +2805,9 @@ Morph.addMethods({
 		// This method changes the origin (and thus center of rotation) without changing any other effect
 		// To center a rectangular morph, use m.moveOriginBy(m.innerBounds().center())
 		this.origin = this.origin.addPt(delta);
-		this.shape.translateBy(delta.negated());
-		this.submorphs.forEach(function (ea) { ea.translateBy(delta.negated()); });
+		var deltaNegated = delta.negated();
+		this.shape.translateBy(deltaNegated);
+		this.submorphs.forEach(function (ea) { ea.translateBy(deltaNegated); });
 	},
 
 	// Animated moves for, eg, window collapse/expand
@@ -3064,6 +3065,7 @@ Morph.addMethods({
 	  if (this._eventHandler && typeof(this._eventHandler.onMouseDown) === 'function') { return true; } // added by Adam
 		if (this.mouseHandler == null || evt.isCommandKey()) return false;	//default behavior
 		if (this.shouldAllowSelecting()) { return true; } // added by Adam
+		if (evt.isDoubleClick() && this.handlesDoubleClick()) { return true; } // added by Adam
 		return this.mouseHandler.handlesMouseDown(); 
 	},
 
@@ -3072,7 +3074,7 @@ Morph.addMethods({
   },
   
 	onMouseDown: function(evt) {
-		if (this.checkForDoubleClick(evt)) { return true; } // Added by Adam
+		if (!(this instanceof WorldMorph) && this.checkForDoubleClick(evt)) { return true; } // Added by Adam
 		this.hideHelp();
 		if (this.shouldAllowSelecting()) { this.makeSelection(evt); } // Added by Adam
     return this.runAvocadoEventHandler('onMouseDown', evt); // added by Adam
@@ -5691,6 +5693,10 @@ lookTouchy: function(morph) {
 		return result;
     },
 
+    // added by Adam
+    getMouseFocus:    function() { return this.mouseFocus    || null; },
+    getKeyboardFocus: function() { return this.keyboardFocus || null; },
+    
     setMouseFocus: function(morphOrNull) {
         //console.log('setMouseFocus: ' + morphOrNull);
 		this.mouseFocus = morphOrNull;
@@ -5871,6 +5877,9 @@ lookTouchy: function(morph) {
 						});
 					}
 				}
+
+				// aaa - not really sure this is a good idea, but I want double-click to work for putting back grabbed morphs -- Adam
+				if (evt.isDoubleClick()) { m.onDoubleClick(evt); }
 			} else {
 				// console.log("hand dispatching event %s to owner %s", evt, this.owner);
 				// This will tell the world to send the event to the right morph

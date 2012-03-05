@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_ext/container_morph', function(requires) {
 
-requires('lk_ext/tree_node_morph');
+requires('general_ui/tree_node');
 
 }, function(thisModule) {
 
