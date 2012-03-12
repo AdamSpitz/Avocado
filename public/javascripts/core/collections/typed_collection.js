@@ -75,9 +75,9 @@ thisModule.addSlots(avocado.typedCollection, function(add) {
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
     cmdList.addItem(avocado.command.create("add", function(evt) {
-      this.addANewOne();
+      var newOne = this.addANewOne();
       avocado.ui.justChanged(this, function(morph) {
-        morph.takeInputFocus(evt.hand);
+        avocado.ui.setInputFocus(newOne, evt);
       }, evt);
     }));
     return cmdList;

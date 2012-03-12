@@ -59,6 +59,16 @@ thisModule.addSlots(avocado.generalUI, function(add) {
     });
   });
 
+  add.method('showCenteredAndNavigateTo', function (obj, callback, evt) {
+    this.showCentered(obj, function () {
+      this.justChanged(obj, function() {
+        this.navigateTo(obj, function() {
+          this.worldFor(evt).firstHand().setKeyboardFocus(null); // aaa this is annoying, make it unnecessary
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
+  });
+
   add.method('prompt', function (msg, callback, defaultValue, evtOrMorph) {
     return this.worldFor(evtOrMorph).prompt(msg, function(value) {
       if (value === null) { return null; }
@@ -145,6 +155,13 @@ thisModule.addSlots(avocado.generalUI, function(add) {
     var m = this.worldFor(evt).morphFor(obj);
     m.refreshContentOfMeAndSubmorphs();
     m.justChangedContent();
+  });
+
+  add.method('setInputFocus', function (obj, evt) {
+    var w = this.worldFor(evt);
+    var m = w.existingMorphFor(obj);
+    var h = (evt ? evt.hand : null) || w.firstHand();
+    if (m) { m.takeInputFocus(h); }
   });
 
   add.method('showMessageIfErrorDuring', function (f, evt) {
