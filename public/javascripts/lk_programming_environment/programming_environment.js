@@ -120,7 +120,7 @@ thisModule.addSlots(avocado, function(add) {
       var c = avocado.command.create('doStuff', function(evt) {
         evt.hand.world().showMessage("Doing stuff!");
       }).setArgumentSpecs([
-        avocado.command.argumentSpec.create('bool').onlyAcceptsType(avocado.types.boolean)
+        avocado.command.argumentSpec.create('bool').onlyAcceptsType(avocado.types.bool)
       ]);
       avocado.ui.grab(c.createPartialCommand(), evt);
     }]);

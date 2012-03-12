@@ -174,7 +174,7 @@ Object.defineProperties(Function.prototype, {
 var Global = this.window || GLOBAL /*for Node.js*/;
 function dbgOn(cond, optMessage) {
 	if (optMessage) console.log(optMessage);
-	if (cond) debugger; // note that rhino has issues with this keyword
+	if (cond) eval('debugger'); // note that rhino has issues with this keyword  // aaa hacked to say eval('debugger') instead of just debugger, because YUI compressor barfs on it -- Adam
 	// also call as: throw dbgOn(new Error(....))
 	return cond;
 }

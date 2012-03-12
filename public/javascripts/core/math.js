@@ -220,7 +220,6 @@ thisModule.addSlots(avocado.geometry.circle, function(add) {
       if (p.eqPt(this._plane.referencePoint())) { return 0; } // aaa is this right? and why is it necessary? I'm confused.  -- Adam
       var vectorToReferencePoint = this._plane.referencePoint().subPt(this.center());
       var angle = Math.acos(vector.dotProduct(vectorToReferencePoint) / (vector.r() * vectorToReferencePoint.r()));
-      if (isNaN(angle)) { debugger; }
       return angle;
     }
   });

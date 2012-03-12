@@ -5,7 +5,7 @@ requires('general_ui/types');
 }, function(thisModule) {
 
 
-thisModule.addSlots(avocado.types.boolean, function(add) {
+thisModule.addSlots(avocado.types.bool, function(add) {
 
   add.method('createInputMorph', function (slot) {
     return new avocado.CheckBoxMorph(slot);

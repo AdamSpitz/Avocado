@@ -25,7 +25,7 @@ thisModule.addSlots(avocado.types, function(add) {
 
   add.creator('general', {});
 
-  add.creator('boolean', Object.create(avocado.types.general));
+  add.creator('bool', Object.create(avocado.types.general), {}, {comment: 'Some JS tools don\'t like it if I call it "boolean" - reserved word or something.'});
 
   add.creator('number', Object.create(avocado.types.general));
 
@@ -53,7 +53,7 @@ thisModule.addSlots(avocado.types.general, function(add) {
 });
 
 
-thisModule.addSlots(avocado.types.boolean, function(add) {
+thisModule.addSlots(avocado.types.bool, function(add) {
 
   add.method('defaultValue', function () {
     return false;

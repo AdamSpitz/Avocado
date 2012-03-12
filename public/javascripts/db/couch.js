@@ -738,7 +738,7 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
         if (responseObj.error) {
           console.error("Error: " + responseObj.error + ", reason: " + responseObj.reason);
         } else {
-          debugger;
+          throw new Error("What is going on?");
         }
       }
       if (callback) { callback(this._contents); }
