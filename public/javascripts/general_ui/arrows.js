@@ -179,14 +179,14 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
     if (this.shouldBeShown()) {
       if (this.endpoint1._layout && this.endpoint1._layout.attachToTheRightPlace) { this.endpoint1._layout.attachToTheRightPlace(); }
       if (this.endpoint2._layout && this.endpoint2._layout.attachToTheRightPlace) { this.endpoint2._layout.attachToTheRightPlace(); }
-      if (! this._arrowMorph.owner) {
+      if (! this._arrowMorph.getOwner()) {
         var w = avocado.ui.currentWorld();
         this.adjustScaleBasedOnWorldScale(w.getScale());
         w.addMorph(this._arrowMorph);
       }
       this.changeVerticesIfNecessary();
     } else {
-      if (this._arrowMorph.owner) {
+      if (this._arrowMorph.getOwner()) {
         this.disappear();
       }
     }
@@ -240,7 +240,7 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
       if (this.endpoint2._layout && this.endpoint2._layout.noLongerNeedsToBeVisibleAsArrowEndpoint) { this.endpoint2._layout.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback()); }
     }.bind(this), function() {
       this.noLongerNeedsToBeUpdated = true;
-      if (this._arrowMorph.owner) {
+      if (this._arrowMorph.getOwner()) {
         this._arrowMorph.remove();
         this.tickSlowly();
       }
@@ -303,7 +303,7 @@ thisModule.addSlots(avocado.arrow.endpointLayout, function(add) {
   }, {category: ['creating']});
 
   add.method('determineWhichMorphToAttachTo', function () {
-    var m = this._arrowEndpointMorph.owner instanceof HandMorph ? this._arrowEndpointMorph.owner : this.whichMorphToAttachTo();
+    var m = this._arrowEndpointMorph.getOwner() instanceof HandMorph ? this._arrowEndpointMorph.getOwner() : this.whichMorphToAttachTo();
     this._morphToAttachTo = m;
     return m;
   }, {category: ['attaching']});
@@ -327,7 +327,7 @@ thisModule.addSlots(avocado.arrow.endpointLayout, function(add) {
     var isZoomingTo = this.isZoomingTo();
     if (isZoomingTo === morphToAttachTo) {return;}
     this.stopCurrentAnimationIfAny();
-    var oldOwner = this._arrowEndpointMorph.owner;
+    var oldOwner = this._arrowEndpointMorph.getOwner();
     if (! (morphToAttachTo instanceof HandMorph)) {
       if (morphToAttachTo === oldOwner && this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner) {return;}
       
@@ -343,7 +343,7 @@ thisModule.addSlots(avocado.arrow.endpointLayout, function(add) {
         var world = this._arrowEndpointMorph.world();
         var globalCurLoc;
         if (world) {
-          globalCurLoc = this._arrowEndpointMorph.owner.worldPoint(this._arrowEndpointMorph.getPosition());
+          globalCurLoc = this._arrowEndpointMorph.getOwner().worldPoint(this._arrowEndpointMorph.getPosition());
         } else {
           globalCurLoc = otherEndpointLoc;
           world = this._otherEndpoint.world();
@@ -352,7 +352,7 @@ thisModule.addSlots(avocado.arrow.endpointLayout, function(add) {
         this.stopCurrentAnimationIfAny();
         // aaa console.log("Now zooming from " + globalCurLoc + " to " + globalNewLoc + "; morphToAttachTo is " + Object.inspect(morphToAttachTo) + "; noLongerNeedsToBeUpdated is " + this._arrowMorph._layout.noLongerNeedsToBeUpdated);
         this._animator = this._arrowEndpointMorph.startWhooshingInAStraightLineTo(globalNewLoc, false, false, false, function() {
-          var wasAlreadyAttachedToThisMorph = morphToAttachTo === this._arrowEndpointMorph.owner;
+          var wasAlreadyAttachedToThisMorph = morphToAttachTo === this._arrowEndpointMorph.getOwner();
           morphToAttachTo.addMorphAt(this._arrowEndpointMorph, localNewLoc);
           if (!wasAlreadyAttachedToThisMorph) {
             morphToAttachTo.bringToFront();
@@ -364,7 +364,7 @@ thisModule.addSlots(avocado.arrow.endpointLayout, function(add) {
         
         this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = true;
       } else {
-        if (! this._vectorFromOtherEndpoint) {this._vectorFromOtherEndpoint = this.calculateDefaultVectorFromOtherEndpoint();}
+        if (! this._vectorFromOtherEndpoint) { this._vectorFromOtherEndpoint = this.calculateDefaultVectorFromOtherEndpoint().scaleToLength(50); }
         var newLoc = this._otherEndpoint.world() ? this._otherEndpoint.worldPoint(pt(0,0)).addPt(this._vectorFromOtherEndpoint) : pt(0,0);
         morphToAttachTo.addMorphAt(this._arrowEndpointMorph, newLoc);
       }
@@ -389,11 +389,11 @@ thisModule.addSlots(avocado.arrow.endpointLayout, function(add) {
   add.method('noLongerNeedsToBeVisibleAsArrowEndpoint', function (callWhenDone) {
     var isZoomingTo = this.isZoomingTo();
     if (isZoomingTo === null) {return;}
-    this.unregisterFromChangeNotification(this.owner);
+    this.unregisterFromChangeNotification(this._arrowEndpointMorph.getOwner());
     this.stopCurrentAnimationIfAny();
     var world = this._arrowEndpointMorph.world();
     if (world && this._otherEndpoint.world()) {
-      var globalCurLoc = this._arrowEndpointMorph.owner.worldPoint(this._arrowEndpointMorph.getPosition());
+      var globalCurLoc = this._arrowEndpointMorph.getOwner().worldPoint(this._arrowEndpointMorph.getPosition());
       var globalNewLoc = this._otherEndpoint.worldPoint(this._otherEndpoint.relativeLineEndpoint());
       // aaa console.log("OK, zooming from " + globalCurLoc + " to " + globalNewLoc + "; noLongerNeedsToBeUpdated is " + this._arrowMorph._layout.noLongerNeedsToBeUpdated);
       world.addMorphAt(this._arrowEndpointMorph, globalCurLoc);
@@ -452,27 +452,16 @@ thisModule.addSlots(avocado.arrow.endpointLayout, function(add) {
   }, {category: ['shape']});
 
   add.method('calculateDefaultVectorFromOtherEndpoint', function () {
-    var e = this._otherEndpoint.lineEndpoint();
-    var c = this._otherEndpoint.ownerCenterpoint();
-    var d = e.subPt(c);
-    var s = d.scaleToLength(50);
-    return s;
+    return this._otherEndpoint.lineEndpoint().subPt(this._otherEndpoint.ownerCenterpoint());
   }, {category: ['attaching']});
   
 });
 
 
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
-
+  
   add.method('detachArrowEndpoints', function () {
-    var world = this.world();
-    if (world) {
-      this.eachSubmorph(function(m) {
-        if (m.isArrowEndpoint) {
-          world.addMorphAt(m, this.worldPoint(m.getPosition()));
-        }
-      }.bind(this));
-    }
+    this.detachSubmorphsSatisfying(function(m) { return m.isArrowEndpoint; });
   }, {category: ['arrows']});
 
   add.method('relativeLineEndpoint', function () {
@@ -480,7 +469,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   }, {category: ['arrows']});
 
   add.method('ownerCenterpoint', function () {
-    var o = this.owner;
+    var o = this.getOwner();
     if (!o || !o.world()) {return pt(0, 0);}
     return o.worldPoint(o.shape.bounds().center());
   }, {category: ['geometry']});

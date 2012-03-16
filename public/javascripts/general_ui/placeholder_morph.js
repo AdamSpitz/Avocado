@@ -15,7 +15,7 @@ thisModule.addSlots(avocado, function(add) {
 thisModule.addSlots(avocado.placeholder, function(add) {
 
   add.method('newPlaceholderMorphForMorph', function (originalMorphOrFn) {
-    var placeholderMorph = avocado.ui.newMorph(avocado.ui.shapeFactory.newRectangle(pt(0,0).extent(pt(150,100))));
+    var placeholderMorph = avocado.ui.newMorph(avocado.ui.shapeFactory.newRectangle(pt(0,0).extent(avocado.treeNode.defaultExtent())));
     placeholderMorph.setLayout(Object.newChildOf(avocado.placeholder.layout, placeholderMorph, originalMorphOrFn));
     placeholderMorph.setEventHandler(avocado.placeholder.eventHandler);
     return placeholderMorph;

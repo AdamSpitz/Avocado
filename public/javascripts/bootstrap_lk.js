@@ -118,8 +118,7 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
     
     var canvas = this.createCanvasIfNone();
     
-    var baseColor = Color.rgb(0x53, 0x82, 0xC1);
-  	DisplayThemes['lively'].world.fill = new lively.paint.LinearGradient([new lively.paint.Stop(0, baseColor.lighter()), new lively.paint.Stop(1, baseColor)]);
+  	DisplayThemes['lively'].world.fill = Color.white;
   	
     var world = new WorldMorph(canvas);
     world.displayOnCanvas(canvas);

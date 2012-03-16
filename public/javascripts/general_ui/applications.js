@@ -46,15 +46,7 @@ thisModule.addSlots(avocado.applicationList, function(add) {
 
   add.method('commands', function () {
     var cmdList = avocado.command.list.create();
-
-    // aaa TOTAL HACK. GAE isn't really an "application", exactly. Maybe we need
-    // some separate concept here? -- Adam
-    if (window.wasServedFromGoogleAppEngine && window.googleAppEngine) {
-      googleAppEngine.addGlobalCommandsTo(cmdList);
-    }
-
     this.applications().each(function(app) { app.addGlobalCommandsTo(cmdList); });
-
     if (cmdList.size() === 0) { return null; }
     return cmdList;
   }, {category: ['commands']});

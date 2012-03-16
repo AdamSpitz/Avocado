@@ -21,7 +21,7 @@ thisModule.addSlots(avocado.types.longString, function(add) {
     tm.setScale(0.3);
     tm.setFill(null);
     tm.applyStyle({horizontalLayoutMode: avocado.LayoutModes.SpaceFill, verticalLayoutMode: avocado.LayoutModes.SpaceFill});
-    return ScrollPane.containing(tm, pt(150,100));
+    return ScrollPane.containing(tm, avocado.treeNode.defaultExtent());
   }, {category: ['input']});
   
 });

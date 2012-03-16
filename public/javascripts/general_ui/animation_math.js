@@ -142,42 +142,7 @@ thisModule.addSlots(avocado.animation, function(add) {
     return this.simultaneous.create("moverizer", [speederizer, m]);
   });
 
-  add.method('newFader', function (morph, endingAlpha) {
-    return this.newSpeedStepper(morph, endingAlpha, {
-      getValue: function(m   ) { return m.getFillOpacity( ); },
-      setValue: function(m, a) {        m.setFillOpacity(a); }
-    }, 1000, 400);
-  });
-
-  add.method('newResizer', function (morph, endingSize) {
-    return this.newSpeedStepper(morph, endingSize, {
-      getValue: function(m   ) { return m.getExtent( ); },
-      setValue: function(m, v) {        m.setExtent(v); }
-    }, 100, 40);
-  });
-
-  add.method('newScaler', function (morph, endingScale) {
-    return this.newSpeedStepper(morph, endingScale, {
-      getValue: function(m   ) { return m.getScale( ); },
-      setValue: function(m, v) {        m.setScale(v); }
-    }, 200, 80);
-  });
-
-  add.method('newHorizontalScaler', function (morph, endingScale) {
-    return this.newSpeedStepper(morph, endingScale, {
-      getValue: function(m   ) { return m.scalePoint.x; },
-      setValue: function(m, v) {        m.setScalePoint(pt(v, m.scalePoint.y)); }
-    }, 200, 80);
-  });
-
-  add.method('newVerticalScaler', function (morph, endingScale) {
-    return this.newSpeedStepper(morph, endingScale, {
-      getValue: function(m   ) { return m.scalePoint.y; },
-      setValue: function(m, v) {        m.setScalePoint(pt(m.scalePoint.x, v)); }
-    }, 200, 80);
-  });
-
-  add.method('newSpeedStepper', function (morph, endingValue, valueAccessor, mainDuration, accelOrDecelDuration) {
+  add.method('newSpeedStepper', function (morph, endingValue, valueAccessor, mainDuration) {
     // Don't bother if the morph is off-screen - it just feels like nothing's happening.
     if (! morph.isOnScreen()) {
       return this.instantaneous.create("set final value", function(m) {valueAccessor.setValue(m, endingValue);});
@@ -185,6 +150,7 @@ thisModule.addSlots(avocado.animation, function(add) {
 
     var startingValue = valueAccessor.getValue(morph);
 
+    var accelOrDecelDuration = mainDuration * 0.4;
     var s = this.speederizer(accelOrDecelDuration, mainDuration, true);
     var speedStepper = this.speedStepper.create(startingValue, endingValue, s.speedHolder(), valueAccessor);
     var r = this.sequential.create("speed steps");

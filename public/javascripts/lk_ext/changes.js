@@ -89,6 +89,11 @@ Morph.addMethods({
   getOriginAAAHack: function() { return pt(0,0); }, // aaa for compatibility with 3D, but it's a bug, I need to just fix it
   
   rotateToFaceTheCamera: function() {}, // nothing necessary here, just for compatibility with 3D
+  
+  getHorizontalScale: function () { return this.scalePoint.x; },
+  getVerticalScale:   function () { return this.scalePoint.y; },
+  setHorizontalScale: function (s) { this.setScalePoint(pt(s, this.scalePoint.y)); return this; },
+  setVerticalScale:   function (s) { this.setScalePoint(pt(this.scalePoint.x, s)); return this; },
 });
 
 Morph.addMethods({
@@ -285,15 +290,21 @@ Morph.addMethods({
 	      return !this.isWorld;
 	    }
     },
-    
-	  grabAndPullMe: function(evt, callback) {
+
+	  pullCloser: function(evt, callback, desiredScale) {
 	    var world = evt.hand.world();
 	    this.becomeDirectSubmorphOfWorld(world);
 	    var space = this.getExtent().scaleBy(this.getScale());
 	    var worldExtent = world.getExtent();
-	    var desiredScale = this.getScale() * Math.max(1, Math.min(worldExtent.x / space.x, worldExtent.y / space.y) * 0.5);
+	    desiredScale = desiredScale || this.getScale() * Math.max(1, Math.min(worldExtent.x / space.x, worldExtent.y / space.y) * 0.5);
 	    // console.log("this.getExtent(): " + this.getExtent() + ", this.getScale(): " + this.getScale() + ", world.getExtent(): " + world.getExtent() + ", world.getScale(): " + world.getScale());
   	  this.stayCenteredAndSmoothlyScaleTo(desiredScale, pt(0,0), function() {
+    	  if (callback) { callback(); }
+  	  }.bind(this));
+    },
+    
+	  grabAndPullMe: function(evt, callback) {
+	    this.pullCloser(evt, function() {
     	  this.grabMeWithoutZoomingAroundFirst(evt);
     	  if (callback) { callback(); }
   	  }.bind(this));

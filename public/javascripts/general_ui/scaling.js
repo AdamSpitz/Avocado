@@ -15,8 +15,8 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
 
-  add.method('initialize', function ($super, morphToUpdate, morph1, owner, thresholdNumberOrFunction, sizeOfSpaceHolder) {
-    $super(morphToUpdate, morph1, this.spaceHolder.bind(this));
+  add.method('initialize', function ($super, morphToUpdate, morph1, owner, thresholdNumberOrFunction, sizeOfSpaceHolder, styleOfSpaceHolder) {
+    $super(morphToUpdate, [morph1, this.spaceHolder.bind(this)]);
     this._owner = owner;
     if (typeof(thresholdNumberOrFunction) === 'function') {
       this.currentThreshold = thresholdNumberOrFunction;
@@ -24,6 +24,7 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
       this._thresholdNumber = thresholdNumberOrFunction;
     }
     this._sizeOfSpaceHolder = sizeOfSpaceHolder;
+    this._styleOfSpaceHolder = styleOfSpaceHolder || {fill: null};
   });
   
   add.method('spaceHolder', function () {
@@ -31,7 +32,7 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
     if (!h) {
       if (!this._sizeOfSpaceHolder) { return null; }
       var h = avocado.ui.newMorph(avocado.ui.shapeFactory.newRectangle(pt(0,0).extent(this._sizeOfSpaceHolder)));
-      h.setFill(null);
+      h.applyStyle(this._styleOfSpaceHolder);
       h.ignoreEvents();
       this._spaceHolder = h;
     }
@@ -42,8 +43,8 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
     return this._thresholdNumber;
   });
 
-  add.method('shouldMorph1BeShown', function () {
-    if (avocado.shouldAlwaysShowVerySmallMorphs) { return true; }
+  add.method('whichMorphShouldBeShown', function () {
+    if (avocado.shouldAlwaysShowVerySmallMorphs) { return 0; }
     var b = false;
     var onScreen = this._owner.isOnScreen();
     if (onScreen) {
@@ -51,8 +52,9 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
       var t = this.currentThreshold();
       b = s >= t;
     }
-    // console.log("shouldMorph1BeShown is " + b + " for " + this._owner + ", scale is " + s + ", threshold is " + t + ", onScreen is " + onScreen);
-    return b;
+    var i = b ? 0 : 1;
+    // console.log("whichMorphShouldBeShown is " + i + " for " + this._owner + ", scale is " + s + ", threshold is " + t + ", onScreen is " + onScreen);
+    return i;
   });
 
 });

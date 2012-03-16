@@ -1365,6 +1365,16 @@ Object.subclass('MouseHandlerForRelay', {
 
 });
 
+// aaa - Added by Adam, not sure what I'm doing, just want a XenoMorph with clickable HTML links.
+Object.subclass('MouseHandlerForDoingTheDefaultThing', {
+
+	handleMouseEvent: function(evt, targetMorph) {
+	  return false;
+	},
+
+    handlesMouseDown: Functions.True
+});
+
 
 lively.data.Wrapper.subclass('Morph', {
 
@@ -5098,7 +5108,7 @@ PasteUpMorph.subclass("WorldMorph", {
 	prompt: function(message, callback, defaultInput) {
     // aaa: LK's prompt dialog thing seems (as of Feb. 2009) to be broken.
     // I doubt it's hard to fix, but for now I don't wanna get distracted by it. -- Adam
-    callback.call(window, window.prompt(message, defaultInput));
+    callback.call(window, prompt(message, defaultInput));
     return;
 
 		var model = Record.newPlainInstance({Message: message, Input: defaultInput || "", Result: null});

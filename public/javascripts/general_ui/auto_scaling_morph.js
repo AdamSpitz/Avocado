@@ -89,11 +89,14 @@ thisModule.addSlots(avocado.autoScaling.layout, function(add) {
   });
   
   add.method('cleanUp', function (contentMorphsOrNull) {
-    var contentMorphs = contentMorphsOrNull || this._morph.recalculateActualContent() || this._morph.submorphs;
     this._hasAlreadyBeenLaidOutAtLeastOnce = true;
-    var pose = this._morph.poseManager().cleaningUpPose(contentMorphs).beUnobtrusive().beSquarish().whenDoneScaleToFitWithinCurrentSpace();
-    if (avocado.ui.is3D) { pose._extraZHack = 0; } // aaa HACK, what's the right way to make the contents pop out?
+    var contentMorphs = contentMorphsOrNull || this._morph.recalculateActualContent() || this._morph.submorphs;
+    var pose = this.cleaningUpPoseFor(contentMorphs).beUnobtrusive().whenDoneScaleToFitWithinCurrentSpace().aaa_addExtraZHack(0);
     this._morph.poseManager().assumePose(pose);
+  }, {category: ['organizing']});
+  
+  add.method('cleaningUpPoseFor', function (contentMorphs) {
+    return this._morph.poseManager().cleaningUpPose(contentMorphs).beSquarish();
   }, {category: ['organizing']});
   
   add.method('aboutToReceiveDrop', function (m) {
@@ -117,6 +120,7 @@ thisModule.addSlots(avocado.autoScaling.layout, function(add) {
   }, {category: ['layout']});
   
 });
+
 
 
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {

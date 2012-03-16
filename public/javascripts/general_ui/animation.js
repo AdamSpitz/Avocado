@@ -8,12 +8,12 @@ requires('general_ui/basic_morph_mixins');
 
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
-  add.method('startWhooshingTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-    return this.startAnimating(avocado.animation.newMovement(this, avocado.ui.aaa_isArcPathBroken ? avocado.animation.straightPath : avocado.animation.arcPath, loc, 3 / avocado.ui.currentWorld().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
+  add.method('startWhooshingTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, callback) {
+    return this.startAnimating(avocado.animation.newMovement(this, avocado.ui.aaa_isArcPathBroken ? avocado.animation.straightPath : avocado.animation.arcPath, loc, 3 / avocado.ui.currentWorld().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), callback);
   }, {category: ['whooshing around']});
 
-  add.method('startWhooshingInAStraightLineTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
-    return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.straightPath, loc, 2 / avocado.ui.currentWorld().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
+  add.method('startWhooshingInAStraightLineTo', function (loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, callback) {
+    return this.startAnimating(avocado.animation.newMovement(this, avocado.animation.straightPath, loc, 2 / avocado.ui.currentWorld().getScale(), shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), callback);
   }, {category: ['whooshing around']});
 
   add.method('whooshAwayAfter', function (ms) {
@@ -30,15 +30,15 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this.ensureIsInWorld(w, p, true, false, true, callWhenDone);
   }, {category: ['whooshing around']});
 
-  add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
+  add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, callback) {
     var originalOwner = this.getOwner();
     this.becomeDirectSubmorphOfWorld(w);
     var wantsToScaleToo = typeof(desiredLoc.desiredScale) !== 'undefined';
     if (wantsToScaleToo) { this.smoothlyScaleTo(desiredLoc.desiredScale); } // aaa hack
     if (originalOwner !== w || shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
-      this.startWhooshingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
+      this.startWhooshingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, callback);
     } else {
-      if (functionToCallWhenDone) { functionToCallWhenDone(); }
+      if (callback) { callback(); }
     }
   }, {category: ['adding and removing']});
 
@@ -56,9 +56,9 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     }
   }, {category: ['adding and removing']});
 
-  add.method('startAnimating', function (animator, functionToCallWhenDone) {
+  add.method('startAnimating', function (animator, callback) {
     animator.stopAnimating();
-    animator.whenDoneCall(functionToCallWhenDone);
+    animator.whenDoneCall(callback);
     animator.startAnimating(this);
     return animator;
   }, {category: ['whooshing around']});
@@ -71,35 +71,118 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     if (this.world()) {this.startWhooshingOuttaHere();}
   }, {category: ['adding and removing']});
 
-  add.method('smoothlyFadeTo', function (desiredAlpha, functionToCallWhenDone) {
-    this.startAnimating(avocado.animation.newFader(this, desiredAlpha), functionToCallWhenDone);
-  }, {category: ['fading']});
+  add.method('smoothlyAnimate', function (accessor, desiredValue, callback) {
+    this.startAnimating(avocado.animation.newSpeedStepper(this, desiredValue, accessor, accessor.defaultDuration || 200), callback);
+  }, {category: ['animating']});
 
-  add.method('smoothlyResizeTo', function (desiredSize, functionToCallWhenDone) {
-    this.startAnimating(avocado.animation.newResizer(this, desiredSize), functionToCallWhenDone);
-  }, {category: ['resizing']});
+  add.method('smoothlyFadeTo', function (desiredAlpha, callback) {
+    this.smoothlyAnimate(avocado.animation.accessors.fillOpacity, desiredAlpha, callback);
+  }, {category: ['animating']});
 
-  add.method('smoothlyScaleTo', function (desiredScale, functionToCallWhenDone) {
-    this.startAnimating(avocado.animation.newScaler(this, desiredScale), functionToCallWhenDone);
-  }, {category: ['scaling']});
+  add.method('smoothlyResizeTo', function (desiredSize, callback) {
+    this.smoothlyAnimate(avocado.animation.accessors.extent, desiredSize, callback);
+  }, {category: ['animating']});
 
-  add.method('smoothlyScaleHorizontallyTo', function (desiredScale, functionToCallWhenDone) {
-    this.startAnimating(avocado.animation.newHorizontalScaler(this, desiredScale), functionToCallWhenDone);
-  }, {category: ['scaling']});
+  add.method('smoothlyScaleTo', function (desiredScale, callback) {
+    this.smoothlyAnimate(avocado.animation.accessors.scale, desiredScale, callback);
+  }, {category: ['animating']});
 
-  add.method('smoothlyScaleVerticallyTo', function (desiredScale, functionToCallWhenDone) {
-    this.startAnimating(avocado.animation.newVerticalScaler(this, desiredScale), functionToCallWhenDone);
-  }, {category: ['scaling']});
+  add.method('smoothlyScaleHorizontallyTo', function (desiredScale, callback) {
+    this.smoothlyAnimate(avocado.animation.accessors.horizontalScale, desiredScale, callback);
+  }, {category: ['animating']});
+
+  add.method('smoothlyScaleVerticallyTo', function (desiredScale, callback) {
+    this.smoothlyAnimate(avocado.animation.accessors.verticalScale, desiredScale, callback);
+  }, {category: ['animating']});
   
-  add.method('startTinyAndSmoothlyGrowTo', function (desiredScale, functionToCallWhenDone) {
+  add.method('startTinyAndSmoothlyGrowTo', function (desiredScale, callback) {
     this.setScale(desiredScale * 0.01);
-    this.smoothlyScaleTo(desiredScale, functionToCallWhenDone);
-  });
+    this.smoothlyScaleTo(desiredScale, callback);
+  }, {category: ['animating']});
   
-  add.method('smoothlyShrinkDownToNothing', function (functionToCallWhenDone) {
-    this.smoothlyScaleTo(0.01, functionToCallWhenDone);
-  });
+  add.method('smoothlyShrinkDownToNothing', function (callback) {
+    this.smoothlyScaleTo(0.01, callback);
+  }, {category: ['animating']});
 
+});
+
+
+thisModule.addSlots(avocado.animation, function(add) {
+
+  add.creator('accessors', {});
+
+});
+
+
+thisModule.addSlots(avocado.animation.accessors, function(add) {
+
+  add.creator('general', {});
+  
+  add.creator('fillOpacity', Object.create(avocado.animation.accessors.general));
+
+  add.creator('extent', Object.create(avocado.animation.accessors.general));
+
+  add.creator('scale', Object.create(avocado.animation.accessors.general));
+
+  add.creator('horizontalScale', Object.create(avocado.animation.accessors.general));
+
+  add.creator('verticalScale', Object.create(avocado.animation.accessors.general));
+
+});
+
+
+thisModule.addSlots(avocado.animation.accessors.fillOpacity, function(add) {
+  
+  add.data('defaultDuration', 1000);
+  
+  add.method('getValue', function (m) { return m.getFillOpacity(); });
+  
+  add.method('setValue', function (m, a) { m.setFillOpacity(a); });
+  
+});
+
+
+thisModule.addSlots(avocado.animation.accessors.extent, function(add) {
+  
+  add.data('defaultDuration', 100);
+  
+  add.method('getValue', function (m) { return m.getExtent(); });
+  
+  add.method('setValue', function (m, e) { m.setExtent(e); });
+  
+});
+
+
+thisModule.addSlots(avocado.animation.accessors.scale, function(add) {
+  
+  add.data('defaultDuration', 200);
+  
+  add.method('getValue', function (m) { return m.getScale(); });
+  
+  add.method('setValue', function (m, s) { m.setScale(s); });
+  
+});
+
+
+thisModule.addSlots(avocado.animation.accessors.horizontalScale, function(add) {
+  
+  add.data('defaultDuration', 200);
+  
+  add.method('getValue', function (m) { return m.getHorizontalScale(); });
+  
+  add.method('setValue', function (m, v) { m.setHorizontalScale(v); });
+  
+});
+
+
+thisModule.addSlots(avocado.animation.accessors.verticalScale, function(add) {
+  
+  add.data('defaultDuration', 200);
+  
+  add.method('getValue', function (m) { return m.getVerticalScale(); });
+  
+  add.method('setValue', function (m, v) { m.setVerticalScale(v); });
+  
 });
 
 

@@ -24,7 +24,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
     
     var descLabel = avocado.label.newMorphFor('');
     descLabel.setScale(0.9);
-    mirMorph._descMorph = avocado.morphHider.create(mirMorph, descLabel, null, function() {
+    mirMorph._descMorph = avocado.morphHider.create(mirMorph, [descLabel], function() {
       var s = this.shortDescription();
       descLabel.setText(s);
       return s !== '';
@@ -97,9 +97,9 @@ thisModule.addSlots(avocado.mirror.morphBuilder, function(add) {
   
   add.method('createHeaderRowFor', function (mirMorph) {
     if (mirMorph._commentToggler) {
-      var optionalCommentButtonMorph = avocado.morphHider.create(mirMorph, function() {
+      var optionalCommentButtonMorph = avocado.morphHider.create(mirMorph, [function() {
         return mirMorph._commentToggler.commandForToggling('my comment', "'...'").newMorph();
-      }.memoize(), null, function() {
+      }.memoize()], function() {
         return mirMorph._commentToggler.isOn() || (mirMorph.mirror().comment && mirMorph.mirror().comment());
       });
     }
@@ -121,9 +121,9 @@ thisModule.addSlots(avocado.mirror.morphBuilder, function(add) {
 
     var optionalDismissButtonMorph = mirMorph._shouldUseZooming ? null : mirMorph.createDismissButtonThatOnlyAppearsIfTopLevel();
     
-    var optionalAKAButtonMorph = avocado.morphHider.create(mirMorph, function() {
+    var optionalAKAButtonMorph = avocado.morphHider.create(mirMorph, [function() {
       return avocado.command.create("AKA", function(evt) { mirMorph.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }).newMorph();
-    }.memoize(), null, function() {
+    }.memoize()], function() {
       return mirMorph.mirror().hasMultiplePossibleNames();
     });
 

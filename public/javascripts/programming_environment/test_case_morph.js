@@ -41,15 +41,46 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     var m = avocado.treeNode.newMorphFor(this, this.defaultMorphStyle);
     m.typeName = 'test suite';
     
+    
+    // aaa - just an experiment
+    if (this._shouldBeDisplayedAsOneLongRow) {
+      avocado.treeNode.actualContentsPanelForMorph(m).layout().cleaningUpPoseFor = function (contentMorphs) {
+        return this._morph.poseManager().rowPose(contentMorphs);
+      };
+    }
+    
+    
     m.refreshContentOfMeAndSubmorphs();
     m.startPeriodicallyUpdating();
     return m;
   }, {category: ['user interface']});
 
   add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
+
+  add.creator('contentsPanelExtent', function() {
+    if (this._shouldBeDisplayedAsOneLongRow) {
+      return pt(200, 6);
+    } else {
+      return avocado.treeNode.defaultExtent();
+    }
+  }, {category: ['user interface']});
   
   add.method('updateStyleOfMorph', function (m) {
     avocado.testCase.updateStyleOfMorph(m);
+  }, {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
+
+  add.method('newMorph', function () {
+    return avocado.treeNode.newMorphFor(this);
+  }, {category: ['user interface']});
+  
+  add.method('shouldContentsPanelUseZooming', function () {
+    // probably I want something fancier than just an old-style tree, but let's try this for now
+    return false;
   }, {category: ['user interface']});
 
 });

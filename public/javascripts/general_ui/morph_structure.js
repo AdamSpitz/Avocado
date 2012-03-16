@@ -68,6 +68,17 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   add.method('ownersRecursively', function() {
     return avocado.enumerator.create(this, 'eachOwnerRecursively');
   }, {category: ['morph structure']});
+
+  add.method('detachSubmorphsSatisfying', function (criterion) {
+    var world = this.world();
+    if (world) {
+      this.eachSubmorph(function(m) {
+        if (criterion(m)) {
+          world.addMorphAt(m, this.worldPoint(m.getPosition()));
+        }
+      }.bind(this));
+    }
+  }, {category: ['morph structure']});
   
 });
 

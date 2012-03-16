@@ -20,6 +20,8 @@ thisModule.addSlots(avocado.poses, function(add) {
 
   add.creator('list', Object.create(avocado.poses['abstract']));
 
+  add.creator('row', Object.create(avocado.poses['abstract']));
+
   add.creator('snapshot', Object.create(avocado.poses['abstract']));
 
   add.creator('manager', {});
@@ -147,6 +149,11 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this;
   });
 
+  add.method('aaa_addExtraZHack', function (extraZ) {
+    if (avocado.ui.is3D) { this._extraZHack = extraZ; } // aaa HACK, what's the right way to make the contents pop out?
+    return this;
+  });
+
   add.method('constructUIStateMemento', function () {
     // for compatibility with morphs - want to be able to make a pose of poses
     return null;
@@ -225,10 +232,15 @@ thisModule.addSlots(avocado.poses.tree, function(add) {
 
 thisModule.addSlots(avocado.poses.list, function(add) {
 
-  add.method('initialize', function ($super, name, container, posers) {
+  add.method('initialize', function ($super, name, maxExtentPtOrFn, posers) {
     $super(name);
-    this._container = container;
+    this._maxExtentPtOrFn = maxExtentPtOrFn;
     this._posers = posers;
+  });
+  
+  add.method('maxExtent', function () {
+    if (typeof(this._maxExtentPtOrFn) === 'function') { return this._maxExtentPtOrFn(); }
+    return this._maxExtentPtOrFn;
   });
 
   add.method('eachElement', function (f, startingPos) {
@@ -241,7 +253,7 @@ thisModule.addSlots(avocado.poses.list, function(add) {
     var padding = (startingPos || pt(0,0)).addXY(20,20);
     var pos = padding;
     var widest = 0;
-    var maxY = this._shouldBeSquarish ? null : this._container.getExtent().y - 30;
+    var maxY = this._shouldBeSquarish ? null : this.maxExtent().y - 30;
     for (var i = 0, n = sortedPosersToMove.length; i < n; ++i) {
       var poser = sortedPosersToMove[i];
       var uiState = this.destinationUIStateFor(poser);
@@ -255,7 +267,7 @@ thisModule.addSlots(avocado.poses.list, function(add) {
         // If it seems like the current y is far down enough to make the whole
         // thing come out squarish (assuming that all columns will be about as
         // wide as this one), then set this as the maxY.
-        var containerExtent = this._container.getExtent();
+        var containerExtent = this.maxExtent();
         var desiredAspectRatio = containerExtent.y == 0 ? 1 : containerExtent.x / containerExtent.y;
         
         var estimatedNumberOfColumns = Math.ceil(n / (i + 1));
@@ -286,6 +298,34 @@ thisModule.addSlots(avocado.poses.list, function(add) {
     } else {
       // just use whatever state it's in now
       return null;
+    }
+  });
+
+});
+
+
+thisModule.addSlots(avocado.poses.row, function(add) {
+
+  add.method('initialize', function ($super, name, posers) {
+    $super(name);
+    this._posers = posers;
+  });
+
+  add.method('eachElement', function (f, startingPos) {
+    var sortedPosersToMove = this._posers.sort(function(m1, m2) {
+      var n1 = m1.inspect();
+      var n2 = m2.inspect();
+      return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;
+    });
+
+    var padding = pt(0,0);
+    var pos = startingPos || pt(0,0);
+    
+    for (var i = 0, n = sortedPosersToMove.length; i < n; ++i) {
+      var poser = sortedPosersToMove[i];
+      f({poser: poser, position: pos});
+      var poserSpace = poser.getExtent().scaleBy(poser.getScale());
+      pos = pos.withX(pos.x + poserSpace.x + padding.x);
     }
   });
 
@@ -397,13 +437,18 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
   }, {category: ['taking snapshots']});
 
   add.method('cleaningUpPose', function (posers, name) {
-    return avocado.poses.list.create(name || "clean up", this.container(), posers || this.container().posers()).beCollapsing();
+    return avocado.poses.list.create(name || "clean up", function() { return this.container().getExtent(); }.bind(this), posers || this.container().posers()).beCollapsing();
+  }, {category: ['cleaning up']});
+
+  add.method('rowPose', function (posers, name) {
+    return avocado.poses.row.create(name || "row", posers || this.container().posers());
   }, {category: ['cleaning up']});
 
   add.method('listPoseOfMorphsFor', function (objects, name) {
     // aaa LK-dependent
-    var posersToMove = objects.map(function(m) { return this.container().morphFor(m); }.bind(this));
-    return avocado.poses.list.create(name, this.container(), posersToMove);
+    var world = this.container().world();
+    var posersToMove = objects.map(function(m) { return world.morphFor(m); }.bind(this));
+    return avocado.poses.list.create(name, function() { return this.container().getExtent(); }.bind(this), posersToMove);
   }, {category: ['cleaning up']});
 
   add.method('poseChooser', function () {

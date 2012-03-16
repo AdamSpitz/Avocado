@@ -20,11 +20,10 @@ thisModule.addSlots(avocado.morphHider, function(add) {
     return c;
   }, {category: ['creating']});
 
-  add.method('initialize', function (morphToUpdate, morph1, morph2, criterionForShowing) {
+  add.method('initialize', function (morphToUpdate, possibleMorphsToShow, criterionForShowing) {
     this._morphToUpdate = morphToUpdate;
-    this._morph1 = morph1;
-    this._morph2 = morph2;
-    if (criterionForShowing) { this.shouldMorph1BeShown = criterionForShowing; }
+    this._possibleMorphsToShow = possibleMorphsToShow;
+    if (criterionForShowing) { this.whichMorphShouldBeShown = criterionForShowing; }
   });
 
   add.method('update', function (evt) {
@@ -32,7 +31,7 @@ thisModule.addSlots(avocado.morphHider, function(add) {
   });
 
   add.method('morphOrFunctionToShow', function () {
-    return this.shouldMorph1BeShown() ? this._morph1 : this._morph2;
+    return this._possibleMorphsToShow[this.whichMorphShouldBeShown()];
   });
 
   add.method('actualMorphToShow', function (context) {

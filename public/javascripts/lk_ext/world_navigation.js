@@ -9,7 +9,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 	  if (evt.isCtrlDown() || evt.isMetaDown() || evt.isAltDown()) {
       var factor = Math.pow(1.2, (evt.rawEvent.wheelDeltaY / -600));
       this.zoomBy(factor, evt.point());
-      // this.staySameSizeAndSmoothlyScaleTo(this.getScale() * factor, evt.point(), 200, 80, this.refreshContentIfOnScreenOfMeAndSubmorphs.bind(this));
+      // this.staySameSizeAndSmoothlyScaleTo(this.getScale() * factor, evt.point(), 200, this.refreshContentIfOnScreenOfMeAndSubmorphs.bind(this));
       return true;
     }
   }, {category: ['navigation']});
@@ -84,12 +84,12 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     }.bind(this));
   }, {category: ['scaling']});
 
-  add.method('staySameSizeAndSmoothlyScaleTo', function (desiredScale, currentPointerPosFn, mainDuration, accelOrDecelDuration, functionToCallWhenDone) {
+  add.method('staySameSizeAndSmoothlyScaleTo', function (desiredScale, currentPointerPosFn, mainDuration, functionToCallWhenDone) {
     var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
     this.startZoomAnimation(avocado.animation.newSpeedStepper(worldNavigator, desiredScale, {
       getValue: function(m   ) { return worldNavigator.getScale();                                       },
       setValue: function(m, v) {        worldNavigator.staySameSizeAndScaleTo(v, currentPointerPosFn()); }
-    }, mainDuration, accelOrDecelDuration), functionToCallWhenDone);
+    }, mainDuration), functionToCallWhenDone);
   }, {category: ['scaling']});
 
   add.method('staySameSizeAndSmoothlySlideAndScaleTo', function (desiredCenterPosition, desiredScale, targetMorph, functionToCallWhenDone) {
@@ -133,7 +133,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     var land = function() {
       if (needToLand) {
         //console.log("desiredScale: " + desiredScale);
-        this.staySameSizeAndSmoothlyScaleTo(desiredScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, 400, functionToCallWhenDone);
+        this.staySameSizeAndSmoothlyScaleTo(desiredScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, functionToCallWhenDone);
       } else {
         // done!
       }
@@ -153,7 +153,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     
     var takeOff = function() {
       if (needToTakeOff) {
-        this.staySameSizeAndSmoothlyScaleTo(cruisingScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, 400, cruise);
+        this.staySameSizeAndSmoothlyScaleTo(cruisingScale, function() { return worldNavigator.getExtent().scaleBy(0.5); }, 1000, cruise);
       } else {
         cruise();
       }

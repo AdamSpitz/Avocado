@@ -33,12 +33,17 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     morph.applyStyle(style || {borderRadius: 10});
     return morph;
   }, {category: ['user interface']});
+  
+  add.method('defaultExtent', function () {
+    return pt(200, 100);
+  }, {category: ['user interface']});
 
   add.method('createContentsPanelMorphFor', function (model) {
     var contents = model.immediateContents(); // aaa - is this an unnecessary calculation of immediateContents? Is it gonna be slow?
     if (Object.isArray(contents) || Object.inheritsFrom(avocado.compositeCollection, contents) || Object.inheritsFrom(avocado.typedCollection, contents)) { // aaa - hack, I'm just not quite sure yet that I want an array's newMorph to return one of these autoScaling.Morphs or whatever
       var shouldUseZooming = typeof(model.shouldContentsPanelUseZooming) === 'function' ? model.shouldContentsPanelUseZooming() : model.shouldContentsPanelUseZooming;
-      var m = avocado.treeNode.createTreeContentsPanelMorph(model, model.shouldContentsPanelAutoOrganize, pt(150,100), shouldUseZooming);
+      var extent = typeof(model.contentsPanelExtent) === 'function' ? model.contentsPanelExtent() : this.defaultExtent();
+      var m = avocado.treeNode.createTreeContentsPanelMorph(model, model.shouldContentsPanelAutoOrganize, extent, shouldUseZooming);
       m.setModel(contents);
       avocado.ui.currentWorld().rememberMorphFor(contents, m);
       return m;
@@ -49,7 +54,7 @@ thisModule.addSlots(avocado.treeNode, function(add) {
 
   add.method('createTreeContentsPanelMorph', function (treeNode, shouldAutoOrganize, contentsPanelSize, shouldUseZooming) {
     // aaa - This whole thing is a bit of a hack, and too function-y. There's an object missing here or something.
-    contentsPanelSize = contentsPanelSize || pt(150,100);
+    contentsPanelSize = contentsPanelSize || this.defaultExtent();
     if (typeof(shouldUseZooming) === 'undefined') { shouldUseZooming = avocado.isZoomingEnabled; }
 
     var cp;
@@ -177,7 +182,7 @@ thisModule.addSlots(avocado.treeNode.morphFactories.expanderBased, function(add)
   });
   
   add.method('createContentsPanelOrHider', function (ownerMorph, getOrCreateActualMorph) {
-    return avocado.morphHider.create(ownerMorph, getOrCreateActualMorph, null, function() {
+    return avocado.morphHider.create(ownerMorph, [getOrCreateActualMorph], function() {
       return ownerMorph._expander.isExpanded();
     });
   });
@@ -206,7 +211,7 @@ thisModule.addSlots(avocado.treeNode.morphFactories.scalingBased, function(add) 
     var thresholdMultiplierForHeader = ownerMorph._shouldOmitHeaderRow ? 0.25 : 0.7;
     return avocado.scaleBasedMorphHider.create(ownerMorph, getOrCreateActualMorph, ownerMorph, function() {
       return contentsThreshold * thresholdMultiplierForHeader * avocado.treeNode.thresholdMultiplierFor(ownerMorph._model);
-    }, pt(150,100));
+    }, avocado.treeNode.defaultExtent(), avocado.treeNode.zoomingContentsPanelStyle);
   });
 
   add.method('headerRowContentsForMorph', function (morph) {

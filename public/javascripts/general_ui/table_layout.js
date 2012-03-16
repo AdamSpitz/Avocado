@@ -80,7 +80,7 @@ thisModule.addSlots(avocado.table, function(add) {
 
   add.method('wrapToTakeUpConstantSpace', function(space, morph) {
     var wrapper = avocado.table.newRowMorph().beInvisible();
-    wrapper.layout()._desiredSpaceToScaleTo = space;
+    wrapper.layout().setDesiredSpace(space);
     wrapper.layout().setCells([morph]);
     return wrapper;
   }, {category: ['shortcuts']});
@@ -254,6 +254,11 @@ thisModule.addSlots(avocado.table.layout, function(add) {
               layoutModes.y === avocado.LayoutModes.Rigid ? Math.max(e.y, currentExtent.y) : e.y);
   }, {category: ['layout']});
 
+  add.method('setDesiredSpace', function (space) {
+    this._desiredSpaceToScaleTo = space;
+    return this;
+  }, {category: ['layout']});
+  
   add.method('currentOrDesiredScaleGivenExtent', function (e) {
     var desiredSpace = this._desiredSpaceToScaleTo;
     if (desiredSpace) {
@@ -472,6 +477,7 @@ thisModule.addSlots(avocado.table.contents, function(add) {
     var world = avocado.ui.currentWorld();
     var morphsTable = this.map(function(model) { return world.morphFor(model); });
     var m = avocado.table.newTableMorph();
+    if (this._desiredSpaceToScaleTo) { m.layout().setDesiredSpace(this._desiredSpaceToScaleTo); } // aaa hack, the model shouldn't know about this UI stuff
     m.replaceContentWith(morphsTable);
     m.applyStyle(avocado.table.boxStyle);
     return m;

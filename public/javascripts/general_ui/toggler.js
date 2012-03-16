@@ -15,12 +15,12 @@ thisModule.addSlots(avocado, function(add) {
 thisModule.addSlots(avocado.morphToggler, function(add) {
 
   add.method('initialize', function ($super, morphToUpdate, morph1, morph2) {
-    $super(morphToUpdate, morph1, morph2);
+    $super(morphToUpdate, [morph1, morph2]);
     this._valueHolder = avocado.booleanHolder.containing(false);
     this._valueHolder.addObserver(this.valueChanged.bind(this));
   });
 
-  add.method('shouldMorph1BeShown', function () { return this.isOn(); });
+  add.method('whichMorphShouldBeShown', function () { return this.isOn() ? 0 : 1; });
 
   add.method('isOn', function () { return this._valueHolder.getValue(); });
 

@@ -224,7 +224,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     
       items.push(avocado.command.create('gather related objects', function(evt) {
         var container = this.owner.owner;
-        var pose = avocado.poses.list.create("all tagged " + this._model, container, this.allLikeMe());
+        var pose = avocado.poses.list.create("all tagged " + this._model, container.getExtent.bind(container), this.allLikeMe());
         evt.hand.world().promptForPoint(function(startingPos) {
           container.poseManager().assumePose(pose, startingPos);
         });

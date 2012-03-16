@@ -60,11 +60,11 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
   }, {category: ['value']});
 
   add.method('get', function () {
-    return this.getValue();
+    return this.getValue.apply(this, arguments);
   }, {category: ['compatibility with accessors']});
 
   add.method('set', function (v) {
-    return this.setValue(v);
+    return this.setValue.apply(this, arguments);
   }, {category: ['compatibility with accessors']});
   
   add.method('canGet', function () {
