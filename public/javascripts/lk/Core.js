@@ -5647,6 +5647,8 @@ Morph.subclass("HandMorph", {
         this.owner = null;
 		this.boundMorph = null; // surrounds bounds
 		this.layoutChangedCount = 0; // to prevent recursion on layoutChanged
+		
+		this.setTrait("pointer-events", "none"); // added by Adam, needed to make HTML links clickable in XenoMorphs, hope it doesn't screw anything else up
         return this;
     },
 

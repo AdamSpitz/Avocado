@@ -27,6 +27,7 @@ requires('general_ui/arrows');
 requires('general_ui/history_morph');
 requires('general_ui/string_buffer_morph');
 requires('general_ui/scripting');
+requires('general_ui/active_sentence');
 
 }, function(thisModule) {
 

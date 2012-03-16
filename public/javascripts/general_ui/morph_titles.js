@@ -30,11 +30,16 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 	}, {category: ['title']});
 
   add.method('createTitleLabel', function () {
-    var titleAccessors = this.titleAccessors();
-    if (titleAccessors) {
-      this._titleLabelMorph = avocado.infrequentlyEditedText.newMorphFor(titleAccessors, "rename", this.titleEmphasis());
+    var a = this.titleAccessors();
+    if (a) {
+      this._titleLabelMorph = avocado.infrequentlyEditedText.newMorphFor(a, "rename", this.titleEmphasis());
     } else {
-      this._titleLabelMorph = this.createNameLabel();
+      var m = this.titleModel();
+      if (m) {
+        this._titleLabelMorph = avocado.ui.currentWorld().morphFor(m);
+      } else {
+       this._titleLabelMorph = this.createNameLabel();
+      }
     }
     return this._titleLabelMorph;
   }, {category: ['title']});
@@ -46,6 +51,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('titleAccessors', function () {
     if (this._model && typeof(this._model.titleAccessors) === 'function') { return this._model.titleAccessors(); }
+    return null;
+  }, {category: ['title']});
+
+  add.method('titleModel', function () {
+    if (this._model && typeof(this._model.titleModel) === 'function') { return this._model.titleModel(); }
     return null;
   }, {category: ['title']});
   

@@ -35,7 +35,7 @@ thisModule.addSlots(avocado.treeNode, function(add) {
   }, {category: ['user interface']});
   
   add.method('defaultExtent', function () {
-    return pt(200, 100);
+    return pt(150, 100);
   }, {category: ['user interface']});
 
   add.method('createContentsPanelMorphFor', function (model) {

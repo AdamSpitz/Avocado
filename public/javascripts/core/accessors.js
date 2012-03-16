@@ -44,6 +44,15 @@ thisModule.addSlots(avocado.accessors, function(add) {
   add.method('canSet', function () {
     return !! this.set;
   }, {category: ['testing']});
+  
+  add.method('getValue', function () {
+    return this.get();
+  }, {category: ['accessing']});
+  
+  add.method('setValue', function (v) {
+    this.set(v);
+    return this;
+  }, {category: ['accessing']});
 
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 

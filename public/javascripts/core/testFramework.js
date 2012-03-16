@@ -1,5 +1,7 @@
 avocado.transporter.module.create('core/testFramework', function(requires) {
 
+requires('core/naming');
+
 }, function(thisModule) {
 
 
@@ -24,11 +26,23 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('name', function () {
     return this.currentSelector || this.wholeTestCaseName();
-  }, {category: ['accessing']});
+  }, {category: ['naming']});
 
   add.method('wholeTestCaseName', function () {
     return reflect(this).name();
-  }, {category: ['accessing']});
+  }, {category: ['naming']});
+  
+  add.creator('namingScheme', Object.create(avocado.namingScheme), {category: ['naming']});
+
+  add.method('nameWithinEnclosingObject', function (enclosingObject) {
+    var n = this.name();
+    if (enclosingObject) {
+      if (enclosingObject.testToBeRun().name() === n) { return ""; }
+    }
+    return n;
+  }, {category: ['naming']});
+
+  add.method('testToBeRun', function () { return this; }, {category: ['accessing']});
 
   add.method('id', function () {
     return this.wholeTestCaseName() + '>>' + this.currentSelector;
@@ -120,11 +134,19 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('copyForTestSelector', function (optTestSelector) {
     return Object.newChildOf(this, optTestSelector);
   });
+  
+  add.method('eachLeaf', function (f) {
+    f(this);
+  }, {category: ['iterating']});
+
+  add.method('leaves', function () {
+    return avocado.enumerator.create(this, 'eachLeaf');
+  }, {category: ['iterating']});
 
   add.method('runTest', function (callback) {
     this.clearResults();
     this._result.recordStarted();
-		var t1 = new Date().getTime();
+		var t1 = this._result.timestamp();
 		try {
 			this.setUp();
 			this.runTestFunction(function() {
@@ -173,9 +195,13 @@ thisModule.addSlots(avocado.testCase, function(add) {
 		}.bind(this));
   }, {category: ['user interface', 'commands']});
 
-  add.creator('singleResult', {}, {category: ['results']});
+  add.creator('singleOrCompositeResult', {}, {category: ['results']});
+
+  add.creator('singleResult', Object.create(avocado.testCase.singleOrCompositeResult), {category: ['results']});
   
-  add.creator('compositeResult', {}, {category: ['results']});
+  add.creator('compositeResult', Object.create(avocado.testCase.singleOrCompositeResult), {category: ['results']});
+
+  add.creator('resultHistory', {}, {category: ['results']});
 
   add.method('clearResults', function () {
 		this._result = Object.newChildOf(avocado.testCase.singleResult, this);
@@ -183,6 +209,11 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('result', function () {
     return this._result;
+  }, {category: ['accessing']});
+
+  add.method('timestamp', function () {
+    // aaa - kind of weird, should really just be on the result object
+    return this._result.timestamp();
   }, {category: ['accessing']});
 
   add.method('getTestCaseObject', function (evt) {
@@ -200,9 +231,20 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
 
-    cmdList.addItem(["get tests", function(evt) {
-      avocado.ui.grab(this.suite.forTestingAvocado(), evt);
-    }.bind(this)]);
+    var enableHistoryViewingExperiment = false;
+    if (!enableHistoryViewingExperiment) {
+      cmdList.addItem(["get tests", function(evt) {
+        var testSuite = this.suite.forTestingAvocado();
+        avocado.ui.grab(testSuite, evt);
+      }.bind(this)]);
+    } else {
+      cmdList.addItem(["get tests", function(evt) {
+        var testSuite = this.suite.forTestingAvocado();
+        testSuite._shouldBeDisplayedAsOneLongRow = true;
+        var history = Object.newChildOf(this.resultHistory, testSuite);
+        avocado.ui.grab(history, evt);
+      }.bind(this)]);
+    }
   }, {category: ['user interface', 'commands']});
 
   add.creator('suite', {}, {category: ['suites']});
@@ -210,11 +252,26 @@ thisModule.addSlots(avocado.testCase, function(add) {
 });
 
 
-thisModule.addSlots(avocado.testCase.singleResult, function(add) {
-  
+thisModule.addSlots(avocado.testCase.singleOrCompositeResult, function(add) {
+
   add.method('initialize', function (test) {
 		this._test = test;
 	}, {category: ['creating']});
+	
+	add.method('passFailSummaryString', function () {
+	  var summary = { passed: 0, failed: 0, total: 0 };
+	  this._test.leaves().forEach(function(leaf) {
+	    summary.total += 1;
+	    if (leaf.result().passed()) { summary.passed += 1; }
+	    if (leaf.result().failed()) { summary.failed += 1; }
+	  });
+	  return summary.passed + " passed, " + summary.failed + " failed";
+	}, {category: ['printing']});
+  
+});
+
+
+thisModule.addSlots(avocado.testCase.singleResult, function(add) {
 
   add.method('result', function () {
     // for setting the morph's fill
@@ -228,13 +285,21 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
   add.method('hasFinished', function () {
     return this._hasFinished;
   }, {category: ['accessing']});
-
-  add.method('allPassed', function () {
+  
+  add.method('passed', function () {
     return this.hasFinished() && ! this._error;
+  }, {category: ['accessing']});
+  
+  add.method('allPassed', function () {
+    return this.passed();
+  }, {category: ['accessing']});
+
+  add.method('failed', function () {
+    return this.hasFinished() && ! this.allPassed();
   }, {category: ['accessing']});
 
   add.method('anyFailed', function () {
-    return this.hasFinished() && ! this.allPassed();
+    return this.failed();
   }, {category: ['accessing']});
 
   add.method('timeToRun', function () {
@@ -243,11 +308,17 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
 
   add.method('recordStarted', function () {
     this._hasStarted = true;
+    this._timestamp = new Date().getTime();
+  }, {category: ['accessing']});
+
+  add.method('timestamp', function () {
+    return this._timestamp;
   }, {category: ['accessing']});
 
   add.method('recordFinished', function (error, time) {
     this._error = error;
     this._timeToRun = time;
+    this.recordStarted(); // since this method might be called without having already called recordStarted, if we're displaying pre-computed test results
     this._hasFinished = true;
   }, {category: ['accessing']});
   
@@ -289,10 +360,6 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
 
 thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
 
-  add.method('initialize', function (test) {
-		this._test = test;
-	}, {category: ['creating']});
-
   add.method('timeToRun', function () {
     var total = 0;
     this._test.subtests().forEach(function(subtest) {
@@ -323,6 +390,113 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
       t.result().logFailures(log);
     });
   });
+
+  add.method('timestamp', function () {
+    // I dunno, maybe the composite one should get its own timestamp.
+    var timestamp = null;
+    this._test.subtests().forEach(function(t) {
+      var subTimestamp = t.result().timestamp();
+      if (!timestamp || (subTimestamp && subTimestamp < timestamp)) {
+        timestamp = subTimestamp;
+      }
+    });
+    return timestamp;
+  }, {category: ['accessing']});
+  
+});
+
+
+thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
+  
+  add.method('initialize', function (test) {
+    this._tests = [test];
+  }, {category: ['creating']});
+  
+  add.method('toString', function () {
+    return "History of " + this.testToBeRun();
+  }, {category: ['printing']});
+
+  add.method('entries', function () { return this._tests; }, {category: ['accessing']});
+
+  add.method('testToBeRun', function () { return this._tests[0]; }, {category: ['accessing']});
+  
+  add.creator('namingScheme', avocado.testCase.namingScheme, {category: ['naming']});
+
+  add.method('nameWithinEnclosingObject', function (enclosingObject) {
+    var n = this.testToBeRun().nameWithinEnclosingObject(enclosingObject);
+    return n ? "History of " + n : "History";
+  }, {category: ['naming']});
+  
+  add.method('immediateContents', function () {
+    var rows = this._tests.map(function(test) {
+      var row = test.leaves().toArray();
+      /* I want these labels, but they need to be a constant readable size, not dependent on the number of leaves.
+      row.unshift(avocado.label.create(test.toString()));
+      row.push(avocado.label.create(function() { return test.result().passFailSummaryString(); }));
+      */
+      return row;
+    });
+    
+    var table = avocado.table.contents.createWithRows(rows);
+    table._desiredSpaceToScaleTo = pt(800, null); // aaa hack; I think what I need is some way to combine a Table Layout with an Auto-Scaling Layout
+    table.updateStyleOfMorph = function(morph) { morph.setFill(Color.blue); }; // aaa ugh
+    return table;
+    
+    // return this._tests;
+  }, {category: ['contents']});
+  
+  add.method('titleModel', function () {
+    if (! this._titleSentence) {
+      var displayOptions = Object.newChildOf(avocado.testCase.resultHistory.displayOptions, this);
+      var resultNumberHolder = avocado.accessors.forMethods(displayOptions, 'numberOfEntriesBeingShown');
+      var daysNumberHolder   = avocado.accessors.forMethods(displayOptions, 'numberOfDaysBeingShown');
+      this._titleSentence = avocado.activeSentence.create(["You're viewing the last ", resultNumberHolder, " results, which span ", daysNumberHolder, " days"]);
+    }
+    return this._titleSentence;
+  }, {category: ['user interface']});
+  
+  add.creator('displayOptions', {}, {category: ['user interface']});
+  
+});
+
+
+thisModule.addSlots(avocado.testCase.resultHistory.displayOptions, function(add) {
+  
+  add.method('initialize', function (history) {
+    this._history = history;
+    this.setNumberOfEntriesBeingShown(5);
+  }, {category: ['creating']});
+
+  add.method('numberOfEntriesBeingShown', function () {
+    return this._numberOfEntriesBeingShown;
+  }, {category: ['accessing']});
+
+  add.method('setNumberOfEntriesBeingShown', function (n) {
+    this._numberOfEntriesBeingShown = Math.max(0, Math.min(n, this._history.entries().size()));
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('amountOfTimeBeingShown', function () {
+    var oldestEntry = this._history.entries()[this._history.entries().size() - this._numberOfEntriesBeingShown];
+    if (!oldestEntry) { return 0; }
+    return new Date().getTime() - oldestEntry.timestamp();
+  }, {category: ['accessing']});
+
+  add.method('setAmountOfTimeBeingShown', function (durationInMilliseconds) {
+    var cutoff = new Date().getTime() - durationInMilliseconds;
+    var oldestEntryIndex = this._history.entries().size();
+    this._history.entries().forEach(function(e, i) { if (e.timestamp() >= cutoff) { oldestEntryIndex = i; throw $break; }; });
+    this.setNumberOfEntriesBeingShown(this._history.entries().size() - oldestEntryIndex);
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('numberOfDaysBeingShown', function () {
+    return Math.floor(this.amountOfTimeBeingShown() / (1000 * 60 * 60 * 24));
+  }, {category: ['accessing']});
+
+  add.method('setNumberOfDaysBeingShown', function (n) {
+    return this.setAmountOfTimeBeingShown(1000 * 60 * 60 * 24 * n);
+  }, {category: ['accessing']});
   
 });
 
@@ -353,13 +527,30 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
   add.method('subtests', function () { return this._subtests; }, {category: ['accessing']});
 
   add.method('result', function () { return this._result; }, {category: ['accessing']});
+
+  add.method('timestamp', function () {
+    // aaa - kind of weird, should really just be on the result object
+    return this._result.timestamp();
+  }, {category: ['accessing']});
   
   add.method('name', function () { return this._name; }, {category: ['accessing']});
+  
+  add.method('testToBeRun', function () { return this; }, {category: ['accessing']});
 
   add.method('toString', function () { return this.name(); }, {category: ['printing']});
 
   add.method('inspect', function () { return this.toString(); }, {category: ['printing']});
 
+  add.creator('namingScheme', avocado.testCase.namingScheme, {category: ['naming']});
+
+  add.method('nameWithinEnclosingObject', function (enclosingObject) {
+    var n = this.name();
+    if (enclosingObject) {
+      if (enclosingObject.testToBeRun().name() === n) { return ""; }
+    }
+    return n;
+  }, {category: ['naming']});
+  
   add.method('immediateContents', function () {
     return this.subtests();
   }, {category: ['contents']});
@@ -430,16 +621,27 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     avocado.callbackWaiter.on(function(generateIntermediateCallback) {
       thisSuite.subtests().each(function(t) {
         var callbackForThisOne = generateIntermediateCallback();
-        t.createAndRunAndUpdateAppearance(function() {
-          avocado.ui.justChanged(thisSuite);
-          callbackForThisOne();
-        });
+        // Use setTimeout so that the UI thread doesn't freeze while the tests are running. Though it's not actually multithreading. -- Adam
+        setTimeout(function() {
+          t.createAndRunAndUpdateAppearance(function() {
+            avocado.ui.justChanged(thisSuite);
+            callbackForThisOne();
+          });
+        }, 0)
       });
     }, function() {
       avocado.ui.justChanged(thisSuite);
       if (callback) { callback(); }
     }, "running test suite");
   }, {category: ['running']});
+  
+  add.method('eachLeaf', function (f) {
+    this.subtests().forEach(function(t) { t.eachLeaf(f); });
+  }, {category: ['iterating']});
+
+  add.method('leaves', function () {
+    return avocado.enumerator.create(this, 'eachLeaf');
+  }, {category: ['iterating']});
 
 });
 
