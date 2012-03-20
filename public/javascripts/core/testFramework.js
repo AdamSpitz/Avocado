@@ -15,8 +15,7 @@ thisModule.addSlots(avocado, function(add) {
 thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('initialize', function (optTestSelector) {
-		this.currentSelector = optTestSelector;
-		this.statusUpdateFunc = null;
+		this._currentSelector = optTestSelector;
 		this.clearResults();
 	});
 
@@ -25,7 +24,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   }, {category: ['logging']});
 
   add.method('name', function () {
-    return this.currentSelector || this.wholeTestCaseName();
+    return this._currentSelector || this.wholeTestCaseName();
   }, {category: ['naming']});
 
   add.method('wholeTestCaseName', function () {
@@ -45,8 +44,14 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('testToBeRun', function () { return this; }, {category: ['accessing']});
 
   add.method('id', function () {
-    return this.wholeTestCaseName() + '>>' + this.currentSelector;
+    return this.wholeTestCaseName() + '>>' + this._currentSelector;
   }, {category: ['accessing']});
+  
+  add.method('copy', function () {
+    var c = Object.newChildOf(avocado.testCase, this._currentSelector);
+    c._result = this._result.copy();
+    return c;
+  }, {category: ['creating']});
 
   add.method('toString', function ($super) {
     return this.name();
@@ -168,8 +173,8 @@ thisModule.addSlots(avocado.testCase, function(add) {
 	});
 
   add.method('runTestFunction', function (successCallback, failureCallback) {
-		var testFn = this[this.currentSelector];
-		if (this.currentSelector.startsWith('asynchronouslyTest')) {
+		var testFn = this[this._currentSelector];
+		if (this._currentSelector.startsWith('asynchronouslyTest')) {
 		  testFn.call(this, successCallback, failureCallback);
 	  } else {
 	    testFn.call(this);
@@ -205,6 +210,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.method('clearResults', function () {
 		this._result = Object.newChildOf(avocado.testCase.singleResult, this);
+		return this;
   }, {category: ['running']});
 
   add.method('result', function () {
@@ -231,7 +237,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
 
-    var enableHistoryViewingExperiment = false;
+    var enableHistoryViewingExperiment = true;
     if (!enableHistoryViewingExperiment) {
       cmdList.addItem(["get tests", function(evt) {
         var testSuite = this.suite.forTestingAvocado();
@@ -277,6 +283,10 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
     // for setting the morph's fill
     return this;
   }, {category: ['accessing']});
+  
+  add.method('copy', function () {
+    return Object.deepCopyRecursingIntoCreatorSlots(this);
+  }, {category: ['copying']});
 
   add.method('hasStarted', function () {
     return this._hasStarted;
@@ -295,7 +305,7 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
   }, {category: ['accessing']});
 
   add.method('failed', function () {
-    return this.hasFinished() && ! this.allPassed();
+    return this.hasFinished() && ! this.passed();
   }, {category: ['accessing']});
 
   add.method('anyFailed', function () {
@@ -409,16 +419,18 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
 thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   
   add.method('initialize', function (test) {
-    this._tests = [test];
+    this._entries = [test];
   }, {category: ['creating']});
   
   add.method('toString', function () {
     return "History of " + this.testToBeRun();
   }, {category: ['printing']});
 
-  add.method('entries', function () { return this._tests; }, {category: ['accessing']});
+  add.method('entries', function () { return this._entries; }, {category: ['accessing']});
 
-  add.method('testToBeRun', function () { return this._tests[0]; }, {category: ['accessing']});
+  add.method('setEntries', function (entries) { this._entries = entries; return this; }, {category: ['accessing']});
+
+  add.method('testToBeRun', function () { return this._entries[0]; }, {category: ['accessing']});
   
   add.creator('namingScheme', avocado.testCase.namingScheme, {category: ['naming']});
 
@@ -428,7 +440,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   }, {category: ['naming']});
   
   add.method('immediateContents', function () {
-    var rows = this._tests.map(function(test) {
+    var rows = this._entries.map(function(test) {
       var row = test.leaves().toArray();
       /* I want these labels, but they need to be a constant readable size, not dependent on the number of leaves.
       row.unshift(avocado.label.create(test.toString()));
@@ -442,7 +454,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
     table.updateStyleOfMorph = function(morph) { morph.setFill(Color.blue); }; // aaa ugh
     return table;
     
-    // return this._tests;
+    // return this._entries;
   }, {category: ['contents']});
   
   add.method('titleModel', function () {
@@ -527,6 +539,10 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
   add.method('subtests', function () { return this._subtests; }, {category: ['accessing']});
 
   add.method('result', function () { return this._result; }, {category: ['accessing']});
+  
+  add.method('copy', function () {
+    return avocado.testCase.suite.create(this._subtests.map(function(t) { return t.copy(); }), this._name);
+  }, {category: ['creating']});
 
   add.method('timestamp', function () {
     // aaa - kind of weird, should really just be on the result object
@@ -610,6 +626,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
 
   add.method('clearResults', function () {
     this._subtests.forEach(function(t) { t.clearResults(); });
+    return this;
   }, {category: ['running']});
 
   add.method('createAndRunAndUpdateAppearance', function (callback) {
