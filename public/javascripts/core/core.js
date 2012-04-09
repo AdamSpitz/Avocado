@@ -2,6 +2,7 @@ avocado.transporter.module.create('core/core', function(requires) {
 
 requires('core/collections/collections');
 requires('core/accessors');
+requires('core/batcher_upper');
 requires('core/commands');
 requires('core/exit');
 requires('core/functions');

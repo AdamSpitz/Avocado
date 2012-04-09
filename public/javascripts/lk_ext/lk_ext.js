@@ -27,6 +27,7 @@ requires('lk_ext/carrying_hand');
 requires('lk_ext/types');
 requires('lk_ext/morph_chooser');
 requires('lk_ext/line_graph');
+requires('lk_ext/html');
 
 }, function(thisModule) {
 

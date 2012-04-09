@@ -36,7 +36,7 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
     
     Object.extend(slotMorph, this.morphMixin_aaa_becauseIDoNotFeelLikeGeneralizingTheseMethodsRightNow);
     
-    var shouldUseZooming = !!avocado.shouldMirrorsUseZooming;
+    var shouldUseZooming = !!avocado.ui.shouldMirrorsUseZooming;
     slotMorph._shouldUseZooming = shouldUseZooming;
     slotMorph.useTableLayout(avocado.table.contents.columnPrototype);
     slotMorph.setModel(slot);

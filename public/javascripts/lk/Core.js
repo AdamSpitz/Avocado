@@ -637,6 +637,12 @@ var Event = (function() {
 		// event.msTime = (new Date()).getTime();
 		this.mouseButtonPressed = false;
 	},
+	
+	// added by Adam
+	setHand: function(hand) {
+	  this.hand = hand;
+	  return this;
+	},
 
 	prepareMousePoint: function() {
 		if (this.isMouseEvent())
@@ -2047,10 +2053,11 @@ Morph.addMethods({
 			if (spec.verticalLayoutMode !== undefined) this.verticalLayoutMode = spec.verticalLayoutMode;
 			if (spec.fillBase !== undefined) this.setFillBase(spec.fillBase);
 			if (spec.shouldIgnoreEvents) this.ignoreEvents();
+			if (spec.shouldIgnoreAllExceptDefaultEvents) this.ignoreAllExceptDefaultEvents();
 			
 			// This stuff added by Adam too.
-			if (this._layout)  { this._layout .applyStyle(spec); }
-			if (this._stylist) { this._stylist.applyStyle(this, spec); }
+			if (this._layout  && this._layout .adjustStyleSpec) { this._layout .applyStyle(spec); }
+			if (this._stylist && this._stylist.adjustStyleSpec) { this._stylist.applyStyle(this, spec); }
 		}
 		return this;
 	},
@@ -2073,8 +2080,8 @@ Morph.addMethods({
 		spec.shouldIgnoreEvents = !this.mouseHandler;
 
     // added by Adam
-		if (this._layout ) { this._layout.adjustStyleSpec(spec);  }
-		if (this._stylist) { this._stylist.adjustStyleSpec(this, spec); }
+		if (this._layout  && this._layout .adjustStyleSpec) { this._layout.adjustStyleSpec(spec);  }
+		if (this._stylist && this._stylist.adjustStyleSpec) { this._stylist.adjustStyleSpec(this, spec); }
 		
 		return spec;
 	},
@@ -3063,7 +3070,13 @@ Morph.addMethods({
 	enableEvents: function() {
 		this.mouseHandler = MouseHandlerForDragging.prototype;
 		this.removeTrait("pointer-events");
+		return this;
+	},
 
+  // added by Adam
+	ignoreAllExceptDefaultEvents: function() {
+    this.mouseHandler = MouseHandlerForDoingTheDefaultThing.prototype; // needed to make normal HTML events work, like clicking on links
+		this.removeTrait("pointer-events");
 		return this;
 	},
 
@@ -3935,6 +3948,8 @@ Morph.addMethods({
 
 		// If this method is overridden by a subclass, it should call super as well
 		if (this.focusHalo) this.adjustFocusHalo();
+		
+		if (this._layout && this._layout.adjustForNewBounds) { this._layout.adjustForNewBounds(this); } // added by Adam
 	},
 
 	position: function() { // Deprecated -- use getPosition

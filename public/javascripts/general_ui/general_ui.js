@@ -28,6 +28,7 @@ requires('general_ui/history_morph');
 requires('general_ui/string_buffer_morph');
 requires('general_ui/scripting');
 requires('general_ui/active_sentence');
+requires('general_ui/similar_objects');
 
 }, function(thisModule) {
 

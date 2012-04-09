@@ -76,6 +76,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
       if (this.horizontalLayoutMode === avocado.LayoutModes.SpaceFill) { newExtent = newExtent.withX(availableSpaceToUse.x); }
       if (this.  verticalLayoutMode === avocado.LayoutModes.SpaceFill) { newExtent = newExtent.withY(availableSpaceToUse.y); }
+      
+      // aaa - not sure this is right, but I want it for HTML morphs
+      if (this._cachedMinimumExtent && this.horizontalLayoutMode === avocado.LayoutModes.ShrinkWrap) { newExtent = newExtent.withX(this._cachedMinimumExtent.x); }
+      if (this._cachedMinimumExtent && this.  verticalLayoutMode === avocado.LayoutModes.ShrinkWrap) { newExtent = newExtent.withY(this._cachedMinimumExtent.y); }
+      
       if (! oldExtent.eqPt(newExtent)) { this.setExtent(newExtent); }
 
       delete this._isChangingRightNow;
@@ -85,7 +90,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   
   add.method('rejiggerTheLayout', function (availableSpace) {
     if (this._layout && this._layout.rejigger) {
-      return this._layout.rejigger(availableSpace);
+      return this._layout.rejigger(this, availableSpace);
     } else {
       this.rejiggerTheLayoutOfMySubmorphs();
       return this.rejiggerJustMyLayout(availableSpace);
@@ -111,13 +116,31 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     // return true to tell the caller not to bother with the lower-level rejiggering
 
     if (this._layout && this._layout.possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged) {
-      return this._layout.possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged();
+      return this._layout.possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged(this);
     }
     
     return false;
   }, {category: ['layout']});
+  
+  add.method('layoutRejiggeringBatcherUpper', function () {
+    if (! this._layoutRejiggeringBatcherUpper) {
+      this._layoutRejiggeringBatcherUpper = avocado.batcherUpper.create(this, function() {
+        this._context.forceLayoutRejiggering(this._isMinimumExtentKnownToHaveChangedWhileBatching);
+      }, function(isMinimumExtentKnownToHaveChanged) {
+        if (isMinimumExtentKnownToHaveChanged) { this._isMinimumExtentKnownToHaveChangedWhileBatching = true; }
+      }, function() {
+        delete this._isMinimumExtentKnownToHaveChangedWhileBatching;
+      });
+    }
+    return this._layoutRejiggeringBatcherUpper;
+  }, {category: ['layout']});
 
   add.method('forceLayoutRejiggering', function (isMinimumExtentKnownToHaveChanged) {
+    if (this._layoutRejiggeringBatcherUpper && this._layoutRejiggeringBatcherUpper.isRunning()) {
+      this._layoutRejiggeringBatcherUpper.batchUp(isMinimumExtentKnownToHaveChanged);
+      return;
+    }
+
     this._layoutIsStillValid = false;
 
     var doesMyOwnerNeedToKnow = isMinimumExtentKnownToHaveChanged || this.hasMinimumExtentActuallyChanged();
@@ -153,6 +176,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   add.method('setLayout', function (layout) {
     this._layout = layout;
     if (this._debugMode) { layout._debugMode = true; }
+    if (layout.initializeLayoutOf) { layout.initializeLayoutOf(this); }
     return this;
   }, {category: ['layout']});
 
@@ -185,10 +209,17 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     return this;
   }, {category: ['layout']});
 
+  add.method('beShrinkWrapping', function () {
+    this.horizontalLayoutMode = avocado.LayoutModes.ShrinkWrap;
+    this.  verticalLayoutMode = avocado.LayoutModes.ShrinkWrap;
+    return this;
+  }, {category: ['layout']});
+
   add.method('setLayoutModes', function (layoutModes) {
     ["horizontalLayoutMode", "verticalLayoutMode"].forEach(function(n) {
       if (layoutModes[n]) { this[n] = layoutModes[n]; }
     }.bind(this));
+    if (this._layout && this._layout.justSetLayoutModes) { this._layout.justSetLayoutModes(this); }
     return this;
   }, {category: ['layout']});
 

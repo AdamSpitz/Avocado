@@ -63,7 +63,7 @@ thisModule.addSlots(avocado.messageNotifier, function(add) {
   
   add.method('newMorph', function () {
     var rows = [avocado.label.create(this._message.toString())];
-    if (this._heading) { rows.unshift(avocado.label.create(this._heading).setEmphasis({style: 'bold'})); }
+    if (this._heading) { rows.unshift(avocado.label.create(this._heading).setEmphasis(avocado.label.emphasiseses.bold)); }
     var m = avocado.table.contents.createWithColumns([rows]).newMorph().setModel(this);
     this.updateStyleOfMorph(m);
     return m;
@@ -84,6 +84,12 @@ thisModule.addSlots(avocado.label, function(add) {
   
   add.method('setEmphasis', function (e) {
     this._emphasis = e;
+    return this;
+  }, {category: ['accessing']});
+  
+  add.method('setDesiredScale', function (s) {
+    // aaa - this is a hack, not sure what to do
+    this._desiredScale = s;
     return this;
   }, {category: ['accessing']});
   
@@ -119,8 +125,37 @@ thisModule.addSlots(avocado.label, function(add) {
       m.refreshText = function() { this.setText(this.calculateNewText()); };
     }
     
+    if (this._desiredScale) {
+      m.setFontSize(this._desiredScale);
+    }
+    
     return m;
   });
+  
+  add.creator('emphasiseses', {}, {category: ['user interface']});
+  
+});
+
+
+thisModule.addSlots(avocado.label.emphasiseses, function(add) {
+  
+  add.creator('bold', {});
+  
+  add.creator('italic', {});
+  
+});
+
+
+thisModule.addSlots(avocado.label.emphasiseses.bold, function(add) {
+  
+  add.data('style', 'bold');
+  
+});
+
+
+thisModule.addSlots(avocado.label.emphasiseses.italic, function(add) {
+  
+  add.data('style', 'italic');
   
 });
 

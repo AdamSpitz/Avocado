@@ -2455,7 +2455,7 @@ BoxMorph.subclass("SliderMorph", {
 		if (this.vertical()) { // more vertical...
 			var elevPix = Math.max(ext*bnds.height, this.mss); // thickness of elevator in pixels
 			var topLeft = pt(0, (bnds.height - elevPix)*val);
-			var sliderExt = pt(bnds.width, elevPix); 
+			var sliderExt = pt(bnds.width, elevPix);
 		} else { // more horizontal...
 			var elevPix = Math.max(ext*bnds.width, this.mss); // thickness of elevator in pixels
 			var topLeft = pt((bnds.width - elevPix)*val, 0);
@@ -2835,6 +2835,24 @@ BoxMorph.subclass("ScrollPane", {
     },
 
 });
+
+// added by Adam
+ScrollPane.prototype._layout = {
+  possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged: function (scrollPane) {
+    scrollPane.forceLayoutRejiggering();
+    return true;
+  },
+
+  rejigger: function (scrollPane, availableSpace) {
+    var r = scrollPane.rejiggerJustMyLayout(availableSpace);
+    scrollPane.adjustForNewBounds();
+    return r;
+  },
+  
+  isAffectedBy: function (operation, morph) {
+    return false;
+  },
+};
 
 Global.newListPane = function(initialBounds) {
     return new ScrollPane(new CheapListMorph(initialBounds,["-----"]), initialBounds); 

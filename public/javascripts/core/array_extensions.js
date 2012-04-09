@@ -22,6 +22,10 @@ thisModule.addSlots(Array.prototype, function(add) {
     this.splice(i, 1);
     return true;
   }, {category: ['transforming']});
+  
+  add.method('isEmpty', function () {
+    return this.length === 0;
+  }, {category: ['testing']});
 
 });
 

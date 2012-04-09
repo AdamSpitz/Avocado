@@ -84,7 +84,9 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   }, {category: ['one morph per object']});
   
   add.method('placeholderForMorph', function (morph) {
-    return this.placeholdersByMorph().getOrIfAbsentPut(morph, function() { return avocado.placeholder.newPlaceholderMorphForMorph(morph); });
+    return this.placeholdersByMorph().getOrIfAbsentPut(morph, function() {
+      return avocado.placeholder.newPlaceholderMorphForMorph(morph);
+    });
   }, {category: ['one morph per object']});
 
 });

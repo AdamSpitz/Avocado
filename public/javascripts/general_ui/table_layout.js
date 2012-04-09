@@ -199,8 +199,22 @@ thisModule.addSlots(avocado.table.layout, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('setSubmorphsFromTableContent', function () {
+    if (this._submorphReplacementBatcherUpper && this._submorphReplacementBatcherUpper.isRunning()) {
+      this._submorphReplacementBatcherUpper.batchUp();
+      return;
+    }
+    
     this._tableMorph.replaceMorphs(this._tableMorph.submorphsParticipatingInLayout(), this.tableContent().elements());
   }, {category: ['adding and removing']});
+
+  add.method('submorphReplacementBatcherUpper', function () {
+    if (! this._submorphReplacementBatcherUpper) {
+      this._submorphReplacementBatcherUpper = avocado.batcherUpper.create(this, function() {
+        this._context.setSubmorphsFromTableContent();
+      });
+    }
+    return this._submorphReplacementBatcherUpper;
+  }, {category: ['layout']});
   
   add.method('getPadding', function () {
     return this._padding;
@@ -234,8 +248,8 @@ thisModule.addSlots(avocado.table.layout, function(add) {
     return ! morph.shouldNotBePartOfRowOrColumn;
   }, {category: ['layout']});
 
-  add.method('possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged', function () {
-    return this._tableMorph.minimumExtentMayHaveChanged();
+  add.method('possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged', function (tableMorph) {
+    return tableMorph.minimumExtentMayHaveChanged();
   }, {category: ['layout']});
 
   add.method('minimumExtent', function () {
@@ -359,7 +373,7 @@ thisModule.addSlots(avocado.table.layout, function(add) {
     return availableSpaceToUse;
   }, {category: ['layout']});
 
-  add.method('rejigger', function (availableSpace) {
+  add.method('rejigger', function (tableMorph, availableSpace) {
     if (this.shouldPrintDebugInfo()) { console.log("About to rejigger the layout, availableSpace is " + availableSpace); }
     var thisExtent = this.getExtent();
     var availableSpaceToUse = this.calculateSpaceToUseOutOf(availableSpace, thisExtent);
@@ -438,6 +452,7 @@ thisModule.addSlots(avocado.table.layout, function(add) {
   }, {category: ['layout']});
 
   add.method('setMorphPositionsAndSizes', function (actualCoordsAndSizes) {
+    this._actualCoordsAndSizes = actualCoordsAndSizes;
     var direction = this.tableContent()._direction2;
     var origin = this._tableMorph.getOriginAAAHack(); // necessary because in 3D-land the origin is in the centre, but I don't understand why it's not working in LK-land
     this.tableContent().primaryLines().each(function(line, i) {
@@ -462,6 +477,13 @@ thisModule.addSlots(avocado.table.layout, function(add) {
         if (this.shouldPrintDebugInfo()) { console.log("Added " + m.inspect() + " at " + x + ", " + y); }
       }.bind(this));
     }.bind(this));
+  }, {category: ['layout']});
+
+  add.method('positionOfPrimaryLine', function (i) {
+    var direction = this.tableContent()._direction2;
+    var actualsForThisMorph = direction.point(direction.sideways.coord(this._actualCoordsAndSizes)[0], direction.coord(this._actualCoordsAndSizes)[i]);
+    var p = pt(actualsForThisMorph.x.coordinate, actualsForThisMorph.y.coordinate);
+    return p;
   }, {category: ['layout']});
   
 });

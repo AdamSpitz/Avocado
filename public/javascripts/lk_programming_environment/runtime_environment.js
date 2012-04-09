@@ -14,6 +14,15 @@ thisModule.addSlots(modules['lk_programming_environment/runtime_environment'], f
 });
 
 
+thisModule.addSlots(avocado.livelyKernelUI, function(add) {
+
+  add.data('isZoomingEnabled', true, {category: ['zooming']});
+
+  add.data('debugMode', false, {category: ['debug mode']});
+  
+});
+
+
 thisModule.addSlots(avocado, function(add) {
 
   add.creator('runtime', {}, {category: ['runtime environment']});
@@ -30,8 +39,6 @@ thisModule.addSlots(avocado.runtime, function(add) {
   add.data('isMorphMenuEnabled', false, {category: ['enabling reflection']});
 
   add.data('shouldOnlyShowDeploymentArea', true, {category: ['deployment area']});
-
-  add.data('debugMode', false, {category: ['debug mode']});
 
   add.creator('menuItemContributors', [], {category: ['menu']});
 

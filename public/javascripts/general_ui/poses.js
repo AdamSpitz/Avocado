@@ -49,6 +49,11 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this._name;
   }, {category: ['accessing']});
 
+  add.method('setName', function (n) {
+    this._name = n;
+    return this;
+  }, {category: ['accessing']});
+
   add.method('toString', function () {
     return this.name();
   }, {category: ['printing']});
@@ -62,22 +67,33 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this;
   }, {category: ['debugging']});
 
-  add.method('putInPosition', function (container, poser, position, origin) {
+  add.method('doNotAnticipateAtStart', function () {
+    this._shouldNotAnticipateAtStart = true;
+    return this;
+  }, {category: ['animating']});
+
+  add.method('doNotWiggleAtEnd', function () {
+    this._shouldNotWiggleAtEnd = true;
+    return this;
+  }, {category: ['animating']});
+
+  add.method('putInPosition', function (container, element, origin) {
     if (this._shouldBeUnobtrusive) {
-      var poserOrPlaceholder = poser;
-      if (poser.getOwner() !== container && poser.world()) { // aaa what's going on here?
-        poserOrPlaceholder = container.placeholderForMorph(poser);
+      var poserOrPlaceholder = element.poser;
+      if (element.poser.getOwner() !== container && element.poser.world()) { // aaa what's going on here?
+        poserOrPlaceholder = container.placeholderForMorph(element.poser);
       }
-      var positionFromOrigin = origin.moveDownAndRightBy(position.x, position.y);
+      var positionFromOrigin = origin.moveDownAndRightBy(element.position.x, element.position.y);
       poserOrPlaceholder.setTopLeftPosition(positionFromOrigin);
       container.addMorph(poserOrPlaceholder);
     } else {
-      if (! poser.world()) {
+      if (! element.poser.world()) {
         // aaa - Not sure at all that this is a good idea. But it might be.
-        poser.setScale(1 / container.world().getScale());
+        element.poser.setScale(1 / container.world().getScale());
       }
       
-      poser.ensureIsInWorld(container, position, true, true, true);
+      if (element.scale) { element.position.desiredScale = element.scale; } // aaa hack
+      element.poser.ensureIsInWorld(container, element.position, true, !this._shouldNotAnticipateAtStart, !this._shouldNotWiggleAtEnd);
     }
   }, {category: ['posing']});
     
@@ -97,11 +113,12 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       if (e.uiState) { e.poser.assumeUIState(e.uiState); }
       
       // Keep track of how much space the pose is taking up, so that the pose can answer getExtent(). -- Adam, June 2011
-      var poserExtent = e.poser.getExtent();
-      var poserSpace = poserExtent.scaleBy(e.poser.getScale());
-      var poserBounds = e.position.extent(poserSpace);
-      this._bounds = this._bounds.union(poserBounds);
-      if (this._debugMode) { console.log("Adding poser with bounds: " + poserBounds + " and scale " + e.poser.getScale()); }
+      var poserPosition = e.position || e.poser.getPosition();
+      var poserExtent   = e.extent   || e.poser.getExtent(); // aaa: haven't implemented this one yet, setting e.extent won't actually do anything
+      var poserScale    = e.scale    || e.poser.getScale();
+      var poserBounds   = poserPosition.extent(poserExtent.scaleBy(poserScale));
+      this._bounds      = this._bounds.union(poserBounds);
+      if (this._debugMode) { console.log("Adding poser with bounds: " + poserBounds + " and scale " + poserScale); }
     }.bind(this), startingPos);
     
     if (this._shouldScaleToFitWithinCurrentSpace) {
@@ -132,15 +149,25 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       }
     }
     
+    if (this._shouldSetExtentToEncompassWholePose) {
+      container.setExtent(this._bounds.extent());
+      container.minimumExtentMayHaveChanged();
+    }
+    
     var origin = container.getOriginAAAHack(); // necessary because in 3D-land the origin is in the centre, but I don't understand why it's not working in LK-land
     if (this._extraZHack) { origin = origin.withZ((origin.z || 0) + this._extraZHack); }
     elements.forEach(function(e) {
-      this.putInPosition(container, e.poser, e.position, origin);
+      this.putInPosition(container, e, origin);
     }.bind(this));
   }, {category: ['posing']});
   
   add.method('whenDoneScaleToFitWithinCurrentSpace', function () {
     this._shouldScaleToFitWithinCurrentSpace = true;
+    return this;
+  }, {category: ['scaling']});
+  
+  add.method('whenDoneSetExtentToEncompassWholePose', function () {
+    this._shouldSetExtentToEncompassWholePose = true;
     return this;
   }, {category: ['scaling']});
 
@@ -235,13 +262,38 @@ thisModule.addSlots(avocado.poses.list, function(add) {
   add.method('initialize', function ($super, name, maxExtentPtOrFn, posers) {
     $super(name);
     this._maxExtentPtOrFn = maxExtentPtOrFn;
-    this._posers = posers;
+    this._posers = posers || [];
   });
+
+  add.method('setPosers', function (posers) {
+    this._posers = posers;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('setPoserModels', function (poserModels) {
+    var world = avocado.ui.currentWorld();
+    return this.setPosers(poserModels.map(function(m) { return world.morphFor(m); }));
+  }, {category: ['accessing']});
   
   add.method('maxExtent', function () {
     if (typeof(this._maxExtentPtOrFn) === 'function') { return this._maxExtentPtOrFn(); }
     return this._maxExtentPtOrFn;
   });
+
+  add.method('setMaxExtent', function (maxExtentPtOrFn) {
+    this._maxExtentPtOrFn = maxExtentPtOrFn;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('setPadding', function (padding) {
+    this._padding = padding;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('setDesiredPoserScale', function (s) {
+    this._desiredPoserScale = s;
+    return this;
+  }, {category: ['accessing']});
 
   add.method('eachElement', function (f, startingPos) {
     var sortedPosersToMove = this._posers.sort(function(m1, m2) {
@@ -250,16 +302,24 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;
     });
 
-    var padding = (startingPos || pt(0,0)).addXY(20,20);
-    var pos = padding;
+    startingPos = startingPos || pt(0,0);
+    var padding = this._padding || pt(20,20);
+    var pos = startingPos.addPt(padding);
     var widest = 0;
-    var maxY = this._shouldBeSquarish ? null : this.maxExtent().y - 30;
+    var maxExtent = this.maxExtent();
+    var maxY = null;
+    if (maxExtent && !this._shouldBeSquarish) { maxY = maxExtent - 30; }
     for (var i = 0, n = sortedPosersToMove.length; i < n; ++i) {
       var poser = sortedPosersToMove[i];
       var uiState = this.destinationUIStateFor(poser);
       if (uiState) { poser.assumeUIState(uiState); }
-      f({poser: poser, position: pos, uiState: uiState});
-      var poserSpace = poser.getExtent().scaleBy(poser.getScale());
+      var poserScale = this._desiredPoserScale || poser.getScale();
+      
+      var e = {poser: poser, position: pos, uiState: uiState};
+      if (this._desiredPoserScale) { e.scale = this._desiredPoserScale; }
+      f(e);
+      
+      var poserSpace = poser.getExtent().scaleBy(poserScale);
       pos = pos.withY(pos.y + poserSpace.y + padding.y);
       widest = Math.max(widest, poserSpace.x);
       
@@ -267,8 +327,7 @@ thisModule.addSlots(avocado.poses.list, function(add) {
         // If it seems like the current y is far down enough to make the whole
         // thing come out squarish (assuming that all columns will be about as
         // wide as this one), then set this as the maxY.
-        var containerExtent = this.maxExtent();
-        var desiredAspectRatio = containerExtent.y == 0 ? 1 : containerExtent.x / containerExtent.y;
+        var desiredAspectRatio = maxExtent.y == 0 ? 1 : maxExtent.x / maxExtent.y;
         
         var estimatedNumberOfColumns = Math.ceil(n / (i + 1));
         var estimatedTotalWidth = estimatedNumberOfColumns * (widest + padding.x);
@@ -276,7 +335,7 @@ thisModule.addSlots(avocado.poses.list, function(add) {
         if (pos.y * desiredAspectRatio * 1.2 >= estimatedTotalWidth) { maxY = pos.y; }
       }
       
-      if (maxY && pos.y >= maxY) { pos = pt(pos.x + widest + padding.x, padding.y); }
+      if (maxY && pos.y >= maxY) { pos = pt(pos.x + widest + padding.x, startingPos.y + padding.y); }
     }
   });
   
@@ -445,10 +504,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
   }, {category: ['cleaning up']});
 
   add.method('listPoseOfMorphsFor', function (objects, name) {
-    // aaa LK-dependent
-    var world = this.container().world();
-    var posersToMove = objects.map(function(m) { return world.morphFor(m); }.bind(this));
-    return avocado.poses.list.create(name, function() { return this.container().getExtent(); }.bind(this), posersToMove);
+    return avocado.poses.list.create(name).setMaxExtent(function() { return this.container().getExtent(); }.bind(this)).setPoserModels(objects);
   }, {category: ['cleaning up']});
 
   add.method('poseChooser', function () {

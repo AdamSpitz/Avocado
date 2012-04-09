@@ -9,13 +9,18 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('createNameLabel', function() {
     // can't use "bind" because we can't transport closures, so instead use ownerWithAModel
-    return avocado.label.newMorphFor({
+    var label = avocado.label.newMorphFor({
       initialText: this.nameUsingContextualInfoIfPossible(),
       calculateNewText: function() {
         var o = this.ownerWithAModel();
         return o ? o.nameUsingContextualInfoIfPossible() : "";
       }
     });
+    
+    var emph = this.titleEmphasis();
+    if (emph) { label.setEmphasis(emph); }
+    
+    return label;
   }, {category: ['title']});
 
 	add.method('nameUsingContextualInfoIfPossible', function() {

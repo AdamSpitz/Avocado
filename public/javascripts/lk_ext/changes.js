@@ -309,6 +309,14 @@ Morph.addMethods({
     	  if (callback) { callback(); }
   	  }.bind(this));
 	  },
+
+	  grabAndPullMeOrPutMeBack: function(evt, callback) {
+      if (this._placeholderMorphIJustCameFrom) {
+        this._placeholderMorphIJustCameFrom.layout().putOriginalMorphBack(callback);
+      } else {
+        this.grabAndPullMe(evt, callback);
+      }
+	  },
     
   	debugInspect: function() {
   	  var tos = this.toString();

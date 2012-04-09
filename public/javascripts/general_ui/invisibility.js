@@ -26,7 +26,7 @@ thisModule.addSlots(avocado.morphMixins.Morph.invisibleStyle, function(add) {
 
   add.data('suppressGrabbing', true);
 
-  add.data('shouldIgnoreEvents', true);
+  add.data('shouldIgnoreAllExceptDefaultEvents', true);
 
   add.data('openForDragAndDrop', false);
 

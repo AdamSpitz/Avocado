@@ -22,9 +22,9 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
 
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
   
-  add.method('shouldContentsPanelUseZooming', function () { return !!avocado.shouldMirrorsUseZooming; }, {category: ['user interface']});
+  add.method('shouldContentsPanelUseZooming', function () { return !!avocado.ui.shouldMirrorsUseZooming; }, {category: ['user interface']});
 
-  add.method('shouldUseZooming', function () { return !!avocado.shouldMirrorsUseZooming; }, {category: ['user interface']});
+  add.method('shouldUseZooming', function () { return !!avocado.ui.shouldMirrorsUseZooming; }, {category: ['user interface']});
 
   add.method('copyForGrabbing', function () {
     return this.copyToNewHolder();
@@ -37,7 +37,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['user interface', 'title']});
 
   add.method('titleEmphasis', function () {
-    return {style: 'italic'};
+    return avocado.label.emphasiseses.italic;
   }, {category: ['user interface', 'title']});
 
   add.method('aaa_unused_createContentsSummaryMorph', function () {

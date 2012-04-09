@@ -33,26 +33,41 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, callback) {
     var originalOwner = this.getOwner();
     this.becomeDirectSubmorphOfWorld(w);
-    var wantsToScaleToo = typeof(desiredLoc.desiredScale) !== 'undefined';
-    if (wantsToScaleToo) { this.smoothlyScaleTo(desiredLoc.desiredScale); } // aaa hack
-    if (originalOwner !== w || shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
-      this.startWhooshingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, callback);
-    } else {
-      if (callback) { callback(); }
-    }
+    
+    avocado.callbackWaiter.on(function(generateIntermediateCallback) {
+      if (typeof(desiredLoc.desiredScale) !== 'undefined') { // aaa hack
+        var scalingCallback = generateIntermediateCallback();
+        this.smoothlyScaleTo(desiredLoc.desiredScale, function() { this.refreshContentOfMeAndSubmorphs(); scalingCallback(); }.bind(this));
+      }
+      
+      if (originalOwner !== w || shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
+        this.startWhooshingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, generateIntermediateCallback());
+      }
+    }.bind(this), callback, "whooshing animation");
   }, {category: ['adding and removing']});
 
   add.method('becomeDirectSubmorphOfWorld', function (w) {
     var owner = this.getOwner();
     if (w) {
       if (owner !== w) {
-        var initialLoc = (!owner || this.world() !== w) ? this.getExtent().scaleBy(-1.1).addXY(-200,-200) : owner.worldPoint(this.getPosition());
+        var initialLoc = (!owner || this.world() !== w.world()) ? this.getExtent().scaleBy(-1.1).addXY(-200,-200) : this.getPosition().matrixTransform(owner.transformToMorph(w));
+        var initialScale = this.overallScale(w);
+        
         if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { owner.placeholderForMorph(this).setScale(this.getScale()).layout().putInPlaceOfOriginalMorph(); }
         this.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore(); // aaa - not sure this is a good idea, but maybe; it makes sure that a mirror will be updated as soon as it's visible, for one thing.
         w.addMorphAt(this, initialLoc);
+        this.setScale(initialScale);
       }
     } else {
       if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { owner.placeholderForMorph(this).layout().putInPlaceOfOriginalMorph(); }
+    }
+  }, {category: ['adding and removing']});
+
+  add.method('putBackOrDismiss', function (callWhenDone) {
+    if (this._placeholderMorphIJustCameFrom) {
+      this._placeholderMorphIJustCameFrom.layout().putOriginalMorphBack();
+    } else {
+      this.startWhooshingOuttaHere(callWhenDone);
     }
   }, {category: ['adding and removing']});
 

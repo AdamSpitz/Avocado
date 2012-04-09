@@ -1190,20 +1190,30 @@ thisModule.addSlots(Array.prototype, function(add) {
 
   add.method('unshiftAndAdjustCreatorSlots', function (newElem) {
     this.unshift(newElem);
-    if (newElem && !newElem.doesNotNeedACreatorSlot) {
-      this.makeCreatorSlots(0, 1);
-      this.adjustCreatorSlots(1, this.length);
+
+		if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
+      if (newElem && !newElem.doesNotNeedACreatorSlot) {
+        this.makeCreatorSlots(0, 1);
+        this.adjustCreatorSlots(1, this.length);
+      }
     }
   }, {category: ['reflection', 'creator slots']});
 
   add.method('pushAndAdjustCreatorSlots', function (newElem) {
     this.push(newElem);
-    if (newElem && !newElem.doesNotNeedACreatorSlot) {
-      this.makeCreatorSlots(this.length - 1, this.length);
+
+		if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
+      if (newElem && !newElem.doesNotNeedACreatorSlot) {
+        this.makeCreatorSlots(this.length - 1, this.length);
+      }
     }
   }, {category: ['reflection', 'creator slots']});
 
   add.method('spliceAndAdjustCreatorSlots', function () {
+		if (avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
+		  return this.splice.apply(this, arguments);
+	  }
+		  
     var index = arguments[0];
     var howMany = arguments[1];
     this.unmakeCreatorSlots(index, index + howMany);

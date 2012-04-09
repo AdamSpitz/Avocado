@@ -15,12 +15,12 @@ thisModule.addSlots(avocado.mirror, function(add) {
     var mirMorph = avocado.ui.newMorph().setModel(this).useTableLayout(avocado.table.contents.columnPrototype);
     Object.extend(mirMorph, this.morphMixin_aaa_becauseIDoNotFeelLikeGeneralizingTheseMethodsRightNow);
 
-    var shouldUseZooming = mirMorph._shouldUseZooming = !!avocado.shouldMirrorsUseZooming;
+    var shouldUseZooming = mirMorph._shouldUseZooming = !!avocado.ui.shouldMirrorsUseZooming;
 
     mirMorph.applyStyle(avocado.mirror.defaultStyle);
 
     mirMorph._nameMorph = mirMorph.createNameLabel();
-    mirMorph._nameMorph.setEmphasis({style: 'bold'});
+    mirMorph._nameMorph.setEmphasis(avocado.label.emphasiseses.bold);
     
     var descLabel = avocado.label.newMorphFor('');
     descLabel.setScale(0.9);

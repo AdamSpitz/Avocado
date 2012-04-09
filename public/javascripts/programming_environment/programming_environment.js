@@ -39,6 +39,24 @@ thisModule.addSlots(avocado, function(add) {
   add.data('isMorphMenuEnabled', true, {category: ['enabling reflection']});
 
   add.creator('menuItemContributors', [], {category: ['menu']});
+  
+  add.creator('reflectionMenuContributor', {}, {category: ['menu']});
+
+  add.method('addGlobalCommandsTo', function (cmdList) {
+    if (avocado.ui.debugMode) {
+      cmdList.addLine();
+      avocado.ui.addUISpecificDebugModeGlobalCommandsTo(cmdList);
+    }
+
+    this.menuItemContributors.each(function(c) {
+      c.addGlobalCommandsTo(cmdList);
+    });
+  }, {category: ['menu']});
+
+});
+
+
+thisModule.addSlots(avocado.reflectionMenuContributor, function(add) {
 
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
@@ -50,17 +68,8 @@ thisModule.addSlots(avocado, function(add) {
     cmdList.addItem(["get the window object", function(evt) {
       avocado.ui.grab(reflect(window), evt);
     }]);
-
-    if (this.debugMode) {
-      cmdList.addLine();
-      this.addUISpecificDebugModeGlobalCommandsTo(cmdList);
-    }
-
-    this.menuItemContributors.each(function(c) {
-      c.addGlobalCommandsTo(cmdList);
-    });
-  }, {category: ['menu']});
-
+  });
+  
 });
 
 

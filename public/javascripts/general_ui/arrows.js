@@ -23,7 +23,7 @@ thisModule.addSlots(avocado.arrow, function(add) {
 
   add.method('createButtonForToggling', function (slot) {
     var shouldUsePlaceholdersAsArrowTogglingButtons = true; // aaa get rid of the old way after the new placeholder way is working.
-    if (shouldUsePlaceholdersAsArrowTogglingButtons && avocado.shouldMirrorsUseZooming) {
+    if (shouldUsePlaceholdersAsArrowTogglingButtons && avocado.ui.shouldMirrorsUseZooming) {
       var m = avocado.placeholder.newPlaceholderMorphForSlot(slot).setScale(0.25);
     } else {
       var m = avocado.command.create("Toggle arrow", function() { this._arrow._layout.toggleVisibility(); }, m).newMorph(avocado.arrow.createArrowIconLabelMorph(), 0, pt(2,2));

@@ -14,15 +14,16 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     return this.newMorphFor(this);
   }, {category: ['user interface']});
 
-  add.method('newMorphFor', function (treeNode, style, contentsThreshold, shouldOmitHeaderRow) {
+  add.method('newMorphFor', function (treeNode, style, contentsThreshold, shouldOmitHeaderRow, shouldPutHeaderOnLeftInsteadOfTop) {
     var morph = avocado.ui.newMorph(avocado.ui.shapeFactory.newRectangle());
 
-    morph.useTableLayout(avocado.table.contents.columnPrototype);
+    if (typeof(treeNode.shouldPutHeaderOnLeftInsteadOfTop) === 'function') { shouldPutHeaderOnLeftInsteadOfTop = treeNode.shouldPutHeaderOnLeftInsteadOfTop(); }
+    morph.useTableLayout(shouldPutHeaderOnLeftInsteadOfTop ? avocado.table.contents.rowPrototype : avocado.table.contents.columnPrototype);
     morph._model = treeNode;
     morph._potentialContentCreator = avocado.treeNode;
     morph._contentsThreshold = contentsThreshold;
     morph._shouldOmitHeaderRow = shouldOmitHeaderRow;
-    var shouldUseZooming = avocado.isZoomingEnabled && (typeof(treeNode.shouldUseZooming) !== 'function' || treeNode.shouldUseZooming());
+    var shouldUseZooming = avocado.ui.isZoomingEnabled && (typeof(treeNode.shouldUseZooming) !== 'function' || treeNode.shouldUseZooming());
     morph._morphFactory = shouldUseZooming ? avocado.treeNode.morphFactories.scalingBased : avocado.treeNode.morphFactories.expanderBased;
     morph.applyStyle(morph._morphFactory.styleForTreeNode(treeNode));
     morph._morphFactory.initializeMorph(morph);
@@ -41,9 +42,7 @@ thisModule.addSlots(avocado.treeNode, function(add) {
   add.method('createContentsPanelMorphFor', function (model) {
     var contents = model.immediateContents(); // aaa - is this an unnecessary calculation of immediateContents? Is it gonna be slow?
     if (Object.isArray(contents) || Object.inheritsFrom(avocado.compositeCollection, contents) || Object.inheritsFrom(avocado.typedCollection, contents)) { // aaa - hack, I'm just not quite sure yet that I want an array's newMorph to return one of these autoScaling.Morphs or whatever
-      var shouldUseZooming = typeof(model.shouldContentsPanelUseZooming) === 'function' ? model.shouldContentsPanelUseZooming() : model.shouldContentsPanelUseZooming;
-      var extent = typeof(model.contentsPanelExtent) === 'function' ? model.contentsPanelExtent() : this.defaultExtent();
-      var m = avocado.treeNode.createTreeContentsPanelMorph(model, model.shouldContentsPanelAutoOrganize, extent, shouldUseZooming);
+      var m = avocado.treeNode.createTreeContentsPanelMorph(model)
       m.setModel(contents);
       avocado.ui.currentWorld().rememberMorphFor(contents, m);
       return m;
@@ -52,10 +51,13 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     }
   }, {category: ['user interface', 'contents panel']});
 
-  add.method('createTreeContentsPanelMorph', function (treeNode, shouldAutoOrganize, contentsPanelSize, shouldUseZooming) {
+  add.method('createTreeContentsPanelMorph', function (treeNode) {
     // aaa - This whole thing is a bit of a hack, and too function-y. There's an object missing here or something.
-    contentsPanelSize = contentsPanelSize || this.defaultExtent();
-    if (typeof(shouldUseZooming) === 'undefined') { shouldUseZooming = avocado.isZoomingEnabled; }
+    
+    var shouldUseZooming = typeof(treeNode.shouldContentsPanelUseZooming) === 'function' ? treeNode.shouldContentsPanelUseZooming() : treeNode.shouldContentsPanelUseZooming;
+    if (typeof(shouldUseZooming) === 'undefined') { shouldUseZooming = avocado.ui.isZoomingEnabled; }
+    var contentsPanelSize = typeof(treeNode.contentsPanelExtent) === 'function' ? treeNode.contentsPanelExtent() : this.defaultExtent();
+    var shouldAutoOrganize = treeNode.shouldContentsPanelAutoOrganize;
 
     var cp;
     if (shouldUseZooming) {
@@ -124,7 +126,7 @@ thisModule.addSlots(avocado.treeNode, function(add) {
       var rows = [];
       if (! morph._shouldOmitHeaderRow)  { rows.push(avocado.treeNode.headerRowForMorph(morph)); }
       rows.push(morph._morphFactory.createContentsPanelOrHider(morph, function() { return avocado.treeNode.actualContentsPanelForMorph(morph); }));
-      morph._potentialContentMorphs = avocado.table.contents.createWithColumns([rows]);
+      morph._potentialContentMorphs = avocado.table.contents.create([rows], morph.layout().tableContent()._direction1);
     }
     return morph._potentialContentMorphs;
   }, {category: ['user interface', 'creating']});
@@ -209,9 +211,13 @@ thisModule.addSlots(avocado.treeNode.morphFactories.scalingBased, function(add) 
   add.method('createContentsPanelOrHider', function (ownerMorph, getOrCreateActualMorph) {
     var contentsThreshold = ownerMorph._contentsThreshold || 0.25;
     var thresholdMultiplierForHeader = ownerMorph._shouldOmitHeaderRow ? 0.25 : 0.7;
+    
+    var treeNode = ownerMorph._model;
+    var contentsPanelSize = typeof(treeNode.contentsPanelExtent) === 'function' ? treeNode.contentsPanelExtent() : avocado.treeNode.defaultExtent();
+    
     return avocado.scaleBasedMorphHider.create(ownerMorph, getOrCreateActualMorph, ownerMorph, function() {
       return contentsThreshold * thresholdMultiplierForHeader * avocado.treeNode.thresholdMultiplierFor(ownerMorph._model);
-    }, avocado.treeNode.defaultExtent(), avocado.treeNode.zoomingContentsPanelStyle);
+    }, contentsPanelSize, avocado.treeNode.zoomingContentsPanelStyle);
   });
 
   add.method('headerRowContentsForMorph', function (morph) {

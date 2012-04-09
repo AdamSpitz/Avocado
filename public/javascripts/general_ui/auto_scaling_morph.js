@@ -110,7 +110,7 @@ thisModule.addSlots(avocado.autoScaling.layout, function(add) {
     }
   }, {category: ['drag and drop']});
   
-  add.method('possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged', function () {
+  add.method('possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged', function (morph) {
     this.invalidateLayout();
     // aaa Can't just do the refreshLayoutIfNecessary() right now because the submorph's *actual* size
     // hasn't changed yet. But ideally I guess we would have the cleanUp pose account for minimum size

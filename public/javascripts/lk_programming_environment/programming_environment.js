@@ -15,13 +15,11 @@ requires('projects/projects');
 }, function(thisModule) {
 
 
-thisModule.addSlots(avocado, function(add) {
+thisModule.addSlots(avocado.livelyKernelUI, function(add) {
 
   add.data('isZoomingEnabled', true, {category: ['zooming']});
 
   add.data('shouldMirrorsUseZooming', true, {category: ['zooming']});
-  
-  add.data('shouldBreakCreatorSlotsInOrderToImprovePerformance', false, {category: ['zooming'], comment: 'aaa - figure out a way to do this creator-slot stuff without wrecking performance of the zooming UI'});
 
   add.data('debugMode', false, {category: ['debug mode']});
   
@@ -130,18 +128,18 @@ thisModule.addSlots(avocado, function(add) {
       var mc = new avocado.MorphChooser(avocado.types.morph.onModelOfType(avocado.types.string), function(m) { w.showMessage(m._model); });
       w.scatter(["argle", 1, true, "bargle"].map(function(o) { return w.morphFor(o); }));
       mc.grabMeWithoutZoomingAroundFirst(evt);
-    }.bind(this)});
+    }});
 
     cmdList.addItem({label: "get person object", go: function(evt) {
       var mir = reflect(avocado.person.example);
       avocado.ui.grab(mir, evt)
-    }.bind(this)});
+    }});
 
     cmdList.addItem({label: "scatter 1-50", go: function(evt) {
       var morphs = [];
       for (var i = 1; i <= 50; ++i) { morphs.push(evt.hand.world().morphFor(reflect(i))); }
       WorldMorph.current().scatter(morphs);
-    }.bind(this)});
+    }});
 
     cmdList.addItem({label: "group by remainders mod 5", go: function(evt) {
       var w = evt.hand.world();
@@ -163,7 +161,7 @@ thisModule.addSlots(avocado, function(add) {
       
       var compositePose = w.poseManager().cleaningUpPose(poses).beSquarish();
       w.poseManager().assumePose(compositePose);
-    }.bind(this)});
+    }});
 
     cmdList.addItem({label: "tag mod 2,3,5", go: function(evt) {
       var cloud = avocado.tag.cloud.create("numbers mod 2, 3, 5", [2, 3, 5].map(function(modulus) {
@@ -175,31 +173,31 @@ thisModule.addSlots(avocado, function(add) {
       }), avocado.range.create(1, 50).map(function(i) { return reflect(i); }));
       cloud.tagAllMorphsInWorld(evt.hand.world());
       // cloud.newMorph().grabMe(evt);
-    }.bind(this)});
+    }});
 
     cmdList.addItem({label: "walk annotations", go: function(evt) {
       var walker = avocado.objectGraphWalker.visitors.annotationWalker.create().createWalker();
       walker.go();
       evt.hand.world().morphFor(reflect(walker)).grabMe(evt);
-    }.bind(this)});
+    }});
 
     cmdList.addItem({label: "a collection morph", go: function(evt) {
       [1, 2, 3].newMorph(['toString', 'sqrt'], function(o) { return typeof(o) === 'number'; }).grabMe(evt);
-    }.bind(this)});
+    }});
 
     // useful for testing TableMorph
     cmdList.addItem({label: "senders of exitValueOf", go: function(evt) {
       avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.senders.finder.create("exitValueOf"), evt)).redo();
-    }.bind(this)});
+    }});
 
     if (avocado.organization.current === avocado.organizationUsingAnnotations) {
       cmdList.addItem(["use JSQuiche organization", function(evt) {
         avocado.organization.setCurrent(avocado.organizationChain.create(avocado.organization.named(avocado.organization.name()), avocado.organizationUsingAnnotations));
-      }.bind(this)]);
+      }]);
     } else {
       cmdList.addItem(["stop using JSQuiche organization", function(evt) {
         avocado.organization.setCurrent(avocado.organizationUsingAnnotations);
-      }.bind(this)]);
+      }]);
     }
 
     cmdList.addItem(["big-object experiment", function(evt) {
@@ -208,7 +206,7 @@ thisModule.addSlots(avocado, function(add) {
       m.ensureIsInWorld(w, pt(300,200), true, false, false, function() {
         m.assumeUIState({isExpanded: true}, null, evt);
       });
-    }.bind(this)]);
+    }]);
 
     cmdList.addItem(["many-morphs experiment", function(evt) {
       var w = evt.hand.world();
@@ -228,8 +226,8 @@ thisModule.addSlots(avocado, function(add) {
         }, 0);
       }
       
-      this.createAnotherMorph(w, w.bounds(), 1000);
-    }.bind(this)]);
+      createAnotherMorph(w, w.bounds(), 1000);
+    }]);
 
     var b = window.shouldNotDoAnyPeriodicalMorphUpdating;
     cmdList.addItem([(b ? "enable" : "disable") + " periodical updating", function(evt) {
@@ -237,21 +235,30 @@ thisModule.addSlots(avocado, function(add) {
     }]);
 
   }, {category: ['menu']});
+  
+});
+
+
+thisModule.addSlots(avocado, function(add) {
+  
+  add.data('shouldBreakCreatorSlotsInOrderToImprovePerformance', false, {category: ['zooming'], comment: 'aaa - figure out a way to do this creator-slot stuff without wrecking performance of the zooming UI'});
 
 });
 
 
 thisModule.addSlots(avocado.menuItemContributors, function(add) {
 
-  add.data('0', avocado.morphFactories);
+  add.data('0', avocado.reflectionMenuContributor);
 
-  add.data('1', avocado.transporter);
+  add.data('1', avocado.morphFactories);
 
-  add.data('2', avocado.project);
+  add.data('2', avocado.transporter);
 
-  add.data('3', avocado.poses);
+  add.data('3', avocado.project);
 
-  add.data('4', avocado.testCase);
+  add.data('4', avocado.poses);
+
+  add.data('5', avocado.testCase);
 
 });
 

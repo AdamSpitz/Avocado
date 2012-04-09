@@ -50,6 +50,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('copy', function () {
     var c = Object.newChildOf(avocado.testCase, this._currentSelector);
     c._result = this._result.copy();
+    c._previousRun = this;
     return c;
   }, {category: ['creating']});
 
@@ -255,6 +256,8 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.creator('suite', {}, {category: ['suites']});
 
+  add.creator('subset', {}, {category: ['suites']});
+
 });
 
 
@@ -357,13 +360,21 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
     if (!err.sourceURL) { return ""; }
     var path = err.sourceURL.split("/");
     return path[path.length - 1].split("?")[0];
-	});
+  }, {category: ['printing']});
 
   add.method('logFailures', function (log) {
     if (this.anyFailed()) {
       log(this._error);
     }
-  });
+  }, {category: ['printing']});
+  
+  add.method('isTheSameAs', function (other) {
+    if (this.passed()) {
+      return other.passed();
+    } else {
+      return "" + this._error === "" + other._error;
+    }
+  }, {category: ['comparing']});
 
 });
 
@@ -391,8 +402,24 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
     return this._test.subtests().any(function(t) { return t.result() && t.result().anyFailed(); });
   });
 
+  add.method('passes', function () {
+    return this._test.subtests().select(function(t) { return t.result() && t.result().allPassed(); });
+  });
+
   add.method('failures', function () {
     return this._test.subtests().select(function(t) { return t.result() && t.result().anyFailed(); });
+  });
+
+  add.method('passingLeaves', function () {
+    return this._test.leaves().select(function(t) { return t.result() && t.result().allPassed(); });
+  });
+
+  add.method('failingLeaves', function () {
+    return this._test.leaves().select(function(t) { return t.result() && t.result().anyFailed(); });
+  });
+
+  add.method('changedLeaves', function () {
+    return this._test.leaves().select(function(t) { return t._previousRun && t.result() && ! t.result().isTheSameAs(t._previousRun.result()); });
   });
 
   add.method('logFailures', function (log) {
@@ -413,13 +440,24 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
     return timestamp;
   }, {category: ['accessing']});
   
+  add.method('summary', function (history) {
+    var  failedPart = avocado.testCase.subset.create(history, this._test,  "failed", this.failingLeaves().toArray());
+    var  passedPart = avocado.testCase.subset.create(history, this._test,  "passed", this.passingLeaves().toArray());
+    var changedPart = avocado.testCase.subset.create(history, this._test, "changed", this.changedLeaves().toArray());
+    var s = avocado.activeSentence.create([passedPart, ", ", failedPart, ". ", changedPart]);
+    //s._aaa_hack_minimumExtent = pt(1000, 200);
+    //s._aaa_hack_style = "font-size: 48px";
+    s._aaa_hack_desiredScale = 15;
+    return s;
+  }, {category: ['printing']});
+  
 });
 
 
 thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   
-  add.method('initialize', function (test) {
-    this._entries = [test];
+  add.method('initialize', function (entries) {
+    this._entries = entries;
   }, {category: ['creating']});
   
   add.method('toString', function () {
@@ -442,19 +480,15 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   add.method('immediateContents', function () {
     var rows = this._entries.map(function(test) {
       var row = test.leaves().toArray();
-      /* I want these labels, but they need to be a constant readable size, not dependent on the number of leaves.
-      row.unshift(avocado.label.create(test.toString()));
-      row.push(avocado.label.create(function() { return test.result().passFailSummaryString(); }));
-      */
+      // aaa - I want the summary, but it needs to be a constant readable size, not dependent on the number of leaves.
+      row.unshift(test.result().summary(this));
       return row;
-    });
+    }.bind(this));
     
     var table = avocado.table.contents.createWithRows(rows);
     table._desiredSpaceToScaleTo = pt(800, null); // aaa hack; I think what I need is some way to combine a Table Layout with an Auto-Scaling Layout
     table.updateStyleOfMorph = function(morph) { morph.setFill(Color.blue); }; // aaa ugh
     return table;
-    
-    // return this._entries;
   }, {category: ['contents']});
   
   add.method('titleModel', function () {
@@ -465,6 +499,12 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
       this._titleSentence = avocado.activeSentence.create(["You're viewing the last ", resultNumberHolder, " results, which span ", daysNumberHolder, " days"]);
     }
     return this._titleSentence;
+  }, {category: ['user interface']});
+  
+  add.creator('interestingEntriesProto', {});
+
+  add.method('createInterestingEntriesList', function () {
+    return Object.newChildOf(this.interestingEntriesProto, this);
   }, {category: ['user interface']});
   
   add.creator('displayOptions', {}, {category: ['user interface']});
@@ -513,6 +553,78 @@ thisModule.addSlots(avocado.testCase.resultHistory.displayOptions, function(add)
 });
 
 
+thisModule.addSlots(avocado.testCase.resultHistory.interestingEntriesProto, function(add) {
+  
+  add.method('initialize', function (history) {
+    this._history = history;
+  }, {category: ['creating']});
+  
+  add.method('subset', function () {
+    return this._subset;
+  }, {category: ['accessing']});
+  
+  add.method('setSubset', function (subset) {
+    this._subset = subset;
+    return this;
+  }, {category: ['accessing']});
+  
+  add.method('titleModel', function () {
+    if (! this._titleSentence) {
+      this._titleSentence = avocado.activeSentence.create([
+        function() { return this._subset ? this._subset.tests().size() : "No"; }.bind(this),
+        " tests ",
+        function() { return this._subset ? this._subset.fullDescription() : "selected"; }.bind(this)
+      ]);
+    }
+    return this._titleSentence;
+  }, {category: ['user interface']});
+  
+});
+
+
+thisModule.addSlots(avocado.testCase.subset, function(add) {
+  
+  add.method('create', function () {
+    var s = Object.create(this);
+    s.initialize.apply(s, arguments);
+    return s;
+  }, {category: ['creating']});
+  
+  add.method('initialize', function (history, suite, kind, tests) {
+    this._history = history;
+    this._suite = suite;
+    this._kind  = kind;
+    this._tests = tests || [];
+  }, {category: ['creating']});
+  
+  add.method('tests', function () {
+    return this._tests;
+  }, {category: ['accessing']});
+  
+  add.method('setTests', function (tests) {
+    this._tests = tests;
+    return this;
+  }, {category: ['accessing']});
+  
+  add.method('toString', function () {
+    return this._tests.size() + " " + this._kind;
+  }, {category: ['printing']});
+  
+  add.method('fullDescription', function () {
+    return this._kind + (this._suite ? " in " + this._suite.nameWithinEnclosingObject(this._history) : "");
+  }, {category: ['printing']});
+  
+  add.method('getValue', function () {
+    return this;
+  }, {category: ['accessing']});
+  
+  add.method('doAction', function (evt) {
+    this._history.showInterestingSubset(evt, this);
+  }, {category: ['linking']});
+    
+});
+
+
 thisModule.addSlots(avocado.testCase.suite, function(add) {
   
   add.method('create', function () {
@@ -541,7 +653,9 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
   add.method('result', function () { return this._result; }, {category: ['accessing']});
   
   add.method('copy', function () {
-    return avocado.testCase.suite.create(this._subtests.map(function(t) { return t.copy(); }), this._name);
+    var c = avocado.testCase.suite.create(this._subtests.map(function(t) { return t.copy(); }), this._name);
+    c._previousRun = this;
+    return c;
   }, {category: ['creating']});
 
   add.method('timestamp', function () {
@@ -550,6 +664,10 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
   }, {category: ['accessing']});
   
   add.method('name', function () { return this._name; }, {category: ['accessing']});
+  
+  add.method('extraDescription', function () { return this._extraDescription; }, {category: ['accessing']});
+  
+  add.method('setExtraDescription', function (d) { this._extraDescription = d; return this; }, {category: ['accessing']});
   
   add.method('testToBeRun', function () { return this; }, {category: ['accessing']});
 
@@ -561,10 +679,11 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
 
   add.method('nameWithinEnclosingObject', function (enclosingObject) {
     var n = this.name();
+    var d = this.extraDescription() || "";
     if (enclosingObject) {
-      if (enclosingObject.testToBeRun().name() === n) { return ""; }
+      if (enclosingObject.testToBeRun().name() === n) { return d || ""; }
     }
-    return n;
+    return n + (d ? ": " + d : "");
   }, {category: ['naming']});
   
   add.method('immediateContents', function () {
@@ -659,7 +778,39 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
   add.method('leaves', function () {
     return avocado.enumerator.create(this, 'eachLeaf');
   }, {category: ['iterating']});
+  
+  add.method('makeUpSomeRandomResults', function (failureFrequency) {
+    if (typeof(failureFrequency) !== 'number') { failureFrequency = 0.1; }
+    this.clearResults();
+    this.eachLeaf(function(test) {
+      var timeToRun = Math.random() * 200;
+      if (Math.random() < failureFrequency) {
+        test._result.recordFinished(new Error("who knows why?"), timeToRun);
+      } else {
+        test._result.recordFinished(null, timeToRun);
+      }
+    });
+    return this;
+  }, {category: ['making up fake results']});
 
+  add.method('randomlyChangeSomeResults', function (newPassFrequency, newFailFrequency) {
+    if (typeof(newPassFrequency) !== 'number') { newPassFrequency = 0.05; }
+    if (typeof(newFailFrequency) !== 'number') { newFailFrequency = 0.05; }
+    this.eachLeaf(function(test) {
+      var timeToRun = Math.random() * 200;
+      if (test._result.failed()) {
+        if (Math.random() < newPassFrequency) {
+          test._result.recordFinished(null, timeToRun);
+        }
+      } else {
+        if (Math.random() < newFailFrequency) {
+          test._result.recordFinished(new Error("who knows why?"), timeToRun);
+        }
+      }
+    });
+    return this;
+  }, {category: ['making up fake results']});
+  
 });
 
 
