@@ -1,6 +1,7 @@
 avocado.transporter.module.create('general_ui/poses', function(requires) {
 
 requires('general_ui/basic_morph_mixins');
+requires('core/directions');
 
 }, function(thisModule) {
 
@@ -77,7 +78,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this;
   }, {category: ['animating']});
 
-  add.method('putInPosition', function (container, element, origin) {
+  add.method('putInPosition', function (container, element, origin, callback) {
     if (this._shouldBeUnobtrusive) {
       var poserOrPlaceholder = element.poser;
       if (element.poser.getOwner() !== container && element.poser.world()) { // aaa what's going on here?
@@ -86,6 +87,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       var positionFromOrigin = origin.moveDownAndRightBy(element.position.x, element.position.y);
       poserOrPlaceholder.setTopLeftPosition(positionFromOrigin);
       container.addMorph(poserOrPlaceholder);
+      if (callback) { callback(); }
     } else {
       if (! element.poser.world()) {
         // aaa - Not sure at all that this is a good idea. But it might be.
@@ -93,11 +95,11 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       }
       
       if (element.scale) { element.position.desiredScale = element.scale; } // aaa hack
-      element.poser.ensureIsInWorld(container, element.position, true, !this._shouldNotAnticipateAtStart, !this._shouldNotWiggleAtEnd);
+      element.poser.ensureIsInWorld(container, element.position, true, !this._shouldNotAnticipateAtStart, !this._shouldNotWiggleAtEnd, callback);
     }
   }, {category: ['posing']});
     
-  add.method('recreateInContainer', function (container, startingPos) {
+  add.method('recreateInContainer', function (container, startingPos, callback) {
     var originalScale = container.getScale();
     var originalSpace = container.getExtent().scaleBy(originalScale);
     //var originalSpace = container.bounds().extent(); // aaa if I use this line instead of the previous line I get that annoying grows-slightly-each-time problem
@@ -156,9 +158,15 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     
     var origin = container.getOriginAAAHack(); // necessary because in 3D-land the origin is in the centre, but I don't understand why it's not working in LK-land
     if (this._extraZHack) { origin = origin.withZ((origin.z || 0) + this._extraZHack); }
-    elements.forEach(function(e) {
-      this.putInPosition(container, e, origin);
-    }.bind(this));
+    
+    avocado.callbackWaiter.on(function(createCallbackForThisOne) {
+      elements.forEach(function(e) {
+        var callbackForThisOne = createCallbackForThisOne();
+        setTimeout(function() { // not sure this is necessary or worthwhile, but let's try it to see if it makes some animations feel smoother
+          this.putInPosition(container, e, origin, callbackForThisOne);
+        }.bind(this), 0);
+      }.bind(this));
+    }.bind(this), callback, "putting the posers in position");
   }, {category: ['posing']});
   
   add.method('whenDoneScaleToFitWithinCurrentSpace', function () {
@@ -196,8 +204,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
   }, {category: ['acting like a morph']});
 
   add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-    w.poseManager().assumePose(this, desiredLoc);
-    if (functionToCallWhenDone) { functionToCallWhenDone(); }
+    w.poseManager().assumePose(this, desiredLoc, functionToCallWhenDone);
   }, {category: ['acting like a morph']});
 
 });
@@ -294,6 +301,13 @@ thisModule.addSlots(avocado.poses.list, function(add) {
     this._desiredPoserScale = s;
     return this;
   }, {category: ['accessing']});
+  
+  add.data('_direction', avocado.directions.vertical);
+
+  add.method('setDirection', function (d) {
+    this._direction = d;
+    return this;
+  }, {category: ['accessing']});
 
   add.method('eachElement', function (f, startingPos) {
     var sortedPosersToMove = this._posers.sort(function(m1, m2) {
@@ -305,10 +319,12 @@ thisModule.addSlots(avocado.poses.list, function(add) {
     startingPos = startingPos || pt(0,0);
     var padding = this._padding || pt(20,20);
     var pos = startingPos.addPt(padding);
-    var widest = 0;
+    var biggestSideways = 0;
     var maxExtent = this.maxExtent();
-    var maxY = null;
-    if (maxExtent && !this._shouldBeSquarish) { maxY = maxExtent - 30; }
+    var maxForwards;
+    var forwards = this._direction;
+    var sideways = this._direction.sideways;
+    if (maxExtent && !this._shouldBeSquarish) { maxForwards = forwards.coord(maxExtent) - forwards.coord(padding); }
     for (var i = 0, n = sortedPosersToMove.length; i < n; ++i) {
       var poser = sortedPosersToMove[i];
       var uiState = this.destinationUIStateFor(poser);
@@ -320,22 +336,24 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       f(e);
       
       var poserSpace = poser.getExtent().scaleBy(poserScale);
-      pos = pos.withY(pos.y + poserSpace.y + padding.y);
-      widest = Math.max(widest, poserSpace.x);
+      pos = forwards.copyAndSetCoord(pos, forwards.coord(pos) + forwards.coord(poserSpace) + forwards.coord(padding));
+      biggestSideways = Math.max(biggestSideways, sideways.coord(poserSpace));
       
-      if (this._shouldBeSquarish && !maxY) {
-        // If it seems like the current y is far down enough to make the whole
+      if (this._shouldBeSquarish && !maxForwards) {
+        // If it seems like the current coord is far down enough to make the whole
         // thing come out squarish (assuming that all columns will be about as
-        // wide as this one), then set this as the maxY.
-        var desiredAspectRatio = maxExtent.y == 0 ? 1 : maxExtent.x / maxExtent.y;
+        // wide as this one), then set this as the maxForwards.
+        var desiredAspectRatio = forwards.coord(maxExtent) == 0 ? 1 : sideways.coord(maxExtent) / forwards.coord(maxExtent);
         
-        var estimatedNumberOfColumns = Math.ceil(n / (i + 1));
-        var estimatedTotalWidth = estimatedNumberOfColumns * (widest + padding.x);
+        var estimatedNumberOfLines = Math.ceil(n / (i + 1));
+        var estimatedTotalExtentSideways = estimatedNumberOfLines * (biggestSideways + sideways.coord(padding));
         // aaa - not sure why it keeps coming out too tall; quick hack for now: compensate by multiplying by 1.2
-        if (pos.y * desiredAspectRatio * 1.2 >= estimatedTotalWidth) { maxY = pos.y; }
+        if (forwards.coord(pos) * desiredAspectRatio * 1.2 >= estimatedTotalExtentSideways) { maxForwards = forwards.coord(pos); }
       }
       
-      if (maxY && pos.y >= maxY) { pos = pt(pos.x + widest + padding.x, startingPos.y + padding.y); }
+      if (maxForwards && forwards.coord(pos) >= maxForwards) {
+        pos = forwards.point(forwards.coord(startingPos) + forwards.coord(padding), sideways.coord(pos) + biggestSideways + sideways.coord(padding));
+      }
     }
   });
   
@@ -462,7 +480,7 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     return this.undoPoseStackIndex() < this.undoPoseStack().size() - 1;
   });
 
-  add.method('goBackToPreviousPose', function () {
+  add.method('goBackToPreviousPose', function (callWhenDone) {
     if (! this.canGoBackToPreviousPose()) { throw "there is nothing to go back to"; }
 
     if (this.undoPoseStackIndex() === this.undoPoseStack().size()) {
@@ -471,18 +489,18 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
     }
 
     var pose = this.undoPoseStack()[this._undoPoseStackIndex -= 1];
-    pose.recreateInContainer(this.container());
+    pose.recreateInContainer(this.container(), undefined, callWhenDone);
   });
 
-  add.method('goForwardToNextPose', function () {
+  add.method('goForwardToNextPose', function (callWhenDone) {
     if (! this.canGoForwardToNextPose()) { throw "there is nothing to go forward to"; }
     var pose = this.undoPoseStack()[this._undoPoseStackIndex += 1];
-    pose.recreateInContainer(this.container());
+    pose.recreateInContainer(this.container(), undefined, callWhenDone);
   });
 
-  add.method('assumePose', function (pose, startingPos) {
+  add.method('assumePose', function (pose, startingPos, callWhenDone) {
     this.addToUndoPoseStack(this.createSnapshotOfCurrentPose(avocado.organization.current.findUnusedPoseName()));
-    pose.recreateInContainer(this.container(), startingPos);
+    pose.recreateInContainer(this.container(), startingPos, callWhenDone);
   }, {category: ['poses']});
 
   add.method('createSnapshotOfCurrentPose', function (poseName) {

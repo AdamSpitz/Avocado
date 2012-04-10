@@ -1032,11 +1032,12 @@ thisModule.addSlots(avocado.mirror, function(add) {
     }
   }, {category: ['user interface', 'commands']});
 
-  add.method('showInheritanceHierarchy', function (evt) {
+  add.method('showInheritanceHierarchy', function (evt, callWhenDone) {
     var w = evt.hand.world();
     var parentFunction = function(o) { return o.mirror().hasParent() ? w.morphFor(o.mirror().parent()) : null; };
     var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.morphFor(reflect(child)); }); };
-    avocado.ui.poseManager(evt).assumePose(Object.newChildOf(avocado.poses.tree, this.inspect() + " inheritance tree", w.morphFor(this), parentFunction, childrenFunction));
+    var pose = Object.newChildOf(avocado.poses.tree, this.inspect() + " inheritance tree", w.morphFor(this), parentFunction, childrenFunction);
+    avocado.ui.poseManager(evt).assumePose(pose, undefined, callWhenDone);
   }, {category: ['user interface', 'commands']});
 
   add.method('canHaveAnnotation', function () {

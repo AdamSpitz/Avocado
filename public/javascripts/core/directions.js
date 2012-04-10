@@ -33,6 +33,8 @@ thisModule.addSlots(avocado.directions.vertical, function(add) {
 
   add.method('point', function (f, s) {return pt(s, f);});
 
+  add.method('copyAndSetCoord', function (p, y) { return pt(p.x, y); });
+
 });
 
 
@@ -47,6 +49,8 @@ thisModule.addSlots(avocado.directions.horizontal, function(add) {
   add.method('setCoord', function (p, x) {p.x = x;});
 
   add.method('point', function (f, s) {return pt(f, s);});
+
+  add.method('copyAndSetCoord', function (p, x) { return pt(x, p.y); });
 
 });
 

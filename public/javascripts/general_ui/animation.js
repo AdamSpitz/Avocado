@@ -64,8 +64,9 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   }, {category: ['adding and removing']});
 
   add.method('putBackOrDismiss', function (callWhenDone) {
-    if (this._placeholderMorphIJustCameFrom) {
-      this._placeholderMorphIJustCameFrom.layout().putOriginalMorphBack();
+    var placeholder = this._placeholderMorphIJustCameFrom;
+    if (placeholder) {
+      placeholder.layout().putOriginalMorphBack(callWhenDone);
     } else {
       this.startWhooshingOuttaHere(callWhenDone);
     }

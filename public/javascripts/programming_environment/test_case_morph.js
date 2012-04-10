@@ -119,17 +119,14 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
     avocado.callbackWaiter.on(function(createCallbackForPuttingThisOneBack) {
       interestingEntriesMorph.submorphEnumerator().toArray().forEach(function(previouslyInterestingMorph) {
         if (! entries.include(previouslyInterestingMorph._model)) {
-          var placeholder = previouslyInterestingMorph._placeholderMorphIJustCameFrom;
-          if (placeholder) {
-            placeholder.layout().putOriginalMorphBack(createCallbackForPuttingThisOneBack()); 
-          } else {
-            previouslyInterestingMorph.startWhooshingOuttaHere(createCallbackForPuttingThisOneBack());
-          }
+          var callbackForPuttingThisOneBack = createCallbackForPuttingThisOneBack();
+          setTimeout(function() { previouslyInterestingMorph.putBackOrDismiss(callbackForPuttingThisOneBack); }, 0);
         }
       });
     }, function() {
       interestingEntriesMorph._model.setSubset(subset);
       var pose = avocado.poses.list.create("interesting entries").setPoserModels(entries).setPadding(pt(10, 10)).setDesiredPoserScale(1);
+      pose.setDirection(avocado.directions.horizontal).setMaxExtent(function() { return interestingEntriesMorph.getExtent().withY(null); });
       pose.doNotAnticipateAtStart().doNotWiggleAtEnd().whenDoneSetExtentToEncompassWholePose();
       pose.recreateInContainer(interestingEntriesMorph, pt(0, 0));
       
