@@ -34,7 +34,9 @@ requires('general_ui/similar_objects');
 
 
 thisModule.addSlots(avocado.generalUI, function(add) {
-
+  
+  add.data('shouldEnableMouseFreeMenuExperiment', true);
+  
   add.method('grab', function (obj, evt, callback) {
     var m = this.worldFor(evt).morphFor(obj);
     m.grabMe(evt, callback);

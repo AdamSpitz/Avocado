@@ -76,16 +76,21 @@ thisModule.addSlots(avocado.groupOfSimilarObjects, function(add) {
       var world = avocado.ui.currentWorld();
       this._objects.forEach(function(o) {
         var line = [];
-        if (! this._disableObjectNames) { line.push(avocado.label.create("" + o).setEmphasis(avocado.label.emphasiseses.bold).newMorph()); }
+        var objectName = o && o.namingScheme ? o.namingScheme.nameInContext(o, morph) : "" + o;
+        if (! this._disableObjectNames) { line.push(avocado.label.create(objectName).setEmphasis(avocado.label.emphasiseses.bold).newMorph()); }
         commonProperties.forEach(function(p) {
           if (typeof(o[p]) !== 'function') { debugger; }
           var v = o[p].call(o);
+          var valueMorph;
           if (typeof(v) === 'string') {
-            var valueMorph = avocado.label.newMorphFor(v);
+            valueMorph = avocado.label.newMorphFor(v);
+          } else if (v && v.isMorph) {
+            valueMorph = v;
           } else {
-            var valueMorph = world.morphFor(v);
+            valueMorph = world.morphFor(v);
           }
-          if (typeof(o.updateStyleOfMorph) === 'function') { o.updateStyleOfMorph(valueMorph); }
+          // aaa - I like the idea, but this doesn't end up looking quite right.
+          // if (typeof(o.updateStyleOfMorph) === 'function') { o.updateStyleOfMorph(valueMorph); }
           line.push(valueMorph);
         });
         cells.push(line);

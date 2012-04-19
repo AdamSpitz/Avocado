@@ -23,10 +23,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     return label;
   }, {category: ['title']});
 
-	add.method('nameUsingContextualInfoIfPossible', function() {
+	add.method('nameUsingContextualInfoIfPossible', function(optionalContext) {
 		try {
+		  var context = optionalContext || this;
       if (this._model && this._model.namingScheme) {
-        return this._model.namingScheme.nameInContext(this._model, this);
+        return this._model.namingScheme.nameInContext(this._model, context);
       }
       return this.inspect();
 		} catch (err) {

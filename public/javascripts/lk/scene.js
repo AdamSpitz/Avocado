@@ -895,7 +895,11 @@ this.Shape.subclass('lively.scene.Rectangle', {
 	initialize: function($super, rect) {
 		$super();
 		this.rawNode = NodeFactory.create("rect");
-		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
+		
+    if (!avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
+		  reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
+	  }
+	  
 		this.setBounds(rect || new Rectangle(0, 0, 0, 0));
 		return this;
 	},

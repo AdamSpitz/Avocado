@@ -226,11 +226,15 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
 thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
 
+  add.method('isMorphMenuEnabled', function() {
+    var b = false;
+    avocado.ui.currentWorld().applicationList().applications().each(function(app) { if (app.isMorphMenuEnabled) { b = true; }; });
+    return b;
+  }, {category: ['menus']});
+  
   add.method('showMorphMenu', function(evt) {
     // Disable the reflective stuff in deployed apps. -- Adam
-    var isMorphMenuEnabled = false;
-    avocado.ui.currentWorld().applicationList().applications().each(function(app) { if (app.isMorphMenuEnabled) { isMorphMenuEnabled = true; }; });
-    if (!isMorphMenuEnabled) { return false; }
+    if (!this.isMorphMenuEnabled()) { return false; }
 
     var menu = this.morphMenu(evt);
     var world = this.world();

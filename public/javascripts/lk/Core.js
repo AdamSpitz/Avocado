@@ -1415,9 +1415,13 @@ lively.data.Wrapper.subclass('Morph', {
 
 	internalInitialize: function(rawNode, shouldAssign) {
 		this.rawNode = rawNode;
-		reflect(this).slotAt('rawNode').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
 		this.submorphs = [];
-		reflect(this).slotAt('submorphs').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
+		
+    if (!avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
+  		reflect(this).slotAt('rawNode'  ).beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
+  		reflect(this).slotAt('submorphs').beCreator(); // aaa - kind of a hack, added by Adam so that we can file out morphs
+    }
+    
 		this.owner = null;
 		if (shouldAssign) {
 			LivelyNS.setType(this.rawNode, this.getType());
@@ -6211,8 +6215,7 @@ lookTouchy: function(morph) {
     
     // Experimenting with a menu idea that I learned from Richard Kulisz. -- Adam
     // http://www.c2.com/cgi/wiki?WheelMenu
-    var shouldEnableMouseFreeMenuExperiment = true;
-    if (shouldEnableMouseFreeMenuExperiment) {
+    if (avocado.ui.shouldEnableMouseFreeMenuExperiment) {
       if (evt.isAltDown()) {
         if (evt.getKeyCode() === 18) { // I think this means no other key is pressed, just Alt -- Adam
           evt.mousePoint = this.getPosition();

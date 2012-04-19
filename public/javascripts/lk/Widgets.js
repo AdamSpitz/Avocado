@@ -2451,6 +2451,16 @@ BoxMorph.subclass("SliderMorph", {
 		var bnds = this.shape.bounds();
 		var ext = this.getSliderExtent(); 
 
+    // added by Adam
+		if (ext === 1) {
+		  if (this.owner) {
+		    this._desiredOwner = this.owner;
+		    this.remove();
+		  }
+    } else if (!this.owner && this._desiredOwner) {
+      console.log()
+      this._desiredOwner.addMorph(this);
+    }
 	
 		if (this.vertical()) { // more vertical...
 			var elevPix = Math.max(ext*bnds.height, this.mss); // thickness of elevator in pixels
@@ -2465,9 +2475,23 @@ BoxMorph.subclass("SliderMorph", {
 
 		//this.slider.shapeRoundEdgesBy((this.vertical() ? sliderExt.x : sliderExt.y)/2);
 		this.slider.shapeRoundEdgesBy(Math.min(sliderExt.x, sliderExt.y)/2);
+		
 	},
 
 	adjustFill: function() {
+	  
+	  // added by Adam
+	  var shouldMakeScrollBarsLookSortaLikeMacOS = true;
+	  if (shouldMakeScrollBarsLookSortaLikeMacOS) {
+	    var sliderColor = new Color(0.5, 0.5, 0.5);
+	    this.slider.setFill(sliderColor);
+	    this.slider.setBorderColor(sliderColor);
+	    this.setFill(Color.black);
+	    this.setFillOpacity(0.1);
+	    this.setBorderWidth(0);
+	    return;
+	  }
+	  
 		var fill = this.slider.getFill();
 		var gfx = lively.paint;
 		if (fill instanceof lively.paint.LinearGradient) {

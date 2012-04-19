@@ -99,7 +99,7 @@ thisModule.addSlots(avocado.label, function(add) {
     return m;
   }, {category: ['user interface']});
   
-  add.method('newMorphFor', function(textOrFunctionOrObject, pos, extent) {
+  add.method('newMorphFor', function(textOrFunctionOrObject, extent) {
     var initialText = "";
     var calculateNewText = null;
     if (textOrFunctionOrObject) {
@@ -118,7 +118,7 @@ thisModule.addSlots(avocado.label, function(add) {
       }
     }
     
-    var m = this.newMorphWithInitialText(initialText, pos, extent);
+    var m = this.newMorphWithInitialText(initialText, extent);
     
     if (calculateNewText) {
       m.calculateNewText = calculateNewText;

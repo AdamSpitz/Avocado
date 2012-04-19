@@ -1155,6 +1155,7 @@ BoxMorph.subclass('TextMorph', {
 		} else {
 			this.wrap = style;
 		}
+		return this; // added by Adam
 	},
 	
 	beLabel: function(styleMods) {

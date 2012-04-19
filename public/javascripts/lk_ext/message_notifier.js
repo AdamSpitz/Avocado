@@ -8,12 +8,11 @@ requires('general_ui/table_layout');
 
 thisModule.addSlots(avocado.label, function(add) {
   
-  add.method('newMorphWithInitialText', function(initialText, pos, extent) {
-    var tf = new TextMorph((pos || pt(5, 10)).extent(extent || pt(0, 0)), initialText);
+  add.method('newMorphWithInitialText', function(initialText, extent) {
+    var tf = new TextMorph(pt(0, 0).extent(extent || pt(0, 0)), initialText);
     tf.acceptInput = false;
     tf.closeDnD();
     tf.beLabel();
-
     return tf;
   }, {category: ['user interface']});
 

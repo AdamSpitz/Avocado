@@ -16,43 +16,43 @@ requires('demo/person');
 }, function(thisModule) {
 
 
-thisModule.addSlots(modules['programming_environment/programming_environment'], function(add) {
+thisModule.addSlots(avocado, function(add) {
 
-  add.method('postFileIn', function () {
+  add.creator('programmingEnvironment', {}, {category: ['loading']});
+
+  add.creator('reflectionMenuContributor', {}, {category: ['menu']});
+
+});
+
+
+thisModule.addSlots(avocado.programmingEnvironment, function(add) {
+  
+  add.method('loadAsTopLevelEnvironment', function () {
+    avocado.isReflectionEnabled = true;
+    
     avocado.categorizeGlobals();
 
     // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
     reflect(window).categorizeUncategorizedSlotsAlphabetically();
     
-    avocado.applicationList.addApplication(avocado);
+    avocado.applicationList.addApplication(this);
   });
-
-});
-
-
-thisModule.addSlots(avocado, function(add) {
-
+  
   add.method('worldName', function () { return "Avocado"; }, {category: ['printing']});
 
-  add.data('isReflectionEnabled', true, {category: ['enabling reflection']});
-
   add.data('isMorphMenuEnabled', true, {category: ['enabling reflection']});
-
-  add.creator('menuItemContributors', [], {category: ['menu']});
-  
-  add.creator('reflectionMenuContributor', {}, {category: ['menu']});
 
   add.method('addGlobalCommandsTo', function (cmdList) {
     if (avocado.ui.debugMode) {
       cmdList.addLine();
-      avocado.ui.addUISpecificDebugModeGlobalCommandsTo(cmdList);
+      avocado.ui.programmingEnvironment.addUISpecificDebugModeGlobalCommandsTo(cmdList);
     }
 
     this.menuItemContributors.each(function(c) {
       c.addGlobalCommandsTo(cmdList);
     });
   }, {category: ['menu']});
-
+  
 });
 
 

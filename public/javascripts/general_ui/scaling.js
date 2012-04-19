@@ -32,8 +32,11 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
     if (!h) {
       if (!this._sizeOfSpaceHolder) { return null; }
       var h = avocado.ui.newMorph(avocado.ui.shapeFactory.newRectangle(pt(0,0).extent(this._sizeOfSpaceHolder)));
+      h._spaceHolderMinimumExtent = this._sizeOfSpaceHolder;
+      h.setLayout(avocado.scaleBasedMorphHider.spaceHolderLayout);
       h.applyStyle(this._styleOfSpaceHolder);
       h.ignoreEvents();
+      h._isSpaceHolderForScaleBasedMorphHider = this;
       this._spaceHolder = h;
     }
     return h;
@@ -56,7 +59,18 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
     // console.log("whichMorphShouldBeShown is " + i + " for " + this._owner + ", scale is " + s + ", threshold is " + t + ", onScreen is " + onScreen);
     return i;
   });
+  
+  add.creator('spaceHolderLayout', {});
 
+});
+
+
+thisModule.addSlots(avocado.scaleBasedMorphHider.spaceHolderLayout, function(add) {
+  
+  add.method('minimumExtent', function (spaceHolderMorph) {
+    return spaceHolderMorph._spaceHolderMinimumExtent;
+  });
+  
 });
 
 

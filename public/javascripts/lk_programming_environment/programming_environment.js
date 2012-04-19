@@ -17,27 +17,29 @@ requires('projects/projects');
 
 thisModule.addSlots(avocado.livelyKernelUI, function(add) {
 
-  add.data('isZoomingEnabled', true, {category: ['zooming']});
+  add.creator('programmingEnvironment', Object.create(avocado.programmingEnvironment), {category: ['loading']});
+  
+});
 
-  add.data('shouldMirrorsUseZooming', true, {category: ['zooming']});
 
-  add.data('debugMode', false, {category: ['debug mode']});
+thisModule.addSlots(avocado.livelyKernelUI.programmingEnvironment, function(add) {
+
+  add.method('loadAsTopLevelEnvironment', function ($super) {
+    $super();
+    
+    avocado.livelyKernelUI.isZoomingEnabled = true;
+    avocado.livelyKernelUI.shouldMirrorsUseZooming = true;
+    avocado.livelyKernelUI.debugMode = false;
+    
+    // aaa - figure out a way to do this creator-slot stuff without wrecking performance of the zooming UI
+    avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance = false;
+    
+    avocado.menuItemContributors = this.menuItemContributors;
+  });
+  
+  add.creator('menuItemContributors', [], {category: ['menu']});
   
   add.method('addUISpecificDebugModeGlobalCommandsTo', function (cmdList) {
-
-    cmdList.addItem(["incredible shrinking thingies", function(evt) {
-      var t = avocado.treeNode.create("Root", [
-        avocado.messageNotifier.create("Noodle")
-      ]);
-      var tm = avocado.ui.grab(t, evt);
-      tm._updater = new PeriodicalExecuter(function(pe) {
-        console.log("AAA updating");
-        t.setImmediateContents([
-          avocado.messageNotifier.create("Noodle")
-        ]);
-        tm.refreshContentIfOnScreenOfMeAndSubmorphs();
-      }, 1);
-    }]);
 
     cmdList.addItem(["get an HTML/Canvas morph", function(evt) {
       var m = new XenoMorph(new Rectangle(0, 0, 400, 600));
@@ -200,53 +202,17 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
       }]);
     }
 
-    cmdList.addItem(["big-object experiment", function(evt) {
-      var w = evt.hand.world();
-      var m = w.morphFor(reflect(TextMorph.prototype));
-      m.ensureIsInWorld(w, pt(300,200), true, false, false, function() {
-        m.assumeUIState({isExpanded: true}, null, evt);
-      });
-    }]);
-
-    cmdList.addItem(["many-morphs experiment", function(evt) {
-      var w = evt.hand.world();
-
-      function createAnotherMorph(w, wBounds, i) {
-        if (i <= 0) { return; }
-        var t1 = new Date().getTime();
-        var m = Morph.makeRectangle(wBounds.randomPoint().extent(pt(50,50)));
-        var t2 = new Date().getTime();
-        w.addMorph(m);
-        var t3 = new Date().getTime();
-        console.log("Time to create latest morph: " + (t2 - t1) + ", and to add it: " + (t3 - t2));
-        setTimeout(function() {
-          var t4 = new Date().getTime();
-          createAnotherMorph(w, wBounds, i - 1);
-          console.log("Time to get to timeout: " + (t4 - t3));
-        }, 0);
-      }
-      
-      createAnotherMorph(w, w.bounds(), 1000);
-    }]);
-
     var b = window.shouldNotDoAnyPeriodicalMorphUpdating;
     cmdList.addItem([(b ? "enable" : "disable") + " periodical updating", function(evt) {
       window.shouldNotDoAnyPeriodicalMorphUpdating = !b;
     }]);
 
   }, {category: ['menu']});
-  
-});
-
-
-thisModule.addSlots(avocado, function(add) {
-  
-  add.data('shouldBreakCreatorSlotsInOrderToImprovePerformance', false, {category: ['zooming'], comment: 'aaa - figure out a way to do this creator-slot stuff without wrecking performance of the zooming UI'});
 
 });
 
 
-thisModule.addSlots(avocado.menuItemContributors, function(add) {
+thisModule.addSlots(avocado.livelyKernelUI.programmingEnvironment.menuItemContributors, function(add) {
 
   add.data('0', avocado.reflectionMenuContributor);
 

@@ -38,6 +38,18 @@ thisModule.addSlots(avocado.eventHandlers, function(add) {
   
   add.creator('composite', {});
   
+  add.method('grabAndPullOrPutBackIfPossible', function (morph, evt) {
+    if (morph.hasPlaceholderToGoBackTo()) {
+      morph.goBackToPlaceholder();
+      return true;
+    } else if (morph.shouldBeEasilyGrabbable()) {
+      morph.grabAndPullMe(evt);
+      return true;
+    } else {
+      return false;
+    }
+  }, {category: ['miscellaneous functions']});
+  
 });
 
 

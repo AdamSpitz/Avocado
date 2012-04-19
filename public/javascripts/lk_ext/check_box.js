@@ -49,7 +49,7 @@ thisModule.addSlots(avocado.CheckBoxMorph.prototype, function(add) {
   }, {category: ['creating']})
 
   add.method('createXShapedMorph', function(extent) {
-    return avocado.label.newMorphFor("X", pt(0,0), extent);
+    return avocado.label.newMorphFor("X", extent);
   }, {category: ['creating']});
 
   add.data('toggle', true, {category: ['toggling']});

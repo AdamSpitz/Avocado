@@ -155,6 +155,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 thisModule.addSlots(avocado.morphMixins.TextMorph, function(add) {
 
   add.method('refreshContent', function() {
+    avocado.morphMixins.Morph.refreshContent.call(this);
     if (this.refreshText) { this.refreshText(); }
   });
 

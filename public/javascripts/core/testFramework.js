@@ -238,20 +238,10 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addLine();
 
-    var enableHistoryViewingExperiment = true;
-    if (!enableHistoryViewingExperiment) {
-      cmdList.addItem(["get tests", function(evt) {
-        var testSuite = this.suite.forTestingAvocado();
-        avocado.ui.grab(testSuite, evt);
-      }.bind(this)]);
-    } else {
-      cmdList.addItem(["get tests", function(evt) {
-        var testSuite = this.suite.forTestingAvocado();
-        testSuite._shouldBeDisplayedAsOneLongRow = true;
-        var history = Object.newChildOf(this.resultHistory, testSuite);
-        avocado.ui.grab(history, evt);
-      }.bind(this)]);
-    }
+    cmdList.addItem(["get tests", function(evt) {
+      var testSuite = this.suite.forTestingAvocado();
+      avocado.ui.grab(testSuite, evt);
+    }.bind(this)]);
   }, {category: ['user interface', 'commands']});
 
   add.creator('suite', {}, {category: ['suites']});
@@ -441,10 +431,11 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
   }, {category: ['accessing']});
   
   add.method('summary', function (history) {
-    var  failedPart = avocado.testCase.subset.create(history, this._test,  "failed", this.failingLeaves().toArray());
-    var  passedPart = avocado.testCase.subset.create(history, this._test,  "passed", this.passingLeaves().toArray());
-    var changedPart = avocado.testCase.subset.create(history, this._test, "changed", this.changedLeaves().toArray());
-    var s = avocado.activeSentence.create([passedPart, ", ", failedPart, ". ", changedPart]);
+    var   totalPart = avocado.testCase.subset.create(history, this._test, "in total", this._test. leaves().toArray());
+    var  failedPart = avocado.testCase.subset.create(history, this._test, "failed",   this.failingLeaves().toArray());
+    var  passedPart = avocado.testCase.subset.create(history, this._test, "passed",   this.passingLeaves().toArray());
+    var changedPart = avocado.testCase.subset.create(history, this._test, "changed",  this.changedLeaves().toArray());
+    var s = avocado.activeSentence.create([totalPart, ". ", passedPart, ", ", failedPart, ". ", changedPart]);
     //s._aaa_hack_minimumExtent = pt(1000, 200);
     //s._aaa_hack_style = "font-size: 48px";
     s._aaa_hack_desiredScale = 15;
@@ -470,7 +461,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
 
   add.method('testToBeRun', function () { return this._entries[0]; }, {category: ['accessing']});
   
-  add.creator('namingScheme', avocado.testCase.namingScheme, {category: ['naming']});
+  add.data('namingScheme', avocado.testCase.namingScheme, {category: ['naming']});
 
   add.method('nameWithinEnclosingObject', function (enclosingObject) {
     var n = this.testToBeRun().nameWithinEnclosingObject(enclosingObject);
@@ -487,7 +478,6 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
     
     var table = avocado.table.contents.createWithRows(rows);
     table._desiredSpaceToScaleTo = pt(800, null); // aaa hack; I think what I need is some way to combine a Table Layout with an Auto-Scaling Layout
-    table.updateStyleOfMorph = function(morph) { morph.setFill(Color.blue); }; // aaa ugh
     return table;
   }, {category: ['contents']});
   
@@ -496,7 +486,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
       var displayOptions = Object.newChildOf(avocado.testCase.resultHistory.displayOptions, this);
       var resultNumberHolder = avocado.accessors.forMethods(displayOptions, 'numberOfEntriesBeingShown');
       var daysNumberHolder   = avocado.accessors.forMethods(displayOptions, 'numberOfDaysBeingShown');
-      this._titleSentence = avocado.activeSentence.create(["You're viewing the last ", resultNumberHolder, " results, which span ", daysNumberHolder, " days"]);
+      this._titleSentence = avocado.activeSentence.create(["You're viewing the last ", resultNumberHolder, " results, which span ", daysNumberHolder, " days."]);
     }
     return this._titleSentence;
   }, {category: ['user interface']});
@@ -571,9 +561,10 @@ thisModule.addSlots(avocado.testCase.resultHistory.interestingEntriesProto, func
   add.method('titleModel', function () {
     if (! this._titleSentence) {
       this._titleSentence = avocado.activeSentence.create([
-        function() { return this._subset ? this._subset.tests().size() : "No"; }.bind(this),
-        " tests ",
-        function() { return this._subset ? this._subset.fullDescription() : "selected"; }.bind(this)
+        function() { return this._subset ? this._subset.tests().size() : ""; }.bind(this),
+        function() { return this._subset ? " tests " : ""; }.bind(this),
+        function() { return this._subset ? this._subset.fullDescription() : ""; }.bind(this),
+        function() { return this._subset ? "." : ""; }.bind(this)
       ]);
     }
     return this._titleSentence;
@@ -675,7 +666,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
 
   add.method('inspect', function () { return this.toString(); }, {category: ['printing']});
 
-  add.creator('namingScheme', avocado.testCase.namingScheme, {category: ['naming']});
+  add.data('namingScheme', avocado.testCase.namingScheme, {category: ['naming']});
 
   add.method('nameWithinEnclosingObject', function (enclosingObject) {
     var n = this.name();
@@ -810,6 +801,19 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     });
     return this;
   }, {category: ['making up fake results']});
+  
+  add.method('makeUpARandomResultHistory', function (numberOfRuns, newPassFrequency, newFailFrequency) {
+    this.setExtraDescription("Trial " + 0);
+    var suites = [this];
+    var suite = this;
+    for (var i = 1; i <= numberOfRuns - 1; ++i) {
+      suite = suite.copy().randomlyChangeSomeResults(newPassFrequency, newFailFrequency);
+      suite.setExtraDescription("Trial " + i);
+      suites.push(suite);
+    }
+    return Object.newChildOf(avocado.testCase.resultHistory, suites);
+  }, {category: ['making up fake results']});
+  
   
 });
 

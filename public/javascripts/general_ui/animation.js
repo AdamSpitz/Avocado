@@ -54,9 +54,18 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
         var initialScale = this.overallScale(w);
         
         if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { owner.placeholderForMorph(this).setScale(this.getScale()).layout().putInPlaceOfOriginalMorph(); }
+        
         this.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore(); // aaa - not sure this is a good idea, but maybe; it makes sure that a mirror will be updated as soon as it's visible, for one thing.
+        
+        if (this._previousLayoutModes) {
+          this.remove();
+          this.setLayoutModes(this._previousLayoutModes);
+          this.forceLayoutRejiggering();
+        }
+        
         w.addMorphAt(this, initialLoc);
         this.setScale(initialScale);
+        
       }
     } else {
       if (owner && this.doIOrMyOwnersWantToLeaveAPlaceholderWhenRemovingMe()) { owner.placeholderForMorph(this).layout().putInPlaceOfOriginalMorph(); }

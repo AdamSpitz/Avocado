@@ -161,6 +161,17 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     
     takeOff();
   }, {category: ['navigation']});
+  
+  add.method('fixFonts', function () {
+    // OK, this is kinda ridiculous, but removing and re-adding the rawNode seems to fix that
+    // font-scaling problem where the text would look very strange. Of course, this means
+    // that the fonts are constantly adjusting themselves as you zoom in and out, which
+    // is a bit distracting, but... well, it's better than the fonts *not* adjusting.
+    var worldNode = this.rawNode;
+    var parentNode = worldNode.parentNode;
+    parentNode.removeChild(worldNode);
+    parentNode.appendChild(worldNode);
+  }, {category: ['fonts']});
 
 });
 
@@ -230,14 +241,7 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     world._scheduledZoomRefresh = setTimeout(function() {
       world._scheduledZoomRefresh = undefined;
       world.refreshContentIfOnScreenOfMeAndSubmorphs();
-      
-      // OK, this is kinda ridiculous, but removing and re-adding the rawNode seems to fix that
-      // font-scaling problem where the text would look very strange. Of course, this means
-      // that the fonts are constantly adjusting themselves as you zoom in and out, which
-      // is a bit distracting, but... well, it's better than the fonts *not* adjusting.
-      var parentNode = world.rawNode.parentNode;
-      parentNode.removeChild(world.rawNode);
-      parentNode.appendChild(world.rawNode);
+      world.fixFonts();
     }, 50);
   });
 

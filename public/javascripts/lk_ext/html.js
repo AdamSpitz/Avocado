@@ -24,6 +24,11 @@ thisModule.addSlots(avocado.html, function(add) {
     this._contents = contents;
   }, {category: ['creating']});
   
+  add.method('setInitialBounds', function (b) {
+    this._initialBounds = b;
+    return this;
+  }, {category: ['user interface']});
+  
   add.method('setMaxExtent', function (e) {
     this._maxExtent = e;
     return this;
@@ -122,7 +127,7 @@ thisModule.addSlots(avocado.html.layout, function(add) {
     if (morph.horizontalLayoutMode === avocado.LayoutModes.Rigid && morph.verticalLayoutMode === avocado.LayoutModes.ShrinkWrap) {
       // aaa - maybe nothing is necessary here?
     } else {
-      console.log("aaa finish implementing justSetLayoutModes for HTML morphs");
+      //console.log("aaa finish implementing justSetLayoutModes for HTML morphs");
     }
   }, {category: ['layout']});
   

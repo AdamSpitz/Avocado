@@ -1601,6 +1601,8 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
   });
 
   add.method('testIndexableCreatorSlots', function () {
+    if (avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) { return; } // feature is turned off, can't be tested
+      
     var a = [], aMir = reflect(a);
     var oA = {}, oB = {}, oC = {}, oD = {}, oE = {}, oX = {};
     a.pushAndAdjustCreatorSlots(oX);

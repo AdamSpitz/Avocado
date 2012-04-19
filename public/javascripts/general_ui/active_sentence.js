@@ -61,7 +61,7 @@ thisModule.addSlots(avocado.activeSentence, function(add) {
   }, {category: ['HTML']});
   
   add.method('newMorph', function () {
-    var htmlMorph = avocado.html.newMorphWithBounds(new Rectangle(0, 0, 300, 200)).setModel(this).applyStyle(this.htmlMorphStyle);
+    var htmlMorph = avocado.html.newMorphWithBounds(new Rectangle(0, 0, 400, 200)).setModel(this).applyStyle(this.htmlMorphStyle);
     this.setContentsOfHTMLMorph(htmlMorph);
     return htmlMorph;
   }, {category: ['user interface']});

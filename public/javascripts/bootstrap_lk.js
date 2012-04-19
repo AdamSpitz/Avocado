@@ -36,10 +36,17 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
     var whichOne;
     if (window.isInCodeOrganizingMode) { whichOne = "lk_programming_environment/code_organizer";          }
     else if (window.isInRunMode)       { whichOne = "lk_programming_environment/runtime_environment";     }
-    else                               { whichOne = "lk_programming_environment/programming_environment"; }
+    else                               { whichOne = "lk_programming_environment/programming_environment"; window.isInProgrammingEnvironmentMode = true; }
     
     avocado.transporter.fileInIfWanted(whichOne, function() {
-      callWhenDone();
+      var topLevelEnvironment;
+      if (window.isInCodeOrganizingMode) { topLevelEnvironment = jsQuiche; }
+      else if (window.isInRunMode)       { topLevelEnvironment = avocado.runtime; }
+      else                               { topLevelEnvironment = avocado.livelyKernelUI.programmingEnvironment; }
+
+      topLevelEnvironment.loadAsTopLevelEnvironment();
+      
+      if (callWhenDone) { callWhenDone(); }
     });
   }, {category: ['bootstrapping']});
 

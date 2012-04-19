@@ -50,7 +50,8 @@ thisModule.addSlots(avocado.placeholder.layout, function(add) {
     this._placeholderMorph.setShape(originalMorph.getShape().copy());
 		this._placeholderMorph.applyStyle(originalMorph.makeStyleSpec());
     this._placeholderMorph.applyStyle(avocado.placeholder.defaultStyle);
-    this._labelMorph.setText(originalMorph.inspect());
+    this._labelMorph.setText(originalMorph.nameUsingContextualInfoIfPossible(this._placeholderMorph));
+    this._labelMorph.updateStyle();
     this._placeholderMorph.addMorphCentered(this._labelMorph);
     this._placeholderMorph.minimumExtentMayHaveChanged();
   }, {category: ['updating']});
@@ -61,6 +62,20 @@ thisModule.addSlots(avocado.placeholder.layout, function(add) {
   add.method('isAffectedBy', function (operation, morph) {
     return true;
   }, {category: ['styles']});
+  
+  add.method('morphDescription', function (morph) {
+    return "a placeholder";
+  }, {category: ['printing']});
+  
+  add.method('minimumExtent', function () {
+    var h = this._placeholderMorph.horizontalLayoutMode;
+    var v = this._placeholderMorph.  verticalLayoutMode;
+    var e = this._placeholderMorph.getExtent();
+    if (/* h === avocado.LayoutModes.ShrinkWrap || */ h === avocado.LayoutModes.SpaceFill) { e = e.withX(this._labelMorph.getExtent().x + 10); }
+    if (/* v === avocado.LayoutModes.ShrinkWrap || */ v === avocado.LayoutModes.SpaceFill) { e = e.withY(this._labelMorph.getExtent().y + 10); }
+    this._placeholderMorph._cachedMinimumExtent = e;
+    return e.scaleBy(this._placeholderMorph.getScale());
+  }, {category: ['layout']});
   
   add.method('originalMorph', function () {
     var m = typeof(this._originalMorphOrFn) === 'function' ? this._originalMorphOrFn() : this._originalMorphOrFn;

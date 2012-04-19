@@ -52,6 +52,11 @@ thisModule.addSlots(Point.prototype, function(add) {
   add.method('approximatelyEqualsPt', function (other, maxDifference) {
     return Math.abs(this.x - other.x) < maxDifference && Math.abs(this.y - other.y) < maxDifference;
   });
+  
+  add.method('toString', function () {
+    // Overriding the one in LK, because I want Points to be able to contain things other than numbers.
+    return ["pt(", this.x, ", ", this.y, ")"].join('');
+	});
 
   add.method('storeString', function () {
     return ['new Point(', this.x, ', ', this.y, ')'].join('');

@@ -5,24 +5,6 @@ requires('avocado_lib');
 }, function(thisModule) {
 
   
-thisModule.addSlots(modules['lk_programming_environment/runtime_environment'], function(add) {
-
-  add.method('postFileIn', function () {
-    avocado.applicationList.addApplication(avocado.runtime);
-  });
-  
-});
-
-
-thisModule.addSlots(avocado.livelyKernelUI, function(add) {
-
-  add.data('isZoomingEnabled', true, {category: ['zooming']});
-
-  add.data('debugMode', false, {category: ['debug mode']});
-  
-});
-
-
 thisModule.addSlots(avocado, function(add) {
 
   add.creator('runtime', {}, {category: ['runtime environment']});
@@ -32,6 +14,12 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.runtime, function(add) {
 
+  add.method('loadAsTopLevelEnvironment', function () {
+    avocado.livelyKernelUI.isZoomingEnabled = true;
+    avocado.livelyKernelUI.debugMode = false;
+    avocado.applicationList.addApplication(this);
+  });
+  
   add.method('worldName', function () { return "Avocado"; }, {category: ['printing']});
 
   add.data('isReflectionEnabled', false, {category: ['enabling reflection']});

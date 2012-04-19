@@ -6,18 +6,29 @@ requires('general_ui/basic_morph_mixins');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.creator('LayoutModes', {}, {category: ['avocado', 'lively kernel extensions']}, {comment: 'Does LK already have a mechanism for this? Look at that LayoutManager thing.'});
+  add.creator('LayoutModes', {}, {category: ['avocado', 'user interface']});
 
 });
 
 
 thisModule.addSlots(avocado.LayoutModes, function(add) {
 
-  add.creator('Rigid', {});
+  add.creator('Abstract', {});
 
-  add.creator('SpaceFill', {});
+  add.creator('Rigid', Object.create(avocado.LayoutModes.Abstract));
 
-  add.creator('ShrinkWrap', {});
+  add.creator('SpaceFill', Object.create(avocado.LayoutModes.Abstract));
+
+  add.creator('ShrinkWrap', Object.create(avocado.LayoutModes.Abstract));
+
+});
+
+
+thisModule.addSlots(avocado.LayoutModes.Abstract, function(add) {
+
+  add.method('toString', function () {
+    return this.name;
+  });
 
 });
 
@@ -47,7 +58,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('minimumExtent', function () {
     if (this._layout && this._layout.minimumExtent) {
-      return this._layout.minimumExtent();      
+      return this._layout.minimumExtent(this);
     } else {
       // aaa - meh, don't bother caching yet, I'm scared that I haven't done this right
       var e = this.getExtent();
@@ -78,8 +89,9 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
       if (this.  verticalLayoutMode === avocado.LayoutModes.SpaceFill) { newExtent = newExtent.withY(availableSpaceToUse.y); }
       
       // aaa - not sure this is right, but I want it for HTML morphs
-      if (this._cachedMinimumExtent && this.horizontalLayoutMode === avocado.LayoutModes.ShrinkWrap) { newExtent = newExtent.withX(this._cachedMinimumExtent.x); }
-      if (this._cachedMinimumExtent && this.  verticalLayoutMode === avocado.LayoutModes.ShrinkWrap) { newExtent = newExtent.withY(this._cachedMinimumExtent.y); }
+      var minExtent = this._cachedMinimumExtent;
+      if (minExtent && this.horizontalLayoutMode === avocado.LayoutModes.ShrinkWrap) { newExtent = newExtent.withX(minExtent.x); }
+      if (minExtent && this.  verticalLayoutMode === avocado.LayoutModes.ShrinkWrap) { newExtent = newExtent.withY(minExtent.y); }
       
       if (! oldExtent.eqPt(newExtent)) { this.setExtent(newExtent); }
 
@@ -215,10 +227,25 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     return this;
   }, {category: ['layout']});
 
+  add.method('beRigid', function () {
+    this.horizontalLayoutMode = avocado.LayoutModes.Rigid;
+    this.  verticalLayoutMode = avocado.LayoutModes.Rigid;
+    return this;
+  }, {category: ['layout']});
+  
+  add.method('layoutModes', function () {
+    // aaa make the morph itself store them as a Point?
+    return pt(this.horizontalLayoutMode, this.verticalLayoutMode);
+  }, {category: ['layout']});
+
   add.method('setLayoutModes', function (layoutModes) {
-    ["horizontalLayoutMode", "verticalLayoutMode"].forEach(function(n) {
-      if (layoutModes[n]) { this[n] = layoutModes[n]; }
-    }.bind(this));
+    if (layoutModes.horizontalLayoutMode) { this.horizontalLayoutMode = layoutModes.horizontalLayoutMode; }
+    if (layoutModes.  verticalLayoutMode) { this.  verticalLayoutMode = layoutModes.  verticalLayoutMode; }
+    
+    // This just seems cleaner. Maybe get rid of the old big wordy way.
+    if (layoutModes.x)                    { this.horizontalLayoutMode = layoutModes.x;                    }
+    if (layoutModes.y)                    { this.  verticalLayoutMode = layoutModes.y;                    }
+    
     if (this._layout && this._layout.justSetLayoutModes) { this._layout.justSetLayoutModes(this); }
     return this;
   }, {category: ['layout']});

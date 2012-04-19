@@ -1,26 +1,11 @@
 avocado.transporter.module.create('programming_environment/code_organizer', function(requires) {
 
 requires('avocado_lib');
-requires('lk_ext/lk_ext');
 requires('programming_environment/categorize_libraries');
 requires('programming_environment/mirror_morph');
 requires('programming_environment/searching');
 
 }, function(thisModule) {
-
-
-thisModule.addSlots(modules['programming_environment/code_organizer'], function(add) {
-
-  add.method('postFileIn', function () {
-    avocado.categorizeGlobals();
-
-    // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
-    reflect(window).categorizeUncategorizedSlotsAlphabetically();
-    
-    avocado.applicationList.addApplication(jsQuiche);
-  });
-
-});
 
 
 thisModule.addSlots(window, function(add) {
@@ -32,6 +17,15 @@ thisModule.addSlots(window, function(add) {
 
 thisModule.addSlots(jsQuiche, function(add) {
 
+  add.method('loadAsTopLevelEnvironment', function () {
+    avocado.categorizeGlobals();
+
+    // make the window's mirror morph less unwieldy, since people tend to keep lots of stuff there
+    reflect(window).categorizeUncategorizedSlotsAlphabetically();
+    
+    avocado.applicationList.addApplication(this);
+  });
+  
   add.method('worldName', function () { return "JSQuiche"; }, {category: ['printing']});
 
   add.data('isReflectionEnabled', false, {category: ['enabling reflection']});

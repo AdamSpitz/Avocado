@@ -23,8 +23,10 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
   add.method('toString', function () {
     var t = this.findTitleLabel();
-    if (t) { return t.getText(); }
+    if (t && t.getText) { return t.getText(); }
     if (this._model) { return this._model.toString(); }
+    if (this.typeName) { return "a " + this.typeName; }
+    if (this._layout && this._layout.morphDescription) { return this._layout.morphDescription(this); }
     return ""; // the default behaviour is annoying - makes morph mirrors very wide
   }, {category: ['printing']});
   	

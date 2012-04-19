@@ -259,6 +259,22 @@ TextMorph.addMethods({
     this.textStyle = txt.style;
     this.composeAfterEdits();
     return this;
+  },
+  
+  updateStyle: function($super) {
+    $super();
+    if (avocado.shouldHideTextSmallerThan) {
+      var overallFontSize = this.getFontSize() * this.overallScale();
+
+      var tooSmall = overallFontSize < avocado.shouldHideTextSmallerThan;
+      if (tooSmall && !this._textColorToUseWhenNotHidden) {
+        this._textColorToUseWhenNotHidden = this.getTextColor();
+        this.setTextColor(null);
+      } else if (!tooSmall && this._textColorToUseWhenNotHidden) {
+        this.setTextColor(this._textColorToUseWhenNotHidden);
+        delete this._textColorToUseWhenNotHidden;
+      }
+    }
   }
 });
     

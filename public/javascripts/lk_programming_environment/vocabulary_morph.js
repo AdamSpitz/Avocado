@@ -46,7 +46,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype, function(add) {
     
     var mirs = this.mirror().meAndAncestors().toArray();
     var mirrorsPanel = this._mirrorsPanel;
-    var world = WorldMorph.current();
+    var world = avocado.ui.currentWorld();
     this._mirrorsPanel.layout().setCells(mirs.map(function(mir) { return mirrorsPanel.placeholderForMorph(world.morphFor(mir)); }));
     
     this._expander = new avocado.ExpanderMorph(this);
@@ -128,7 +128,7 @@ thisModule.addSlots(avocado.vocabulary.Morph.prototype.defaultStyle, function(ad
 
   add.data('openForDragAndDrop', false);
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.6)), new lively.paint.Stop(1, new Color(0.8, 0.8, 0.4980392156862745))], lively.paint.LinearGradient.NorthSouth));
+  add.data('fillBase', new Color(0.8, 0.8, 0.5));
 
   add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 2, y: 2}}'});
 

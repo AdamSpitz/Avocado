@@ -3,6 +3,7 @@ avocado.transporter.module.create('general_ui/table_layout', function(requires) 
 requires('reflection/reflection');
 requires('core/table');
 requires('general_ui/basic_morph_mixins');
+requires('general_ui/layout');
 
 }, function(thisModule) {
 
@@ -204,6 +205,7 @@ thisModule.addSlots(avocado.table.layout, function(add) {
       return;
     }
     
+    // console.log("Running setSubmorphsFromTableContent on " + (this._tableMorph.toString() || avocado.identityHashFor(this._tableMorph)));
     this._tableMorph.replaceMorphs(this._tableMorph.submorphsParticipatingInLayout(), this.tableContent().elements());
   }, {category: ['adding and removing']});
 
@@ -262,17 +264,28 @@ thisModule.addSlots(avocado.table.layout, function(add) {
   }, {category: ['layout']});
 
   add.method('adjustForRigidity', function (e) {
-    var currentExtent = this.getExtent();
-    var layoutModes = this.layoutModes();
-    return pt(layoutModes.x === avocado.LayoutModes.Rigid ? Math.max(e.x, currentExtent.x) : e.x,
-              layoutModes.y === avocado.LayoutModes.Rigid ? Math.max(e.y, currentExtent.y) : e.y);
+    // Code uglified just a bit to avoid creating unnecessary Point objects; it's turning out to be significant. -- Adam
+    var rigidX = this._tableMorph.horizontalLayoutMode === avocado.LayoutModes.Rigid;
+    var rigidY = this._tableMorph.  verticalLayoutMode === avocado.LayoutModes.Rigid;
+    if (rigidX || rigidY) {
+      var currentExtent = this.getExtent();
+      return pt(rigidX ? Math.max(e.x, currentExtent.x) : e.x,
+                rigidY ? Math.max(e.y, currentExtent.y) : e.y);
+    } else {
+      return e;
+    }
   }, {category: ['layout']});
 
   add.method('setDesiredSpace', function (space) {
     this._desiredSpaceToScaleTo = space;
     return this;
   }, {category: ['layout']});
-  
+
+  add.method('doNotCenter', function () {
+    this._shouldNotCenterSideways = true;
+    return this;
+  }, {category: ['layout']});
+
   add.method('currentOrDesiredScaleGivenExtent', function (e) {
     var desiredSpace = this._desiredSpaceToScaleTo;
     if (desiredSpace) {
@@ -289,7 +302,8 @@ thisModule.addSlots(avocado.table.layout, function(add) {
 
   add.method('internalMinimumExtent', function () {
     if (! this._tableMorph._cachedMinimumExtent) {
-      this._tableMorph._cachedMinimumExtent = this.calculateOverallMinimumExtent(this.calculateMinimumExtentsForRowsAndColumns());
+      var layoutInfoForRowsAndColumns = this.calculateMinimumExtentsForRowsAndColumns();
+      this._tableMorph._cachedMinimumExtent = this.calculateOverallMinimumExtent(layoutInfoForRowsAndColumns);
     }
     return this._tableMorph._cachedMinimumExtent;
   }, {category: ['layout', 'minimum extent']});
@@ -459,14 +473,24 @@ thisModule.addSlots(avocado.table.layout, function(add) {
       line.each(function(m, j) {
         var actualsForThisMorph = direction.point(direction.sideways.coord(actualCoordsAndSizes)[j], direction.coord(actualCoordsAndSizes)[i]);
         var availableSpaceToPassOnToThisChild = pt(actualsForThisMorph.x.space, actualsForThisMorph.y.space);
-
+        
+        if (this._overrideSubmorphLayoutModes) {
+          if (!m._previousLayoutModes) { m._previousLayoutModes = m.layoutModes(); }
+          m.setLayoutModes(this._overrideSubmorphLayoutModes);
+        }
+        
         var mScaledExtent = m.rejiggerTheLayout(availableSpaceToPassOnToThisChild);
         if (this.shouldPrintDebugInfo()) { console.log("mScaledExtent is " + mScaledExtent); }
-        var unusedSidewaysSpace = direction.sideways.coord(availableSpaceToPassOnToThisChild) - direction.sideways.coord(mScaledExtent);
         
         // Uglified slightly to avoid creating the Point object; it's actually getting significant. -- Adam
         var f = direction         .coord(actualsForThisMorph).coordinate;
-        var s = direction.sideways.coord(actualsForThisMorph).coordinate + (unusedSidewaysSpace / 2);
+        var s = direction.sideways.coord(actualsForThisMorph).coordinate;
+        
+        if (!this._shouldNotCenterSideways) {
+          var unusedSidewaysSpace = direction.sideways.coord(availableSpaceToPassOnToThisChild) - direction.sideways.coord(mScaledExtent);
+          s = s + (unusedSidewaysSpace / 2);
+        }
+        
         var x, y;
         if (direction === avocado.directions.horizontal) {
           x = f; y = s;

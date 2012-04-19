@@ -94,18 +94,21 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
     m._headerRow = avocado.table.createSpaceFillingRowMorph([m.findOrCreateTitleLabel()], avocado.treeNode.headerRowPadding).enableEvents(); // aaa DO NOT enableEvents(), not sure what to do, but needed to make links work
     m._immediateContentsMorph = avocado.ui.currentWorld().morphFor(this.immediateContents()).setFill(null);
     m._immediateContentsMorph.doIWantToLeaveAPlaceholderWhenRemoving = function (m) { return true; };
+    m._immediateContentsMorph.layout()._overrideSubmorphLayoutModes = pt(null, avocado.LayoutModes.SpaceFill);
     
     this._interestingTestsModel  = this.createInterestingEntriesList();
     m._interestingTestsContainer = avocado.ui.currentWorld().morphFor(this._interestingTestsModel);
-    m._interestingTestsHeaderRow = avocado.table.createSpaceFillingRowMorph([m._interestingTestsContainer.findOrCreateTitleLabel()], avocado.treeNode.headerRowPadding).enableEvents(); // aaa DO NOT enableEvents(), not sure what to do, but needed to make links work
+    m._interestingTestsHeaderRow = avocado.table.createSpaceFillingRowMorph([m._interestingTestsContainer.findOrCreateTitleLabel()], Object.extend(Object.create(avocado.treeNode.headerRowPadding), {top: 15})).enableEvents(); // aaa DO NOT enableEvents(), not sure what to do, but needed to make links work
     
-    var selectedTests = avocado.groupOfSimilarObjects.create([]).beVertical();
+    var selectedTests = avocado.groupOfSimilarObjects.create([]); // .beVertical();
     this._reallyInterestingTestsModel   = this.createInterestingEntriesList().setSubset(avocado.testCase.subset.create(this, null, "selected", avocado.enumerator.create(selectedTests, 'eachObject')));
     m._reallyInterestingTestsContainer  = avocado.ui.currentWorld().morphFor(selectedTests);
+    m._reallyInterestingTestsContainer.layout().doNotCenter();
+    //m._reallyInterestingTestsContainer.layout()._overrideSubmorphLayoutModes = pt(avocado.LayoutModes.SpaceFill, avocado.LayoutModes.SpaceFill);
     m._reallyInterestingTestsTitleLabel = this._reallyInterestingTestsModel.titleModel().newMorph();
-    m._reallyInterestingTestsHeaderRow  = avocado.table.createSpaceFillingRowMorph([m._reallyInterestingTestsTitleLabel], avocado.treeNode.headerRowPadding).enableEvents(); // aaa DO NOT enableEvents(), not sure what to do, but needed to make links work
+    m._reallyInterestingTestsHeaderRow  = avocado.table.createSpaceFillingRowMorph([m._reallyInterestingTestsTitleLabel], Object.extend(Object.create(avocado.treeNode.headerRowPadding), {top: 15})).enableEvents(); // aaa DO NOT enableEvents(), not sure what to do, but needed to make links work
     
-    m._layout.setCells([m._headerRow, m._immediateContentsMorph, m._interestingTestsHeaderRow, ScrollPane.containing(m._interestingTestsContainer, pt(800, 400)), m._reallyInterestingTestsHeaderRow, m._reallyInterestingTestsContainer]);
+    m._layout.setCells([m._headerRow, m._immediateContentsMorph, m._interestingTestsHeaderRow, ScrollPane.containing(m._interestingTestsContainer, pt(800, 400)), /* doesn't actually say anything useful yet: m._reallyInterestingTestsHeaderRow, */ ScrollPane.containing(m._reallyInterestingTestsContainer, pt(800, 400))]);
     
     return m;
   }, {category: ['user interface']});
@@ -115,7 +118,8 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   add.method('showInterestingSubset', function (evt, subset) {
     var world = avocado.ui.worldFor(evt);
     var entries = subset.tests().toArray();
-    var interestingEntriesMorph = world.morphFor(this)._interestingTestsContainer;
+    var historyMorph = world.morphFor(this);
+    var interestingEntriesMorph = historyMorph._interestingTestsContainer;
     avocado.callbackWaiter.on(function(createCallbackForPuttingThisOneBack) {
       interestingEntriesMorph.submorphEnumerator().toArray().forEach(function(previouslyInterestingMorph) {
         if (! entries.include(previouslyInterestingMorph._model)) {
@@ -124,11 +128,26 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
         }
       });
     }, function() {
+      var entryMorphs = entries.map(function(entry) { return world.morphFor(entry); });
+      
+      historyMorph._immediateContentsMorph.layoutRejiggeringBatcherUpper().runDuring(function() {
+        historyMorph.layout().submorphReplacementBatcherUpper().runDuring(function() {
+          entryMorphs.forEach(function(entryMorph) {
+            // necessary so that the pose can know the correct final extent of the entryMorph when calculating positions
+            entryMorph.becomeDirectSubmorphOfWorld(world);
+            
+            // aaa - hack to make the really-small-text disappear as desired
+            var p = entryMorph._placeholderMorphIJustCameFrom;
+            if (p) { p.refreshContentOfMeAndSubmorphs(); }
+          });
+        });
+      });
+      
       interestingEntriesMorph._model.setSubset(subset);
       var pose = avocado.poses.list.create("interesting entries").setPoserModels(entries).setPadding(pt(10, 10)).setDesiredPoserScale(1);
       pose.setDirection(avocado.directions.horizontal).setMaxExtent(function() { return interestingEntriesMorph.getExtent().withY(null); });
       pose.doNotAnticipateAtStart().doNotWiggleAtEnd().whenDoneSetExtentToEncompassWholePose();
-      pose.recreateInContainer(interestingEntriesMorph, pt(0, 0));
+      pose.recreateInContainer(interestingEntriesMorph, pt(0, 0), function() { world.fixFonts(); });
       
       interestingEntriesMorph.findOrCreateTitleLabel().refreshContent();
     }, "putting back the uninteresting entries");
@@ -139,7 +158,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
 
 thisModule.addSlots(avocado.testCase.resultHistory.defaultMorphStyle, function(add) {
 
-  add.data('fill', null);
+  add.data('fillBase', new Color(0.8, 0.8, 0.8));
 
 });
 
