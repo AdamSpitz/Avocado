@@ -1160,7 +1160,7 @@ BoxMorph.subclass('TextMorph', {
 	
 	beLabel: function(styleMods) {
 		// Note default style is applied first, then any additional specified
-		this.applyStyleDeferred({borderWidth: 0, fill: null, wrapStyle: thisModule.WrapStyle.Shrink, fontSize: 12, padding: Rectangle.inset(0)});
+		this.applyStyleDeferred({borderWidth: 0, borderColor: null, fill: null, wrapStyle: thisModule.WrapStyle.Shrink, fontSize: 12, padding: Rectangle.inset(0)});
 		if (styleMods) this.applyStyleDeferred(styleMods);
 		this.ignoreEvents();
 		// this.isAccepting = false;

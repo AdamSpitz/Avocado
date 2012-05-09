@@ -41,6 +41,17 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     if (this._shouldDisappearAfterCommandIsFinished) { this.remove(); }
   }, {category: ['drag and drop']});
   
+  add.method('pullMorphsCloser', function (morphsToPull, titleContent, callWhenDone) {
+    var detailsMorph = this._morphForViewingThingsInMoreDetail || this.world() || avocado.ui.currentWorld();
+    var detailsMorphLayout = detailsMorph.layout();
+    if (detailsMorphLayout && typeof(detailsMorphLayout.showMorphs) === 'function') {
+      detailsMorphLayout.showMorphs(detailsMorph, morphsToPull, titleContent, null, callWhenDone);
+    } else {
+      var pm = detailsMorph.poseManager();
+      pm.assumePose(pm.cleaningUpPose(morphsToPull), null, callWhenDone);
+    }
+  }, {category: ['pulling']});
+  
 });
 
 

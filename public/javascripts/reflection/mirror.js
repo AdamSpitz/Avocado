@@ -1036,7 +1036,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
     var w = evt.hand.world();
     var parentFunction = function(o) { return o.mirror().hasParent() ? w.morphFor(o.mirror().parent()) : null; };
     var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.morphFor(reflect(child)); }); };
-    var pose = Object.newChildOf(avocado.poses.tree, this.inspect() + " inheritance tree", w.morphFor(this), parentFunction, childrenFunction);
+    var pose = Object.newChildOf(avocado.poses.tree, this.inspect() + " inheritance tree", [w.morphFor(this)], parentFunction, childrenFunction);
     avocado.ui.poseManager(evt).assumePose(pose, undefined, callWhenDone);
   }, {category: ['user interface', 'commands']});
 

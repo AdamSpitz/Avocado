@@ -186,8 +186,8 @@ var Config = {
     useTransformAPI: (!UserAgent.isOpera) && UserAgent.usableTransformAPI, 
 
     // Firefox 2 has known problems with getTransformToElement, detect it
-    useGetTransformToElement: !(UserAgent.isOpera ||
-	UserAgent.fireFoxVersion && (UserAgent.fireFoxVersion[0] == '2' || UserAgent.fireFoxVersion[0] == '3')),
+    useGetTransformToElement: false && !(UserAgent.isOpera ||
+	UserAgent.fireFoxVersion && (UserAgent.fireFoxVersion[0] == '2' || UserAgent.fireFoxVersion[0] == '3')),  // getTransformToElement seems really slow -- Adam
 
     // Enable drop shadows for objects (does not work well in most browsers)
     useDropShadow: UserAgent.usableDropShadow,

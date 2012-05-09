@@ -6215,7 +6215,7 @@ lookTouchy: function(morph) {
     
     // Experimenting with a menu idea that I learned from Richard Kulisz. -- Adam
     // http://www.c2.com/cgi/wiki?WheelMenu
-    if (avocado.ui.shouldEnableMouseFreeMenuExperiment) {
+    if (avocado.ui && avocado.ui.shouldEnableMouseFreeMenuExperiment) {
       if (evt.isAltDown()) {
         if (evt.getKeyCode() === 18) { // I think this means no other key is pressed, just Alt -- Adam
           evt.mousePoint = this.getPosition();

@@ -554,7 +554,7 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, fun
   });
 
   add.method('alsoBuildListsOfUsedIdentifiers', function () {
-    this.shouldBuildListsOfUsedIdentifiers = true;
+    this._shouldBuildListsOfUsedIdentifiers = true;
     return this;
   });
 
@@ -613,7 +613,7 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, fun
       this.makeCreatorSlotIfNecessary(contents, howDidWeGetHere, shouldExplicitlySetIt);
     }
     
-    if (this.shouldBuildListsOfUsedIdentifiers) {
+    if (this._shouldBuildListsOfUsedIdentifiers) {
       // Remember identifiers so we can search for "senders".
       avocado.senders.rememberIdentifiersUsedBy(contents);
     }
@@ -623,7 +623,8 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, fun
     if (! this.moduleToAssignSlotsTo) { return; }
     if (slotName === '__proto__') { return; }
     
-    var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
+    var holderAnno = avocado.annotator.annotationOf(holder);
+    var slotAnno = holderAnno.slotAnnotation(slotName);
     var module;
     if (typeof(this.moduleToAssignSlotsTo) === 'function') {
       module = this.moduleToAssignSlotsTo(holder, slotName, contents, slotAnno);

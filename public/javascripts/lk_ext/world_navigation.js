@@ -171,7 +171,19 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     var parentNode = worldNode.parentNode;
     parentNode.removeChild(worldNode);
     parentNode.appendChild(worldNode);
-  }, {category: ['fonts']});
+  }, {category: ['refreshing']});
+  
+  add.method('scheduleRefresh', function () {
+    // Need to refresh, but don't want to do it too often - it's unnecessary and noticeably slows things down.
+    // So unschedule the previously-scheduled refresh, since we're about to schedule a new one.
+    var world = this;
+    if (typeof(world._scheduledZoomRefresh) !== 'undefined') { clearTimeout(world._scheduledZoomRefresh); }
+    world._scheduledZoomRefresh = setTimeout(function() {
+      world._scheduledZoomRefresh = undefined;
+      world.refreshContentIfOnScreenOfMeAndSubmorphs();
+      world.fixFonts();
+    }, 50);
+  }, {category: ['refreshing']});
 
 });
 
@@ -234,15 +246,7 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
     world.eachSubmorph(function(m) {
       if (m) { m.justScaledWorld(s); }
     });
-    
-    // Need to refresh, but don't want to do it too often - it's unnecessary and noticeably slows things down.
-    // So unschedule the previously-scheduled refresh, since we're about to schedule a new one.
-    if (typeof(world._scheduledZoomRefresh) !== 'undefined') { clearTimeout(world._scheduledZoomRefresh); }
-    world._scheduledZoomRefresh = setTimeout(function() {
-      world._scheduledZoomRefresh = undefined;
-      world.refreshContentIfOnScreenOfMeAndSubmorphs();
-      world.fixFonts();
-    }, 50);
+    world.scheduleRefresh();
   });
 
   add.method('isOnScreen', function () {

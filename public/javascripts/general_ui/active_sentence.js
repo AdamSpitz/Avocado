@@ -24,18 +24,35 @@ thisModule.addSlots(avocado.activeSentence, function(add) {
     this.setParts(parts);
   }, {category: ['creating']});
   
+  add.method('parts', function () {
+    if (typeof(this._parts) === 'function') {
+      return this._parts();
+    } else {
+      return this._parts;
+    }
+  }, {category: ['accessing']});
+  
   add.method('setParts', function (parts) {
     this._parts = parts;
     return this;
   }, {category: ['accessing']});
+  
+  add.method('content', function () {
+    return this._content;
+  }, {category: ['accessing']});
+  
+  add.method('setContent', function (content) {
+    this._content = content;
+    return this;
+  }, {category: ['accessing']});
 
   add.method('createHTMLNodesIn', function (parentNode) {
-    this._parts.forEach(function(part, i) {
+    this.parts().forEach(function(part, i) {
       var t = typeof(part);
       var partString;
       var isActive = false;
       if (t === 'function') {
-        partString = part();
+        partString = part.call(this);
       } else if (t === 'string') {
         partString = part;
       } else {
@@ -61,8 +78,10 @@ thisModule.addSlots(avocado.activeSentence, function(add) {
   }, {category: ['HTML']});
   
   add.method('newMorph', function () {
-    var htmlMorph = avocado.html.newMorphWithBounds(new Rectangle(0, 0, 400, 200)).setModel(this).applyStyle(this.htmlMorphStyle);
+    var htmlMorph = avocado.html.newMorphWithBounds(new Rectangle(0, 0, 450, 23)).setModel(this).applyStyle(this.htmlMorphStyle);
     this.setContentsOfHTMLMorph(htmlMorph);
+    if (this._aaa_hack_desiredScale) { htmlMorph.setScale(this._aaa_hack_desiredScale); }
+    htmlMorph.beRigid(); // aaa - blecch, this is wrong, but for now I don't have any sentences that need to be more than one line high
     return htmlMorph;
   }, {category: ['user interface']});
   
@@ -75,7 +94,10 @@ thisModule.addSlots(avocado.activeSentence, function(add) {
     while (bodyNode.hasChildNodes()) { bodyNode.removeChild(bodyNode.firstChild); }
     bodyNode.appendChild(div);
     
-    if (this._aaa_hack_desiredScale) { htmlMorph.setScale(this._aaa_hack_desiredScale); }
+    if (false && this._aaa_hack_desiredSpace) {
+      if (this._aaa_hack_desiredSpace.x) { htmlMorph.setScale(this._aaa_hack_desiredSpace.x / htmlMorph.getExtent().x); }
+      if (this._aaa_hack_desiredSpace.y) { htmlMorph.setScale(this._aaa_hack_desiredSpace.y / htmlMorph.getExtent().y); }
+    }
   }, {category: ['user interface']});
   
   add.creator('htmlMorphStyle', {}, {category: ['user interface']});

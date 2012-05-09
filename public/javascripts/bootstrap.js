@@ -1094,7 +1094,7 @@ avocado.transporter.module.slotAdder = {
     
     // aaa - Where's the right place to put this? How do we make sure that the stuff filed in before the
     // senders code still has its senders indexed?
-    if (avocado.senders && avocado.senders.rememberIdentifiersUsedBy) {
+    if (!window.shouldNotInitializeReflectiveSystem && avocado.senders && avocado.senders.rememberIdentifiersUsedBy) {
       if (typeof(contents) === 'function') {
         avocado.senders.rememberIdentifiersUsedBy(contents);
       }
@@ -1242,7 +1242,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
     // aaa - HACK! necessary because the phone runs out of memory while doing this, I think.
     // The right solution in the long run, I think, is to have some clear way of specifying
     // whether the programming-environment stuff should be loaded. -- Adam
-    if (!window.UserAgent || !UserAgent.isIPhone) {
+    if (!window.shouldNotInitializeReflectiveSystem && (!window.UserAgent || !UserAgent.isIPhone)) {
       var annotator = avocado.objectGraphWalker.visitors.objectGraphAnnotator.create();
       annotator.alsoMakeCreatorSlots();
       annotator.alsoBuildListsOfUsedIdentifiers();

@@ -2489,6 +2489,7 @@ BoxMorph.subclass("SliderMorph", {
 	    this.setFill(Color.black);
 	    this.setFillOpacity(0.1);
 	    this.setBorderWidth(0);
+	    this.setBorderColor(null);
 	    return;
 	  }
 	  

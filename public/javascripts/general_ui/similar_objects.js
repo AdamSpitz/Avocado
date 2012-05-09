@@ -65,7 +65,16 @@ thisModule.addSlots(avocado.groupOfSimilarObjects, function(add) {
     var morph = avocado.ui.newMorph().useTableLayout(this._shouldTableBeVertical ? avocado.table.contents.columnPrototype : avocado.table.contents.rowPrototype);
     morph.setModel(this).applyStyle(this.defaultMorphStyle);
     morph.setPotentialContentMorphsFunction(function() {
-      var commonProperties = this._commonProperties || (this._objects.isEmpty() ? [] : this._objects.first().resultDetailsToShow());
+      var commonProperties = this._commonProperties;
+      if (!commonProperties) {
+        var setOfCommonProperties = avocado.set.copyRemoveAll();
+        // aaa - this'll be slow for big lists of objects; maybe allow the option of just using the first one?
+        this._objects.forEach(function(o) {
+          o.propertiesToShow().forEach(function(p) { setOfCommonProperties.add(p); });
+        });
+        commonProperties = setOfCommonProperties.toArray().sort();
+      }
+      
       var cells = [];
       if (! this._disableHeader) {
         var header = [];
@@ -79,8 +88,13 @@ thisModule.addSlots(avocado.groupOfSimilarObjects, function(add) {
         var objectName = o && o.namingScheme ? o.namingScheme.nameInContext(o, morph) : "" + o;
         if (! this._disableObjectNames) { line.push(avocado.label.create(objectName).setEmphasis(avocado.label.emphasiseses.bold).newMorph()); }
         commonProperties.forEach(function(p) {
-          if (typeof(o[p]) !== 'function') { debugger; }
-          var v = o[p].call(o);
+          var v;
+          if (typeof(o.valueOfProperty) === 'function') {
+            v = o.valueOfProperty(p);
+          } else {
+            v = o[p].call(o);
+          }
+          
           var valueMorph;
           if (typeof(v) === 'string') {
             valueMorph = avocado.label.newMorphFor(v);

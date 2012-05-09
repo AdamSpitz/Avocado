@@ -48,7 +48,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   }, {category: ['accessing']});
   
   add.method('copy', function () {
-    var c = Object.newChildOf(avocado.testCase, this._currentSelector);
+    var c = Object.newChildOf(this['__proto__'], this._currentSelector);
     c._result = this._result.copy();
     c._previousRun = this;
     return c;
@@ -214,6 +214,15 @@ thisModule.addSlots(avocado.testCase, function(add) {
 		return this;
   }, {category: ['running']});
 
+  add.method('justRecordedFinishing', function (error, time) {
+    if (this._notifier) { this._notifier.notifyAllObservers(error); }
+    avocado.ui.justChanged(this);
+  }, {category: ['results']});
+
+  add.method('notifier', function () {
+    return this._notifier || (this._notifier = avocado.notifier.on(this));
+  }, {category: ['accessing']});
+
   add.method('result', function () {
     return this._result;
   }, {category: ['accessing']});
@@ -323,6 +332,7 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
     this._timeToRun = time;
     this.recordStarted(); // since this method might be called without having already called recordStarted, if we're displaying pre-computed test results
     this._hasFinished = true;
+    this._test.justRecordedFinishing(error, time);
   }, {category: ['accessing']});
   
   add.method('toString', function () {
@@ -438,6 +448,7 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
     var s = avocado.activeSentence.create([totalPart, ". ", passedPart, ", ", failedPart, ". ", changedPart]);
     //s._aaa_hack_minimumExtent = pt(1000, 200);
     //s._aaa_hack_style = "font-size: 48px";
+    s._aaa_hack_desiredSpace = pt(null, 50);
     s._aaa_hack_desiredScale = 15;
     return s;
   }, {category: ['printing']});
@@ -469,16 +480,50 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   }, {category: ['naming']});
   
   add.method('immediateContents', function () {
-    var rows = this._entries.map(function(test) {
-      var row = test.leaves().toArray();
+    var indexTable = Object.newChildOf(this.indexTable);
+    var rows = this._entries.map(function(test, rowIndex) {
+      var leaves = test.leaves().toArray();
+      var row;
+      if (rowIndex === 0) {
+        row = this.sortRowByStatus(leaves);
+        row.forEach(function(leaf, index) {
+          indexTable.recordNewIndexForID(leaf.id());
+        });
+      } else {
+        row = [];
+        var metaIndexByTestID = {};
+        leaves.forEach(function(leaf) {
+          row[indexTable.findOrCreateIndexForID(leaf.id(), metaIndexByTestID)] = leaf;
+        });
+      }
+      
       // aaa - I want the summary, but it needs to be a constant readable size, not dependent on the number of leaves.
       row.unshift(test.result().summary(this));
       return row;
     }.bind(this));
+
+    if (typeof(this.createAndRunAnotherOne) === 'function') {
+      var s = avocado.activeSentence.create([{getValue: function() { return "Run"; }, doAction: function(evt) { this.createAndRunAnotherOne(evt); }.bind(this)}]);
+      s._aaa_hack_desiredSpace = pt(null, 50);
+      s._aaa_hack_desiredScale = 15;
+      rows.push([s]);
+    }
     
     var table = avocado.table.contents.createWithRows(rows);
     table._desiredSpaceToScaleTo = pt(800, null); // aaa hack; I think what I need is some way to combine a Table Layout with an Auto-Scaling Layout
     return table;
+  }, {category: ['contents']});
+  
+  add.creator('indexTable', {}, {category: ['contents']}, {comment: 'I think maybe what we want is to sort the first row by status\n(so all the passing ones are together), but then use\nthe same order for subsequent rows, so that you\ncan see at a glance whether something has changed from\nthe previous run. -- Adam'});
+
+  add.method('sortRowByStatus', function (originalRow) {
+    var unfinished = [], passed = [], failed = [];
+    originalRow.forEach(function(test) {
+      var result = test.result();
+      var section = result.hasFinished() ? (result.anyFailed() ? failed : passed) : unfinished;
+      section.push(test);
+    });
+    return passed.concat(failed, unfinished);
   }, {category: ['contents']});
   
   add.method('titleModel', function () {
@@ -499,6 +544,57 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   
   add.creator('displayOptions', {}, {category: ['user interface']});
   
+  add.method('makeUpAnotherRowOfRandomResults', function (newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing) {
+    var newEntry = this.entries().last().copy().clearResults().setExtraDescription("Trial " + this.entries().size());
+    this.entries().push(newEntry);
+    avocado.ui.justChanged(this, function() {
+      newEntry.randomlyChangeSomeResults(newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing);
+    });
+  }, {category: ['making up fake results']});
+});
+
+
+thisModule.addSlots(avocado.testCase.resultHistory.indexTable, function(add) {
+  
+  add.method('initialize', function () {
+    this._indicesByID = {};
+    this._nextFreeIndex = 0;
+  }, {category: ['creating']});
+  
+  add.method('indicesForID', function (id) {
+    return this._indicesByID[id] || (this._indicesByID[id] = []);
+  }, {category: ['accessing']});
+  
+  add.method('recordNewIndexForID', function (id) {
+    var index = this._nextFreeIndex++;
+    this.indicesForID(id).push(index);
+    //console.log("First row, putting " + id + " at " + index);
+    return index;
+  }, {category: ['accessing']});
+  
+  add.method('findOrCreateIndexForID', function (id, metaIndexByID) {
+    // aaa - This has got to be some of the most confusing code I've ever written.
+    // The basic problem is that we can't count on the tests all having unique IDs.
+    // They probably have names that can serve as sorta-almost-unique IDs, though.
+    // So _indicesByID will keep track of *all* the indices corresponding to a
+    // particular ID. And so as the next set of test results comes in, we need to
+    // keep track of how *many* tests with ID 42 we've seen so far. That's what
+    // the "meta index" is.
+    //
+    // But... yikes.
+    // -- Adam
+    var indexOfIndex = metaIndexByID[id] || 0;
+    var indices = this.indicesForID(id);
+    var index = indices[indexOfIndex];
+    if (typeof(index) === 'undefined') {
+      index = this._nextFreeIndex++;
+      indices[indexOfIndex] = index;
+    }
+    metaIndexByID[id] = indexOfIndex + 1;
+    //console.log("Later row, putting " + id + " at " + index);
+    return index;
+  }, {category: ['accessing']});
+  
 });
 
 
@@ -506,20 +602,19 @@ thisModule.addSlots(avocado.testCase.resultHistory.displayOptions, function(add)
   
   add.method('initialize', function (history) {
     this._history = history;
-    this.setNumberOfEntriesBeingShown(5);
   }, {category: ['creating']});
 
   add.method('numberOfEntriesBeingShown', function () {
-    return this._numberOfEntriesBeingShown;
+    return typeof(this._numberOfEntriesBeingShown) === 'number' ? this._numberOfEntriesBeingShown : this._history.entries().size();
   }, {category: ['accessing']});
 
   add.method('setNumberOfEntriesBeingShown', function (n) {
-    this._numberOfEntriesBeingShown = Math.max(0, Math.min(n, this._history.entries().size()));
+    this._numberOfEntriesBeingShown = n;
     return this;
   }, {category: ['accessing']});
 
   add.method('amountOfTimeBeingShown', function () {
-    var oldestEntry = this._history.entries()[this._history.entries().size() - this._numberOfEntriesBeingShown];
+    var oldestEntry = this._history.entries()[this._history.entries().size() - this.numberOfEntriesBeingShown()];
     if (!oldestEntry) { return 0; }
     return new Date().getTime() - oldestEntry.timestamp();
   }, {category: ['accessing']});
@@ -550,21 +645,21 @@ thisModule.addSlots(avocado.testCase.resultHistory.interestingEntriesProto, func
   }, {category: ['creating']});
   
   add.method('subset', function () {
-    return this._subset;
+    return this.titleModel().content();
   }, {category: ['accessing']});
   
   add.method('setSubset', function (subset) {
-    this._subset = subset;
+    this.titleModel().setContent(subset);
     return this;
   }, {category: ['accessing']});
   
   add.method('titleModel', function () {
     if (! this._titleSentence) {
       this._titleSentence = avocado.activeSentence.create([
-        function() { return this._subset ? this._subset.tests().size() : ""; }.bind(this),
-        function() { return this._subset ? " tests " : ""; }.bind(this),
-        function() { return this._subset ? this._subset.fullDescription() : ""; }.bind(this),
-        function() { return this._subset ? "." : ""; }.bind(this)
+        function() { return this.content() ? this.content().tests().size() : ""; },
+        function() { return this.content() ? " tests " : ""; },
+        function() { return this.content() ? this.content().fullDescription() : ""; },
+        function() { return this.content() ? "." : ""; }
       ]);
     }
     return this._titleSentence;
@@ -784,19 +879,27 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     return this;
   }, {category: ['making up fake results']});
 
-  add.method('randomlyChangeSomeResults', function (newPassFrequency, newFailFrequency) {
+  add.method('randomlyChangeSomeResults', function (newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing) {
     if (typeof(newPassFrequency) !== 'number') { newPassFrequency = 0.05; }
     if (typeof(newFailFrequency) !== 'number') { newFailFrequency = 0.05; }
+    
     this.eachLeaf(function(test) {
       var timeToRun = Math.random() * 200;
-      if (test._result.failed()) {
-        if (Math.random() < newPassFrequency) {
-          test._result.recordFinished(null, timeToRun);
-        }
+      var error;
+      if (test._previousRun._result.failed()) {
+        error = Math.random() < newPassFrequency ? null : test._previousRun._result._error;
       } else {
-        if (Math.random() < newFailFrequency) {
-          test._result.recordFinished(new Error("who knows why?"), timeToRun);
-        }
+        error = Math.random() < newFailFrequency ? new Error("who knows why?") : null;
+      }
+      
+      if (!maxDelay) {
+        test._result.recordFinished(error, timeToRun);
+        if (callbackForEachIndividualTestFinishing) { callbackForEachIndividualTestFinishing(test); }
+      } else {
+        setTimeout(function() {
+          test._result.recordFinished(error, timeToRun);
+          if (callbackForEachIndividualTestFinishing) { callbackForEachIndividualTestFinishing(test); }
+        }, Math.random() * maxDelay);
       }
     });
     return this;

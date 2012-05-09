@@ -85,7 +85,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
         if (ratio > 0.5) {
           // aaa - I am sure that there's a more elegant way to get the globalBounds.
           // aaa - And I don't even think this works right.
-    			var topLeft = this.owner.worldPoint(this.getPosition());
+    			var topLeft = this.getOwner().worldPoint(this.getPosition());
     			var globalBounds = topLeft.extent(scaledExtent);
     			
           var allVertices = globalBounds.vertices().concat(globalBounds.translatedBy(difference).vertices());
@@ -95,6 +95,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
           // could try adjusting the opacity based on the distance, but I tried that and
           // couldn't figure out how to make it look non-weird
           motionBlurMorph.setFillOpacity(0.3);
+          motionBlurMorph.setBorderColor(null);
           motionBlurMorph.closeDnD();
           motionBlurMorph.ignoreEvents();
           world.addMorphBack(motionBlurMorph);

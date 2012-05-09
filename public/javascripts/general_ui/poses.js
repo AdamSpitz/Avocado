@@ -27,9 +27,37 @@ thisModule.addSlots(avocado.poses, function(add) {
 
   add.creator('manager', {});
 
+  add.creator('layout', {});
+
   add.method('addGlobalCommandsTo', function (menu) {
     avocado.ui.currentWorld().poseManager().addGlobalCommandsTo(menu);
   }, {category: ['menu']});
+  
+  add.method('makeMorphsBecomeDirectSubmorphOfWorld', function (world, morphs) {
+    var owners = [];
+    morphs.forEach(function(m) { var o = m.getOwner(); if (!owners.include(o)) { owners.push(o); }});
+    
+    var layoutBatcherUppers = [];
+    owners.forEach(function(o) {
+      layoutBatcherUppers.push(o.layoutRejiggeringBatcherUpper());
+      if (o._layout && o._layout.submorphReplacementBatcherUpper) { layoutBatcherUppers.push(o._layout.submorphReplacementBatcherUpper()); }
+    });
+    
+    try {
+      layoutBatcherUppers.forEach(function(bu) { bu.start(); });
+
+      morphs.forEach(function(m) {
+        // necessary so that the pose can know the correct final extent of the morphToShow when calculating positions
+        m.becomeDirectSubmorphOfWorld(world);
+
+        // aaa - hack to make the really-small-text disappear as desired
+        var p = m._placeholderMorphIJustCameFrom;
+        if (p) { p.refreshContentOfMeAndSubmorphs(); }
+      });
+    } finally {
+      layoutBatcherUppers.forEach(function(bu) { bu.stop(); });
+    }
+  })
 
 });
 
@@ -61,6 +89,10 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
 
   add.method('inspect', function () {
     return this.toString();
+  }, {category: ['printing']});
+
+  add.method('copy', function () {
+    return Object.deepCopyRecursingIntoCreatorSlots(this);
   }, {category: ['printing']});
 
   add.method('beInDebugMode', function () {
@@ -184,6 +216,16 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
     return this;
   });
 
+  add.method('setDesiredPoserScale', function (s) {
+    this._desiredPoserScale = s;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('setPadding', function (padding) {
+    this._padding = padding;
+    return this;
+  }, {category: ['accessing']});
+
   add.method('aaa_addExtraZHack', function (extraZ) {
     if (avocado.ui.is3D) { this._extraZHack = extraZ; } // aaa HACK, what's the right way to make the contents pop out?
     return this;
@@ -212,20 +254,25 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
 
 thisModule.addSlots(avocado.poses.tree, function(add) {
 
-  add.method('initialize', function ($super, name, focus, parentFunction, childrenFunction) {
+  add.method('initialize', function ($super, name, foci, parentFunction, childrenFunction) {
     $super(name);
-    this._focus = focus;
+    this._foci = foci;
     this.parentOf = parentFunction;
     this.childrenOf = childrenFunction;
   });
 
-  add.data('indentation', 20);
+  add.data('_indentation', 20);
 
-  add.data('padding', 5);
+  add.data('_padding', pt(5, 5), {initializeTo: 'pt(5, 5)'});
 
-  add.method('ancestors', function () { 
+  add.method('setPosers', function (posers) {
+    this._foci = posers;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('ancestorsOf', function (focus) { 
     var ancestors = [];
-    var ancestor = this._focus;
+    var ancestor = focus;
     do {
       ancestors.push(ancestor);
       ancestor = this.parentOf(ancestor);
@@ -235,27 +282,38 @@ thisModule.addSlots(avocado.poses.tree, function(add) {
   });
 
   add.method('eachElement', function (f, startingPos) {
-    var worldScale = avocado.ui.currentWorld().getScale();
-    var indentation = this.indentation / worldScale;
-    var padding     = this.padding     / worldScale;
-    var pos = (startingPos || pt(0,0)).addXY(indentation, indentation);
-    this.ancestors().each(function(m) {
-      f({poser: m, position: pos});
-      var mSpace = m.getExtent().scaleBy(m.getScale());
-      pos = pos.addXY(indentation, mSpace.y + padding);
-    });
+    var worldScale  = avocado.ui.currentWorld().getScale();
+    var indentation = this._indentation / worldScale;
+    var padding     = this._padding.scaleBy(1 / worldScale);
+    if (!startingPos) { startingPos = padding; }
+    var pos = startingPos;
     
-    this.eachChildElement(this._focus, pos, f);
+    this._foci.forEach(function(focus) {
+      this.ancestorsOf(focus).each(function(poser) {
+        var poserScale = this._desiredPoserScale || poser.getScale();
+        var e = {poser: poser, position: pos};
+        if (this._desiredPoserScale) { e.scale = this._desiredPoserScale; }
+        f(e);
+        var poserSpace = poser.getExtent().scaleBy(poserScale);
+        pos = pos.addXY(indentation, poserSpace.y + padding.y);
+      }.bind(this));
+
+      var newY = this.eachChildElement(focus, pos, f);
+      pos = startingPos.withY(newY);
+    }.bind(this));
   });
 
-  add.method('eachChildElement', function (m, pos, f) {
+  add.method('eachChildElement', function (parentPoser, pos, f) {
     var worldScale = avocado.ui.currentWorld().getScale();
-    var indentation = this.indentation / worldScale;
-    var padding     = this.padding     / worldScale;
-    this.childrenOf(m).each(function(child) {
-      f({poser: child, position: pos});
-      var childSpace = child.getExtent().scaleBy(m.getScale());
-      var newY = this.eachChildElement(child, pos.addXY(indentation, childSpace.y + padding), f);
+    var indentation = this._indentation / worldScale;
+    var padding     = this._padding.scaleBy(1 / worldScale);
+    this.childrenOf(parentPoser).each(function(child) {
+      var childScale = this._desiredPoserScale || child.getScale();
+      var e = {poser: child, position: pos};
+      if (this._desiredPoserScale) { e.scale = this._desiredPoserScale; }
+      f(e);
+      var childSpace = child.getExtent().scaleBy(childScale);
+      var newY = this.eachChildElement(child, pos.addXY(indentation, childSpace.y + padding.y), f);
       pos = pos.withY(newY);
     }.bind(this));
     return pos.y;
@@ -289,16 +347,6 @@ thisModule.addSlots(avocado.poses.list, function(add) {
 
   add.method('setMaxExtent', function (maxExtentPtOrFn) {
     this._maxExtentPtOrFn = maxExtentPtOrFn;
-    return this;
-  }, {category: ['accessing']});
-
-  add.method('setPadding', function (padding) {
-    this._padding = padding;
-    return this;
-  }, {category: ['accessing']});
-
-  add.method('setDesiredPoserScale', function (s) {
-    this._desiredPoserScale = s;
     return this;
   }, {category: ['accessing']});
   
@@ -660,6 +708,61 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     otherMorph.assumeUIState(this.constructUIStateMemento());
   }, {category: ['poses']});
 
+});
+
+
+thisModule.addSlots(avocado.poses.layout, function(add) {
+  
+  add.method('initialize', function (pose) {
+    this._pose = pose;
+  }, {category: ['creating']});
+  
+  add.method('pose', function () {
+    return this._pose;
+  }, {category: ['accessing']});
+
+  add.method('isAffectedBy', function (operation, morph) {
+    return ! morph.shouldIgnorePoses();
+  }, {category: ['layout']});
+
+  add.method('dismissMorphs', function (morphsToDismiss, callWhenDone) {
+    avocado.callbackWaiter.on(function(createCallbackForDismissingThisOne) {
+      morphsToDismiss.forEach(function(morphToDismiss) {
+        var callbackForDismissingThisOne = createCallbackForDismissingThisOne();
+        setTimeout(function() { morphToDismiss.putBackOrDismiss(callbackForDismissingThisOne); }, 0);
+      });
+    }, callWhenDone, "dismissing the old morphs");
+  }, {category: ['setting morphs']});
+
+  add.method('setTitleContent', function (containerMorph, titleContent) {
+    if (titleContent) {
+      var titleLabel = containerMorph.findTitleLabel();
+      if (titleLabel) {
+        titleLabel._model.setContent(titleContent);
+        titleLabel.refreshContent();
+      }
+    }
+  }, {category: ['setting morphs']});
+
+  add.method('addMorphs', function (containerMorph, morphsToShow, callWhenDone) {
+    var world = containerMorph.world() || avocado.ui.currentWorld();
+    avocado.poses.makeMorphsBecomeDirectSubmorphOfWorld(world, morphsToShow);
+    var pose = this.pose().copy().setPosers(morphsToShow);
+    pose.recreateInContainer(containerMorph, pt(0, 0), function() {
+      world.fixFonts();
+      if (callWhenDone) { callWhenDone(); }
+    });
+  }, {category: ['setting morphs']});
+  
+  add.method('showMorphs', function (containerMorph, morphsToShow, titleContent, callWhenOldMorphsHaveBeenDismissed, callWhenNewMorphsAreInPlace) {
+    var morphsToDismiss = containerMorph.submorphEnumerator().toArray().select(function(m) { return ! morphsToShow.include(m); });
+    this.dismissMorphs(morphsToDismiss, function() {
+      if (callWhenOldMorphsHaveBeenDismissed) { callWhenOldMorphsHaveBeenDismissed(); }
+      this.addMorphs(containerMorph, morphsToShow, callWhenNewMorphsAreInPlace);
+      this.setTitleContent(containerMorph, titleContent); // no need to wait until the new morphs are in place
+    }.bind(this));
+  }, {category: ['setting morphs']});
+  
 });
 
 

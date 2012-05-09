@@ -67,7 +67,9 @@ thisModule.addSlots(avocado.generalUI, function(add) {
     this.showCentered(obj, function () {
       this.justChanged(obj, function() {
         this.navigateTo(obj, function() {
-          this.worldFor(evt).firstHand().setKeyboardFocus(null); // aaa this is annoying, make it unnecessary
+          var world = this.worldFor(evt);
+          world.firstHand().setKeyboardFocus(null); // aaa this is annoying, make it unnecessary
+          if (callback) { setTimeout(callback, 0); }
         }.bind(this));
       }.bind(this));
     }.bind(this));
