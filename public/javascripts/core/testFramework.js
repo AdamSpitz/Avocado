@@ -441,10 +441,10 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
   }, {category: ['accessing']});
   
   add.method('summary', function (history) {
-    var   totalPart = avocado.testCase.subset.create(history, this._test, "in total", this._test. leaves().toArray());
-    var  failedPart = avocado.testCase.subset.create(history, this._test, "failed",   this.failingLeaves().toArray());
-    var  passedPart = avocado.testCase.subset.create(history, this._test, "passed",   this.passingLeaves().toArray());
-    var changedPart = avocado.testCase.subset.create(history, this._test, "changed",  this.changedLeaves().toArray());
+    var   totalPart = avocado.testCase.subset.create(history, this._test, history.isStillRunning(this._test) ? "so far" : "in total", this._test. leaves().toArray());
+    var  failedPart = avocado.testCase.subset.create(history, this._test, "failed",                                                   this.failingLeaves().toArray());
+    var  passedPart = avocado.testCase.subset.create(history, this._test, "passed",                                                   this.passingLeaves().toArray());
+    var changedPart = avocado.testCase.subset.create(history, this._test, "changed",                                                  this.changedLeaves().toArray());
     var s = avocado.activeSentence.create([totalPart, ". ", passedPart, ", ", failedPart, ". ", changedPart]);
     //s._aaa_hack_minimumExtent = pt(1000, 200);
     //s._aaa_hack_style = "font-size: 48px";
@@ -502,8 +502,8 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
       return row;
     }.bind(this));
 
-    if (typeof(this.createAndRunAnotherOne) === 'function') {
-      var s = avocado.activeSentence.create([{getValue: function() { return "Run"; }, doAction: function(evt) { this.createAndRunAnotherOne(evt); }.bind(this)}]);
+    if (this._isOKToRunItAgain && typeof(this.runItAgain) === 'function') {
+      var s = avocado.activeSentence.create([{getValue: function() { return "Run"; }, doAction: function(evt) { this.runItAgain(evt); }.bind(this)}]);
       s._aaa_hack_desiredSpace = pt(null, 50);
       s._aaa_hack_desiredScale = 15;
       rows.push([s]);
@@ -513,6 +513,22 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
     table._desiredSpaceToScaleTo = pt(800, null); // aaa hack; I think what I need is some way to combine a Table Layout with an Auto-Scaling Layout
     return table;
   }, {category: ['contents']});
+  
+  add.method('enableRunning', function () {
+    this._isOKToRunItAgain = true;
+    avocado.ui.justChanged(this);
+    return this;
+  }, {category: ['running']});
+  
+  add.method('disableRunning', function () {
+    this._isOKToRunItAgain = false;
+    avocado.ui.justChanged(this);
+    return this;
+  }, {category: ['running']});
+
+  add.method('isStillRunning', function (test) {
+    return test === this.entries().last() && typeof(this.runItAgain) === 'function' && !this._isOKToRunItAgain;
+  }, {category: ['running']});
   
   add.creator('indexTable', {}, {category: ['contents']}, {comment: 'I think maybe what we want is to sort the first row by status\n(so all the passing ones are together), but then use\nthe same order for subsequent rows, so that you\ncan see at a glance whether something has changed from\nthe previous run. -- Adam'});
 
@@ -544,11 +560,22 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   
   add.creator('displayOptions', {}, {category: ['user interface']});
   
-  add.method('makeUpAnotherRowOfRandomResults', function (newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing) {
+  add.method('makeUpSomeRandomResults', function (suite, numberOfRuns, newPassFrequency, newFailFrequency, maxDelay) {
+    suite.setExtraDescription("Trial " + 0);
+    this.entries().push(suite);
+    for (var i = 1; i <= numberOfRuns - 1; ++i) {
+      suite = suite.copy().randomlyChangeSomeResults(newPassFrequency, newFailFrequency, maxDelay);
+      suite.setExtraDescription("Trial " + i);
+      this.entries().push(suite);
+    }
+    return this;
+  }, {category: ['making up fake results']});
+  
+  add.method('makeUpAnotherRowOfRandomResults', function (newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing, callbackForWholeThingFinishing) {
     var newEntry = this.entries().last().copy().clearResults().setExtraDescription("Trial " + this.entries().size());
     this.entries().push(newEntry);
     avocado.ui.justChanged(this, function() {
-      newEntry.randomlyChangeSomeResults(newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing);
+      newEntry.randomlyChangeSomeResults(newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing, callbackForWholeThingFinishing);
     });
   }, {category: ['making up fake results']});
 });
@@ -879,42 +906,41 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     return this;
   }, {category: ['making up fake results']});
 
-  add.method('randomlyChangeSomeResults', function (newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing) {
+  add.method('randomlyChangeSomeResults', function (newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing, callbackForWholeThingFinishing) {
     if (typeof(newPassFrequency) !== 'number') { newPassFrequency = 0.05; }
     if (typeof(newFailFrequency) !== 'number') { newFailFrequency = 0.05; }
     
-    this.eachLeaf(function(test) {
-      var timeToRun = Math.random() * 200;
-      var error;
-      if (test._previousRun._result.failed()) {
-        error = Math.random() < newPassFrequency ? null : test._previousRun._result._error;
-      } else {
-        error = Math.random() < newFailFrequency ? new Error("who knows why?") : null;
-      }
-      
-      if (!maxDelay) {
-        test._result.recordFinished(error, timeToRun);
-        if (callbackForEachIndividualTestFinishing) { callbackForEachIndividualTestFinishing(test); }
-      } else {
-        setTimeout(function() {
+    avocado.callbackWaiter.on(function(generateIntermediateCallback) {
+      this.eachLeaf(function(test) {
+        var timeToRun = Math.random() * 200;
+        var error;
+        if (test._previousRun._result.failed()) {
+          error = Math.random() < newPassFrequency ? null : test._previousRun._result._error;
+        } else {
+          error = Math.random() < newFailFrequency ? new Error("who knows why?") : null;
+        }
+
+        var intermediateCallback = generateIntermediateCallback();
+        var doThisOne = function() {
           test._result.recordFinished(error, timeToRun);
           if (callbackForEachIndividualTestFinishing) { callbackForEachIndividualTestFinishing(test); }
-        }, Math.random() * maxDelay);
-      }
-    });
+          intermediateCallback();
+        };
+        
+        if (!maxDelay) {
+          doThisOne();
+        } else {
+          setTimeout(doThisOne, Math.random() * maxDelay);
+        }
+      });
+    }.bind(this), callbackForWholeThingFinishing, "randomly changing some test results");
     return this;
   }, {category: ['making up fake results']});
   
   add.method('makeUpARandomResultHistory', function (numberOfRuns, newPassFrequency, newFailFrequency) {
-    this.setExtraDescription("Trial " + 0);
-    var suites = [this];
-    var suite = this;
-    for (var i = 1; i <= numberOfRuns - 1; ++i) {
-      suite = suite.copy().randomlyChangeSomeResults(newPassFrequency, newFailFrequency);
-      suite.setExtraDescription("Trial " + i);
-      suites.push(suite);
-    }
-    return Object.newChildOf(avocado.testCase.resultHistory, suites);
+    var history = Object.newChildOf(avocado.testCase.resultHistory, []);
+    history.makeUpSomeRandomResults(this, numberOfRuns, newPassFrequency, newFailFrequency);
+    return history;
   }, {category: ['making up fake results']});
   
   
