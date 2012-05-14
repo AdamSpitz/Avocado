@@ -208,12 +208,15 @@ thisModule.addSlots(avocado.table.contents, function(add) {
   add.method('selectThenMap', function (selectFn, mapFn) {
     var c = this.copyRemoveAll();
     this._data.each(function(rowOrCol) {
+      var rowOrColArray = rowOrCol.toArray();
       var newRowOrCol = [];
-      rowOrCol.each(function(x) {
+      // using a for loop because sometimes I have sparse arrays and forEach skips over the "missing" elements
+      for (var i = 0; i < rowOrColArray.length; ++i) {
+        var x = rowOrColArray[i];
         if (selectFn(x)) {
           newRowOrCol.push(mapFn(x));
         }
-      });
+      }
       if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
         newRowOrCol.makeAllCreatorSlots();
         c._data.pushAndAdjustCreatorSlots(newRowOrCol);

@@ -95,7 +95,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
     //m._immediateContentsMorph = avocado.ui.currentWorld().morphFor(this.immediateContents()).setFill(null);
     m._immediateContentsMorph = avocado.table.newTableMorph().setFill(null);
     m._immediateContentsMorph.setPotentialContentMorphsFunction(function () {
-      return this.immediateContents().map(function(t) { return avocado.ui.currentWorld().morphFor(t); });
+      return this.immediateContents().map(function(t) { return t ? avocado.ui.currentWorld().morphFor(t) : avocado.ui.newMorph().beInvisible(); });
     }.bind(this));
     m._immediateContentsMorph.layout().setDesiredSpace(pt(800, null));
     m._immediateContentsMorph.doIWantToLeaveAPlaceholderWhenRemoving = function (m) { return true; };
@@ -145,6 +145,7 @@ thisModule.addSlots(avocado.testCase.resultHistory.interestingEntriesProto, func
     m.setModel(this);
 
     /*
+    Let's try a tree pose instead.
     var pose = avocado.poses.list.create("interesting entries").setPadding(pt(10, 10)).setDesiredPoserScale(1);
     pose.setDirection(avocado.directions.horizontal).setMaxExtent(function() { return m.getExtent().withY(null); });
     */
