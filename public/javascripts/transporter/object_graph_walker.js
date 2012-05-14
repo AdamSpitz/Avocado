@@ -496,7 +496,7 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.unownedSlotFinder, functi
 
   add.method('reachedSlot', function (holder, slotName, contents) {
     if (slotName === '__proto__') { return; }
-    var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
+    var slotAnno = avocado.annotator.annotationOf(holder).existingSlotAnnotation(slotName); // for performance, don't create the annotation if it's not needed
     if (! avocado.annotator.getModuleAssignedExplicitlyOrImplicitlyTo(slotAnno, holder)) {
       if (avocado.annotator.isMagicSlotNameOnFunction(holder, slotName)) { return; }
       var slot = reflect(holder).slotAt(slotName);
@@ -559,13 +559,15 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, fun
   });
 
   add.method('alsoAssignUnownedSlotsToModule', function (moduleOrFn) {
-    return this.alsoAssignSlotsToModule(function(holder, slotName, contents, slotAnno) {
+    return this.alsoAssignSlotsToModule(function(holder, slotName, contents) {
+      var holderAnno = avocado.annotator.existingAnnotationOf(holder);
+      var slotAnno = holderAnno && holderAnno.existingSlotAnnotation(slotName);
       var alreadyAssignedToModule = avocado.annotator.getModuleAssignedExplicitlyOrImplicitlyTo(slotAnno, holder);
       if (alreadyAssignedToModule) {
         return undefined;
       } else {
         if (typeof(moduleOrFn) === 'function') {
-          return moduleOrFn(holder, slotName, contents, slotAnno);
+          return moduleOrFn(holder, slotName, contents);
         } else {
           return moduleOrFn;
         }
@@ -623,18 +625,16 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, fun
     if (! this.moduleToAssignSlotsTo) { return; }
     if (slotName === '__proto__') { return; }
     
-    var holderAnno = avocado.annotator.annotationOf(holder);
-    var slotAnno = holderAnno.slotAnnotation(slotName);
     var module;
     if (typeof(this.moduleToAssignSlotsTo) === 'function') {
-      module = this.moduleToAssignSlotsTo(holder, slotName, contents, slotAnno);
+      module = this.moduleToAssignSlotsTo(holder, slotName, contents);
     } else {
       module = this.moduleToAssignSlotsTo;
     }
     
     if (module) {
       if (this._debugMode) { console.log("Setting module of " + slotName + " to " + module); }
-      avocado.annotator.setModuleIfNecessary(slotAnno, holder, slotName, module);
+      avocado.annotator.setModuleIfNecessary(holder, slotName, module);
     } else {
       if (this._debugMode) { console.log("NOT setting module of " + slotName); }
     }

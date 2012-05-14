@@ -559,10 +559,9 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
   }, {category: ['accessing annotation', 'module']});
 
   add.method('setModule', function (m) {
-    var a = this.annotationForWriting();
     var oldModule = this.getModuleAssignedToMeExplicitlyOrImplicitly();
     var holderObj = this.holder().reflectee();
-    avocado.annotator.setModuleIfNecessary(a, holderObj, this.name(), m);
+    avocado.annotator.setModuleIfNecessary(holderObj, this.name(), m);
     
     if (m)         {         m.markAsChanged(); }
     if (oldModule) { oldModule.markAsChanged(); }

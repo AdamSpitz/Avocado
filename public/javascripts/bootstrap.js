@@ -661,15 +661,18 @@ var annotator = {
   },
   
   getModuleAssignedExplicitlyOrImplicitlyTo: function(slotAnno, holder) {
-    return slotAnno.getModuleAssignedToMeExplicitly() || this.moduleOfAnyCreatorInChainFor(holder);
+    return (slotAnno && slotAnno.getModuleAssignedToMeExplicitly()) || this.moduleOfAnyCreatorInChainFor(holder);
   },
   
-  setModuleIfNecessary: function(slotAnno, holder, slotName, desiredModule) {
+  setModuleIfNecessary: function(holder, slotName, desiredModule) {
     var implicitModule = this.moduleOfAnyCreatorInChainFor(holder);
     if ((implicitModule || null) === (desiredModule || null)) {
-      slotAnno.forgetModule();
+      // Optimization: Avoid creating the slot annotation if it's not necessary.
+      var holderAnno = this.existingAnnotationOf(holder);
+      var slotAnno = holderAnno && holderAnno.existingSlotAnnotation(slotName);
+      if (slotAnno) { slotAnno.forgetModule(); }
     } else {
-      slotAnno.setModule(desiredModule);
+      this.annotationOf(holder).slotAnnotation(slotName).setModule(desiredModule);
       if (desiredModule) { desiredModule.slotCollection().add(holder, slotName); }
       
       var shouldLogModules = false;
@@ -827,6 +830,7 @@ annotator.annotationOf(avocado).setSlotAnnotation('annotator', {category: ['anno
 annotator.annotationOf(annotator.objectAnnotationPrototype).setCreatorSlot('objectAnnotationPrototype', annotator);
 annotator.annotationOf(annotator.slotAnnotationPrototype).setCreatorSlot('slotAnnotationPrototype', annotator);
 annotator.annotationOf(annotator.slotSpecifierPrototype).setCreatorSlot('slotSpecifierPrototype', annotator);
+annotator.annotationOf(annotator.categoryCachePrototype).setCreatorSlot('categoryCachePrototype', annotator);
 
 avocado.javascript = {};
 annotator.annotationOf(avocado.javascript).setCreatorSlot('javascript', avocado);
@@ -1071,9 +1075,9 @@ avocado.transporter.module.slotAdder = {
     var holderAnno = annotator.annotationOf(this.holder);
     if (! slotAnnotation) { slotAnnotation = Object.create(annotator.slotAnnotationPrototype); }
     slotAnnotation = holderAnno.asSlotAnnotation(slotAnnotation, name);
-    this.holder[name] = contents;
-    annotator.setModuleIfNecessary(slotAnnotation, this.holder, name, this.module);
     holderAnno.setSlotAnnotation(name, slotAnnotation);
+    this.holder[name] = contents;
+    annotator.setModuleIfNecessary(this.holder, name, this.module);
     if (contentsAnnotation) { // used for creator slots
       annotator.loadObjectAnnotation(contents, contentsAnnotation, name, this.holder);
     }
@@ -1635,10 +1639,12 @@ thisModule.addSlots(avocado.transporter.repositories.httpWithSavingScript, funct
 
 thisModule.addSlots(avocado.transporter.module, function(add) {
   
-  add.data('setRepository', function (r) {
+  add.data('_repository', null, {initializeTo: 'null'});
+  
+  add.method('setRepository', function (r) {
     this._repository = r;
-    avocado.annotator.annotationOf(this).setSlotAnnotation('_repository', {initializeTo: 'null'}); // aaa blecch, make slot annotations inherit or something
-  });
+    return this;
+  }, {category: ['accessing']});
 
   add.method('existingOneNamed', function (n) {
     return modules[n];
