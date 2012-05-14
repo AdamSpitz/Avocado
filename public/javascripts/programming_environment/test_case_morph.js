@@ -121,9 +121,14 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
 
   add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
   
-  add.method('showInterestingSubset', function (evt, subset) {
+  add.method('showInterestingSubset', function (evt, subset, linkNode) {
     var world = avocado.ui.worldFor(evt);
     var historyMorph = world.morphFor(this);
+    
+    if (historyMorph._selectedSummaryLinkNode) { historyMorph._selectedSummaryLinkNode.setAttribute("class", "summaryLink"); }
+    historyMorph._selectedSummaryLinkNode = linkNode;
+    historyMorph._selectedSummaryLinkNode.setAttribute("class", "highlightedSummaryLink");
+    
     var morphsToShow = subset.tests().toArray().map(function(entry) { return world.morphFor(entry); });
     historyMorph.pullMorphsCloser(morphsToShow, subset);
   }, {category: ['user interface']});

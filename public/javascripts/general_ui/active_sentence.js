@@ -66,8 +66,11 @@ thisModule.addSlots(avocado.activeSentence, function(add) {
         var partTextNode = document.createTextNode(partString);
         if (typeof(part.doAction) === 'function') {
           var link = document.createElement("a");
+          if (this._aaa_hack_linkStyleClass) { link.setAttribute("class", this._aaa_hack_linkStyleClass); }
           link.appendChild(partTextNode);
-          link.onclick = function(evt) { part.doAction(new Event(evt).setHand(avocado.ui.currentWorld().firstHand())); };
+          link.onclick = function(evt) {
+            part.doAction(new Event(evt).setHand(avocado.ui.currentWorld().firstHand()), link);
+          };
           link.href = "#";
           parentNode.appendChild(link);
         } else {
@@ -78,7 +81,7 @@ thisModule.addSlots(avocado.activeSentence, function(add) {
   }, {category: ['HTML']});
   
   add.method('newMorph', function () {
-    var htmlMorph = avocado.html.newMorphWithBounds(new Rectangle(0, 0, 450, 23)).setModel(this).applyStyle(this.htmlMorphStyle);
+    var htmlMorph = avocado.html.newMorphWithBounds(new Rectangle(0, 0, this._aaa_hack_desiredWidth || 450, 23)).setModel(this).applyStyle(this.htmlMorphStyle);
     this.setContentsOfHTMLMorph(htmlMorph);
     if (this._aaa_hack_desiredScale) { htmlMorph.setScale(this._aaa_hack_desiredScale); }
     htmlMorph.beRigid(); // aaa - blecch, this is wrong, but for now I don't have any sentences that need to be more than one line high

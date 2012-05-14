@@ -440,17 +440,29 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
     return timestamp;
   }, {category: ['accessing']});
   
-  add.method('summary', function (history) {
+  add.method('summarySentence', function (parts) {
+    var s = avocado.activeSentence.create(parts);
+    //s._aaa_hack_minimumExtent = pt(1000, 200);
+    //s._aaa_hack_style = "background-color: red";
+    s._aaa_hack_linkStyleClass = "summaryLink";
+    s._aaa_hack_desiredSpace = pt(null, 50);
+    s._aaa_hack_desiredScale = 15;
+    s._aaa_hack_desiredWidth = 100;
+    return s;
+  }, {category: ['printing']});
+  
+  add.method('summarySentences', function (history) {
     var   totalPart = avocado.testCase.subset.create(history, this._test, history.isStillRunning(this._test) ? "so far" : "in total", this._test. leaves().toArray());
     var  failedPart = avocado.testCase.subset.create(history, this._test, "failed",                                                   this.failingLeaves().toArray());
     var  passedPart = avocado.testCase.subset.create(history, this._test, "passed",                                                   this.passingLeaves().toArray());
     var changedPart = avocado.testCase.subset.create(history, this._test, "changed",                                                  this.changedLeaves().toArray());
-    var s = avocado.activeSentence.create([totalPart, ". ", passedPart, ", ", failedPart, ". ", changedPart]);
-    //s._aaa_hack_minimumExtent = pt(1000, 200);
-    //s._aaa_hack_style = "font-size: 48px";
-    s._aaa_hack_desiredSpace = pt(null, 50);
-    s._aaa_hack_desiredScale = 15;
-    return s;
+    // return [this.summarySentence([totalPart, ". ", passedPart, ", ", failedPart, ". ", changedPart])];
+    return [
+      this.summarySentence([  totalPart]),
+      this.summarySentence([ passedPart]),
+      this.summarySentence([ failedPart]),
+      this.summarySentence([changedPart]),
+    ];
   }, {category: ['printing']});
   
 });
@@ -498,7 +510,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
       }
       
       // aaa - I want the summary, but it needs to be a constant readable size, not dependent on the number of leaves.
-      row.unshift(test.result().summary(this));
+      row = test.result().summarySentences(this).concat(row);
       return row;
     }.bind(this));
 
@@ -506,6 +518,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
       var s = avocado.activeSentence.create([{getValue: function() { return "Run"; }, doAction: function(evt) { this.runItAgain(evt); }.bind(this)}]);
       s._aaa_hack_desiredSpace = pt(null, 50);
       s._aaa_hack_desiredScale = 15;
+      s._aaa_hack_desiredWidth = 100;
       rows.push([s]);
     }
     
@@ -731,8 +744,8 @@ thisModule.addSlots(avocado.testCase.subset, function(add) {
     return this;
   }, {category: ['accessing']});
   
-  add.method('doAction', function (evt) {
-    this._history.showInterestingSubset(evt, this);
+  add.method('doAction', function (evt, linkNode) {
+    this._history.showInterestingSubset(evt, this, linkNode);
   }, {category: ['linking']});
     
 });
