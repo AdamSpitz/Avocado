@@ -18,7 +18,7 @@ requires('projects/projects');
 thisModule.addSlots(avocado.livelyKernelUI, function(add) {
 
   add.creator('programmingEnvironment', Object.create(avocado.programmingEnvironment), {category: ['loading']});
-  
+
 });
 
 
@@ -36,9 +36,9 @@ thisModule.addSlots(avocado.livelyKernelUI.programmingEnvironment, function(add)
     
     avocado.menuItemContributors = this.menuItemContributors;
   });
-  
+
   add.creator('menuItemContributors', [], {category: ['menu']});
-  
+
   add.method('addUISpecificDebugModeGlobalCommandsTo', function (cmdList) {
 
     cmdList.addItem(["get an HTML/Canvas morph", function(evt) {

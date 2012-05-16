@@ -10,32 +10,8 @@ thisModule.addSlots(avocado, function(add) {
 });
 
 
-thisModule.addSlots(WorldMorph.prototype, function(add) {
-
-  add.method('deployProjectFromFile', function (projectFileName, callback) {
-    avocado.transporter.availableRepositories[0].fileIn(projectFileName.withoutSuffix(".js"), function() {
-      this.deployProject(avocado.project.current(), callback);
-    }.bind(this));
-  }, {category: ['projects']});
-
-  add.method('deployProject', function (p, callback) {
-    var dm = p.deploymentMorph();
-    this.addMorphAt(dm, pt(0,0));
-    dm.grabsShouldFallThrough = true;
-    var desiredExtent = dm.getExtent().scaleBy(dm.getScale());
-    this.setExtent(desiredExtent);
-    var canvas = this.canvas();
-    canvas.setAttribute("width",  desiredExtent.x);
-    canvas.setAttribute("height", desiredExtent.y);
-    this.changed();
-    if (callback) { callback(); }
-  }, {category: ['projects']});
-  
-});
-
-
 thisModule.addSlots(avocado.project, function(add) {
-  
+
   add.method('current', function () {
     if (this._current) { return this._current; }
     if (! modules.thisProject) { return null; }
@@ -57,7 +33,7 @@ thisModule.addSlots(avocado.project, function(add) {
     
     return p;
   }, {category: ['current one']});
-  
+
   add.method('shouldOnlyShowDeploymentArea', function () {
     return avocado.applicationList.applications().any(function(app) { return app.shouldOnlyShowDeploymentArea; });
   }, {category: ['current one']});
@@ -86,7 +62,7 @@ thisModule.addSlots(avocado.project, function(add) {
   add.method('setID', function (id) { this._projectID = id; }, {category: ['accessing']});
 
   add.data('_modificationFlag', null, {category: ['accessing'], initializeTo: 'null'});
-  
+
   add.method('modificationFlag', function () {
     return this._modificationFlag || (this._modificationFlag = avocado.modificationFlag.create(this, [this.module().modificationFlag()]));
   }, {category: ['accessing']});
@@ -139,11 +115,11 @@ thisModule.addSlots(avocado.project, function(add) {
     }
     return morph;
   }, {category: ['deploying']});
-  
+
   add.method('deploymentMorphIfAny', function () {
     return modules.currentWorldState && modules.currentWorldState._deploymentMorph;
   }, {category: ['deploying']});
-  
+
   add.method('addGlobalCommandsTo', function (cmdList, evt) {
     cmdList.addLine();
     
@@ -205,13 +181,13 @@ thisModule.addSlots(avocado.project, function(add) {
     });
     return sortedVersionsToSave;
   }, {category: ['saving']});
-  
+
   add.data('_shouldNotSaveCurrentWorld', false, {category: ['saving']});
 
   add.method('currentWorldStateModule', function () {
     return modules.currentWorldState || this.module().createNewOneRequiredByThisOne('currentWorldState');
   }, {category: ['saving']});
-    
+
   add.method('resetCurrentWorldStateModule', function () {
     if (!modules.currentWorldState) { return; }
     if (!modules.currentWorldState.morphs) { return; }
@@ -311,31 +287,31 @@ thisModule.addSlots(avocado.project, function(add) {
   add.creator('moduleRepository', {}, {category: ['saving']});
 
   add.creator('servers', {}, {category: ['saving']});
-  
+
   add.creator('formats', {}, {category: ['saving']});
-  
+
   add.method('defaultServer', function () {
     // aaa - this needs to be specified by the various kinds of servers
     // return this._defaultServer || avocado.project.servers.savingScript.create("http://" + window.location.host + "/project/save", "post");
     return this._defaultServer || avocado.project.servers.webdav.create(modules.bootstrap.repository(), "put");
   }, {category: ['saving']});
-  
+
   add.method('defaultFormat', function () {
     // aaa - this needs to be specified by the various kinds of servers
     // return this._defaultFormat || this.formats.json;
     return this._defaultFormat || this.formats.runnable;
   }, {category: ['saving']});
-  
+
   add.method('defaultModuleFilerOuter', function () {
     // aaa - this needs to be specified by the various kinds of servers
     // return avocado.transporter.module.filerOuters.justBody;
     return avocado.transporter.module.filerOuters.normal;
   }, {category: ['saving']});
-  
+
   add.method('setDefaultServer', function (s) {
     this._defaultServer = s;
   }, {category: ['saving']});
-  
+
   add.method('setDefaultFormat', function (f) {
     this._defaultFormat = f;
   }, {category: ['saving']});
@@ -388,14 +364,85 @@ thisModule.addSlots(avocado.project.moduleRepository, function(add) {
 });
 
 
+thisModule.addSlots(avocado.project.formats, function(add) {
+
+  add.creator('json', {});
+
+  add.creator('runnable', {});
+
+});
+
+
+thisModule.addSlots(avocado.project.formats.json, function(add) {
+
+  add.method('fileContentsFromProjectData', function (projectData) {
+    return Object.toJSON(projectData);
+  });
+
+  add.method('parseResponse', function (responseText) {
+    return JSON.parse(responseText);
+  });
+
+  add.method('contentType', function () {
+    return 'application/json';
+  });
+
+});
+
+
+thisModule.addSlots(avocado.project.formats.runnable, function(add) {
+
+  add.method('fileContentsFromProjectData', function (projectData) {
+    var projectDataToSend = {};
+    if (projectData._id) { projectDataToSend._id = projectData._id.toString(); }
+    projectDataToSend.moduleName = "thisProject";
+    projectDataToSend.name = projectData.name.toString();
+    projectDataToSend.isPrivate = !! projectData.isPrivate;
+    return "modules.bootstrap.repository().fileIn('thisProject', function() {\n  avocado.project.setCurrent(avocado.project.create(" + Object.toJSON(projectDataToSend) + "));\n});\n";
+  });
+
+  add.method('parseResponse', function (responseText) {
+    // I don't think there should be anything in the responseText.
+    return {};
+  });
+
+  add.method('contentType', function () {
+    return 'text/plain';
+  });
+
+});
+
+
+thisModule.addSlots(WorldMorph.prototype, function(add) {
+
+  add.method('deployProjectFromFile', function (projectFileName, callback) {
+    avocado.transporter.availableRepositories[0].fileIn(projectFileName.withoutSuffix(".js"), function() {
+      this.deployProject(avocado.project.current(), callback);
+    }.bind(this));
+  }, {category: ['projects']});
+
+  add.method('deployProject', function (p, callback) {
+    var dm = p.deploymentMorph();
+    this.addMorphAt(dm, pt(0,0));
+    dm.grabsShouldFallThrough = true;
+    var desiredExtent = dm.getExtent().scaleBy(dm.getScale());
+    this.setExtent(desiredExtent);
+    var canvas = this.canvas();
+    canvas.setAttribute("width",  desiredExtent.x);
+    canvas.setAttribute("height", desiredExtent.y);
+    this.changed();
+    if (callback) { callback(); }
+  }, {category: ['projects']});
+
+});
+
+
 thisModule.addSlots(avocado.project.servers, function(add) {
 
   add.creator('generic', {});
-  
+
   add.creator('savingScript', Object.create(avocado.project.servers.generic));
-  
-  add.creator('webdav', Object.create(avocado.project.servers.generic));
-  
+
 });
 
 
@@ -436,7 +483,7 @@ thisModule.addSlots(avocado.project.servers.savingScript, function(add) {
     }.bind(this);
     req.send(body);
   }, {category: ['saving']});
-  
+
   add.method('onSuccessfulPost', function (responseJSON, successBlock, failBlock) {
     if (responseJSON.error) {
       failBlock("Server responded with error: " + responseJSON.error);
@@ -452,6 +499,13 @@ thisModule.addSlots(avocado.project.servers.savingScript, function(add) {
 });
 
 
+thisModule.addSlots(avocado.project.servers, function(add) {
+
+  add.creator('webdav', Object.create(avocado.project.servers.generic));
+
+});
+
+
 thisModule.addSlots(avocado.project.servers.webdav, function(add) {
 
   add.method('create', function (repo) {
@@ -461,7 +515,7 @@ thisModule.addSlots(avocado.project.servers.webdav, function(add) {
   add.method('initialize', function (repo) {
     this._repo = repo;
   }, {category: ['creating']});
-  
+
   add.method('callbackThatAccumulatesErrorsIn', function (errors, callback) {
     return function(errorMessage) {
       errors.push(errorMessage);
@@ -504,55 +558,6 @@ thisModule.addSlots(avocado.project.servers.webdav, function(add) {
     }
   }, {category: ['saving']});
 
-});
-
-
-thisModule.addSlots(avocado.project.formats, function(add) {
-  
-  add.creator('json', {});
-
-  add.creator('runnable', {});
-  
-});
-
-
-thisModule.addSlots(avocado.project.formats.json, function(add) {
-  
-  add.method('fileContentsFromProjectData', function (projectData) {
-    return Object.toJSON(projectData);
-  });
-  
-  add.method('parseResponse', function (responseText) {
-    return JSON.parse(responseText);
-  });
-  
-  add.method('contentType', function () {
-    return 'application/json';
-  });
-  
-});
-
-
-thisModule.addSlots(avocado.project.formats.runnable, function(add) {
-  
-  add.method('fileContentsFromProjectData', function (projectData) {
-    var projectDataToSend = {};
-    if (projectData._id) { projectDataToSend._id = projectData._id.toString(); }
-    projectDataToSend.moduleName = "thisProject";
-    projectDataToSend.name = projectData.name.toString();
-    projectDataToSend.isPrivate = !! projectData.isPrivate;
-    return "modules.bootstrap.repository().fileIn('thisProject', function() {\n  avocado.project.setCurrent(avocado.project.create(" + Object.toJSON(projectDataToSend) + "));\n});\n";
-  });
-  
-  add.method('parseResponse', function (responseText) {
-    // I don't think there should be anything in the responseText.
-    return {};
-  });
-  
-  add.method('contentType', function () {
-    return 'text/plain';
-  });
-  
 });
 
 

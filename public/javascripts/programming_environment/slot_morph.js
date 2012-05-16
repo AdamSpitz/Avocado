@@ -7,9 +7,9 @@ requires('general_ui/table_layout');
 
 
 thisModule.addSlots(avocado.slots, function(add) {
-  
+
   add.creator('userInterface', {}, {category: ['user interface'], comment: 'This object seems like a hack, just using it as a place to store UI-related code for slots.'});
-  
+
 });
 
 
@@ -146,12 +146,136 @@ thisModule.addSlots(avocado.slots.userInterface, function(add) {
       return row;
     };
   }, {category: ['constructing morphs']});
-  
+
   add.method('createTypeSpecificInputMorphForSlot', function (slot) {
     var t = slot.type();
     return t ? t.createInputMorph(slot) : null;
   }, {category: ['constructing morphs']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.slots.userInterface.defaultStyle, function(add) {
+
+  add.data('borderColor', new Color(0.6, 0.6, 0.6));
+
+  add.data('borderWidth', 1);
+
+  add.data('padding', 0);
+
+  add.data('openForDragAndDrop', false);
+
+  add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
+
+});
+
+
+thisModule.addSlots(avocado.slots.userInterface.nonZoomingStyle, function(add) {
+
+  add.data('fill', null);
+
+  add.data('suppressGrabbing', true);
+
+  add.data('grabsShouldFallThrough', true);
+
+});
+
+
+thisModule.addSlots(avocado.slots.userInterface.zoomingStyle, function(add) {
+
+  add.data('fillBase', new Color(0.8, 0.8, 0.8));
+
+  add.data('suppressGrabbing', false);
+
+  add.data('grabsShouldFallThrough', false);
+
+});
+
+
+thisModule.addSlots(avocado.slots.userInterface.copyDownStyle, function(add) {
+
+  add.data('fillBase', new Color(0.95, 0.75, 0.75));
+
+});
+
+
+thisModule.addSlots(avocado.slots.userInterface.annotationStyle, function(add) {
+
+  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
+
+  add.data('padding', {left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}'});
+
+});
+
+
+thisModule.addSlots(avocado.slots.userInterface.sourceMorphStyle, function(add) {
+
+  add.data('fontFamily', 'monospace');
+
+  add.data('suppressHandles', true);
+
+});
+
+
+thisModule.addSlots(avocado.slots.userInterface.signatureRowStyle, function(add) {
+
+  add.data('padding', {left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}'});
+
+});
+
+
+thisModule.addSlots(avocado.slots.userInterface.morphMixin_aaa_becauseIDoNotFeelLikeGeneralizingTheseMethodsRightNow, function(add) {
+
+  add.method('contentsPointerButton', function () {
+    return this._contentsPointerButton || (this._contentsPointerButton = avocado.arrow.createButtonForToggling(this._model));
+  }, {category: ['contents']});
+
+  add.data('desiredUIStateAfterBeingAdded', {isSourceOpen: true}, {category: ['events'], initializeTo: '{isSourceOpen: true}'});
+
+  add.method('partsOfUIState', function () {
+    return {
+      isSourceOpen:     this._sourceToggler,
+      isAnnotationOpen: this._annotationToggler,
+      isArrowVisible:   this._contentsPointerButton ? this._contentsPointerButton._arrow : null
+    };
+  }, {category: ['UI state']});
+
+  add.method('updateStyle', function () {
+    if (! this._model.isReallyPartOfHolder()) { this.applyStyle(avocado.slots.userInterface.copyDownStyle); }
+  }, {category: ['updating']});
+
+  add.method('morphsThatNeedToBeVisibleBeforeICanBeVisible', function () {
+    var catMorph = avocado.ui.currentWorld().morphFor(this._model.category());
+    return avocado.compositeCollection.create([catMorph.morphsThatNeedToBeVisibleBeforeICanBeVisible(), [catMorph]]);
+  }, {category: ['updating']});
+
+  add.method('grabCopyAndRemoveMe', function (evt) {
+    this.grabCopy(evt);
+    this._model.remove();
+    var holder = this._model.holder();
+    if (holder) { avocado.ui.justChanged(holder); }
+  }, {category: ['drag and drop']});
+
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    
+    if (this._model.isReallyPartOfHolder()) {
+      this.addTitleEditingCommandsTo(cmdList);
+      
+      var isModifiable = !window.isInCodeOrganizingMode;
+      cmdList.addItem(avocado.command.create(isModifiable ? "copy" : "move", function(evt) { this.grabCopy(evt); }).onlyApplicableIf(function() { return this._model.copyTo; }.bind(this)));
+      cmdList.addItem(avocado.command.create("move", function(evt) { this.grabCopyAndRemoveMe(evt); }).onlyApplicableIf(function() { return isModifiable && this._model.remove; }.bind(this)));
+      if (! this._shouldUseZooming) {
+        if (this._sourceToggler) { cmdList.addItem(this._sourceToggler.commandForToggling("contents")); }
+        if (this._annotationToggler) { cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this._model.annotationIfAny; }.bind(this))); }
+      }
+    }
+    
+    cmdList.addAllCommands(this._model.commands().wrapWithPromptersForArguments().wrapForMorph(this));
+    
+    return cmdList;
+  }, {category: ['menu']});
+
 });
 
 
@@ -180,11 +304,11 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
   }, {category: ['user interface']});
 
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
-  
+
   add.method('arrowTargetType', function () {
     return avocado.types.mirror;
   }, {category: ['user interface']});
-  
+
   add.method('titleAccessors', function () {
     if (!window.isInCodeOrganizingMode) {
       return avocado.accessors.forMethods(this, 'title');
@@ -248,136 +372,12 @@ thisModule.addSlots(avocado.slots['abstract'], function(add) {
     var inSituCommand = avocado.command.create("in situ", function() { this.showInSitu(inSituCommand); }.bind(this));
     return [avocado.label.newMorphFor(this.holder().name()), this.newMorph(), avocado.ui.currentWorld().morphFor(inSituCommand)];
   }, {category: ['user interface', 'slices']});
-  
+
   add.method('copyForGrabbing', function () {
     return this.copyToNewHolder();
   }, {category: ['user interface']});
 
   add.data('shouldCopyToNewHolderWhenDroppedOnWorld', true, {category: ['user interface']});
-
-});
-
-
-thisModule.addSlots(avocado.slots.userInterface.morphMixin_aaa_becauseIDoNotFeelLikeGeneralizingTheseMethodsRightNow, function(add) {
-
-  add.method('contentsPointerButton', function () {
-    return this._contentsPointerButton || (this._contentsPointerButton = avocado.arrow.createButtonForToggling(this._model));
-  }, {category: ['contents']});
-
-  add.data('desiredUIStateAfterBeingAdded', {isSourceOpen: true}, {initializeTo: '{isSourceOpen: true}', category: ['events']});
-
-  add.method('partsOfUIState', function () {
-    return {
-      isSourceOpen:     this._sourceToggler,
-      isAnnotationOpen: this._annotationToggler,
-      isArrowVisible:   this._contentsPointerButton ? this._contentsPointerButton._arrow : null
-    };
-  }, {category: ['UI state']});
-
-  add.method('updateStyle', function () {
-    if (! this._model.isReallyPartOfHolder()) { this.applyStyle(avocado.slots.userInterface.copyDownStyle); }
-  }, {category: ['updating']});
-
-  add.method('morphsThatNeedToBeVisibleBeforeICanBeVisible', function () {
-    var catMorph = avocado.ui.currentWorld().morphFor(this._model.category());
-    return avocado.compositeCollection.create([catMorph.morphsThatNeedToBeVisibleBeforeICanBeVisible(), [catMorph]]);
-  }, {category: ['updating']});
-
-  add.method('grabCopyAndRemoveMe', function (evt) {
-    this.grabCopy(evt);
-    this._model.remove();
-    var holder = this._model.holder();
-    if (holder) { avocado.ui.justChanged(holder); }
-  }, {category: ['drag and drop']});
-  
-  add.method('commands', function () {
-    var cmdList = avocado.command.list.create(this);
-    
-    if (this._model.isReallyPartOfHolder()) {
-      this.addTitleEditingCommandsTo(cmdList);
-      
-      var isModifiable = !window.isInCodeOrganizingMode;
-      cmdList.addItem(avocado.command.create(isModifiable ? "copy" : "move", function(evt) { this.grabCopy(evt); }).onlyApplicableIf(function() { return this._model.copyTo; }.bind(this)));
-      cmdList.addItem(avocado.command.create("move", function(evt) { this.grabCopyAndRemoveMe(evt); }).onlyApplicableIf(function() { return isModifiable && this._model.remove; }.bind(this)));
-      if (! this._shouldUseZooming) {
-        if (this._sourceToggler) { cmdList.addItem(this._sourceToggler.commandForToggling("contents")); }
-        if (this._annotationToggler) { cmdList.addItem(this._annotationToggler.commandForToggling("annotation").onlyApplicableIf(function() {return this._model.annotationIfAny; }.bind(this))); }
-      }
-    }
-    
-    cmdList.addAllCommands(this._model.commands().wrapWithPromptersForArguments().wrapForMorph(this));
-    
-    return cmdList;
-  }, {category: ['menu']});
-
-});
-
-
-thisModule.addSlots(avocado.slots.userInterface.defaultStyle, function(add) {
-
-  add.data('borderColor', new Color(0.6, 0.6, 0.6));
-
-  add.data('borderWidth', 1);
-
-  add.data('padding', 0);
-
-  add.data('openForDragAndDrop', false);
-
-  add.data('internalPadding', {left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}, {initializeTo: '{left: 15, right: 2, top: 2, bottom: 2, between: {x: 0, y: 0}}'});
-
-});
-
-
-thisModule.addSlots(avocado.slots.userInterface.nonZoomingStyle, function(add) {
-
-  add.data('fill', null);
-  
-  add.data('suppressGrabbing', true);
-
-  add.data('grabsShouldFallThrough', true);
-
-});
-
-
-thisModule.addSlots(avocado.slots.userInterface.zoomingStyle, function(add) {
-
-  add.data('fillBase', new Color(0.8, 0.8, 0.8));
-  
-  add.data('suppressGrabbing', false);
-
-  add.data('grabsShouldFallThrough', false);
-
-});
-
-
-thisModule.addSlots(avocado.slots.userInterface.copyDownStyle, function(add) {
-
-  add.data('fillBase', new Color(0.95, 0.75, 0.75));
-
-});
-
-
-thisModule.addSlots(avocado.slots.userInterface.annotationStyle, function(add) {
-
-  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
-
-  add.data('padding', {left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}, {initializeTo: '{left: 0, right: 0, top: 0, bottom: 0, between: {x: 2, y: 2}}'});
-
-});
-
-
-thisModule.addSlots(avocado.slots.userInterface.sourceMorphStyle, function(add) {
-
-  add.data('fontFamily', 'monospace');
-
-  add.data('suppressHandles', true);
-
-});
-
-
-thisModule.addSlots(avocado.slots.userInterface.signatureRowStyle, function(add) {
-
-  add.data('padding', {left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}, {initializeTo: '{left: 0, right: 2, top: 0, bottom: 0, between: {x: 0, y: 0}}'});
 
 });
 
@@ -413,9 +413,9 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
     // aaa - blecch, maybe I should just make valueHolders have a common parent with slots.
     avocado.slots['abstract'].explicitlySetContents.call(this, c, evt);
   }, {category: ['pretending to be a slot']});
-  
+
   add.method('justExplicitlySetContents', function (evt) {
-    // nothing necessary here
+    // nothing necessary here;
   }, {category: ['pretending to be a slot']});
 
   add.method('shouldBeShownAsContainingItsContents', function () {
@@ -429,12 +429,12 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
   add.method('setSourceCode', function (s) {
     this.explicitlySetContents(this.newContentsForSourceCode(s));
   }, {category: ['pretending to be a slot']});
-  
+
   add.method('canSetContentsFromSourceCode', function () {
     var type = this.type();
     return type && typeof(type.objectForString) === 'function';
   }, {category: ['pretending to be a slot']});
-  
+
   add.method('newContentsForSourceCode', function (s) {
     if (this.canSetContentsFromSourceCode()) {
       return this.type().objectForString(s);
@@ -445,7 +445,7 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
   add.method('createDescriptionMorphFor', function (slotMorph) {
     return slotMorph.findOrCreateTitleLabel();
   }, {category: ['pretending to be a slot']});
-  
+
   add.method('titleAccessors', function () {
     return avocado.accessors.forMethods(this, 'title');
   }, {category: ['pretending to be a slot']});
@@ -453,7 +453,7 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
   add.method('arrowTargetType', function () {
     return this.type();
   }, {category: ['pretending to be a slot']});
-  
+
 });
 
 

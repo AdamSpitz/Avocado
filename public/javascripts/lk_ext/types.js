@@ -10,7 +10,7 @@ thisModule.addSlots(avocado.types.bool, function(add) {
   add.method('createInputMorph', function (slot) {
     return new avocado.CheckBoxMorph(slot);
   }, {category: ['input']});
-  
+
 });
 
 
@@ -60,16 +60,16 @@ thisModule.addSlots(avocado.types.longString, function(add) {
       return htmlMorph;
     }
   }, {category: ['input']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.types.enumeration.prompterProto, function(add) {
-  
+
   add.method('prompt', function (caption, context, evt, callback) {
     avocado.ComboBoxMorph.prompt("Which?", "Choose", "Cancel", this._possibilities, this._possibilities.first(), callback);
   });
-  
+
 });
 
 

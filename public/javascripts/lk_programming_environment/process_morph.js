@@ -49,6 +49,13 @@ thisModule.addSlots(avocado.process, function(add) {
 });
 
 
+thisModule.addSlots(avocado.process.defaultMorphStyle, function(add) {
+
+  add.data('fillBase', new Color(0.5, 0.9, 0.5));
+
+});
+
+
 thisModule.addSlots(avocado.process.context, function(add) {
 
   add.method('newMorph', function () {
@@ -81,13 +88,6 @@ thisModule.addSlots(avocado.process.context, function(add) {
   }, {category: ['user interface']});
 
   add.creator('defaultMorphStyle', {}, {category: ['user interface']});
-
-});
-
-
-thisModule.addSlots(avocado.process.defaultMorphStyle, function(add) {
-
-  add.data('fillBase', new Color(0.5, 0.9, 0.5));
 
 });
 

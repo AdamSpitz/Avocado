@@ -21,7 +21,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.creator('zoomingStyle', Object.create(avocado.treeNode.zoomingStyle), {category: ['user interface', 'styles']});
 
   add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
-  
+
   add.method('shouldContentsPanelUseZooming', function () { return !!avocado.ui.shouldMirrorsUseZooming; }, {category: ['user interface']});
 
   add.method('shouldUseZooming', function () { return !!avocado.ui.shouldMirrorsUseZooming; }, {category: ['user interface']});
@@ -29,7 +29,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.method('copyForGrabbing', function () {
     return this.copyToNewHolder();
   }, {category: ['user interface']});
-  
+
   add.data('shouldCopyToNewHolderWhenDroppedOnWorld', true, {category: ['user interface']});
 
   add.method('titleAccessors', function () {
@@ -50,7 +50,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
     
     return avocado.table.createSpaceFillingRowMorph([summaryLabel], {left: 0, right: 0, top: 0, bottom: 2, between: {x: 0, y: 0}}).setScale(this.shouldUseZooming() ? 0.5 : 1.0);
   }, {category: ['user interface', 'creating']});
-  
+
   add.method('addUICommandsTo', function (cmdList, morph) {
     if (this.mirror().canHaveSlots()) {
       if (!this.isRoot()) {

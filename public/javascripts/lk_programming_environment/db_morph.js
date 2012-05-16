@@ -20,78 +20,9 @@ thisModule.addSlots(avocado.db, function(add) {
 });
 
 
-thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add) {
-
-  add.method('newMorph', function () {
-    return avocado.treeNode.newMorphFor(this, {fillBase: new Color(1, 0.8, 0.5), borderRadius: 10});
-  }, {category: ['user interface']});
-  
-});
-
-
-thisModule.addSlots(avocado.couch.db.container, function(add) {
-
-  add.method('newMorph', function () {
-    var m = avocado.treeNode.newMorphFor(this, this.defaultStyle);
-
-    // aaa - this is a hack, but for now I just want a custom copy; in the
-    // long run make this work with the general copying mechanism
-    m.copyAttributesFrom = function (copier, other) {
-      Morph.prototype.copyAttributesFrom.call(this, copier, other);
-
-      // Make a new container object, don't try to copy all the contents yet.
-      this._model = this._model.copyRemoveAll();
-    };
-  
-    m.updateContents = function (callback) {
-      this._model.updateContents(function(contents) {
-        contents.forEach(function(c) { WorldMorph.current().morphFor(c).refreshContentOfMeAndSubmorphs(); }.bind(this));
-        avocado.ui.justChangedContent(this._model, evt);
-        if (callback) { callback(contents); }
-      }.bind(this));
-      return this;
-    };
-  
-    m.storeString = function () {
-      // aaa - hack, in the long run the transporter should be smart enough to handle this
-      return ["WorldMorph.current().morphFor(", this._model.storeString(), ").setBasicMorphProperties(", this.basicMorphPropertiesStoreString(), ").updateContents()"].join("");
-    };
-
-    return m;
-  }, {category: ['user interface']});
-
-  add.creator('defaultStyle', {}, {category: ['user interface', 'styles']});
-  
-});
-
-
-thisModule.addSlots(avocado.db.morphFactory, function(add) {
-
-  add.method('factoryName', function () { return 'database morphs'; });
-
-  add.method('createFactoryMorph', function () {
-    var dbMorph = new avocado.db.Morph(null);
-    
-    var factory = avocado.table.newTableMorph();
-    factory.applyStyle(avocado.morphFactories.defaultStyle);
-    factory.replaceContentWith(avocado.table.contents.createWithRow([dbMorph]));
-    return factory;
-  });
-
-  add.data('enableDBExperiment', true);
-
-  add.method('postFileIn', function () {
-    // Not really much point in having a whole factory just for one morph.
-    // For now I've added a DB morph to the simple morphs factory.
-    if (false && this.enableDBExperiment && avocado.morphFactories) {
-      avocado.morphFactories.globalFactories.push(this);
-    }
-  });
-
-});
-
-
 thisModule.addSlots(avocado.db.Morph, function(add) {
+
+  add.data('displayName', 'Morph');
 
   add.data('superclass', Morph);
 
@@ -155,12 +86,83 @@ thisModule.addSlots(avocado.db.Morph.prototype.style, function(add) {
 });
 
 
+thisModule.addSlots(avocado.db.morphFactory, function(add) {
+
+  add.method('factoryName', function () { return 'database morphs'; });
+
+  add.method('createFactoryMorph', function () {
+    var dbMorph = new avocado.db.Morph(null);
+    
+    var factory = avocado.table.newTableMorph();
+    factory.applyStyle(avocado.morphFactories.defaultStyle);
+    factory.replaceContentWith(avocado.table.contents.createWithRow([dbMorph]));
+    return factory;
+  });
+
+  add.data('enableDBExperiment', true);
+
+  add.method('postFileIn', function () {
+    // Not really much point in having a whole factory just for one morph.
+    // For now I've added a DB morph to the simple morphs factory.
+    if (false && this.enableDBExperiment && avocado.morphFactories) {
+      avocado.morphFactories.globalFactories.push(this);
+    }
+  });
+
+});
+
+
+thisModule.addSlots(avocado.couch.db.containerTypesOrganizerProto, function(add) {
+
+  add.method('newMorph', function () {
+    return avocado.treeNode.newMorphFor(this, {fillBase: new Color(1, 0.8, 0.5), borderRadius: 10});
+  }, {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(avocado.couch.db.container, function(add) {
+
+  add.method('newMorph', function () {
+    var m = avocado.treeNode.newMorphFor(this, this.defaultStyle);
+
+    // aaa - this is a hack, but for now I just want a custom copy; in the
+    // long run make this work with the general copying mechanism
+    m.copyAttributesFrom = function (copier, other) {
+      Morph.prototype.copyAttributesFrom.call(this, copier, other);
+
+      // Make a new container object, don't try to copy all the contents yet.
+      this._model = this._model.copyRemoveAll();
+    };
+  
+    m.updateContents = function (callback) {
+      this._model.updateContents(function(contents) {
+        contents.forEach(function(c) { WorldMorph.current().morphFor(c).refreshContentOfMeAndSubmorphs(); }.bind(this));
+        avocado.ui.justChangedContent(this._model, evt);
+        if (callback) { callback(contents); }
+      }.bind(this));
+      return this;
+    };
+  
+    m.storeString = function () {
+      // aaa - hack, in the long run the transporter should be smart enough to handle this
+      return ["WorldMorph.current().morphFor(", this._model.storeString(), ").setBasicMorphProperties(", this.basicMorphPropertiesStoreString(), ").updateContents()"].join("");
+    };
+
+    return m;
+  }, {category: ['user interface']});
+
+  add.creator('defaultStyle', {}, {category: ['user interface', 'styles']});
+
+});
+
+
 thisModule.addSlots(avocado.couch.db.container.defaultStyle, function(add) {
 
   add.data('fillBase', new Color(0.7, 1, 0.6));
-  
+
   add.data('openForDragAndDrop', false);
-  
+
   add.data('borderRadius', 10);
 
 });

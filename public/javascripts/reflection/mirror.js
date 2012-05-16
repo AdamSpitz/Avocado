@@ -16,17 +16,6 @@ thisModule.addSlots(avocado, function(add) {
 });
 
 
-thisModule.addSlots(window, function(add) {
-
-  add.method('reflect', function (o) {
-    var m = Object.create(avocado.mirror);
-    m.initialize(o);
-    return m;
-  }, {category: ['avocado', 'reflection']});
-
-});
-
-
 thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('initialize', function (o) {
@@ -58,7 +47,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
       return "broken identity hash";
     }
   }, {category: ['comparing']});
-  
+
   add.creator('namingScheme', Object.create(avocado.namingScheme), {category: ['naming']});
 
   add.method('reflecteeToString', function () {
@@ -117,7 +106,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
     if (cs) { return cs.immediateName(); }
     return "";
   }, {category: ['naming']});
-  
+
   add.method('shortDescription', function () {
     if (! this.canHaveSlots()) { return ""; }
     if (this.isReflecteeFunction()) { return ""; }
@@ -289,7 +278,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
   add.method('alreadyContainsSlotWithNameAndContents', function (name, contents) {
     return this.slotAt(name).contents().equals(contents);
   }, {category: ['testing']});
-  
+
   add.method('eachSlot', function (f) {
     this.eachFakeSlot(f);
     this.eachNormalSlot(f);
@@ -1135,101 +1124,6 @@ thisModule.addSlots(avocado.mirror.sourceModulePrompter, function(add) {
 });
 
 
-thisModule.addSlots(avocado.mirror.namingScheme, function(add) {
-
-});
-
-
-thisModule.addSlots(Array.prototype, function(add) {
-
-  add.method('makeAllCreatorSlots', function () {
-    this.makeCreatorSlots(0, this.length);
-    return this;
-  }, {category: ['reflection', 'creator slots']});
-
-  add.method('makeCreatorSlots', function (start, end) {
-    var thisMir = reflect(this);
-    for (var i = start; i < end; ++i) {
-      // Only make the indexable slot be the creator if the object
-      // isn't already well-known. (Not sure this is what we
-      // want in all cases, but for now it is.)
-      var mir = reflect(this[i]);
-      if (! mir.isWellKnown('probableCreatorSlot')) {
-        thisMir.slotAt(i).beCreator();
-      }
-    }
-    return this;
-  }, {category: ['reflection', 'creator slots']});
-
-  add.method('unmakeCreatorSlots', function (start, end) {
-    var thisMir = reflect(this);
-    for (var i = start; i < end; ++i) {
-      var o = this[i];
-      // aaa this doesNotNeedACreatorSlot thing is a HACK
-      if (o && !o.doesNotNeedACreatorSlot) {
-        var s = thisMir.slotAt(i);
-        var contents = s.contents();
-        if (s.equals(contents.theCreatorSlot())) {
-          contents.setCreatorSlot(null);
-        }
-      }
-    }
-    return this;
-  }, {category: ['reflection', 'creator slots']});
-
-  add.method('adjustCreatorSlots', function (start, end, shiftAmount) {
-    if (shiftAmount === 0) { return this; }
-    if (shiftAmount === undefined) { shiftAmount = 1; }
-    var thisMir = reflect(this);
-    for (var i = start; i < end; ++i) {
-      if (thisMir.slotAt(i - shiftAmount).equals(reflect(this[i]).theCreatorSlot())) {
-        thisMir.slotAt(i).beCreator();
-      }
-    }
-    return this;
-  }, {category: ['reflection', 'creator slots']});
-
-  add.method('unshiftAndAdjustCreatorSlots', function (newElem) {
-    this.unshift(newElem);
-
-		if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
-      if (newElem && !newElem.doesNotNeedACreatorSlot) {
-        this.makeCreatorSlots(0, 1);
-        this.adjustCreatorSlots(1, this.length);
-      }
-    }
-  }, {category: ['reflection', 'creator slots']});
-
-  add.method('pushAndAdjustCreatorSlots', function (newElem) {
-    this.push(newElem);
-
-		if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
-      if (newElem && !newElem.doesNotNeedACreatorSlot) {
-        this.makeCreatorSlots(this.length - 1, this.length);
-      }
-    }
-  }, {category: ['reflection', 'creator slots']});
-
-  add.method('spliceAndAdjustCreatorSlots', function () {
-		if (avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
-		  return this.splice.apply(this, arguments);
-	  }
-		  
-    var index = arguments[0];
-    var howMany = arguments[1];
-    this.unmakeCreatorSlots(index, index + howMany);
-    var result = this.splice.apply(this, arguments);
-    var args = $A(arguments);
-    args.shift();
-    args.shift();
-    this.makeCreatorSlots(index, index + args.length);
-    this.adjustCreatorSlots(index + args.length, this.length, args.length - howMany);
-    return result;
-  }, {category: ['reflection', 'creator slots']});
-
-});
-
-
 thisModule.addSlots(avocado.mirror.tests, function(add) {
 
   add.method('testEquality', function () {
@@ -1752,6 +1646,107 @@ thisModule.addSlots(avocado.mirror.tests, function(add) {
     this.assertIdentity('comment 2d', reflect(o3).slotAt('d').inheritedAnnotation().getComment());
     this.assert(! reflect(o3).slotAt('e').inheritedAnnotation());
   });
+
+});
+
+
+thisModule.addSlots(window, function(add) {
+
+  add.method('reflect', function (o) {
+    var m = Object.create(avocado.mirror);
+    m.initialize(o);
+    return m;
+  }, {category: ['avocado', 'reflection']});
+
+});
+
+
+thisModule.addSlots(Array.prototype, function(add) {
+
+  add.method('makeAllCreatorSlots', function () {
+    this.makeCreatorSlots(0, this.length);
+    return this;
+  }, {category: ['reflection', 'creator slots']});
+
+  add.method('makeCreatorSlots', function (start, end) {
+    var thisMir = reflect(this);
+    for (var i = start; i < end; ++i) {
+      // Only make the indexable slot be the creator if the object
+      // isn't already well-known. (Not sure this is what we
+      // want in all cases, but for now it is.)
+      var mir = reflect(this[i]);
+      if (! mir.isWellKnown('probableCreatorSlot')) {
+        thisMir.slotAt(i).beCreator();
+      }
+    }
+    return this;
+  }, {category: ['reflection', 'creator slots']});
+
+  add.method('unmakeCreatorSlots', function (start, end) {
+    var thisMir = reflect(this);
+    for (var i = start; i < end; ++i) {
+      var o = this[i];
+      // aaa this doesNotNeedACreatorSlot thing is a HACK
+      if (o && !o.doesNotNeedACreatorSlot) {
+        var s = thisMir.slotAt(i);
+        var contents = s.contents();
+        if (s.equals(contents.theCreatorSlot())) {
+          contents.setCreatorSlot(null);
+        }
+      }
+    }
+    return this;
+  }, {category: ['reflection', 'creator slots']});
+
+  add.method('adjustCreatorSlots', function (start, end, shiftAmount) {
+    if (shiftAmount === 0) { return this; }
+    if (shiftAmount === undefined) { shiftAmount = 1; }
+    var thisMir = reflect(this);
+    for (var i = start; i < end; ++i) {
+      if (thisMir.slotAt(i - shiftAmount).equals(reflect(this[i]).theCreatorSlot())) {
+        thisMir.slotAt(i).beCreator();
+      }
+    }
+    return this;
+  }, {category: ['reflection', 'creator slots']});
+
+  add.method('unshiftAndAdjustCreatorSlots', function (newElem) {
+    this.unshift(newElem);
+
+		if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
+      if (newElem && !newElem.doesNotNeedACreatorSlot) {
+        this.makeCreatorSlots(0, 1);
+        this.adjustCreatorSlots(1, this.length);
+      }
+    }
+  }, {category: ['reflection', 'creator slots']});
+
+  add.method('pushAndAdjustCreatorSlots', function (newElem) {
+    this.push(newElem);
+
+		if (! avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
+      if (newElem && !newElem.doesNotNeedACreatorSlot) {
+        this.makeCreatorSlots(this.length - 1, this.length);
+      }
+    }
+  }, {category: ['reflection', 'creator slots']});
+
+  add.method('spliceAndAdjustCreatorSlots', function () {
+		if (avocado.shouldBreakCreatorSlotsInOrderToImprovePerformance) {
+		  return this.splice.apply(this, arguments);
+	  }
+		  
+    var index = arguments[0];
+    var howMany = arguments[1];
+    this.unmakeCreatorSlots(index, index + howMany);
+    var result = this.splice.apply(this, arguments);
+    var args = $A(arguments);
+    args.shift();
+    args.shift();
+    this.makeCreatorSlots(index, index + args.length);
+    this.adjustCreatorSlots(index + args.length, this.length, args.length - howMany);
+    return result;
+  }, {category: ['reflection', 'creator slots']});
 
 });
 

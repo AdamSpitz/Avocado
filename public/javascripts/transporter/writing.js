@@ -46,16 +46,6 @@ thisModule.addSlots(avocado.transporter.module.filerOuters, function(add) {
 
   add.creator('general', {}, {category: ['transporting']});
 
-  add.creator('normal', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
-
-  add.creator('justBody', Object.create(avocado.transporter.module.filerOuters.normal), {category: ['transporting']});
-
-  add.creator('annotationless', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
-
-  add.creator('json', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
-
-  add.creator('mock', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
-
 });
 
 
@@ -96,9 +86,9 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.general, function(add
   }, {category: ['writing']});
 
   add.method('rememberNestedObjectInfoIfNecessary', function (slot, info) {
-    // children can override
+    // children can override;
   }, {category: ['writing']});
-  
+
   add.method('fileOutSlotWithInfo', function (info) {
     var slotAnno = info.rawAnnotation;
     var slotAnnoExpr = slotAnno ? reflect(slotAnno).expressionEvaluatingToMe() : '{}';
@@ -154,6 +144,13 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.general, function(add
     this._buffer.append("window.").append(fnName).append(" = ").append(f.toString()).append(";\n");
     this._buffer.append(fnName).append("();\n\n\n\n");
   }, {category: ['writing']});
+
+});
+
+
+thisModule.addSlots(avocado.transporter.module.filerOuters, function(add) {
+
+  add.creator('normal', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
 
 });
 
@@ -218,6 +215,13 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.normal, function(add)
 });
 
 
+thisModule.addSlots(avocado.transporter.module.filerOuters, function(add) {
+
+  add.creator('justBody', Object.create(avocado.transporter.module.filerOuters.normal), {category: ['transporting']});
+
+});
+
+
 thisModule.addSlots(avocado.transporter.module.filerOuters.justBody, function(add) {
 
   add.method('writeModule', function (name, reqs, bodyBlock) {
@@ -227,6 +231,13 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.justBody, function(ad
 
     this._buffer.append("}");
   }, {category: ['writing']});
+
+});
+
+
+thisModule.addSlots(avocado.transporter.module.filerOuters, function(add) {
+
+  add.creator('annotationless', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
 
 });
 
@@ -258,6 +269,13 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.annotationless, funct
   add.method('writeParentAnnotation', function (info) {
     // nothing to do here, I think;
   }, {category: ['writing']});
+
+});
+
+
+thisModule.addSlots(avocado.transporter.module.filerOuters, function(add) {
+
+  add.creator('json', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
 
 });
 
@@ -302,7 +320,7 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.json, function(add) {
   add.method('setCurrentHolder', function (holder) {
     this._currentHolder = holder;
     // don't actually need this._currentHolderExpr, and trying to get the holder's
-    // creatorSlotChainExpression will cause an error if we're doing the __creatorPath thing. -- Adam
+    // creatorSlotChainExpression will cause an error if we're doing the __creatorPath thing. -- Adam;
   }, {category: ['writing']});
 
   add.method('temporarilySwitchHolder', function (f) {
@@ -362,6 +380,13 @@ thisModule.addSlots(avocado.transporter.module.filerOuters.json, function(add) {
   add.method('writeParentAnnotation', function (info) {
     // nothing to do here, I think;
   }, {category: ['writing']});
+
+});
+
+
+thisModule.addSlots(avocado.transporter.module.filerOuters, function(add) {
+
+  add.creator('mock', Object.create(avocado.transporter.module.filerOuters.general), {category: ['transporting']});
 
 });
 

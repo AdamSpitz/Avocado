@@ -48,7 +48,7 @@ thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
     var sortCrit = this.sortingCriteriaForSearchResults();
     return sortCrit ? results.sortBy(sortCrit) : results;
   }, {category: ['accessing']});
-  
+
   add.method('sortingCriteriaForSearchResults', function () {
     if (this._searcher.resultsAreSlots()) { // aaa hack
       return function(s) { return s.holder().name().toUpperCase(); };
@@ -57,7 +57,7 @@ thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
       return null;
     }
   }, {category: ['sorting']});
-  
+
   add.method('newMorph', function () {
     var shouldEnableTheTreeNodeSliceExperiment = false;
     if (shouldEnableTheTreeNodeSliceExperiment) {
@@ -80,18 +80,18 @@ thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
     }
     return this._immediateContents;
   }, {category: ['user interface']});
-  
+
   add.method('redo', function (evt) {
     this._immediateContents = this.goAndReturnSortedResults();
     avocado.ui.justChanged(this, null, evt);
   }, {category: ['user interface']});
-  
+
   add.method('commands', function () {
     var cmdList = avocado.command.list.create(this);
     cmdList.addItem(avocado.command.create("redo", function(evt) { this.redo(evt); }));
     return cmdList;
   }, {category: ['user interface']});
-  
+
 });
 
 

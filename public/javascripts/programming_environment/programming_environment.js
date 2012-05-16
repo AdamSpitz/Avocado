@@ -26,7 +26,7 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.programmingEnvironment, function(add) {
-  
+
   add.method('loadAsTopLevelEnvironment', function () {
     avocado.isReflectionEnabled = true;
     
@@ -37,7 +37,7 @@ thisModule.addSlots(avocado.programmingEnvironment, function(add) {
     
     avocado.applicationList.addApplication(this);
   });
-  
+
   add.method('worldName', function () { return "Avocado"; }, {category: ['printing']});
 
   add.data('isMorphMenuEnabled', true, {category: ['enabling reflection']});
@@ -52,7 +52,7 @@ thisModule.addSlots(avocado.programmingEnvironment, function(add) {
       c.addGlobalCommandsTo(cmdList);
     });
   }, {category: ['menu']});
-  
+
 });
 
 
@@ -69,7 +69,7 @@ thisModule.addSlots(avocado.reflectionMenuContributor, function(add) {
       avocado.ui.grab(reflect(window), evt);
     }]);
   });
-  
+
 });
 
 

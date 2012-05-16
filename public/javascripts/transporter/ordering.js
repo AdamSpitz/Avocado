@@ -100,7 +100,7 @@ thisModule.addSlots(avocado.transporter.module.slotOrderizer, function(add) {
     
     if (this._debugMode) { this.printDependencies(); }
   }, {category: ['dependencies'], comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.'});
-  
+
   add.method('printDependencies', function () {
     console.log("Holder dependencies:");
     this._slotDeps.holderDeps.printToConsole();

@@ -26,16 +26,16 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
   add.method('initialize', function () {
     this._objectCount = 0; // just for fun;
   });
-  
+
   add.method('visitor', function () {
     return this._visitor;
   });
-  
+
   add.method('setVisitor', function (v) {
     this._visitor = v;
     return this;
   });
-  
+
   add.creator('visitors', {});
 
   add.data('namesToIgnore', ["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "_creatorSlotHolder", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just for now - the right solution is to figure out what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__annotation__", "_annotationsForObjectsThatShouldNotHaveAttributesAddedToThem", "_creatorSlotHolder", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"]'});
@@ -59,7 +59,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     if (!this._shouldNotUndoMarkingsWhenDone) { this.undoAllMarkings(); }
     return this.results();
   });
-  
+
   add.method('reset', function () {
     // children can override
     this._marked = [];
@@ -96,7 +96,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     this._shouldNotIgnoreDOMObjects = true;
     return this;
   });
-  
+
   add.method('useDOMChildNodePseudoSlots', function () {
     this.doNotIgnoreDOMObjects();
     this._shouldUseDOMChildNodePseudoSlots = true;
@@ -117,7 +117,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     this._shouldRevisitAlreadyVisitedObjects = true;
     return this;
   });
-  
+
   add.creator('path', {});
 
   add.method('walkSpecialUnreachableObjects', function () {
@@ -287,59 +287,119 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     
     this.walk(childNode, avocado.objectGraphWalker.path.create(parentNode, "childnode" + index, howDidWeGetHere));
   });
+
 });
 
 
 thisModule.addSlots(avocado.objectGraphWalker.path, function(add) {
-  
+
   add.method('create', function () {
     var p = Object.create(this);
     p.initialize.apply(p, arguments);
     return p;
   });
-  
+
   add.method('initialize', function (slotHolder, slotName, previous) {
     this.slotHolder = slotHolder;
     this.slotName = slotName;
     this.previous = previous;
   });
-  
+
   add.method('extendWith', function (slotHolder, slotName) {
     return avocado.objectGraphWalker.path.create(slotHolder, slotName, this);
   });
-  
+
+});
+
+
+thisModule.addSlots(avocado.objectGraphWalker.tests, function(add) {
+
+  add.method('testIncremental', function () {
+    var w1 = avocado.objectGraphWalker.visitors.testingObjectGraphWalker.create().createWalker();
+    w1.go();
+    var n = 'objectGraphWalker_tests___extraSlotThatIAmAdding';
+    var o = {};
+    window[n] = o;
+    var w2 = avocado.objectGraphWalker.visitors.testingObjectGraphWalker.create().createWalker();
+    w2.go();
+    this.assertEqual(w1.objectCount() + 1, w2.objectCount());
+    delete window[n];
+  });
+
+});
+
+
+thisModule.addSlots(avocado.senders, function(add) {
+
+  add.data('byID', {}, {initializeTo: '{}'});
+
+  add.method('of', function (id) {
+    return this.byID[id] || [];
+  });
+
+  add.creator('finder', {});
+
+  add.method('rememberIdentifiersUsedBy', function (f) {
+    if (typeof(f) !== 'function') { return; }
+    var str = f.toString();
+    var idRegex = /[A-Z_$a-z][A-Z_$0-9a-z]*/g;
+    var ids = str.match(idRegex);
+    if (!ids) { return; }
+    var sendersByID = this.byID;
+    for (var i = 0, n = ids.length; i < n; ++i) {
+      var id = ids[i];
+      if (id !== '__annotation__' && !avocado.javascript.reservedWords[id]) {
+        var senders = sendersByID[id];
+        if (!senders) {
+          senders = [];
+          sendersByID[id] = senders;
+        }
+        senders.push(f);
+      }
+    }
+  });
+
+});
+
+
+thisModule.addSlots(avocado.senders.finder, function(add) {
+
+  add.method('create', function (id) {
+    return Object.newChildOf(this, id);
+  });
+
+  add.method('initialize', function (id) {
+    this._id = id;
+  });
+
+  add.method('inspect', function () { return "senders of " + this._id; });
+
+  add.method('go', function () {
+    return avocado.senders.of(this._id).map(function(x) {
+      return reflect(x).probableCreatorSlot();
+    });
+  });
+
+  add.method('resultsAreSlots', function () { return true; });
+
 });
 
 
 thisModule.addSlots(avocado.objectGraphWalker.visitors, function(add) {
-  
+
   add.creator('general', {});
 
-  add.creator('objectGraphAnnotator', Object.create(avocado.objectGraphWalker.visitors.general));
-
-  add.creator('implementorsFinder', Object.create(avocado.objectGraphWalker.visitors.general));
-
-  add.creator('unownedSlotFinder', Object.create(avocado.objectGraphWalker.visitors.general));
-
-  add.creator('referenceFinder', Object.create(avocado.objectGraphWalker.visitors.general));
-
-  add.creator('childFinder', Object.create(avocado.objectGraphWalker.visitors.general));
-
-  add.creator('annotationWalker', Object.create(avocado.objectGraphWalker.visitors.general));
-
-  add.creator('testingObjectGraphWalker', Object.create(avocado.objectGraphWalker.visitors.general));
-  
 });
 
 
 thisModule.addSlots(avocado.objectGraphWalker.visitors.general, function(add) {
-  
+
   add.method('create', function () {
     var v = Object.create(this);
     v.initialize.apply(v, arguments);
     return v;
   });
-  
+
   add.method('initialize', function () {
     this._results = [];
   });
@@ -347,13 +407,13 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.general, function(add) {
   add.method('inspect', function () {
     return reflect(this).name();
   });
-  
+
   add.method('createWalker', function () {
     return avocado.objectGraphWalker.create().setVisitor(this);
   });
-  
+
   add.method('reset', function () {
-    // children can override
+    // children can override;
   });
 
   add.method('results', function () {
@@ -390,160 +450,19 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.general, function(add) {
   add.method('reachedDOMChildNode', function (parentNode, index, childNode) {
     // children can override;
   });
-  
-});
-
-
-thisModule.addSlots(avocado.objectGraphWalker.visitors.childFinder, function(add) {
-
-  add.method('initialize', function ($super, o) {
-    $super();
-    this._objectToSearchFor = o;
-  });
-
-  add.method('reachedObject', function (o) {
-    var mir = reflect(o);
-    if (mir.parent().reflectee() === this._objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
-      this._results.push(o);
-    }
-  });
 
 });
 
 
-thisModule.addSlots(avocado.objectGraphWalker.visitors.annotationWalker, function(add) {
+thisModule.addSlots(avocado.objectGraphWalker.visitors, function(add) {
 
-  add.method('initialize', function ($super) {
-    $super();
-    this._simpleFunctionCount = 0;
-    this._simpleFunctionPrototypeCount = 0;
-    this._emptyObjectCount = 0;
-    this._otherObjectCount = 0;
-    this._otherObjects = [];
-    this._emptyObjects = [];
-  });
-
-  add.method('reachedObject', function (o) {
-    if (o && typeof(o.hasOwnProperty) === 'function' && avocado.annotator.actualExistingAnnotationOf(o)) {
-      var mir = reflect(o);
-      if (mir.isReflecteeSimpleMethod()) {
-        this._simpleFunctionCount += 1;
-      } else {
-        var cs = mir.theCreatorSlot();
-        if (cs && cs.name() === 'prototype' && cs.holder().isReflecteeSimpleMethod()) {
-          this._simpleFunctionPrototypeCount += 1;
-        } else if (mir.size() === 0 && mir.reflectee().__proto__ === Object.prototype) {
-          this._emptyObjectCount += 1;
-          this._emptyObjects.push(mir.reflectee());
-        } else {
-          this._otherObjectCount += 1;
-          this._otherObjects.push(mir.reflectee());
-        }
-      }
-    }
-  });
-
-});
-
-
-thisModule.addSlots(avocado.objectGraphWalker.visitors.implementorsFinder, function(add) {
-
-  add.method('initialize', function ($super, slotName) {
-    $super();
-    this._slotNameToSearchFor = slotName;
-  });
-
-  add.method('inspect', function () { return "Well-known implementors of '" + this._slotNameToSearchFor + "'"; });
-
-  add.method('reachedSlot', function (holder, slotName, contents) {
-    if (slotName === this._slotNameToSearchFor && holder !== avocado.senders.byID && reflect(holder).isWellKnown('probableCreatorSlot')) {
-      this._results.push(reflect(holder).slotAt(slotName));
-    }
-  });
-
-  add.data('_resultsAreSlots', true);
-
-});
-
-
-thisModule.addSlots(avocado.objectGraphWalker.visitors.unownedSlotFinder, function(add) {
-
-  add.method('inspect', function () { return "Unowned attributes"; });
-
-  add.method('shouldContinueRecursingIntoObject', function (object, objectAnno, howDidWeGetHere) {
-    // Factor the system better, so that this object-graph-walker
-    // can do exactly what the transporter does.
-    if (avocado.annotator.isSimpleMethod(object)) { return false; }
-    
-    if (typeof(object.storeString) === 'function' && (typeof(object.storeStringNeeds) !== 'function' || object !== object.storeStringNeeds())) { return false; }
-    
-    return true;
-  });
-
-  add.method('shouldContinueRecursingIntoSlot', function (holder, slotName, howDidWeGetHere) {
-    var slot = reflect(holder).slotAt(slotName);
-    var isCreator = slot.equals(slot.contents().explicitlySpecifiedCreatorSlot());
-    if (!isCreator) { return false; }
-    if (slot.getModuleAssignedToMeExplicitly()) { return false; } // since all the objects under it will implicitly have that module
-    return true;
-  });
-
-  add.method('shouldIgnoreSlot', function (holder, slotName, howDidWeGetHere) {
-    var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
-    if (slotAnno.initializationExpression()) { return true; }
-    return false;
-  });
-
-  add.method('reachedSlot', function (holder, slotName, contents) {
-    if (slotName === '__proto__') { return; }
-    var slotAnno = avocado.annotator.annotationOf(holder).existingSlotAnnotation(slotName); // for performance, don't create the annotation if it's not needed
-    if (! avocado.annotator.getModuleAssignedExplicitlyOrImplicitlyTo(slotAnno, holder)) {
-      if (avocado.annotator.isMagicSlotNameOnFunction(holder, slotName)) { return; }
-      var slot = reflect(holder).slotAt(slotName);
-      if (slot.isFromACopyDownParent()) { return; }
-      
-      console.log("Found unowned slot: " + slot.holder().name() + "." + slot.name());
-      this._results.push(slot);
-    }
-  });
-
-  add.data('_resultsAreSlots', true);
-
-});
-
-
-thisModule.addSlots(avocado.objectGraphWalker.visitors.referenceFinder, function(add) {
-
-  add.method('initialize', function ($super, o) {
-    $super();
-    this._objectToSearchFor = o;
-  });
-
-  add.method('inspect', function () { return "Well-known references to " + reflect(this._objectToSearchFor).inspect(); });
-
-  add.method('reachedSlot', function (holder, slotName, contents) {
-    if (contents === this._objectToSearchFor) {
-      var holderMir = reflect(holder);
-      if (holderMir.isWellKnown('probableCreatorSlot')) {
-        this._results.push(holderMir.slotAt(slotName));
-      }
-    }
-  });
-
-  add.method('reachedObject', function (o) {
-    var mir = reflect(o);
-    if (mir.parent().reflectee() === this._objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
-      this._results.push(mir.parentSlot());
-    }
-  });
-
-  add.data('_resultsAreSlots', true);
+  add.creator('objectGraphAnnotator', Object.create(avocado.objectGraphWalker.visitors.general));
 
 });
 
 
 thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, function(add) {
-  
+
   add.method('createWalker', function ($super) {
     return $super().ignoreSimpleMethods().ignoreObjectsWithAStoreString().alsoRevisitAlreadyVisitedObjects();
   });
@@ -609,7 +528,7 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, fun
       }
     }
   });
-  
+
   add.method('reachedObject', function (contents, howDidWeGetHere, shouldExplicitlySetIt) {
     if (this._shouldMakeCreatorSlots) {
       this.makeCreatorSlotIfNecessary(contents, howDidWeGetHere, shouldExplicitlySetIt);
@@ -643,32 +562,182 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.objectGraphAnnotator, fun
 });
 
 
-thisModule.addSlots(avocado.senders, function(add) {
+thisModule.addSlots(avocado.objectGraphWalker.visitors, function(add) {
 
-  add.data('byID', {}, {initializeTo: '{}'});
+  add.creator('implementorsFinder', Object.create(avocado.objectGraphWalker.visitors.general));
 
-  add.method('of', function (id) {
-    return this.byID[id] || [];
+});
+
+
+thisModule.addSlots(avocado.objectGraphWalker.visitors.implementorsFinder, function(add) {
+
+  add.method('initialize', function ($super, slotName) {
+    $super();
+    this._slotNameToSearchFor = slotName;
   });
 
-  add.creator('finder', {});
+  add.method('inspect', function () { return "Well-known implementors of '" + this._slotNameToSearchFor + "'"; });
 
-  add.method('rememberIdentifiersUsedBy', function (f) {
-    if (typeof(f) !== 'function') { return; }
-    var str = f.toString();
-    var idRegex = /[A-Z_$a-z][A-Z_$0-9a-z]*/g;
-    var ids = str.match(idRegex);
-    if (!ids) { return; }
-    var sendersByID = this.byID;
-    for (var i = 0, n = ids.length; i < n; ++i) {
-      var id = ids[i];
-      if (id !== '__annotation__' && !avocado.javascript.reservedWords[id]) {
-        var senders = sendersByID[id];
-        if (!senders) {
-          senders = [];
-          sendersByID[id] = senders;
+  add.method('reachedSlot', function (holder, slotName, contents) {
+    if (slotName === this._slotNameToSearchFor && holder !== avocado.senders.byID && reflect(holder).isWellKnown('probableCreatorSlot')) {
+      this._results.push(reflect(holder).slotAt(slotName));
+    }
+  });
+
+  add.data('_resultsAreSlots', true);
+
+});
+
+
+thisModule.addSlots(avocado.objectGraphWalker.visitors, function(add) {
+
+  add.creator('unownedSlotFinder', Object.create(avocado.objectGraphWalker.visitors.general));
+
+});
+
+
+thisModule.addSlots(avocado.objectGraphWalker.visitors.unownedSlotFinder, function(add) {
+
+  add.method('inspect', function () { return "Unowned attributes"; });
+
+  add.method('shouldContinueRecursingIntoObject', function (object, objectAnno, howDidWeGetHere) {
+    // Factor the system better, so that this object-graph-walker
+    // can do exactly what the transporter does.
+    if (avocado.annotator.isSimpleMethod(object)) { return false; }
+    
+    if (typeof(object.storeString) === 'function' && (typeof(object.storeStringNeeds) !== 'function' || object !== object.storeStringNeeds())) { return false; }
+    
+    return true;
+  });
+
+  add.method('shouldContinueRecursingIntoSlot', function (holder, slotName, howDidWeGetHere) {
+    var slot = reflect(holder).slotAt(slotName);
+    var isCreator = slot.equals(slot.contents().explicitlySpecifiedCreatorSlot());
+    if (!isCreator) { return false; }
+    if (slot.getModuleAssignedToMeExplicitly()) { return false; } // since all the objects under it will implicitly have that module
+    return true;
+  });
+
+  add.method('shouldIgnoreSlot', function (holder, slotName, howDidWeGetHere) {
+    var slotAnno = avocado.annotator.annotationOf(holder).slotAnnotation(slotName);
+    if (slotAnno.initializationExpression()) { return true; }
+    return false;
+  });
+
+  add.method('reachedSlot', function (holder, slotName, contents) {
+    if (slotName === '__proto__') { return; }
+    var slotAnno = avocado.annotator.annotationOf(holder).existingSlotAnnotation(slotName); // for performance, don't create the annotation if it's not needed
+    if (! avocado.annotator.getModuleAssignedExplicitlyOrImplicitlyTo(slotAnno, holder)) {
+      if (avocado.annotator.isMagicSlotNameOnFunction(holder, slotName)) { return; }
+      var slot = reflect(holder).slotAt(slotName);
+      if (slot.isFromACopyDownParent()) { return; }
+      
+      console.log("Found unowned slot: " + slot.holder().name() + "." + slot.name());
+      this._results.push(slot);
+    }
+  });
+
+  add.data('_resultsAreSlots', true);
+
+});
+
+
+thisModule.addSlots(avocado.objectGraphWalker.visitors, function(add) {
+
+  add.creator('referenceFinder', Object.create(avocado.objectGraphWalker.visitors.general));
+
+});
+
+
+thisModule.addSlots(avocado.objectGraphWalker.visitors.referenceFinder, function(add) {
+
+  add.method('initialize', function ($super, o) {
+    $super();
+    this._objectToSearchFor = o;
+  });
+
+  add.method('inspect', function () { return "Well-known references to " + reflect(this._objectToSearchFor).inspect(); });
+
+  add.method('reachedSlot', function (holder, slotName, contents) {
+    if (contents === this._objectToSearchFor) {
+      var holderMir = reflect(holder);
+      if (holderMir.isWellKnown('probableCreatorSlot')) {
+        this._results.push(holderMir.slotAt(slotName));
+      }
+    }
+  });
+
+  add.method('reachedObject', function (o) {
+    var mir = reflect(o);
+    if (mir.parent().reflectee() === this._objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
+      this._results.push(mir.parentSlot());
+    }
+  });
+
+  add.data('_resultsAreSlots', true);
+
+});
+
+
+thisModule.addSlots(avocado.objectGraphWalker.visitors, function(add) {
+
+  add.creator('childFinder', Object.create(avocado.objectGraphWalker.visitors.general));
+
+});
+
+
+thisModule.addSlots(avocado.objectGraphWalker.visitors.childFinder, function(add) {
+
+  add.method('initialize', function ($super, o) {
+    $super();
+    this._objectToSearchFor = o;
+  });
+
+  add.method('reachedObject', function (o) {
+    var mir = reflect(o);
+    if (mir.parent().reflectee() === this._objectToSearchFor && mir.isWellKnown('probableCreatorSlot')) {
+      this._results.push(o);
+    }
+  });
+
+});
+
+
+thisModule.addSlots(avocado.objectGraphWalker.visitors, function(add) {
+
+  add.creator('annotationWalker', Object.create(avocado.objectGraphWalker.visitors.general));
+
+});
+
+
+thisModule.addSlots(avocado.objectGraphWalker.visitors.annotationWalker, function(add) {
+
+  add.method('initialize', function ($super) {
+    $super();
+    this._simpleFunctionCount = 0;
+    this._simpleFunctionPrototypeCount = 0;
+    this._emptyObjectCount = 0;
+    this._otherObjectCount = 0;
+    this._otherObjects = [];
+    this._emptyObjects = [];
+  });
+
+  add.method('reachedObject', function (o) {
+    if (o && typeof(o.hasOwnProperty) === 'function' && avocado.annotator.actualExistingAnnotationOf(o)) {
+      var mir = reflect(o);
+      if (mir.isReflecteeSimpleMethod()) {
+        this._simpleFunctionCount += 1;
+      } else {
+        var cs = mir.theCreatorSlot();
+        if (cs && cs.name() === 'prototype' && cs.holder().isReflecteeSimpleMethod()) {
+          this._simpleFunctionPrototypeCount += 1;
+        } else if (mir.size() === 0 && mir.reflectee().__proto__ === Object.prototype) {
+          this._emptyObjectCount += 1;
+          this._emptyObjects.push(mir.reflectee());
+        } else {
+          this._otherObjectCount += 1;
+          this._otherObjects.push(mir.reflectee());
         }
-        senders.push(f);
       }
     }
   });
@@ -676,33 +745,17 @@ thisModule.addSlots(avocado.senders, function(add) {
 });
 
 
-thisModule.addSlots(avocado.senders.finder, function(add) {
+thisModule.addSlots(avocado.objectGraphWalker.visitors, function(add) {
 
-  add.method('create', function (id) {
-    return Object.newChildOf(this, id);
-  });
-
-  add.method('initialize', function (id) {
-    this._id = id;
-  });
-
-  add.method('inspect', function () { return "senders of " + this._id; });
-
-  add.method('go', function () {
-    return avocado.senders.of(this._id).map(function(x) {
-      return reflect(x).probableCreatorSlot();
-    });
-  });
-
-  add.method('resultsAreSlots', function () { return true; });
+  add.creator('testingObjectGraphWalker', Object.create(avocado.objectGraphWalker.visitors.general));
 
 });
 
 
 thisModule.addSlots(avocado.objectGraphWalker.visitors.testingObjectGraphWalker, function(add) {
-  
+
   add.method('createWalker', function ($super) {
-    return $super().doNotUndoMarkingsWhenDone(); // so that the tests can examine the _marked list
+    return $super().doNotUndoMarkingsWhenDone(); // so that the tests can examine the _marked list;
   });
 
   add.method('reset', function ($super) {
@@ -722,23 +775,6 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.testingObjectGraphWalker,
 
   add.method('slotCount', function () {
     return this._slotsReached.length;
-  });
-
-});
-
-
-thisModule.addSlots(avocado.objectGraphWalker.tests, function(add) {
-
-  add.method('testIncremental', function () {
-    var w1 = avocado.objectGraphWalker.visitors.testingObjectGraphWalker.create().createWalker();
-    w1.go();
-    var n = 'objectGraphWalker_tests___extraSlotThatIAmAdding';
-    var o = {};
-    window[n] = o;
-    var w2 = avocado.objectGraphWalker.visitors.testingObjectGraphWalker.create().createWalker();
-    w2.go();
-    this.assertEqual(w1.objectCount() + 1, w2.objectCount());
-    delete window[n];
   });
 
 });

@@ -10,12 +10,6 @@ thisModule.addSlots(avocado, function(add) {
 
   add.creator('abstractOrganization', {}, {category: ['reflection']});
 
-  add.creator('organization', Object.create(avocado.abstractOrganization), {category: ['reflection']});
-
-  add.creator('organizationUsingAnnotations', Object.create(avocado.abstractOrganization), {category: ['reflection']});
-
-  add.creator('organizationChain', Object.create(avocado.abstractOrganization), {category: ['reflection']});
-
 });
 
 
@@ -55,6 +49,15 @@ thisModule.addSlots(avocado.abstractOrganization, function(add) {
   add.method('promptForPoseName', function (callWhenDone) {
     avocado.ComboBoxMorph.prompt("Name this pose.", "Save pose", "Cancel", this.poses().keys().sort(), this.findUnusedPoseName(), callWhenDone);
   }, {category: ['poses']});
+
+});
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('organization', Object.create(avocado.abstractOrganization), {category: ['reflection']});
+
+  add.creator('organizationUsingAnnotations', Object.create(avocado.abstractOrganization), {category: ['reflection']});
 
 });
 
@@ -131,7 +134,7 @@ thisModule.addSlots(avocado.organizationUsingAnnotations, function(add) {
   }, {category: ['comments']});
 
   add.data('_rememberedPosesByName', null, {category: ['poses'], initializeTo: 'null'});
-  
+
   add.method('poses', function () {
     return this._rememberedPosesByName || (this._rememberedPosesByName = avocado.dictionary.copyRemoveAll());
   }, {category: ['poses']});
@@ -143,6 +146,13 @@ thisModule.addSlots(avocado.organizationUsingAnnotations, function(add) {
   add.method('rememberPose', function (pose) {
     this.poses().put(pose.name(), pose);
   }, {category: ['poses']});
+
+});
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('organizationChain', Object.create(avocado.abstractOrganization), {category: ['reflection']});
 
 });
 

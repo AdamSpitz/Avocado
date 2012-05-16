@@ -13,34 +13,34 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.evaluator, function(add) {
-  
+
   add.method('create', function (context) {
     return Object.newChildOf(this, context);
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (context) {
     this._context = context;
   }, {category: ['creating']});
-  
+
   add.method('mirror', function () {
     if (typeof(this._context.mirror) === 'function') { return this._context.mirror(); }
     return this._context;
   }, {category: ['accessing']});
-  
+
   add.method('mirrorMorph', function () {
     // aaa - HACK
     return avocado.ui.currentWorld().morphFor(this.mirror());
   }, {category: ['user interface']});
-  
+
   add.method('textMorph', function () {
     // aaa - HACK
     return avocado.ui.currentWorld().morphFor(this)._textMorph;
   }, {category: ['user interface']});
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.creator('textStyle', {}, {category: ['styles']});
-  
+
   add.method('newMorph', function () {
     var m = avocado.ui.newMorph().setModel(this).useTableLayout(avocado.table.contents.columnPrototype);
     

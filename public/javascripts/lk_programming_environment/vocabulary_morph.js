@@ -21,6 +21,8 @@ thisModule.addSlots(avocado.vocabulary, function(add) {
 
 thisModule.addSlots(avocado.vocabulary.Morph, function(add) {
 
+  add.data('displayName', 'Morph');
+
   add.data('superclass', Morph);
 
   add.data('type', 'avocado.vocabulary.Morph');

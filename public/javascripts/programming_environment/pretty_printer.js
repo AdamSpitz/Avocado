@@ -381,20 +381,6 @@ thisModule.addSlots(avocado.prettyPrinter, function(add) {
 });
 
 
-thisModule.addSlots(avocado.mirror, function(add) {
-
-  add.method('prettyPrint', function (options) {
-    var expr = this.expressionEvaluatingToMe(true);
-    var stmt = avocado.stringBuffer.create('var ___contents___ = (').append(expr).append(');').toString();
-    // need the assignment and the semicolon so that the parser doesn't gripe about not having a function name
-    var rootNode = jsParse.parse(stmt);
-    var contentsNode = rootNode[0][0].initializer[0]; // bypass the nodes for the __contents__ statement
-    return avocado.prettyPrinter.create(contentsNode, options).result();
-  }, {category: ['pretty printing']});
-
-});
-
-
 thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
 
   add.method('functionToFormat1', function () {
@@ -487,6 +473,20 @@ thisModule.addSlots(avocado.prettyPrinter.tests, function(add) {
   add.method('test5', function () {
     this.checkFunction(this.functionToFormat5);
   });
+
+});
+
+
+thisModule.addSlots(avocado.mirror, function(add) {
+
+  add.method('prettyPrint', function (options) {
+    var expr = this.expressionEvaluatingToMe(true);
+    var stmt = avocado.stringBuffer.create('var ___contents___ = (').append(expr).append(');').toString();
+    // need the assignment and the semicolon so that the parser doesn't gripe about not having a function name
+    var rootNode = jsParse.parse(stmt);
+    var contentsNode = rootNode[0][0].initializer[0]; // bypass the nodes for the __contents__ statement
+    return avocado.prettyPrinter.create(contentsNode, options).result();
+  }, {category: ['pretty printing']});
 
 });
 

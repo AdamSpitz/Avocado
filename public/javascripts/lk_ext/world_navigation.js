@@ -54,17 +54,17 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       m.moveBy(delta);
     });
   }, {category: ['navigation']});
-  
+
   add.method('smoothlySlideBy', function (p, functionToCallWhenDone) {
     var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
     var a = avocado.animation.newMovement(worldNavigator, avocado.animation.straightPath, p, p.r() / (400 * this.getScale()), false, false, true);
     worldNavigator.startZoomAnimation(a, functionToCallWhenDone);
   }, {category: ['navigation']});
-  
+
   add.method('zoomBy', function (factor, pointerPosition) {
     this.zoomTo(this.getScale() * factor, pointerPosition);
   }, {category: ['navigation']});
-  
+
   add.method('zoomTo', function (scale, pointerPosition) {
     var worldNavigator = Object.newChildOf(WorldMorph.prototype.navigationAccessor, this);
     
@@ -161,7 +161,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     
     takeOff();
   }, {category: ['navigation']});
-  
+
   add.method('fixFonts', function () {
     // OK, this is kinda ridiculous, but removing and re-adding the rawNode seems to fix that
     // font-scaling problem where the text would look very strange. Of course, this means
@@ -172,7 +172,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     parentNode.removeChild(worldNode);
     parentNode.appendChild(worldNode);
   }, {category: ['refreshing']});
-  
+
   add.method('scheduleRefresh', function () {
     // Need to refresh, but don't want to do it too often - it's unnecessary and noticeably slows things down.
     // So unschedule the previously-scheduled refresh, since we're about to schedule a new one.
@@ -184,17 +184,6 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       world.fixFonts();
     }, 50);
   }, {category: ['refreshing']});
-
-});
-
-
-thisModule.addSlots(Point.prototype, function(add) {
-
-  add.method('translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy', function (scalingFactor) {
-    var desiredNewPosition = this.scaleBy(1 / scalingFactor);
-    var delta = desiredNewPosition.subPt(this);
-    return delta;
-  }, {category: ['scaling']});
 
 });
 
@@ -275,7 +264,18 @@ thisModule.addSlots(WorldMorph.prototype.navigationAccessor, function(add) {
 
 });
 
-  
+
+thisModule.addSlots(Point.prototype, function(add) {
+
+  add.method('translationNeededToStayInSameScreenPositionWhenScalingTheWorldBy', function (scalingFactor) {
+    var desiredNewPosition = this.scaleBy(1 / scalingFactor);
+    var delta = desiredNewPosition.subPt(this);
+    return delta;
+  }, {category: ['scaling']});
+
+});
+
+
 thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('navigateToMe', function (evt, functionToCallWhenDone) {
@@ -304,7 +304,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     
     if (functionToCallWhenDone) { functionToCallWhenDone(); }
   }, {category: ['navigating']});
-  
+
   add.method('justScaledWorld', function (worldScale) {
     if (this._layout && typeof(this._layout.justScaledWorld) === 'function') {
       this._layout.justScaledWorld(worldScale);

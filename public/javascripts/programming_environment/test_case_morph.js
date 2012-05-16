@@ -17,7 +17,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   }, {category: ['user interface']});
 
   add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
-  
+
   add.method('updateStyleOfMorph', function (m, result) {
     result = result || m._model.result(); // allow the result to be passed in, so we can use this to update related morphs that don't actually have a _model
     if (result && result.hasFinished()) {
@@ -30,19 +30,26 @@ thisModule.addSlots(avocado.testCase, function(add) {
       m.setFillBase(avocado.testCase.defaultMorphStyle.fillBase);
     }
   }, {category: ['user interface']});
-  
+
   add.method('shouldPutHeaderOnLeftInsteadOfTop', function () {
     // just for fun, to see if this works OK
     return false;
   }, {category: ['user interface']});
 
-  add.creator('contentsPanelExtent', function() {
+  add.method('contentsPanelExtent', function () {
     if (this.shouldPutHeaderOnLeftInsteadOfTop()) {
       return pt(30, 20);
     } else {
       return avocado.treeNode.defaultExtent();
     }
   }, {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(avocado.testCase.defaultMorphStyle, function(add) {
+
+  add.data('fillBase', new Color(0.5, 0.5, 0.5));
 
 });
 
@@ -70,17 +77,24 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
 
   add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
 
-  add.creator('contentsPanelExtent', function() {
+  add.method('contentsPanelExtent', function () {
     if (this._shouldBeDisplayedAsOneLongRow) {
       return pt(200, 6);
     } else {
       return avocado.treeNode.defaultExtent();
     }
   }, {category: ['user interface']});
-  
+
   add.method('updateStyleOfMorph', function (m) {
     avocado.testCase.updateStyleOfMorph(m);
   }, {category: ['user interface']});
+
+});
+
+
+thisModule.addSlots(avocado.testCase.suite.defaultMorphStyle, function(add) {
+
+  add.data('fillBase', new Color(0.5, 0.5, 0.5));
 
 });
 
@@ -120,7 +134,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   }, {category: ['user interface']});
 
   add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
-  
+
   add.method('showInterestingSubset', function (evt, subset, linkNode) {
     var world = avocado.ui.worldFor(evt);
     var historyMorph = world.morphFor(this);
@@ -144,7 +158,7 @@ thisModule.addSlots(avocado.testCase.resultHistory.defaultMorphStyle, function(a
 
 
 thisModule.addSlots(avocado.testCase.resultHistory.interestingEntriesProto, function(add) {
-  
+
   add.method('newMorph', function () {
     var m = avocado.ui.newMorph(avocado.ui.shapeFactory.newRectangle(new Rectangle(0, 0, 600, 400))).beInvisible().beShrinkWrapping();
     m.setModel(this);
@@ -164,7 +178,7 @@ thisModule.addSlots(avocado.testCase.resultHistory.interestingEntriesProto, func
     m.doIWantToLeaveAPlaceholderWhenRemoving = function (sm) { return false; };
     return m;
   }, {category: ['user interface']});
-  
+
 });
 
 
@@ -173,7 +187,7 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
   add.method('newMorph', function () {
     return avocado.messageNotifier.create(this.toString(), Color.gray).newMorph().setModel(this);
   }, {category: ['user interface']});
-  
+
   add.method('updateStyleOfMorph', function (m) {
     avocado.testCase.updateStyleOfMorph(m);
   }, {category: ['user interface']});
@@ -181,20 +195,6 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
   add.creator('defaultMorphStyle', {}, {category: ['user interface']});
 
   add.creator('failedMorphStyle', {}, {category: ['user interface']});
-
-});
-
-
-thisModule.addSlots(avocado.testCase.defaultMorphStyle, function(add) {
-
-  add.data('fillBase', new Color(0.5, 0.5, 0.5));
-
-});
-
-
-thisModule.addSlots(avocado.testCase.suite.defaultMorphStyle, function(add) {
-
-  add.data('fillBase', new Color(0.5, 0.5, 0.5));
 
 });
 

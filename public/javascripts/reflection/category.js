@@ -96,7 +96,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['related categories']});
 
   add.method('otherCategoryOfSameMirror', function (otherCatParts) {
-    return avocado.category.ofAParticularMirror.create(this.mirror(), otherCatParts)
+    return avocado.category.ofAParticularMirror.create(this.mirror(), otherCatParts);
   }, {category: ['related categories']});
 
   add.method('concat', function (otherCat) {
@@ -154,7 +154,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.method('possiblyStaleNormalSlotsInMeAndSubcategories', function () {
     return this.mirror().possiblyStaleSlotsNestedSomewhereUnderCategory(this);
   }, {category: ['accessing']});
-  
+
   add.method('rename', function (newName) {
     if (this.isRoot()) { throw "Cannot rename the root category"; }
     
@@ -190,7 +190,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   add.method('getModuleAssignedToMeImplicitly', function () {
     return this.mirror().getModuleAssignedToMeImplicitly();
   }, {category: ['modules']});
-  
+
   add.method('modules', function () {
     var modules = [];
     var implicitModule = this.getModuleAssignedToMeImplicitly();
@@ -245,7 +245,7 @@ thisModule.addSlots(avocado.category.ofAParticularMirror, function(add) {
   }, {category: ['removing']});
 
   add.method('copyToNewHolder', function () {
-    return this.copyInto(reflect({}).rootCategory())
+    return this.copyInto(reflect({}).rootCategory());
   }, {category: ['copying']});
 
   add.method('copyInto', function (target) {

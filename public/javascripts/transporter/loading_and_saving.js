@@ -20,19 +20,19 @@ thisModule.addSlots(avocado.transporter, function(add) {
       }
     });
   }, {category: ['saving']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.transporter.repositories, function(add) {
-  
+
   add.creator('prompter', {}, {category: ['user interface']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.transporter.repositories.prompter, function(add) {
-  
+
   add.method('prompt', function (caption, context, evt, callback) {
     if (avocado.transporter.availableRepositories.length === 1) {
       callback(avocado.transporter.availableRepositories[0], evt);
@@ -52,7 +52,7 @@ thisModule.addSlots(avocado.transporter.repositories.prompter, function(add) {
     });
     return cmdList;
   });
-  
+
 });
 
 
@@ -98,7 +98,7 @@ thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(ad
     var url = this.urlForModuleName(moduleVersion.module().name());
     this.saveFile(url, codeToFileOut, successBlock, failBlock);
   }, {category: ['saving']});
-  
+
   add.method('saveFile', function (url, fileContents, successBlock, failBlock) {
     var repoURL = this.url();
     if (url.substring(0, repoURL.length) !== repoURL) { url = repoURL + url; }
