@@ -63,8 +63,13 @@ thisModule.addSlots(avocado.testCase, function(add) {
   }, {category: ['printing']});
 
   add.method('immediateContents', function () {
-    if (this.result().hasStarted() && this.result().anyFailed()) {
-      return [this.result()];
+    var r = this.result();
+    if (r.hasStarted() && r.anyFailed()) {
+      var cs = [r];
+      // I like the idea, but this doesn't come out quite right yet.
+      // var e = r._error;
+      // if (e && e.objectsToShow) { e.objectsToShow.forEach(function(o) { cs.push(o); }); }
+      return cs;
     } else {
       return [];
     }
@@ -375,6 +380,18 @@ thisModule.addSlots(avocado.testCase.singleResult, function(add) {
       return "" + this._error === "" + other._error;
     }
   }, {category: ['comparing']});
+  
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    if (this._error) {
+      if (this._error.objectsToShow) {
+        cmdList.addItem(avocado.command.create("show failure information", function(evt) {
+          avocado.ui.showObjects(this._error.objectsToShow, "failure information", evt);
+        }));
+      }
+    }
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
 
 });
 
@@ -445,8 +462,9 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
     //s._aaa_hack_minimumExtent = pt(1000, 200);
     //s._aaa_hack_style = "background-color: red";
     s._aaa_hack_linkStyleClass = "summaryLink";
+    s._aaa_hack_style = "font-family: sans-serif";
     s._aaa_hack_desiredSpace = pt(null, 50);
-    s._aaa_hack_desiredScale = 15;
+    s._aaa_hack_desiredScale = 12;
     s._aaa_hack_desiredWidth = 100;
     return s;
   }, {category: ['printing']});
@@ -493,7 +511,17 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   
   add.method('immediateContents', function () {
     var indexTable = Object.newChildOf(this.indexTable);
-    var rows = this._entries.map(function(test, rowIndex) {
+    var headerRow = [null, "total", "passed", "failed", "changed"].map(function(h) {
+      var s = avocado.activeSentence.create([h || ""]);
+      s._aaa_hack_style = "font-family: sans-serif";
+      s._aaa_hack_desiredSpace = pt(null, 50);
+      s._aaa_hack_desiredScale = 12;
+      s._aaa_hack_desiredWidth = h ? 100 : 63;
+      return s;
+    });
+    var rows = [];
+    rows.push(headerRow);
+    this._entries.forEach(function(test, rowIndex) {
       var leaves = test.leaves().toArray();
       var row;
       if (rowIndex === 0) {
@@ -510,15 +538,15 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
       }
       
       // aaa - I want the summary, but it needs to be a constant readable size, not dependent on the number of leaves.
-      row = test.result().summarySentences(this).concat(row);
-      return row;
+      row = [null].concat(test.result().summarySentences(this), row);
+      rows.push(row);
     }.bind(this));
 
     if (this._isOKToRunItAgain && typeof(this.runItAgain) === 'function') {
       var s = avocado.activeSentence.create([{getValue: function() { return "Run"; }, doAction: function(evt) { this.runItAgain(evt); }.bind(this)}]);
       s._aaa_hack_desiredSpace = pt(null, 50);
       s._aaa_hack_desiredScale = 15;
-      s._aaa_hack_desiredWidth = 100;
+      s._aaa_hack_desiredWidth = 50;
       rows.push([s]);
     }
     
@@ -733,7 +761,7 @@ thisModule.addSlots(avocado.testCase.subset, function(add) {
   }, {category: ['accessing']});
   
   add.method('toString', function () {
-    return this._tests.size() + " " + this._kind;
+    return this._tests.size().toString(); // + " " + this._kind;
   }, {category: ['printing']});
   
   add.method('fullDescription', function () {
@@ -851,7 +879,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
       //avocado.prettyPrinter.tests, // aaa - not yet working on Safari, jsparse uses regex(input) instead of regex.exec(input)
       // avocado.process.tests, // aaa - not working yet on Chrome, overflows the stack, not sure why
       avocado.remoteMirror.tests,
-      avocado.couch.db.tests
+      // avocado.couch.db.tests, // aaa - I think these should still work, but I don't have Couch installed at the moment
     ];
   }, {category: ['Avocado tests']});
 

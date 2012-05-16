@@ -33,7 +33,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   
   add.method('shouldPutHeaderOnLeftInsteadOfTop', function () {
     // just for fun, to see if this works OK
-    return true;
+    return false;
   }, {category: ['user interface']});
 
   add.creator('contentsPanelExtent', function() {

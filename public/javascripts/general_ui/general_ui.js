@@ -121,7 +121,7 @@ thisModule.addSlots(avocado.generalUI, function(add) {
         objectsToShow.push(err);
       }
     });
-    this.showObjects(objectsToShow, "file-out errors", evt);
+    this.showObjects(objectsToShow, "errors", evt);
     this.showError(msg, evt);
   });
 

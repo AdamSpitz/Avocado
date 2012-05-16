@@ -19,6 +19,7 @@ thisModule.addSlots(avocado.modificationFlag, function(add) {
   add.method('initialize', function (object, children) {
     this._object = object;
     this._children = children;
+    this._hasChanged = false;
   }, {category: ['creating']});
 
   add.method('object', function () {

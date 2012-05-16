@@ -81,7 +81,13 @@ thisModule.addSlots(avocado.transporter.module.slotOrderizer, function(add) {
         }.bind(this));
       } else if (! s.initializationExpression()) {
         if (contentsCreatorSlot && contentsCreatorSlot.isIncludedInModule(this._module)) {
-          this._slotDeps.contentDeps.addDependency(s, contentsCreatorSlot);
+          // Need to walk back along the chain and look for storeStrings - if the contents object is part
+          // of some larger object that has a storeString, we want to depend on that one (since that's the
+          // one that actually creates the object we're referring to).
+          var contentsCreatorSlotChain = contents.creatorSlotChain('probableCreatorSlot');
+          var creatorSlotToDependOn = contentsCreatorSlot;
+          contentsCreatorSlotChain.forEach(function(creatorSlotInChain) { if (creatorSlotInChain.contents().reflecteeStoreString()) { creatorSlotToDependOn = creatorSlotInChain; } });
+          this._slotDeps.contentDeps.addDependency(s, creatorSlotToDependOn);
         }
       }
   }, {category: ['dependencies']});
@@ -167,8 +173,11 @@ thisModule.addSlots(avocado.transporter.module.slotOrderizer, function(add) {
     if (!slot) {
       var err = new Error("there is a cycle in the slot dependency graph; could not find a slot to use as a cycle-breaker");
       var remainingSlots = this.allRemainingSlots().toArray();
-      var deps = remainingSlots.map(function(s) { return this._slotDeps.contentDeps.dependeesOf(s) }.bind(this));
+      var deps = remainingSlots.map(function(s) { return this._slotDeps.contentDeps.dependeesOf(s); }.bind(this));
       err.objectsToShow = [avocado.searchResultsPresenter.createForSlots(remainingSlots, "Slots containing cycle"), reflect(deps)];
+      console.log("There is a cycle in the slot dependency graph; could not find a slot to use as a cycle-breaker.\n" +
+                  "Remaining slots: " + remainingSlots.map(function(s) { return s.fullName(); }).join(", ") + "\n" + 
+                  "Dependees: " + deps.map(function(dependees) { return dependees.map(function(dependee) { return dependee.fullName(); }).join(", "); }).join("; "));
       throw err;
     }
     var cycleBreakerSlot = slot.copyTo(this._cycleBreakersMir.rootCategory()).rename(this._cycleBreakersMir.findUnusedSlotName('breaker'));

@@ -240,7 +240,6 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
     if (this._modificationFlag) { return this._modificationFlag; }
     var subflags = avocado.enumerator.create(this, 'eachRequiredModule').map(function(m) { return m.modificationFlag(); });
     this._modificationFlag = avocado.modificationFlag.create(this, subflags);
-    reflect(this).slotAt('_modificationFlag').setInitializationExpression('null'); // aaa - I wish this weren't necessary; maybe slot annotations should inherit? -- Adam, June 2011
     return this._modificationFlag;
   }, {category: ['keeping track of changes']});
 
@@ -317,7 +316,8 @@ thisModule.addSlots(avocado.transporter.module, function(add) {
 
   add.method('eachSlot', function (f) {
     var walker = avocado.transporter.module.slotFinder.create(this).createWalker();
-    walker.goStartingAtRootSlots(this.slotCollection().explicitlyIncludedSlots());
+    var rootSlots = this.slotCollection().explicitlyIncludedSlots();
+    walker.goStartingAtRootSlots(rootSlots);
     walker.results().each(f);
   }, {category: ['iterating']});
 
@@ -435,10 +435,19 @@ thisModule.addSlots(avocado.transporter.module.slotFinder, function(add) {
 });
 
 
+thisModule.addSlots(avocado.annotator.slotSpecifierPrototype, function(add) {
+  
+  add.method('asSlot', function () {
+    return reflect(this.holder).slotAt(this.name);
+  });
+  
+});
+
+
 thisModule.addSlots(avocado.transporter.slotCollection, function(add) {
   
   add.method('explicitlyIncludedSlots', function () {
-    return this._explicitlyIncluded.map(function(slotSpec) { return reflect(slotSpec.holder).slotAt(slotSpec.name); });
+    return this._explicitlyIncluded.map(function(slotSpec) { return slotSpec.asSlot(); });
   }, {category: ['accessing']});
   
 });
@@ -634,12 +643,7 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
     return s;
   });
 
-  add.method('aaa_broken_testCreatingAndDestroying', function () {
-    // aaa - I just added the "implicit module" functionality (letting modules be inferred recursively by following
-    // the creator-slot chain), and for some reason this test broke. I have no idea why, but it doesn't seem
-    // important right now. -- Adam, June 2011
-
-    
+  add.method('testCreatingAndDestroying', function () {
     modules['transporter/transporter'].modificationFlag(); // make sure it exists before running this test, since adding slots to someObject will end up creating it
     
     var w1 = avocado.objectGraphWalker.visitors.testingObjectGraphWalker.create().createWalker();
@@ -663,17 +667,17 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
       }
     }
 
-    var slots1 = w1._slotsReached.sort();
-    var slots2 = w2._slotsReached.sort();
+    var slots1 = w1.visitor()._slotsReached.sortBy(function(s) { return s.fullName(); });
+    var slots2 = w2.visitor()._slotsReached.sortBy(function(s) { return s.fullName(); });
     for (var i = 0, n = Math.max(slots1.length, slots2.length); i < n; ++i) {
-      if (! slots1[i].equals(slots2[i])) {
+      if (! slots1[i].equals(slots2[i]) && ! slots1[i].holder().reflectee().hasOwnProperty('jsHeapSizeLimit')) { // blecch
         debugger;
       }
     }
     */
     
     this.assertEqual(w1.objectCount(), w2.objectCount(), "leftover objects after destroying a module");
-    this.assertEqual(w1.visitor().slotCount(), w2.visitor.slotCount(), "leftover slots after destroying a module");
+    this.assertEqual(w1.visitor().slotCount(), w2.visitor().slotCount(), "leftover slots after destroying a module");
   });
 
   add.method('testModuleCache', function () {
@@ -829,7 +833,7 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
     m.uninstall();
   });
 
-  add.method('aaa_testFilingOutReferencesToInternalsOfIntensionallySavedObjects', function () {
+  add.method('testFilingOutReferencesToInternalsOfIntensionallySavedObjects', function () {
     // aaa - Not working yet. -- August 29, 2011
     
     
@@ -838,18 +842,17 @@ thisModule.addSlots(avocado.transporter.tests, function(add) {
 
     this.addSlot(m1, this.someObject, 'objWithStoreString', {}).beCreator();
     this.addSlot(m1, this.someObject.objWithStoreString, 'initialize', function(x) { this._internalObj = {x: x}; reflect(this).slotAt('_internalObj').beCreator(); }).beCreator();
-    this.addSlot(m1, this.someObject.objWithStoreString, 'storeString', function() { return 'Object.newChildOf(avocado.transporter.tests.someObject.objWithStoreString, this._internalObj.x)'; }).beCreator();
+    this.addSlot(m1, this.someObject.objWithStoreString, 'storeString', function() { return 'Object.newChildOf(avocado.transporter.tests.someObject.objWithStoreString, ' + this._internalObj.x + ')'; }).beCreator();
     this.addSlot(m1, this.someObject.objWithStoreString, 'storeStringNeeds', function() { return avocado.transporter.tests.someObject.objWithStoreString; }).beCreator();
     
-    this.addSlot(m2, this.someObject, 'childOfObjWithStoreString', Object.newChildOf(avocado.transporter.tests.someObject.objWithStoreString, 33));
+    this.addSlot(m2, this.someObject, 'childOfObjWithStoreString', Object.newChildOf(avocado.transporter.tests.someObject.objWithStoreString, 33)).beCreator();
     this.addSlot(m2, this.someObject, 'refToInternalObj', avocado.transporter.tests.someObject.childOfObjWithStoreString._internalObj);
     
     var code = m2.codeOfMockFileOut();
-    console.log(code);
     this.assertEqual(
 "start module test_refs_to_intensional_internals_2\n" +
 "  start object avocado.transporter.tests.someObject\n" +
-"    slot childOfObjWithStoreString: Object.newChildOf(avocado.transporter.tests.someObject.objWithStoreString, this._internalObj.x)\n" +
+"    slot childOfObjWithStoreString: Object.newChildOf(avocado.transporter.tests.someObject.objWithStoreString, 33)\n" +
 "    slot refToInternalObj: avocado.transporter.tests.someObject.childOfObjWithStoreString._internalObj\n" +
 "  end object avocado.transporter.tests.someObject\n",
     code);
