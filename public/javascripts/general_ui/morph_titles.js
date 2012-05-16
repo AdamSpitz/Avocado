@@ -7,7 +7,7 @@ requires('general_ui/basic_morph_mixins');
 
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
-  add.method('createNameLabel', function() {
+  add.method('createNameLabel', function () {
     // can't use "bind" because we can't transport closures, so instead use ownerWithAModel
     var label = avocado.label.newMorphFor({
       initialText: this.nameUsingContextualInfoIfPossible(),
@@ -23,7 +23,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     return label;
   }, {category: ['title']});
 
-	add.method('nameUsingContextualInfoIfPossible', function(optionalContext) {
+  add.method('nameUsingContextualInfoIfPossible', function (optionalContext) {
 		try {
 		  var context = optionalContext || this;
       if (this._model && this._model.namingScheme) {
@@ -49,7 +49,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     }
     return this._titleLabelMorph;
   }, {category: ['title']});
-  
+
   add.method('titleEmphasis', function () {
     if (this._model && typeof(this._model.titleEmphasis) === 'function') { return this._model.titleEmphasis(); }
     return null;
@@ -64,15 +64,15 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     if (this._model && typeof(this._model.titleModel) === 'function') { return this._model.titleModel(); }
     return null;
   }, {category: ['title']});
-  
+
   add.method('findTitleLabel', function () {
     return this._titleLabelMorph;
   }, {category: ['title']});
-  
+
   add.method('findOrCreateTitleLabel', function () {
     return this.findTitleLabel() || this.createTitleLabel();
   }, {category: ['title']});
-  
+
   add.method('addTitleEditingCommandsTo', function (cmdList) {
     var titleLabel = this.findTitleLabel();
     if (titleLabel && typeof(titleLabel.editingCommands) === 'function') {

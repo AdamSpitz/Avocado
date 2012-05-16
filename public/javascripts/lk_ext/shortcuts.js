@@ -5,7 +5,7 @@ avocado.transporter.module.create('lk_ext/shortcuts', function(requires) {
 
 thisModule.addSlots(TextMorph, function(add) {
 
-  add.method('createInputBox', function(initialText, extent) {
+  add.method('createInputBox', function (initialText, extent) {
     var tm = new this(pt(5, 10).extent(extent || pt(50, 20)), initialText || "");
     tm.closeDnD();
     tm.suppressHandles = true;
@@ -16,7 +16,7 @@ thisModule.addSlots(TextMorph, function(add) {
 
 
 thisModule.addSlots(ButtonMorph, function(add) {
-  
+
   add.creator('simpleModelPlug', {}, {category: ['shortcuts']});
 
   add.method('createButton', function (contents, f, padding, labelPos) {
@@ -38,17 +38,17 @@ thisModule.addSlots(ButtonMorph, function(add) {
     b.connectModel(plugSpec);
     return b;
   }, {category: ['shortcuts']});
-  
+
 });
 
 
 thisModule.addSlots(ButtonMorph.simpleModelPlug, function(add) {
-  
-  add.method('initialize', function(m) { this.morph = m; });
+
+  add.method('initialize', function (m) { this.morph = m; });
 
   add.data('Value', null);
-  
-  add.method('getValue', function ()  { return this.Value; });
+
+  add.method('getValue', function () { return this.Value; });
 
   add.method('setValue', function (v) { this.Value = v; if (!v) { this.morph.run(Event.createFake()); } });
 
@@ -57,15 +57,15 @@ thisModule.addSlots(ButtonMorph.simpleModelPlug, function(add) {
 
 thisModule.addSlots(DisplayThemes.lively.button, function(add) {
 
-  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, Color.gray.lighter()), new lively.paint.Stop(1, Color.gray.darker())]));
-  
+  add.data('fill', new lively.paint.LinearGradient([new lively.paint.Stop(0, new Color(0.9019607843137255, 0.9019607843137255, 0.9019607843137255)), new lively.paint.Stop(1, new Color(0.4, 0.4, 0.4))], lively.paint.LinearGradient.NorthSouth));
+
   add.data('openForDragAndDrop', false);
-  
+
 });
 
 
 thisModule.addSlots(Event, function(add) {
-  
+
   add.method('createFake', function (hand) {
     hand = hand || WorldMorph.current().firstHand();
     return {
@@ -84,8 +84,8 @@ thisModule.addSlots(Event, function(add) {
 
 
 thisModule.addSlots(ButtonMorph.prototype, function(add) {
-  
-  add.method('simulatePress', function(evt) {
+
+  add.method('simulatePress', function (evt) {
     this.onMouseDown(evt);
     this.onMouseUp(evt);
   }, {category: ['shortcuts']});
@@ -95,17 +95,17 @@ thisModule.addSlots(ButtonMorph.prototype, function(add) {
 
 thisModule.addSlots(Morph.prototype, function(add) {
 
-  add.method('wrappedInScrollPaneIfNecessaryToFitWithin', function(maxExtent) {
+  add.method('wrappedInScrollPaneIfNecessaryToFitWithin', function (maxExtent) {
     if (this.getExtent().y <= maxExtent.y) { return this; }
     return ScrollPane.containing(this, maxExtent);
   }, {category: ['scrolling']});
-  
+
 });
 
 
 thisModule.addSlots(ScrollPane, function(add) {
 
-  add.method('containing', function(morph, extent) {
+  add.method('containing', function (morph, extent) {
     var sp = new this(morph, extent.extentAsRectangle());
     sp.closeDnD();
     sp.clipMorph.closeDnD();

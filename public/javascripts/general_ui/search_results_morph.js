@@ -19,7 +19,7 @@ thisModule.addSlots(avocado.searchResults, function(add) {
   add.creator('headerRowStyle', {}, {category: ['styles']});
 
   add.creator('resultsPanelStyle', {}, {category: ['styles']});
-  
+
   add.method('newMorph', function (searcher) {
     var m = avocado.ui.newMorph().setModel(searcher);
     m.useTableLayout(avocado.table.contents.columnPrototype);
@@ -52,8 +52,8 @@ thisModule.addSlots(avocado.searchResults, function(add) {
     m.refreshContent();
     
     return m;
-  }, {category: ['user interface']})
-  
+  }, {category: ['user interface']});
+
   add.method('tableContainingMorphsForResultsFrom', function (searcher) {
     var results = searcher.goAndReturnSortedResults();
     var resultRows = results.map(function(o) { return o.createMorphsForSearchResults(); });
@@ -64,7 +64,7 @@ thisModule.addSlots(avocado.searchResults, function(add) {
 
 
 thisModule.addSlots(avocado.searchResults.defaultStyle, function(add) {
-  
+
   add.data('openForDragAndDrop', false);
 
   add.data('padding', 5);
@@ -72,7 +72,7 @@ thisModule.addSlots(avocado.searchResults.defaultStyle, function(add) {
   add.data('borderRadius', 10);
 
   add.data('fillBase', new Color(0.5, 0.5, 0.9));
-  
+
 });
 
 

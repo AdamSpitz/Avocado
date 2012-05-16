@@ -6,36 +6,9 @@ requires('core/types');
 
 
 thisModule.addSlots(avocado.types, function(add) {
-  
+
   add.creator('morph', {}, {category: ['morphs']});
 
-});
-
-
-thisModule.addSlots(avocado.types.general, function(add) {
-
-  add.method('canCreateInputMorph', function () {
-    return typeof(this.createInputMorph) === 'function';
-  }, {category: ['input']});
-  
-});
-
-
-thisModule.addSlots(avocado.types.number, function(add) {
-
-  add.method('createInputMorph', function (slot) {
-    return avocado.frequentlyEditedText.newMorphFor(slot);
-  }, {category: ['input']});
-  
-});
-
-
-thisModule.addSlots(avocado.types.shortString, function(add) {
-
-  add.method('createInputMorph', function (slot) {
-    return avocado.frequentlyEditedText.newMorphFor(slot);
-  }, {category: ['input']});
-  
 });
 
 
@@ -54,6 +27,33 @@ thisModule.addSlots(avocado.types.morph, function(add) {
     if (typeof(o._model) === 'undefined') { return false; }
     return this._modelType.doesTypeMatch(o._model);
   }, {category: ['testing']});
+
+});
+
+
+thisModule.addSlots(avocado.types.general, function(add) {
+
+  add.method('canCreateInputMorph', function () {
+    return typeof(this.createInputMorph) === 'function';
+  }, {category: ['input']});
+
+});
+
+
+thisModule.addSlots(avocado.types.number, function(add) {
+
+  add.method('createInputMorph', function (slot) {
+    return avocado.frequentlyEditedText.newMorphFor(slot);
+  }, {category: ['input']});
+
+});
+
+
+thisModule.addSlots(avocado.types.shortString, function(add) {
+
+  add.method('createInputMorph', function (slot) {
+    return avocado.frequentlyEditedText.newMorphFor(slot);
+  }, {category: ['input']});
 
 });
 

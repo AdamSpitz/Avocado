@@ -12,20 +12,22 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.CheckBoxMorph, function(add) {
 
+  add.data('displayName', 'CheckBoxMorph');
+
   add.data('superclass', ButtonMorph);
 
   add.data('type', 'avocado.CheckBoxMorph');
 
-  add.creator('prototype', Object.create(ButtonMorph.prototype));
-
-  add.method('createWithImage', function(imageURL, size) {
+  add.method('createWithImage', function (imageURL, size) {
     var image = new ImageMorph(size.extentAsRectangle(), imageURL);
     image.setFill(null);
     var button = new this(size, image);
     button.setFill(null);
     return button;
   }, {category: ['creating']});
-  
+
+  add.creator('prototype', Object.create(ButtonMorph.prototype));
+
 });
 
 
@@ -46,25 +48,27 @@ thisModule.addSlots(avocado.CheckBoxMorph.prototype, function(add) {
 
     this.refreshContentOfMeAndSubmorphs();
     return this;
-  }, {category: ['creating']})
+  }, {category: ['creating']});
 
-  add.method('createXShapedMorph', function(extent) {
+  add.method('createXShapedMorph', function (extent) {
     return avocado.label.newMorphFor("X", extent);
   }, {category: ['creating']});
 
   add.data('toggle', true, {category: ['toggling']});
-  
-  add.method('getValue', function( ) {return this.getModel().getValue( );}, {category: ['accessing']});
-  add.method('setValue', function(b) {return this.getModel().setValue(b);}, {category: ['accessing']});
 
-  add.method('isChecked', function( ) {return this.getModel().getValue( );}, {category: ['accessing']});
-  add.method('setChecked', function(b) {return this.getModel().setValue(b);}, {category: ['accessing']});
-  
+  add.method('getValue', function () {return this.getModel().getValue( );}, {category: ['accessing']});
+
+  add.method('setValue', function (b) {return this.getModel().setValue(b);}, {category: ['accessing']});
+
+  add.method('isChecked', function () {return this.getModel().getValue( );}, {category: ['accessing']});
+
+  add.method('setChecked', function (b) {return this.getModel().setValue(b);}, {category: ['accessing']});
+
   add.method('notifier', function () {
     return this._model.notifier();
   }, {category: ['observing']});
 
-  add.method('changeAppearanceFor', function(v) {
+  add.method('changeAppearanceFor', function (v) {
     if (v) {
       if (this.checkedMorph.owner !== this) {
         this.addMorphCentered(this.checkedMorph);
@@ -75,8 +79,8 @@ thisModule.addSlots(avocado.CheckBoxMorph.prototype, function(add) {
       }
     }
   }, {category: ['updating']});
-  
-  add.method('refreshContent', function() {
+
+  add.method('refreshContent', function () {
     this.changeAppearanceFor(this.isChecked());
   }, {category: ['updating']});
 

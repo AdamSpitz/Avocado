@@ -13,51 +13,102 @@ thisModule.addSlots(avocado, function(add) {
 });
 
 
+thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
+
+  add.method('poseManager', function () {
+    if (! this._poseManager) {
+      this._poseManager = Object.newChildOf(avocado.poses.manager, this);
+      reflect(this).slotAt('_poseManager').setInitializationExpression('null');
+    }
+    return this._poseManager;
+  }, {category: ['poses']});
+
+  add.method('posers', function () {
+    return this.allPotentialPosers().reject(function(m) { return m.shouldIgnorePoses(); }).toArray();
+  }, {category: ['poses']});
+
+  add.method('allPotentialPosers', function () {
+    return this.submorphEnumerator();
+  });
+
+  add.method('shouldIgnorePoses', function () {
+    if (this._layout && typeof(this._layout.shouldIgnorePoses) === 'function') {
+      return this._layout.shouldIgnorePoses();
+    } else {
+      return false;
+    }
+  }, {category: ['poses']});
+
+  add.method('constructUIStateMemento', function () {
+    // override constructUIStateMemento and assumeUIState, or uiStateParts, in children if you want them to be recalled in a particular state
+    
+    if (this.partsOfUIState) {
+      var parts = typeof(this.partsOfUIState) === 'function' ? this.partsOfUIState() : this.partsOfUIState;
+      var uiState = {};
+      reflect(parts).normalSlots().each(function(slot) {
+        var partName = slot.name();
+        var part = slot.contents().reflectee();
+        if (part) {
+          if (!(part.isMorph) && part.collection && part.keyOf && part.getPartWithKey) {
+            uiState[partName] = part.collection.map(function(elem) {
+              return { key: part.keyOf(elem), uiState: elem.constructUIStateMemento() };
+            });
+          } else {
+            uiState[partName] = part.constructUIStateMemento();
+          }
+        }
+      });
+      return uiState;
+    }
+    
+    if (this._layout && typeof(this._layout.constructUIStateMemento) === 'function') {
+      return this._layout.constructUIStateMemento(this);
+    }
+    
+    return null;
+  }, {category: ['poses']});
+
+  add.method('assumeUIState', function (uiState, callWhenDone, evt) {
+    // override constructUIStateMemento and assumeUIState, or uiStateParts, in children if you want them to be recalled in a particular state
+
+    if (this.partsOfUIState) {
+      if (!uiState) { return; }
+      evt = evt || Event.createFake();
+      var parts = typeof(this.partsOfUIState) === 'function' ? this.partsOfUIState() : this.partsOfUIState;
+      
+      avocado.callbackWaiter.on(function(generateIntermediateCallback) {
+        reflect(parts).normalSlots().each(function(slot) {
+          var partName = slot.name();
+          var part = slot.contents().reflectee();
+          if (part) {
+            var uiStateForThisPart = uiState[partName];
+            if (typeof(uiStateForThisPart) !== 'undefined') {
+              if (!(part.isMorph) && part.collection && part.keyOf && part.getPartWithKey) {
+                uiStateForThisPart.each(function(elemKeyAndUIState) {
+                  part.getPartWithKey(this, elemKeyAndUIState.key).assumeUIState(elemKeyAndUIState.uiState, generateIntermediateCallback());
+                }.bind(this));
+              } else {
+                part.assumeUIState(uiStateForThisPart, generateIntermediateCallback(), evt);
+              }
+            }
+          }
+        }.bind(this));
+      }, callWhenDone, "assuming UI state");
+    } else if (this._layout && typeof(this._layout.assumeUIState) === 'function') {
+      this._layout.assumeUIState(this, uiState, callWhenDone, evt);
+    }
+  }, {category: ['poses']});
+
+  add.method('transferUIStateTo', function (otherMorph, evt) {
+    otherMorph.assumeUIState(this.constructUIStateMemento());
+  }, {category: ['poses']});
+
+});
+
+
 thisModule.addSlots(avocado.poses, function(add) {
 
   add.creator('abstract', {});
-
-  add.creator('tree', Object.create(avocado.poses['abstract']));
-
-  add.creator('list', Object.create(avocado.poses['abstract']));
-
-  add.creator('row', Object.create(avocado.poses['abstract']));
-
-  add.creator('snapshot', Object.create(avocado.poses['abstract']));
-
-  add.creator('manager', {});
-
-  add.creator('layout', {});
-
-  add.method('addGlobalCommandsTo', function (menu) {
-    avocado.ui.currentWorld().poseManager().addGlobalCommandsTo(menu);
-  }, {category: ['menu']});
-  
-  add.method('makeMorphsBecomeDirectSubmorphOfWorld', function (world, morphs) {
-    var owners = [];
-    morphs.forEach(function(m) { var o = m.getOwner(); if (!owners.include(o)) { owners.push(o); }});
-    
-    var layoutBatcherUppers = [];
-    owners.forEach(function(o) {
-      layoutBatcherUppers.push(o.layoutRejiggeringBatcherUpper());
-      if (o._layout && o._layout.submorphReplacementBatcherUpper) { layoutBatcherUppers.push(o._layout.submorphReplacementBatcherUpper()); }
-    });
-    
-    try {
-      layoutBatcherUppers.forEach(function(bu) { bu.start(); });
-
-      morphs.forEach(function(m) {
-        // necessary so that the pose can know the correct final extent of the morphToShow when calculating positions
-        m.becomeDirectSubmorphOfWorld(world);
-
-        // aaa - hack to make the really-small-text disappear as desired
-        var p = m._placeholderMorphIJustCameFrom;
-        if (p) { p.refreshContentOfMeAndSubmorphs(); }
-      });
-    } finally {
-      layoutBatcherUppers.forEach(function(bu) { bu.stop(); });
-    }
-  })
 
 });
 
@@ -130,7 +181,7 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       element.poser.ensureIsInWorld(container, element.position, true, !this._shouldNotAnticipateAtStart, !this._shouldNotWiggleAtEnd, callback);
     }
   }, {category: ['posing']});
-    
+
   add.method('recreateInContainer', function (container, startingPos, callback) {
     var originalScale = container.getScale();
     var originalSpace = container.getExtent().scaleBy(originalScale);
@@ -200,12 +251,12 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
       }.bind(this));
     }.bind(this), callback, "putting the posers in position");
   }, {category: ['posing']});
-  
+
   add.method('whenDoneScaleToFitWithinCurrentSpace', function () {
     this._shouldScaleToFitWithinCurrentSpace = true;
     return this;
   }, {category: ['scaling']});
-  
+
   add.method('whenDoneSetExtentToEncompassWholePose', function () {
     this._shouldSetExtentToEncompassWholePose = true;
     return this;
@@ -248,6 +299,13 @@ thisModule.addSlots(avocado.poses['abstract'], function(add) {
   add.method('ensureIsInWorld', function (w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
     w.poseManager().assumePose(this, desiredLoc, functionToCallWhenDone);
   }, {category: ['acting like a morph']});
+
+});
+
+
+thisModule.addSlots(avocado.poses, function(add) {
+
+  add.creator('tree', Object.create(avocado.poses['abstract']));
 
 });
 
@@ -322,6 +380,13 @@ thisModule.addSlots(avocado.poses.tree, function(add) {
 });
 
 
+thisModule.addSlots(avocado.poses, function(add) {
+
+  add.creator('list', Object.create(avocado.poses['abstract']));
+
+});
+
+
 thisModule.addSlots(avocado.poses.list, function(add) {
 
   add.method('initialize', function ($super, name, maxExtentPtOrFn, posers) {
@@ -339,7 +404,7 @@ thisModule.addSlots(avocado.poses.list, function(add) {
     var world = avocado.ui.currentWorld();
     return this.setPosers(poserModels.map(function(m) { return world.morphFor(m); }));
   }, {category: ['accessing']});
-  
+
   add.method('maxExtent', function () {
     if (typeof(this._maxExtentPtOrFn) === 'function') { return this._maxExtentPtOrFn(); }
     return this._maxExtentPtOrFn;
@@ -349,7 +414,7 @@ thisModule.addSlots(avocado.poses.list, function(add) {
     this._maxExtentPtOrFn = maxExtentPtOrFn;
     return this;
   }, {category: ['accessing']});
-  
+
   add.data('_direction', avocado.directions.vertical);
 
   add.method('setDirection', function (d) {
@@ -404,12 +469,12 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       }
     }
   });
-  
+
   add.method('beCollapsing', function () {
     this._shouldBeCollapsing = true;
     return this;
   });
-  
+
   add.method('beSquarish', function () {
     this._shouldBeSquarish = true;
     return this;
@@ -425,6 +490,13 @@ thisModule.addSlots(avocado.poses.list, function(add) {
       return null;
     }
   });
+
+});
+
+
+thisModule.addSlots(avocado.poses, function(add) {
+
+  add.creator('row', Object.create(avocado.poses['abstract']));
 
 });
 
@@ -451,6 +523,47 @@ thisModule.addSlots(avocado.poses.row, function(add) {
       f({poser: poser, position: pos});
       var poserSpace = poser.getExtent().scaleBy(poser.getScale());
       pos = pos.withX(pos.x + poserSpace.x + padding.x);
+    }
+  });
+
+});
+
+
+thisModule.addSlots(avocado.poses, function(add) {
+
+  add.creator('snapshot', Object.create(avocado.poses['abstract']));
+
+  add.creator('manager', {});
+
+  add.creator('layout', {});
+
+  add.method('addGlobalCommandsTo', function (menu) {
+    avocado.ui.currentWorld().poseManager().addGlobalCommandsTo(menu);
+  }, {category: ['menu']});
+
+  add.method('makeMorphsBecomeDirectSubmorphOfWorld', function (world, morphs) {
+    var owners = [];
+    morphs.forEach(function(m) { var o = m.getOwner(); if (!owners.include(o)) { owners.push(o); }});
+    
+    var layoutBatcherUppers = [];
+    owners.forEach(function(o) {
+      layoutBatcherUppers.push(o.layoutRejiggeringBatcherUpper());
+      if (o._layout && o._layout.submorphReplacementBatcherUpper) { layoutBatcherUppers.push(o._layout.submorphReplacementBatcherUpper()); }
+    });
+    
+    try {
+      layoutBatcherUppers.forEach(function(bu) { bu.start(); });
+
+      morphs.forEach(function(m) {
+        // necessary so that the pose can know the correct final extent of the morphToShow when calculating positions
+        m.becomeDirectSubmorphOfWorld(world);
+
+        // aaa - hack to make the really-small-text disappear as desired
+        var p = m._placeholderMorphIJustCameFrom;
+        if (p) { p.refreshContentOfMeAndSubmorphs(); }
+      });
+    } finally {
+      layoutBatcherUppers.forEach(function(bu) { bu.stop(); });
     }
   });
 
@@ -618,105 +731,12 @@ thisModule.addSlots(avocado.poses.manager, function(add) {
 });
 
 
-thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
-
-  add.method('poseManager', function () {
-    if (! this._poseManager) {
-      this._poseManager = Object.newChildOf(avocado.poses.manager, this);
-      reflect(this).slotAt('_poseManager').setInitializationExpression('null');
-    }
-    return this._poseManager;
-  }, {category: ['poses']});
-
-  add.method('posers', function () {
-    return this.allPotentialPosers().reject(function(m) { return m.shouldIgnorePoses(); }).toArray();
-  }, {category: ['poses']});
-
-  add.method('allPotentialPosers', function () {
-    return this.submorphEnumerator();
-  });
-
-  add.method('shouldIgnorePoses', function () {
-    if (this._layout && typeof(this._layout.shouldIgnorePoses) === 'function') {
-      return this._layout.shouldIgnorePoses();
-    } else {
-      return false;
-    }
-  }, {category: ['poses']});
-
-  add.method('constructUIStateMemento', function () {
-    // override constructUIStateMemento and assumeUIState, or uiStateParts, in children if you want them to be recalled in a particular state
-    
-    if (this.partsOfUIState) {
-      var parts = typeof(this.partsOfUIState) === 'function' ? this.partsOfUIState() : this.partsOfUIState;
-      var uiState = {};
-      reflect(parts).normalSlots().each(function(slot) {
-        var partName = slot.name();
-        var part = slot.contents().reflectee();
-        if (part) {
-          if (!(part.isMorph) && part.collection && part.keyOf && part.getPartWithKey) {
-            uiState[partName] = part.collection.map(function(elem) {
-              return { key: part.keyOf(elem), uiState: elem.constructUIStateMemento() };
-            });
-          } else {
-            uiState[partName] = part.constructUIStateMemento();
-          }
-        }
-      });
-      return uiState;
-    }
-    
-    if (this._layout && typeof(this._layout.constructUIStateMemento) === 'function') {
-      return this._layout.constructUIStateMemento(this);
-    }
-    
-    return null;
-  }, {category: ['poses']});
-
-  add.method('assumeUIState', function (uiState, callWhenDone, evt) {
-    // override constructUIStateMemento and assumeUIState, or uiStateParts, in children if you want them to be recalled in a particular state
-
-    if (this.partsOfUIState) {
-      if (!uiState) { return; }
-      evt = evt || Event.createFake();
-      var parts = typeof(this.partsOfUIState) === 'function' ? this.partsOfUIState() : this.partsOfUIState;
-      
-      avocado.callbackWaiter.on(function(generateIntermediateCallback) {
-        reflect(parts).normalSlots().each(function(slot) {
-          var partName = slot.name();
-          var part = slot.contents().reflectee();
-          if (part) {
-            var uiStateForThisPart = uiState[partName];
-            if (typeof(uiStateForThisPart) !== 'undefined') {
-              if (!(part.isMorph) && part.collection && part.keyOf && part.getPartWithKey) {
-                uiStateForThisPart.each(function(elemKeyAndUIState) {
-                  part.getPartWithKey(this, elemKeyAndUIState.key).assumeUIState(elemKeyAndUIState.uiState, generateIntermediateCallback());
-                }.bind(this));
-              } else {
-                part.assumeUIState(uiStateForThisPart, generateIntermediateCallback(), evt);
-              }
-            }
-          }
-        }.bind(this));
-      }, callWhenDone, "assuming UI state");
-    } else if (this._layout && typeof(this._layout.assumeUIState) === 'function') {
-      this._layout.assumeUIState(this, uiState, callWhenDone, evt);
-    }
-  }, {category: ['poses']});
-
-  add.method('transferUIStateTo', function (otherMorph, evt) {
-    otherMorph.assumeUIState(this.constructUIStateMemento());
-  }, {category: ['poses']});
-
-});
-
-
 thisModule.addSlots(avocado.poses.layout, function(add) {
-  
+
   add.method('initialize', function (pose) {
     this._pose = pose;
   }, {category: ['creating']});
-  
+
   add.method('pose', function () {
     return this._pose;
   }, {category: ['accessing']});
@@ -753,7 +773,7 @@ thisModule.addSlots(avocado.poses.layout, function(add) {
       if (callWhenDone) { callWhenDone(); }
     });
   }, {category: ['setting morphs']});
-  
+
   add.method('showMorphs', function (containerMorph, morphsToShow, titleContent, callWhenOldMorphsHaveBeenDismissed, callWhenNewMorphsAreInPlace) {
     var morphsToDismiss = containerMorph.submorphEnumerator().toArray().select(function(m) { return ! morphsToShow.include(m); });
     this.dismissMorphs(morphsToDismiss, function() {
@@ -762,7 +782,7 @@ thisModule.addSlots(avocado.poses.layout, function(add) {
       this.setTitleContent(containerMorph, titleContent); // no need to wait until the new morphs are in place
     }.bind(this));
   }, {category: ['setting morphs']});
-  
+
 });
 
 

@@ -1,6 +1,6 @@
 avocado.transporter.module.create('lk_ext/carrying_hand', function(requires) {
 
-requires("core/collections/hash_table");
+requires('core/collections/hash_table');
 
 }, function(thisModule) {
 
@@ -13,6 +13,8 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.CarryingHandMorph, function(add) {
+
+  add.data('displayName', 'CarryingHandMorph');
 
   add.data('superclass', Morph);
 
@@ -91,7 +93,7 @@ thisModule.addSlots(avocado.CarryingHandMorph.prototype, function(add) {
       if (callWhenDone) { callWhenDone(); }
     }.bind(this));
   }, {category: ['original positions']});
-  
+
   add.method('pickUp', function (m, evt, callWhenDone) {
     this.ensureVisible(function() {
       this.rememberOriginalPositionOf(m);

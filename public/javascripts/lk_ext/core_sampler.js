@@ -14,6 +14,8 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.CoreSamplerMorph, function(add) {
 
+  add.data('displayName', 'CoreSamplerMorph');
+
   add.data('superclass', Morph);
 
   add.data('type', 'avocado.CoreSamplerMorph');
@@ -61,7 +63,7 @@ thisModule.addSlots(avocado.CoreSamplerMorph.prototype, function(add) {
     this.refreshContent();
     this.startPeriodicallyUpdating();
   }, {category: ['creating']});
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('refreshContent', function () {

@@ -50,7 +50,7 @@ thisModule.addSlots(MenuMorph, function(add) {
   add.method('createMenuMorph', function (items, target) {
     return new this(items, target);
   }, {category: ['creating']});
-  
+
   add.method('itemsForCommands', function (commands) {
     return commands.map(function(c) {
       if (!c) {
@@ -69,7 +69,7 @@ thisModule.addSlots(MenuMorph, function(add) {
 
 
 thisModule.addSlots(avocado.command.partial, function(add) {
-  
+
   add.method('newMorph', function () {
     return avocado.treeNode.newMorphFor(this, undefined, 0.1);
   }, {category: ['user interface']});

@@ -7,14 +7,14 @@ requires('general_ui/basic_morph_mixins');
 
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
-  add.method('refreshContentOfMeAndSubmorphs', function() {
+  add.method('refreshContentOfMeAndSubmorphs', function () {
     this._hasBeenRefreshedAtLeastOnce = true;
     this.refreshContent();
     this.eachSubmorph(function(m) { m.refreshContentOfMeAndSubmorphs(); });
     return this;
   });
-  
-  add.method('refreshContentIfOnScreenOfMeAndSubmorphs', function() {
+
+  add.method('refreshContentIfOnScreenOfMeAndSubmorphs', function () {
     if (! this.isOnScreen()) { return this; }
     // var s = this.toString() || this.inspect();
     // if (s) { console.log("refreshContentIfOnScreenOfMeAndSubmorphs: refreshing " + s); }
@@ -24,8 +24,8 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this.eachSubmorph(function(m) { m.refreshContentIfOnScreenOfMeAndSubmorphs(); });
     return this;
   });
-  
-  add.method('refreshContent', function() {
+
+  add.method('refreshContent', function () {
     // children can override
     this.updateStyle();
     
@@ -38,8 +38,8 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
       this.replaceContentWith(recalculatedActualContent);
     }
   });
-  
-  add.method('refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore', function() {
+
+  add.method('refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore', function () {
     if (! this._hasBeenRefreshedAtLeastOnce) {
       this.refreshContentOfMeAndSubmorphs();
     }
@@ -77,7 +77,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this._layoutModesForContentMorphs = layoutModes;
     return this;
   }, {category: ['layout']});
-  
+
   add.method('potentialContentMorphs', function () {
     // children can override, or specify a _potentialContentCreator, or call setPotentialContentMorphs or setPotentialContentMorphsFunction
     
@@ -96,7 +96,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this.potentialContentMorphs = contentFunction;
   }, {category: ['potential content']});
 
-  add.method('updateStyle', function() {
+  add.method('updateStyle', function () {
     // children can override
     if (this._model && typeof(this._model.updateStyleOfMorph) === 'function') {
       this._model.updateStyleOfMorph(this);
@@ -110,7 +110,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     }.bind(this), frequency || 8);
     return this;
   });
-  
+
   add.method('isPeriodicallyUpdating', function () {
     return this._updater && this._updater.timer;
   });
@@ -121,7 +121,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
       this._layout.justChangedContent(this);
     }
   }, {category: ['updating']});
-  
+
   add.method('ensureVisible', function () {
     this.morphsThatNeedToBeVisibleBeforeICanBeVisible().forEach(function(morph) { morph.ensureVisibleForJustMe(); });
     this.ensureVisibleForJustMe();
@@ -134,7 +134,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   }, {category: ['updating']});
 
   add.method('ensureVisibleForJustMe', function () {
-    // children can override
+    // children can override;
   }, {category: ['updating']});
 
   add.method('wasJustAdded', function (evt) {
@@ -148,13 +148,13 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     var titleLabel = this.findTitleLabel();
     if (titleLabel) { titleLabel.wasJustAdded(evt); }
   }, {category: ['events']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.morphMixins.TextMorph, function(add) {
 
-  add.method('refreshContent', function() {
+  add.method('refreshContent', function () {
     avocado.morphMixins.Morph.refreshContent.call(this);
     if (this.refreshText) { this.refreshText(); }
   });

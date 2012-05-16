@@ -24,6 +24,8 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.CollectionMorph, function(add) {
 
+  add.data('displayName', 'CollectionMorph');
+
   add.data('superclass', Morph);
 
   add.data('type', 'avocado.CollectionMorph');
@@ -158,11 +160,6 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
     return this._collection.canInsert || reflect(this._collection).isReflecteeArray();
   }, {category: ['testing']});
 
-});
-
-
-thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
-
   add.data('padding', {top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}, {initializeTo: '{top: 2, bottom: 2, left: 4, right: 4, between: {x: 3, y: 3}}'});
 
   add.data('fillBase', new Color(1, 0.8, 0.5));
@@ -170,7 +167,7 @@ thisModule.addSlots(avocado.CollectionMorph.prototype, function(add) {
   add.data('borderRadius', 10);
 
   add.data('openForDragAndDrop', false);
-  
+
 });
 
 

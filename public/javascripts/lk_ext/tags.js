@@ -17,30 +17,30 @@ thisModule.addSlots(avocado.tag, function(add) {
     a.initialize.apply(a, arguments);
     return a;
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (name, criterion) {
     this._name = name;
     this._criterion = criterion;
   }, {category: ['creating']});
-  
+
   add.method('toString', function () {
     return this._name || "";
   }, {category: ['printing']});
-  
+
   add.method('matches', function (o) {
     return this._criterion(o);
   }, {category: ['matching']});
-  
+
   add.method('matchesMorph', function (m) {
     var model = m._model;
     if (typeof(model) === 'undefined') { return false; }
     return this.matches(model);
   }, {category: ['matching']});
-  
+
   add.creator('cloud', {});
-  
+
   add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['ui']});
-  
+
 });
 
 
@@ -51,25 +51,25 @@ thisModule.addSlots(avocado.tag.cloud, function(add) {
     a.initialize.apply(a, arguments);
     return a;
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (name, tagTypes, allPossibleObjects) {
     this._name = name;
     this._allElements = tagTypes.map(function(tagType) { return avocado.tag.cloud.element.create(this, tagType); }.bind(this));
     this._allPossibleObjects = allPossibleObjects;
   }, {category: ['creating']});
-  
+
   add.method('name', function () {
     return this._name;
   }, {category: ['accessing']});
-  
+
   add.method('allElements', function () {
     return this._allElements;
   }, {category: ['accessing']});
-  
+
   add.method('allTagTypes', function () {
     return this.allElements().map(function(e) { return e.tagType(); });
   }, {category: ['accessing']});
-  
+
   add.method('toString', function () {
     return this._name || "";
   }, {category: ['printing']});
@@ -88,7 +88,7 @@ thisModule.addSlots(avocado.tag.cloud, function(add) {
     });
     return objs;
   });
-  
+
   add.creator('element', {});
 
   add.creator('defaultMorphStyle', {}, {category: ['user interface']});
@@ -98,23 +98,15 @@ thisModule.addSlots(avocado.tag.cloud, function(add) {
     m.typeName = 'tag cloud';
     return m;
   }, {category: ['user interface']});
-  
+
   add.method('tagAllMorphsInWorld', function (w) {
     w = w || WorldMorph.current();
     this.allElements().forEach(function(e) {
       w.tagSubmorphsWithNewTag(e.tagType(), e.fill());
     });
   }, {category: ['user interface']});
-  
-});
-
-
-thisModule.addSlots(avocado.tag.cloud.defaultMorphStyle, function(add) {
-
-  add.data('fillBase', new Color(0.1, 0.5, 0.6));
 
 });
-
 
 
 thisModule.addSlots(avocado.tag.cloud.element, function(add) {
@@ -124,25 +116,25 @@ thisModule.addSlots(avocado.tag.cloud.element, function(add) {
     a.initialize.apply(a, arguments);
     return a;
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (cloud, tagType) {
     this._cloud = cloud;
     this._tagType = tagType;
     this._fill = Color.random();
   }, {category: ['creating']});
-  
+
   add.method('cloud', function () {
     return this._cloud;
   }, {category: ['accessing']});
-  
+
   add.method('fill', function () {
     return this._fill;
   }, {category: ['accessing']});
-  
+
   add.method('tagType', function () {
     return this._tagType;
   }, {category: ['accessing']});
-  
+
   add.method('toString', function () {
     return this.tagType().toString();
   }, {category: ['printing']});
@@ -158,11 +150,20 @@ thisModule.addSlots(avocado.tag.cloud.element, function(add) {
     m.typeName = 'tag cloud element';
     return m;
   }, {category: ['user interface']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.tag.cloud.defaultMorphStyle, function(add) {
+
+  add.data('fillBase', new Color(0.1, 0.5, 0.6));
+
 });
 
 
 thisModule.addSlots(avocado.tag.Morph, function(add) {
+
+  add.data('displayName', 'Morph');
 
   add.data('superclass', Morph);
 
@@ -187,19 +188,19 @@ thisModule.addSlots(avocado.tag.Morph.prototype, function(add) {
   add.data('shouldNotBePartOfRowOrColumn', true);
 
   add.data('suppressHandles', true);
-  
+
 });
 
 
 thisModule.addSlots(Morph.prototype, function(add) {
-  
+
   add.method('allLikeMe', function () {
     // aaa - Flesh this out, make it smart about finding related objects.
     if (typeof(this._model) === 'undefined') { return []; }
     if (typeof(this._model.matchesMorph) !== 'function') { return []; }
     return this.owner.owner.submorphs.select(function(morph) { return this._model.matchesMorph(morph); }.bind(this));
   }, {category: ['finding related objects']});
-  
+
   add.method('taggingCommands', function () {
     var items = [];
 
@@ -241,16 +242,16 @@ thisModule.addSlots(Morph.prototype, function(add) {
     }
     return this._tagColorsByType;
   }, {category: ['tagging']});
-  
+
   add.method('getOrCreateColorForTagType', function (tagType, preferredColor) {
     return this.tagColorsByType().getOrIfAbsentPut(tagType, function() { return preferredColor || Color.random(); });
   }, {category: ['tagging']});
-  
+
   add.method('tagSubmorphsWithNewTag', function (tagType, color) {
     this.getOrCreateColorForTagType(tagType, color);
     this.tagSubmorphsWithTag(tagType);
   }, {category: ['tagging']});
-  
+
   add.method('tagSubmorphsWithTag', function (tagType) {
     var color = this.getOrCreateColorForTagType(tagType);
     this.eachSubmorph(function(m) {
@@ -264,7 +265,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
     if (! this._tagHolderMorph) { return []; }
     return this.tagHolderMorph().submorphs;
   }, {category: ['tagging']});
-  
+
   add.method('addTagMorph', function (tagMorph) {
     this.ensureTagHolderMorphIsVisible().layout().addCell(tagMorph);
     return this;

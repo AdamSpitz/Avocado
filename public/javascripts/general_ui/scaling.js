@@ -26,7 +26,7 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
     this._sizeOfSpaceHolder = sizeOfSpaceHolder;
     this._styleOfSpaceHolder = styleOfSpaceHolder || {fill: null};
   });
-  
+
   add.method('spaceHolder', function () {
     var h = this._spaceHolder;
     if (!h) {
@@ -41,7 +41,7 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
     }
     return h;
   });
-  
+
   add.method('currentThreshold', function () {
     return this._thresholdNumber;
   });
@@ -59,18 +59,18 @@ thisModule.addSlots(avocado.scaleBasedMorphHider, function(add) {
     // console.log("whichMorphShouldBeShown is " + i + " for " + this._owner + ", scale is " + s + ", threshold is " + t + ", onScreen is " + onScreen);
     return i;
   });
-  
+
   add.creator('spaceHolderLayout', {});
 
 });
 
 
 thisModule.addSlots(avocado.scaleBasedMorphHider.spaceHolderLayout, function(add) {
-  
+
   add.method('minimumExtent', function (spaceHolderMorph) {
     return spaceHolderMorph._spaceHolderMinimumExtent;
   });
-  
+
 });
 
 

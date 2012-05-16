@@ -14,6 +14,8 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance, function(add) {
 
+  add.data('displayName', 'TextMorphRequiringExplicitAcceptance');
+
   add.data('superclass', TextMorph);
 
   add.data('type', 'avocado.TextMorphRequiringExplicitAcceptance');
@@ -27,7 +29,7 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
 
   add.data('constructor', avocado.TextMorphRequiringExplicitAcceptance);
 
-  add.method('initialize', function($super, accessors) {
+  add.method('initialize', function ($super, accessors) {
     $super();
     this.dontNotifyUntilTheActualModelChanges = true;
     this.connectModel({model: this, getText: "getSavedText", setText: "setSavedText"});
@@ -40,15 +42,15 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
     this.refreshText();
   });
 
-  add.data('defaultBounds', pt(5, 10).extent(pt(140, 20)));
-  
-  add.data('openForDragAndDrop', false);
-  
-  add.data('suppressGrabbing', true);
-  
-  add.data('wrap', lively.Text.WrapStyle.Shrink);
+  add.data('defaultBounds', new Rectangle(5, 10, 140, 20));
 
-  add.method('getSavedText', function( )  {
+  add.data('openForDragAndDrop', false);
+
+  add.data('suppressGrabbing', true);
+
+  add.data('wrap', 'Shrink');
+
+  add.method('getSavedText', function () {
     if (this._accessors) {
       return this._accessors.get();
     } else {
@@ -56,7 +58,7 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
     }
   });
 
-  add.method('setSavedText', function(t)  {
+  add.method('setSavedText', function (t) {
     if (this._accessors) {
       this._accessors.set(t);
 
@@ -69,23 +71,23 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
     }
   });
 
-  add.method('setTextString', function($super, replacement, delayComposition, justMoreTyping) {
+  add.method('setTextString', function ($super, replacement, delayComposition, justMoreTyping) {
     var x = $super(replacement, delayComposition, justMoreTyping);
     this.updateLayoutIfNecessary();
     return x;
   });
 
-  add.method('rememberThatSavedTextMightNotBeIdenticalToWhatWasTyped', function() {
+  add.method('rememberThatSavedTextMightNotBeIdenticalToWhatWasTyped', function () {
     this._savedTextMightNotBeIdenticalToWhatWasTyped = true;
     return this;
   });
-  
-  add.method('updateLayoutIfNecessary', function() {
+
+  add.method('updateLayoutIfNecessary', function () {
     this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
     this.minimumExtentMayHaveChanged();
   });
 
-  add.method('checkForAcceptOrCancel', function(evt) {
+  add.method('checkForAcceptOrCancel', function (evt) {
     if (this.hasChangedFromSavedText() && evt.getKeyCode() == Event.KEY_ESC) {
       this.cancelChanges();
       evt.stop();
@@ -101,43 +103,43 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
     return false;
   });
 
-  add.method('onKeyDown', function($super, evt) {
+  add.method('onKeyDown', function ($super, evt) {
     if (this.checkForAcceptOrCancel(evt)) { return true; }
     return $super(evt);
   });
 
-  add.method('onKeyPress', function($super, evt) {
+  add.method('onKeyPress', function ($super, evt) {
     if (this.checkForAcceptOrCancel(evt)) { return true; }
     return $super(evt);
   });
 
-  add.method('beWritableAndSelectAll', function(evt) {
+  add.method('beWritableAndSelectAll', function (evt) {
     this.beWritable();
     this.requestKeyboardFocus(evt ? evt.hand : WorldMorph.current().firstHand());
     this.doSelectAll();
   });
-  
-  add.method('wasJustAdded', function(evt) {
+
+  add.method('wasJustAdded', function (evt) {
     this.prepareForUserInput(evt);
   });
-  
-  add.method('prepareForUserInput', function(evt) {
+
+  add.method('prepareForUserInput', function (evt) {
     this.beWritableAndSelectAll(evt);
   });
-  
-  add.method('beWritable', function() {
-    // nothing to do here, but children can override
+
+  add.method('beWritable', function () {
+    // nothing to do here, but children can override;
   });
 
-  add.method('hasChangedFromSavedText', function() {
+  add.method('hasChangedFromSavedText', function () {
     return this._hasChangedFromSavedText;
   });
 
   add.data('normalStyle', TextMorph.prototype.style);
-  
+
   add.creator('modifiedStyle', {});
 
-  add.method('changed', function($super) {
+  add.method('changed', function ($super) {
     // Avoid infinite recursion when setting the border stuff.
     if (this._isChangingRightNow) {return;}
     this._isChangingRightNow = true;
@@ -154,7 +156,7 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
     $super();
   });
 
-  add.method('refreshText', function() {
+  add.method('refreshText', function () {
     if (this.hasChangedFromSavedText()) {
       // Don't wanna lose the stuff that we've typed.
       this.changed();
@@ -178,12 +180,12 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
     }
   });
 
-  add.method('justAcceptedOrCancelled', function() {
+  add.method('justAcceptedOrCancelled', function () {
     this.changed();
     this.updateLayoutIfNecessary();
   });
 
-  add.method('acceptChanges', function() {
+  add.method('acceptChanges', function () {
     var newText = this.getText();
     if (newText !== this.getSavedText()) {
       this.setSavedText(newText);
@@ -195,20 +197,20 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
     this.justAcceptedOrCancelled();
   });
 
-  add.method('cancelChanges', function() {
+  add.method('cancelChanges', function () {
     this.setText(this.getSavedText());
     this.justAcceptedOrCancelled();
   });
 
-  add.method('handlesMouseDown', function(evt) { return true; });
+  add.method('handlesMouseDown', function (evt) { return true; });
 
-  add.method('returnKeyShouldAccept', function() { return false; });
+  add.method('returnKeyShouldAccept', function () { return false; });
 
-  add.method('morphMenu', function(evt) {
+  add.method('morphMenu', function (evt) {
     return this.editingCommands().createMenu(this);
   });
 
-  add.method('editingCommands', function() {
+  add.method('editingCommands', function () {
     var cmdList = avocado.command.list.create(this);
     if (this.hasChangedFromSavedText()) {
       cmdList.addItem(["accept    [alt+enter]", this.acceptChanges]);
@@ -216,20 +218,29 @@ thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype, func
     }
     return cmdList;
   });
-  
+
 });
 
 
 thisModule.addSlots(avocado.TextMorphRequiringExplicitAcceptance.prototype.modifiedStyle, function(add) {
 
   add.data('borderWidth', 2);
-  
-  add.data('borderColor', Color.red);
-  
+
+  add.data('borderColor', new Color(0.8, 0, 0));
+
+});
+
+
+thisModule.addSlots(TextMorph.prototype.style, function(add) {
+
+  add.data('borderColor', new Color(0.6, 0.6, 0.6));
+
 });
 
 
 thisModule.addSlots(avocado.TwoModeTextMorph, function(add) {
+
+  add.data('displayName', 'TwoModeTextMorph');
 
   add.data('superclass', avocado.TextMorphRequiringExplicitAcceptance);
 
@@ -243,12 +254,12 @@ thisModule.addSlots(avocado.TwoModeTextMorph, function(add) {
 thisModule.addSlots(avocado.TwoModeTextMorph.prototype, function(add) {
 
   add.data('constructor', avocado.TwoModeTextMorph);
-  
-  add.method('hasChangedFromSavedText', function() {
+
+  add.method('hasChangedFromSavedText', function () {
     return this.isInWritableMode;
   });
 
-  add.method('beUnwritable', function() {
+  add.method('beUnwritable', function () {
     this.acceptInput = false;
     this.setFill(this.backgroundColorWhenUnwritable || null);
     this.setNullSelectionAt(0);
@@ -261,7 +272,7 @@ thisModule.addSlots(avocado.TwoModeTextMorph.prototype, function(add) {
     return this;
   });
 
-  add.method('beWritable', function() {
+  add.method('beWritable', function () {
     this.acceptInput = true;
     this.setFill(this.backgroundColorWhenWritable || null);
     this.changed();
@@ -271,29 +282,29 @@ thisModule.addSlots(avocado.TwoModeTextMorph.prototype, function(add) {
     return this;
   });
 
-  add.method('switchEditModeOn', function() { this.beWritable(); });
-  
-  add.method('switchEditModeOff', function() { this.beUnwritable(); });
+  add.method('switchEditModeOn', function () { this.beWritable(); });
+
+  add.method('switchEditModeOff', function () { this.beUnwritable(); });
 
   add.creator('normalStyle', Object.create(TextMorph.prototype.style));
 
-  add.method('justAcceptedOrCancelled', function() {
+  add.method('justAcceptedOrCancelled', function () {
     this.beUnwritable();
     this.updateLayoutIfNecessary();
   });
 
-  add.method('onMouseDown', function($super, evt) {
+  add.method('onMouseDown', function ($super, evt) {
     if (! this.isInWritableMode) {
       return this.checkForDoubleClick(evt);
     }
     return $super(evt);
   });
 
-  add.method('canBecomeWritable', function() { return ! this.isReadOnly; });
+  add.method('canBecomeWritable', function () { return ! this.isReadOnly; });
 
-  add.method('returnKeyShouldAccept', function() { return true; });
+  add.method('returnKeyShouldAccept', function () { return true; });
 
-  add.method('onDoubleClick', function(evt) {
+  add.method('onDoubleClick', function (evt) {
     if (this.canBecomeWritable()) {
       this.beWritable();
       this.onMouseDown(evt);
@@ -301,36 +312,29 @@ thisModule.addSlots(avocado.TwoModeTextMorph.prototype, function(add) {
     }
     return false;
   });
-  
+
   add.data('nameOfEditCommand', 'edit');
-  
-  add.method('setNameOfEditCommand', function(n) {
+
+  add.method('setNameOfEditCommand', function (n) {
     this.nameOfEditCommand = n;
     return this;
   });
 
-  add.method('editingCommands', function($super) {
+  add.method('editingCommands', function ($super) {
     var cmdList = $super();
     if (!this.isInWritableMode && this.canBecomeWritable()) {
       cmdList.addItem(avocado.command.create(this.nameOfEditCommand, function(evt) {this.beWritableAndSelectAll(evt);}, this));
     }
     return cmdList;
   });
-  
+
 });
 
 
 thisModule.addSlots(avocado.TwoModeTextMorph.prototype.normalStyle, function(add) {
-  
+
   add.data('borderWidth', 0);
 
-});
-
-
-thisModule.addSlots(TextMorph.prototype.style, function(add) {
-
-  add.data('borderColor', new Color(0.6, 0.6, 0.6));
-  
 });
 
 

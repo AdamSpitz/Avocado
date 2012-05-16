@@ -146,7 +146,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
       return (! this.owner) || (this.owner instanceof WorldMorph) || (this.owner instanceof HandMorph) || (this.owner instanceof avocado.CarryingHandMorph);
     }.bind(this));
   }, {category: ['adding and removing']});
-  
+
   add.method('setFillOpacityRecursively', function (a) {
     // console.log("setFillOpacityRecursively: " + a);
     this.setFillOpacity(a);

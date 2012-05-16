@@ -59,23 +59,29 @@ thisModule.addSlots(avocado.livelyKernelUI, function(add) {
     var morphToBeNextTo = w.morphFor(objToBeNextTo);
     w.morphFor(objToShow).ensureIsInWorld(w, morphToBeNextTo.worldPoint(pt(morphToBeNextTo.getExtent().x + 50, 0)), true, true, true, callback);
   });
-  
+
   add.method('defaultFillWithColor', function (c) {
     if (!c) { return null; }
     return new lively.paint.LinearGradient([new lively.paint.Stop(0, c),
                                             new lively.paint.Stop(1, c.lighter())],
                                            lively.paint.LinearGradient.SouthNorth);
   });
-  
+
   add.method('newMorph', function (shape) {
     return new Morph(shape || lively.scene.Rectangle.createWithIrrelevantExtent());
   });
-  
+
   add.method('currentWorld', function () {
     return WorldMorph.current();
   });
-  
+
   add.creator('shapeFactory', {});
+
+  add.data('isZoomingEnabled', true);
+
+  add.data('shouldMirrorsUseZooming', true);
+
+  add.data('debugMode', false);
 
 });
 

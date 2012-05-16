@@ -14,6 +14,8 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.ComboBoxMorph, function(add) {
 
+  add.data('displayName', 'ComboBoxMorph');
+
   add.data('superclass', Morph);
 
   add.data('type', 'avocado.ComboBoxMorph');
@@ -89,7 +91,7 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
 
     this.setColumns([this._textMorph, avocado.ui.createSpacer(), this._button]);
   }, {category: ['creating']});
-  
+
   add.creator('defaultStyle', {}, {category: ['styles']});
 
   add.method('value', function () {
@@ -140,15 +142,15 @@ thisModule.addSlots(avocado.ComboBoxMorph.prototype, function(add) {
 thisModule.addSlots(avocado.ComboBoxMorph.prototype.defaultStyle, function(add) {
 
   add.data('padding', {left: 1, right: 1, top: 1, bottom: 1, between: {x: 0, y: 0}}, {initializeTo: '{left: 1, right: 1, top: 1, bottom: 1, between: {x: 0, y: 0}}'});
-  
-  add.data('fill', Color.white);
 
-  add.data('borderColor', Color.black);
+  add.data('fill', new Color(1, 1, 1));
+
+  add.data('borderColor', new Color(0, 0, 0));
 
   add.data('borderWidth', 1);
 
   add.data('openForDragAndDrop', false);
-  
+
 });
 
 

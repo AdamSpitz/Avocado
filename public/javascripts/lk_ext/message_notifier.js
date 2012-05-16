@@ -7,8 +7,8 @@ requires('general_ui/table_layout');
 
 
 thisModule.addSlots(avocado.label, function(add) {
-  
-  add.method('newMorphWithInitialText', function(initialText, extent) {
+
+  add.method('newMorphWithInitialText', function (initialText, extent) {
     var tf = new TextMorph(pt(0, 0).extent(extent || pt(0, 0)), initialText);
     tf.acceptInput = false;
     tf.closeDnD();
@@ -56,9 +56,9 @@ thisModule.addSlots(Error.prototype, function(add) {
 
 
 thisModule.addSlots(Error.prototype.defaultMorphStyle, function(add) {
-  
+
   add.data('fillBase', new Color(1, 0, 0));
-  
+
 });
 
 

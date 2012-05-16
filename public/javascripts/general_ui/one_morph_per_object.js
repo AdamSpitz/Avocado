@@ -8,7 +8,7 @@ requires('general_ui/basic_morph_mixins');
 thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
 
   add.data('_morphsByObject', null, {category: ['one morph per object'], initializeTo: 'null'});
-  
+
   add.method('morphsByObject', function () {
     return this._morphsByObject || (this._morphsByObject = avocado.dictionary.copyRemoveAll(avocado.morphIdentityComparator));
   }, {category: ['one morph per object']});
@@ -49,7 +49,7 @@ thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
 thisModule.addSlots(avocado, function(add) {
 
   add.creator('morphIdentityComparator', {}, {category: ['user interface', 'one morph per object']});
-  
+
 });
 
 
@@ -78,11 +78,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     
     return this;
   });
-  
+
   add.method('placeholdersByMorph', function () {
     return this._placeholdersByMorph || (this._placeholdersByMorph = avocado.dictionary.copyRemoveAll(avocado.dictionary.identityComparator));
   }, {category: ['one morph per object']});
-  
+
   add.method('placeholderForMorph', function (morph) {
     return this.placeholdersByMorph().getOrIfAbsentPut(morph, function() {
       return avocado.placeholder.newPlaceholderMorphForMorph(morph);

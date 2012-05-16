@@ -9,7 +9,7 @@ requires('general_ui/auto_scaling_morph');
 
 
 thisModule.addSlots(avocado.treeNode, function(add) {
-  
+
   add.method('newMorph', function () {
     return this.newMorphFor(this);
   }, {category: ['user interface']});
@@ -34,7 +34,7 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     morph.applyStyle(style || {borderRadius: 10});
     return morph;
   }, {category: ['user interface']});
-  
+
   add.method('defaultExtent', function () {
     return pt(150, 100);
   }, {category: ['user interface']});
@@ -105,7 +105,7 @@ thisModule.addSlots(avocado.treeNode, function(add) {
 
     return cp;
   }, {category: ['user interface', 'creating']});
-  
+
   add.method('thresholdMultiplierFor', function (treeNode) {
     if (treeNode.thresholdMultiplier) { return treeNode.thresholdMultiplier; }
     if (typeof(treeNode.immediateContents) === 'function') {
@@ -135,7 +135,7 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     if (avocado.ui.is3D) { avocado.treeNode.headerRowPadding.bottom = 25; } // aaa HACK, just wanna see what it looks like
     return avocado.table.createSpaceFillingRowMorph(morph._morphFactory.headerRowContentsForMorph(morph), avocado.treeNode.headerRowPadding);
   }, {category: ['user interface', 'creating']});
-  
+
   add.method('ownerObjectChainStartingFromRoot', function (leaf) {
     var treeNodeChain = [];
     var treeNode = leaf;
@@ -155,12 +155,68 @@ thisModule.addSlots(avocado.treeNode, function(add) {
 
   add.creator('zoomingContentsPanelStyle', {}, {category: ['user interface', 'styles']});
 
-  add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}', category: ['user interface', 'styles']});
-  
+  add.data('headerRowPadding', {top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}, {category: ['user interface', 'styles'], initializeTo: '{top: 0, bottom: 0, left: 0, right: 0, between: {x: 3, y: 3}}'});
+
   add.creator('morphFactories', {}, {category: ['user interface', 'creating']});
-  
+
   add.creator('morphMixin_aaa_becauseIDoNotFeelLikeGeneralizingTheseMethodsRightNow', {}, {category: ['user interface', 'creating']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.treeNode.nonZoomingStyle, function(add) {
+
+  add.data('fillBase', new Color(1, 0.8, 0.5));
+
+  add.data('padding', {top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}, {initializeTo: '{top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}'});
+
+  add.data('openForDragAndDrop', false);
+
+});
+
+
+thisModule.addSlots(avocado.treeNode.nonZoomingContentsPanelStyle, function(add) {
+
+  add.data('padding', {top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}}, {initializeTo: '{top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}}'});
+
+  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
+
+});
+
+
+thisModule.addSlots(avocado.treeNode.zoomingStyle, function(add) {
+
+  add.data('fillBase', new Color(0.8, 0.8, 0.8));
+
+  add.data('padding', {top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}, {initializeTo: '{top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}'});
+
+  add.data('horizontalLayoutMode', avocado.LayoutModes.ShrinkWrap);
+
+  add.data('verticalLayoutMode', avocado.LayoutModes.ShrinkWrap);
+
+  add.data('openForDragAndDrop', false);
+
+});
+
+
+thisModule.addSlots(avocado.treeNode.zoomingContentsPanelStyle, function(add) {
+
+  add.data('padding', 0);
+
+  add.data('fill', new Color(1, 1, 1));
+
+  add.data('fillOpacity', 0.65);
+
+  add.data('borderRadius', 10);
+
+  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
+
+  add.data('verticalLayoutMode', avocado.LayoutModes.SpaceFill);
+
+  add.data('shouldIgnoreEvents', true, {comment: 'Otherwise it\'s just too easy to accidentally mess up an object. Also we want menus to work.'});
+
+  add.data('openForDragAndDrop', false);
+
 });
 
 
@@ -182,7 +238,7 @@ thisModule.addSlots(avocado.treeNode.morphFactories.expanderBased, function(add)
   add.method('styleForTreeNode', function (n) {
     return n.nonZoomingStyle || avocado.treeNode.nonZoomingStyle;
   });
-  
+
   add.method('createContentsPanelOrHider', function (ownerMorph, getOrCreateActualMorph) {
     return avocado.morphHider.create(ownerMorph, [getOrCreateActualMorph], function() {
       return ownerMorph._expander.isExpanded();
@@ -196,8 +252,9 @@ thisModule.addSlots(avocado.treeNode.morphFactories.expanderBased, function(add)
   add.method('dragAndDropCommandsForMorph', function (morph) {
     return morph.dragAndDropCommandsForTreeContents();
   });
-  
+
 });
+
 
 thisModule.addSlots(avocado.treeNode.morphFactories.scalingBased, function(add) {
 
@@ -207,7 +264,7 @@ thisModule.addSlots(avocado.treeNode.morphFactories.scalingBased, function(add) 
   add.method('styleForTreeNode', function (n) {
     return n.zoomingStyle || avocado.treeNode.zoomingStyle;
   });
-  
+
   add.method('createContentsPanelOrHider', function (ownerMorph, getOrCreateActualMorph) {
     var contentsThreshold = ownerMorph._contentsThreshold || 0.25;
     var thresholdMultiplierForHeader = ownerMorph._shouldOmitHeaderRow ? 0.25 : 0.7;
@@ -231,7 +288,7 @@ thisModule.addSlots(avocado.treeNode.morphFactories.scalingBased, function(add) 
     morph.addArrowDroppingCommandTo(cmdList);
     return cmdList;
   });
-  
+
 });
 
 
@@ -246,84 +303,28 @@ thisModule.addSlots(avocado.treeNode.morphMixin_aaa_becauseIDoNotFeelLikeGeneral
       this.refreshContent(); // aaa - is this the right thing do? is it a performance bug?
     }
   }, {category: ['contents panel']});
-  
+
   add.method('justChangedContent', function () {
     if (this._contentsPanel) { this._contentsPanel.justChangedContent(); }
   }, {category: ['updating']});
-  
+
   add.method('morphsThatNeedToBeVisibleBeforeICanBeVisible', function () {
     return avocado.treeNode.ownerObjectChainStartingFromRoot(this._model).map(function(n) { return avocado.ui.currentWorld().morphFor(n); });
   }, {category: ['updating']});
-  
+
   add.method('partsOfUIState', function () {
     var s = this._expander ? {} : { isExpanded: this._expander };
     if (this._contentsPanel) { s.contents = this._contentsPanel; }
     return s;
   }, {category: ['UI state']});
-  
+
   add.method('dragAndDropCommands', function () {
     return this._morphFactory.dragAndDropCommandsForMorph(this);
   }, {category: ['drag and drop']});
-  
+
   add.method('dragAndDropCommandsForTreeContents', function () {
     return avocado.morphMixins.Morph.dragAndDropCommands.call(this);
   }, {category: ['drag and drop']});
-
-});
-
-
-thisModule.addSlots(avocado.treeNode.nonZoomingStyle, function(add) {
-
-  add.data('fillBase', new Color(1, 0.8, 0.5));
-
-  add.data('padding', {top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}, {initializeTo: '{top: 0, bottom: 0, left: 2, right: 2, between: {x: 2, y: 2}}'});
-  
-  add.data('openForDragAndDrop', false);
-
-});
-
-
-thisModule.addSlots(avocado.treeNode.nonZoomingContentsPanelStyle, function(add) {
-
-  add.data('padding', {top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}}, {initializeTo: '{top: 0, bottom: 0, left: 10, right: 0, between: {x: 0, y: 0}}'});
-
-  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
-
-});
-
-
-thisModule.addSlots(avocado.treeNode.zoomingStyle, function(add) {
-
-  add.data('fillBase', new Color(0.8, 0.8, 0.8));
-
-  add.data('padding', {top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}, {initializeTo: '{top: 3, bottom: 3, left: 3, right: 3, between: {x: 1, y: 1}}'});
-  
-  add.data('horizontalLayoutMode', avocado.LayoutModes.ShrinkWrap);
-
-  add.data('verticalLayoutMode', avocado.LayoutModes.ShrinkWrap);
-  
-  add.data('openForDragAndDrop', false);
-
-});
-
-
-thisModule.addSlots(avocado.treeNode.zoomingContentsPanelStyle, function(add) {
-
-  add.data('padding', 0);
-  
-  add.data('fill', Color.white);
-  
-  add.data('fillOpacity', 0.65);
-
-  add.data('borderRadius', 10);
-
-  add.data('horizontalLayoutMode', avocado.LayoutModes.SpaceFill);
-
-  add.data('verticalLayoutMode', avocado.LayoutModes.SpaceFill);
-
-  add.data('shouldIgnoreEvents', true, {comment: 'Otherwise it\'s just too easy to accidentally mess up an object. Also we want menus to work.'});
-
-  add.data('openForDragAndDrop', false);
 
 });
 

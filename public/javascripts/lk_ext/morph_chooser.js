@@ -12,6 +12,8 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.MorphChooser, function(add) {
 
+  add.data('displayName', 'MorphChooser');
+
   add.data('superclass', Morph);
 
   add.data('type', 'avocado.MorphChooser');
@@ -30,13 +32,13 @@ thisModule.addSlots(avocado.MorphChooser.prototype, function(add) {
     this._targetType = targetType;
     this._callOnSuccess = callOnSuccess;
   }, {category: ['creating']});
-  
+
   add.creator('style', {}, {category: ['styles']});
-  
+
   add.method('particularlyWantsToBeDroppedOn', function (m) {
     return this._targetType.doesTypeMatch(m);
   }, {category: ['drag and drop']});
-  
+
   add.method('aboutToBeDroppedOn', function ($super, m) {
     if (this.particularlyWantsToBeDroppedOn(m)) {
       this.remove();
@@ -51,9 +53,9 @@ thisModule.addSlots(avocado.MorphChooser.prototype, function(add) {
 
 
 thisModule.addSlots(avocado.MorphChooser.prototype.style, function(add) {
-  
+
   add.data('suppressHandles', true);
-  
+
 });
 
 

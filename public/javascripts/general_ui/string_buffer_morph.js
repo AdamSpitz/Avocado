@@ -6,12 +6,12 @@ requires('core/string_buffer');
 
 
 thisModule.addSlots(avocado.stringBuffer, function(add) {
-  
+
   add.method('newMorph', function () {
     this.startNotifyingUIWheneverChanged();
     return avocado.types.longString.createInputMorph(avocado.accessors.forMethods(this, 'toString'));
   }, {category: ['user interface']});
-  
+
 });
 
 

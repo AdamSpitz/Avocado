@@ -7,20 +7,22 @@ requires('general_ui/basic_morph_mixins');
 
 thisModule.addSlots(avocado, function(add) {
 
-  add.method('wheelLayout', {}, {category: ['user interface']});
+  add.creator('wheelLayout', {}, {category: ['user interface']});
 
 });
 
 
 thisModule.addSlots(avocado.wheelLayout, function(add) {
-  
+
+  add.data('displayName', 'wheelLayout');
+
   add.method('initialize', function (morph) {
     this._morph = morph;
   }, {category: ['creating']});
-  
-	add.data('_innerRadius', 30, {category: ['geometry']});
 
-	add.data('_outerRadius', 100, {category: ['geometry']});
+  add.data('_innerRadius', 30, {category: ['geometry']});
+
+  add.data('_outerRadius', 100, {category: ['geometry']});
 
   add.method('innerRadius', function () {
     return this._innerRadius;
@@ -52,7 +54,7 @@ thisModule.addSlots(avocado.wheelLayout, function(add) {
   add.method('isAffectedBy', function (operation, morph) {
     return true;
   }, {category: ['layout']});
-  
+
   add.method('createPieceShape', function (commandIndex) {
     if (commandIndex === 0) {
       // aaa LK-specific
@@ -63,21 +65,22 @@ thisModule.addSlots(avocado.wheelLayout, function(add) {
   		return avocado.ui.shapeFactory.newPieWedge(thetaA, thetaC, this.innerRadius(), this.outerRadius() * 0.95);
     }
   }, {category: ['layout']});
-  
+
   add.method('centerOfPiece', function (commandIndex) {
     if (commandIndex === 0) { return pt(0, 0); }
     return Point.polar((this.innerRadius() + this.outerRadius()) / 2, ((commandIndex - 3) / 8) * (2 * Math.PI));
   }, {category: ['layout']});
+
 });
 
 
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
-  
+
   add.method('useWheelLayout', function () {
     this.setLayout(Object.newChildOf(avocado.wheelLayout, this));
     return this;
   }, {category: ['layout']});
-  
+
 });
 
 

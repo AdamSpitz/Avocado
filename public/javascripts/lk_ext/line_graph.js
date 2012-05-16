@@ -6,17 +6,19 @@ requires('core/line_graph');
 
 
 thisModule.addSlots(avocado.lineGraph, function(add) {
-  
+
   add.method('newMorph', function () {
     return new this.Morph(this);
   }, {category: ['user interface']});
-  
+
   add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.lineGraph.Morph, function(add) {
+
+  add.data('displayName', 'Morph');
 
   add.data('superclass', Morph);
 
@@ -30,13 +32,13 @@ thisModule.addSlots(avocado.lineGraph.Morph, function(add) {
 thisModule.addSlots(avocado.lineGraph.Morph.prototype, function(add) {
 
   add.data('constructor', avocado.lineGraph.Morph);
-  
+
   add.method('initialize', function ($super, g) {
     $super(new lively.scene.Rectangle(new Rectangle(0, 0, 400, 200)));
     this.setModel(g);
     this.refreshContentOfMeAndSubmorphs();
   }, {category: ['creating']});
-  
+
   add.method('createLineMorph', function (line) {
     line.determineMinAndMax();
     var range = line.max() - line.min();
@@ -49,13 +51,13 @@ thisModule.addSlots(avocado.lineGraph.Morph.prototype, function(add) {
     })));
     m.applyStyle(this.lineStyle);
     return m;
-  }, {category: ['updating']})
-  
+  }, {category: ['updating']});
+
   add.method('refreshContent', function () {
     if (this._lineMorphs) { this._lineMorphs.forEach(function(m) { m.remove(); }); }
     this._lineMorphs = this._model.lines().map(function(line) { return this.createLineMorph(line); }.bind(this));
     this._lineMorphs.forEach(function(m) { this.addMorph(m); }.bind(this));
-  }, {category: ['updating']})
+  }, {category: ['updating']});
 
   add.creator('style', {}, {category: ['styles']});
 
@@ -66,7 +68,7 @@ thisModule.addSlots(avocado.lineGraph.Morph.prototype, function(add) {
 
 thisModule.addSlots(avocado.lineGraph.Morph.prototype.style, function(add) {
 
-  add.data('fill', Color.white);
+  add.data('fill', new Color(1, 1, 1));
 
 });
 

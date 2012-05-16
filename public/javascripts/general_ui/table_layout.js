@@ -11,7 +11,7 @@ requires('general_ui/layout');
 thisModule.addSlots(avocado.table, function(add) {
 
   add.creator('layout', {}, {category: ['user interface']});
-  
+
   add.method('newColumnMorph', function () {
     return avocado.ui.newMorph().useTableLayout(avocado.table.contents.columnPrototype);
   }, {category: ['user interface']});
@@ -46,7 +46,7 @@ thisModule.addSlots(avocado.table, function(add) {
 
   add.creator('boxStyle', {}, {category: ['user interface']});
 
-  add.method('createEitherOrMorph', function(morphs, functionReturningTheIndexOfTheOneToShow) {
+  add.method('createEitherOrMorph', function (morphs, functionReturningTheIndexOfTheOneToShow) {
     // aaa - callers that are TableMorphs already and just need two choices should just use the new enhanced morphToggler, don't need to wrap it in this RowMorph anymore
     var r = avocado.table.newRowMorph().beInvisible();
     r.typeName = 'either-or morph';
@@ -63,7 +63,7 @@ thisModule.addSlots(avocado.table, function(add) {
     return r;
   }, {category: ['shortcuts']});
 
-  add.method('createOptionalMorph', function(m, condition, layoutModes) {
+  add.method('createOptionalMorph', function (m, condition, layoutModes) {
     var om = this.createEitherOrMorph([m, avocado.table.newRowMorph().beInvisible()], function() { return condition() ? 0 : 1; });
     om.typeName = 'optional morph';
     om.horizontalLayoutMode = (layoutModes || m).horizontalLayoutMode;
@@ -71,15 +71,15 @@ thisModule.addSlots(avocado.table, function(add) {
     return om;
   }, {category: ['shortcuts']});
 
-  add.method('wrapToTakeUpConstantWidth', function(width, morph) {
+  add.method('wrapToTakeUpConstantWidth', function (width, morph) {
     return this.wrapToTakeUpConstantSpace(pt(width, null), morph);
   }, {category: ['shortcuts']});
 
-  add.method('wrapToTakeUpConstantHeight', function(height, morph) {
+  add.method('wrapToTakeUpConstantHeight', function (height, morph) {
     return this.wrapToTakeUpConstantSpace(pt(null, height), morph);
   }, {category: ['shortcuts']});
 
-  add.method('wrapToTakeUpConstantSpace', function(space, morph) {
+  add.method('wrapToTakeUpConstantSpace', function (space, morph) {
     var wrapper = avocado.table.newRowMorph().beInvisible();
     wrapper.layout().setDesiredSpace(space);
     wrapper.layout().setCells([morph]);
@@ -89,66 +89,28 @@ thisModule.addSlots(avocado.table, function(add) {
 });
 
 
-thisModule.addSlots(avocado.directions.vertical, function(add) {
-
-  add.method('externallySpecifiedFreeSpaceSideways', function (m) {return m.externallySpecifiedFreeWidth;});
-
-  add.method('specifyFreeSpaceSideways', function (m, s) {m.externallySpecifiedFreeWidth = s;});
-
-  add.method('dimensionOfRect', function (r) {return r.height;});
-
-  add.method('padding1', function (padding) {return padding.top;});
-
-  add.method('padding2', function (padding) {return padding.bottom;});
-
-  add.method('layoutModeOf', function (m) {return m.verticalLayoutMode;});
-
-  add.method('setLayoutModeOf', function (m, mode) {m.verticalLayoutMode = mode;});
-
-});
-
-
-thisModule.addSlots(avocado.directions.horizontal, function(add) {
-
-  add.method('externallySpecifiedFreeSpaceSideways', function (m) {return m.externallySpecifiedFreeHeight;});
-
-  add.method('specifyFreeSpaceSideways', function (m, s) {m.externallySpecifiedFreeHeight = s;});
-
-  add.method('dimensionOfRect', function (r) {return r.width;});
-
-  add.method('padding1', function (padding) {return padding.left;});
-
-  add.method('padding2', function (padding) {return padding.right;});
-
-  add.method('layoutModeOf', function (m) {return m.horizontalLayoutMode;});
-
-  add.method('setLayoutModeOf', function (m, mode) {m.horizontalLayoutMode = mode;});
-
-});
-
-
 thisModule.addSlots(avocado.table.layout, function(add) {
-  
+
   add.method('initialize', function (tableMorph) {
     this._tableMorph = tableMorph;
   }, {category: ['creating']});
-  
+
   add.method('getExtent', function () {
     return this._tableMorph.getExtent();
   }, {category: ['accessing the table morph']});
-  
+
   add.method('getScale', function () {
     return this._tableMorph.getScale();
   }, {category: ['accessing the table morph']});
-  
+
   add.method('setScale', function (s) {
     this._tableMorph.setScale(s);
   }, {category: ['accessing the table morph']});
-  
+
   add.method('tableContent', function () {
     return this._tableContent;
   }, {category: ['accessing']});
-  
+
   add.method('setTableContent', function (c) {
     this._tableContent = c;
     // aaa - several hacks piled on top of each other
@@ -157,11 +119,11 @@ thisModule.addSlots(avocado.table.layout, function(add) {
     }
     return this;
   }, {category: ['accessing']});
-  
+
   add.method('shouldPrintDebugInfo', function () {
     return this._tableMorph._debugMyLayout;
   }, {category: ['accessing the table morph']});
-  
+
   add.method('layoutModes', function () {
     // aaa make the TableMorph itself store them as a Point?
     return pt(this._tableMorph.horizontalLayoutMode, this._tableMorph.verticalLayoutMode);
@@ -217,7 +179,7 @@ thisModule.addSlots(avocado.table.layout, function(add) {
     }
     return this._submorphReplacementBatcherUpper;
   }, {category: ['layout']});
-  
+
   add.method('getPadding', function () {
     return this._padding;
   }, {category: ['padding']});
@@ -257,7 +219,7 @@ thisModule.addSlots(avocado.table.layout, function(add) {
   add.method('minimumExtent', function () {
     return this.adjustForRigidityAndScale(this.internalMinimumExtent());
   }, {category: ['layout', 'minimum extent']});
-  
+
   add.method('adjustForRigidityAndScale', function (e) {
     var e2 = this.adjustForRigidity(e);
     return e2.scaleBy(this.currentOrDesiredScaleGivenExtent(e2));
@@ -509,26 +471,7 @@ thisModule.addSlots(avocado.table.layout, function(add) {
     var p = pt(actualsForThisMorph.x.coordinate, actualsForThisMorph.y.coordinate);
     return p;
   }, {category: ['layout']});
-  
-});
 
-
-thisModule.addSlots(avocado.table.contents, function(add) {
-  
-  add.data('rowPrototype', avocado.table.contents.create([], avocado.directions.vertical), {initializeTo: 'avocado.table.contents.create([], avocado.directions.vertical)'});
-  
-  add.data('columnPrototype', avocado.table.contents.create([], avocado.directions.horizontal), {initializeTo: 'avocado.table.contents.create([], avocado.directions.horizontal)'});
-
-  add.method('newMorph', function () {
-    var world = avocado.ui.currentWorld();
-    var morphsTable = this.map(function(model) { return world.morphFor(model); });
-    var m = avocado.table.newTableMorph();
-    if (this._desiredSpaceToScaleTo) { m.layout().setDesiredSpace(this._desiredSpaceToScaleTo); } // aaa hack, the model shouldn't know about this UI stuff
-    m.replaceContentWith(morphsTable);
-    m.applyStyle(avocado.table.boxStyle);
-    return m;
-  }, {category: ['user interface']});
-  
 });
 
 
@@ -543,8 +486,65 @@ thisModule.addSlots(avocado.table.boxStyle, function(add) {
 });
 
 
+thisModule.addSlots(avocado.directions.vertical, function(add) {
+
+  add.method('externallySpecifiedFreeSpaceSideways', function (m) {return m.externallySpecifiedFreeWidth;});
+
+  add.method('specifyFreeSpaceSideways', function (m, s) {m.externallySpecifiedFreeWidth = s;});
+
+  add.method('dimensionOfRect', function (r) {return r.height;});
+
+  add.method('padding1', function (padding) {return padding.top;});
+
+  add.method('padding2', function (padding) {return padding.bottom;});
+
+  add.method('layoutModeOf', function (m) {return m.verticalLayoutMode;});
+
+  add.method('setLayoutModeOf', function (m, mode) {m.verticalLayoutMode = mode;});
+
+});
+
+
+thisModule.addSlots(avocado.directions.horizontal, function(add) {
+
+  add.method('externallySpecifiedFreeSpaceSideways', function (m) {return m.externallySpecifiedFreeHeight;});
+
+  add.method('specifyFreeSpaceSideways', function (m, s) {m.externallySpecifiedFreeHeight = s;});
+
+  add.method('dimensionOfRect', function (r) {return r.width;});
+
+  add.method('padding1', function (padding) {return padding.left;});
+
+  add.method('padding2', function (padding) {return padding.right;});
+
+  add.method('layoutModeOf', function (m) {return m.horizontalLayoutMode;});
+
+  add.method('setLayoutModeOf', function (m, mode) {m.horizontalLayoutMode = mode;});
+
+});
+
+
+thisModule.addSlots(avocado.table.contents, function(add) {
+
+  add.data('rowPrototype', avocado.table.contents.create([], avocado.directions.vertical), {initializeTo: 'avocado.table.contents.create([], avocado.directions.vertical)'});
+
+  add.data('columnPrototype', avocado.table.contents.create([], avocado.directions.horizontal), {initializeTo: 'avocado.table.contents.create([], avocado.directions.horizontal)'});
+
+  add.method('newMorph', function () {
+    var world = avocado.ui.currentWorld();
+    var morphsTable = this.map(function(model) { return world.morphFor(model); });
+    var m = avocado.table.newTableMorph();
+    if (this._desiredSpaceToScaleTo) { m.layout().setDesiredSpace(this._desiredSpaceToScaleTo); } // aaa hack, the model shouldn't know about this UI stuff
+    m.replaceContentWith(morphsTable);
+    m.applyStyle(avocado.table.boxStyle);
+    return m;
+  }, {category: ['user interface']});
+
+});
+
+
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
-  
+
   add.method('useTableLayout', function (tableContent) {
     this.horizontalLayoutMode = avocado.LayoutModes.ShrinkWrap;
     this.  verticalLayoutMode = avocado.LayoutModes.ShrinkWrap;
@@ -552,7 +552,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this.setLayout(Object.newChildOf(avocado.table.layout, this).setTableContent(tableContent));
     return this;
   }, {category: ['layout']});
-  
+
 });
 
 

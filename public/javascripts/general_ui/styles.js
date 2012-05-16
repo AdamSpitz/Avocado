@@ -4,13 +4,13 @@ requires('general_ui/basic_morph_mixins');
 
 }, function(thisModule) {
 
+
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
-	
-	add.method('setStylist', function(stylist) {
+
+  add.method('setStylist', function (stylist) {
 	  this._stylist = stylist;
 	  return this;
 	}, {category: ['styles']});
-
 
   add.method('nonNullFillInMeOrOwners', function () {
     var m = this;
@@ -21,7 +21,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     }
     return null;
   }, {category: ['drag and drop']});
-  
+
   add.method('styleForWhenNotEmbeddedInAnythingElse', function () {
     return {
       horizontalLayoutMode: avocado.LayoutModes.ShrinkWrap,
@@ -29,7 +29,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
                       fill: this.nonNullFillInMeOrOwners()
     };
   }, {category: ['drag and drop']});
-  
+
 });
 
 

@@ -6,7 +6,7 @@ requires('general_ui/basic_morph_mixins');
 
 
 thisModule.addSlots(avocado, function(add) {
-  
+
   add.creator('placeholder', {});
 
 });
@@ -20,7 +20,7 @@ thisModule.addSlots(avocado.placeholder, function(add) {
     placeholderMorph.setEventHandler(avocado.placeholder.eventHandler);
     return placeholderMorph;
   }, {category: ['user interface']});
-  
+
   add.method('newPlaceholderMorphForSlot', function (slot) {
     var m = avocado.placeholder.newPlaceholderMorphForMorph(function() { return avocado.ui.currentWorld().morphFor(slot.contents()); });
     m._arrow = avocado.arrow.newMorphFor(slot, m, null);
@@ -28,23 +28,40 @@ thisModule.addSlots(avocado.placeholder, function(add) {
   }, {category: ['user interface']});
 
   add.creator('defaultStyle', {}, {category: ['styles']});
-  
+
   add.creator('layout', {}, {category: ['user interface']}, {comment: 'This doesn\'t really seem like a "layout", but I\'m not sure what it is.'});
-  
+
   add.creator('eventHandler', {}, {category: ['user interface']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.placeholder.defaultStyle, function(add) {
+
+  add.data('fillOpacity', 0.2);
+
+  add.data('openForDragAndDrop', false);
+
+  add.data('suppressGrabbing', true);
+
+  add.data('suppressHandles', true);
+
+  add.data('grabsShouldFallThrough', false, {comment: 'Otherwise clicking on it doesn\'t work.'});
+
+  add.data('textColor', new Color(0.5, 0.5, 0.5));
+
 });
 
 
 thisModule.addSlots(avocado.placeholder.layout, function(add) {
-  
+
   add.method('initialize', function (placeholderMorph, originalMorphOrFn) {
     this._placeholderMorph = placeholderMorph;
     this._originalMorphOrFn = originalMorphOrFn;
     this._labelMorph = avocado.label.newMorphFor("").setTextColor(avocado.placeholder.defaultStyle.textColor);
     this.refreshContent();
   }, {category: ['creating']});
-  
+
   add.method('refreshContent', function () {
     var originalMorph = this.originalMorph();
     this._placeholderMorph.setShape(originalMorph.getShape().copy());
@@ -62,11 +79,11 @@ thisModule.addSlots(avocado.placeholder.layout, function(add) {
   add.method('isAffectedBy', function (operation, morph) {
     return true;
   }, {category: ['styles']});
-  
+
   add.method('morphDescription', function (morph) {
     return "a placeholder";
   }, {category: ['printing']});
-  
+
   add.method('minimumExtent', function () {
     var h = this._placeholderMorph.horizontalLayoutMode;
     var v = this._placeholderMorph.  verticalLayoutMode;
@@ -76,15 +93,15 @@ thisModule.addSlots(avocado.placeholder.layout, function(add) {
     this._placeholderMorph._cachedMinimumExtent = e;
     return e.scaleBy(this._placeholderMorph.getScale());
   }, {category: ['layout']});
-  
+
   add.method('originalMorph', function () {
     var m = typeof(this._originalMorphOrFn) === 'function' ? this._originalMorphOrFn() : this._originalMorphOrFn;
     m.refreshContentOfMeAndSubmorphsIfNeverRefreshedBefore();
     return m;
   }, {category: ['accessing']});
-  
+
   add.method('relatedMorphs', function () { return [this.originalMorph()]; }, {category: ['related morphs']});
-  
+
   add.data('isPlaceholder', true, {category: ['testing']});
 
   add.method('putOriginalMorphBack', function (callWhenDone) {
@@ -117,7 +134,7 @@ thisModule.addSlots(avocado.placeholder.layout, function(add) {
     cmdList.addItem(avocado.command.create('bring it here', function(evt) { this.putOriginalMorphBack(); }, this));
     cmdList.addItem(avocado.command.create('take me there', function(evt) { this.originalMorph().navigateToMe(evt); }, this));
   }, {category: ['commands']});
-  
+
 });
 
 
@@ -133,23 +150,6 @@ thisModule.addSlots(avocado.placeholder.eventHandler, function(add) {
 	  morph.layout().originalMorph().navigateToMe(evt);
 	  return true;
 	});
-  
-});
-
-
-thisModule.addSlots(avocado.placeholder.defaultStyle, function(add) {
-
-  add.data('fillOpacity', 0.2);
-
-  add.data('openForDragAndDrop', false);
-
-  add.data('suppressGrabbing', true);
-
-  add.data('suppressHandles', true);
-
-  add.data('grabsShouldFallThrough', false, {comment: 'Otherwise clicking on it doesn\'t work.'});
-
-  add.data('textColor', new Color(0.5, 0.5, 0.5));
 
 });
 
