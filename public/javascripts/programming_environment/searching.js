@@ -57,14 +57,40 @@ thisModule.addSlots(avocado.searchResultsPresenter, function(add) {
       return null;
     }
   }, {category: ['sorting']});
-
+  
   add.method('newMorph', function () {
-    if (this._searcher.resultsAreSlots()) {
-      return avocado.searchResults.newMorph(this);
+    var shouldEnableTheTreeNodeSliceExperiment = false;
+    if (shouldEnableTheTreeNodeSliceExperiment) {
+      var m = avocado.treeNode.newMorphFor(this, avocado.searchResults.defaultStyle);
+      m.redo = function() { this.redo(); }.bind(this); // just because the old-style slice morphs expect that method to be there
+      return m;
     } else {
-      throw new Error("What kind of morph should we make for " + this.inspect() + "?");
+      // The new tree-node way isn't good enough yet for me to be willing to completely throw away the old way. -- Adam
+      if (this._searcher.resultsAreSlots()) {
+        return avocado.searchResults.newMorph(this);
+      } else {
+        throw new Error("What kind of morph should we make for " + this.inspect() + "?");
+      }
     }
-  }, {category: ['creating morphs']});
+  }, {category: ['user interface']});
+
+  add.method('immediateContents', function () {
+    if (! this._immediateContents) {
+      this._immediateContents = this.goAndReturnSortedResults();
+    }
+    return this._immediateContents;
+  }, {category: ['user interface']});
+  
+  add.method('redo', function (evt) {
+    this._immediateContents = this.goAndReturnSortedResults();
+    avocado.ui.justChanged(this, null, evt);
+  }, {category: ['user interface']});
+  
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addItem(avocado.command.create("redo", function(evt) { this.redo(evt); }));
+    return cmdList;
+  }, {category: ['user interface']});
   
 });
 
