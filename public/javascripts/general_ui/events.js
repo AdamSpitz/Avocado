@@ -18,7 +18,7 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
     }
     return false;
   }, {category: ['events']});
-  
+
   add.method('setEventHandler', function (h) {
     this._eventHandler = h;
     return this;
@@ -28,16 +28,16 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
 
 
 thisModule.addSlots(avocado, function(add) {
-  
-  add.creator('eventHandlers', {}, {category: ['user interface']})
-  
+
+  add.creator('eventHandlers', {}, {category: ['user interface']});
+
 });
 
 
 thisModule.addSlots(avocado.eventHandlers, function(add) {
-  
+
   add.creator('composite', {});
-  
+
   add.method('grabAndPullOrPutBackIfPossible', function (morph, evt) {
     if (morph.hasPlaceholderToGoBackTo()) {
       morph.goBackToPlaceholder();
@@ -49,18 +49,18 @@ thisModule.addSlots(avocado.eventHandlers, function(add) {
       return false;
     }
   }, {category: ['miscellaneous functions']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.eventHandlers.composite, function(add) {
-  
+
   add.method('create', function () {
     var c = Object.create(this);
     c.initialize.apply(c, arguments);
     return c;
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (handlers) {
     this._eventHandlers = handlers;
   }, {category: ['creating']});

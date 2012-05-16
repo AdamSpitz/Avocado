@@ -183,104 +183,12 @@ thisModule.addSlots(avocado.command, function(add) {
 
     return c;
   }, {category: ['prompting for arguments']});
-  
+
   add.creator('partial', {}, {category: ['partial commands']});
 
   add.method('createPartialCommand', function () {
     return avocado.command.partial.create().setCommand(this);
   }, {category: ['partial commands']});
-
-});
-
-
-thisModule.addSlots(avocado.command.argumentSpec, function(add) {
-
-  add.method('create', function () {
-    var c = Object.create(this);
-    c.initialize.apply(c, arguments);
-    return c;
-  }, {category: ['creating']});
-
-  add.method('initialize', function (name) {
-    this._name = name;
-  }, {category: ['creating']});
-
-  add.method('name', function () {
-    return this._name;
-  }, {category: ['accessing']});
-
-  add.method('type', function () {
-    return this._type;
-  }, {category: ['accessing']});
-
-  add.method('onlyAccepts', function (f) {
-    this._acceptanceFunction = f;
-    return this;
-  }, {category: ['filtering']});
-
-  add.method('onlyAcceptsType', function (t) {
-    this._type = t;
-    this.onlyAccepts(function(o) { return typeof(t.doesTypeMatch) === 'function' ? t.doesTypeMatch(o) : Object.inheritsFrom(t, o); });
-    return this;
-  }, {category: ['filtering']});
-
-  add.method('butDoesNotAccept', function (rejectionFunction) {
-    var oldAcceptanceFunction = this._acceptanceFunction || function() { return true; };
-    this.onlyAccepts(function(o) { return !rejectionFunction(o) && oldAcceptanceFunction(o); });
-    return this;
-  }, {category: ['filtering']});
-
-  add.method('setPrompter', function (p) {
-    this._prompter = p;
-    return this;
-  }, {category: ['prompting']});
-
-  add.method('setArgFinder', function (f) {
-    this._argFinder = f;
-    return this;
-  }, {category: ['prompting']});
-
-  add.method('canAccept', function (arg) {
-    if (! this._acceptanceFunction) { return true; }
-    return this._acceptanceFunction(arg);
-  }, {category: ['testing']});
-
-  add.method('prompter', function () {
-    var p = this._prompter;
-    if (p) { return p; }
-    var t = this._type;
-    if (t) {
-      if (typeof(t.prompter) === 'function') { return t.prompter(); }
-      if (typeof(t.prompter) === 'object'  ) { return t.prompter;   }
-    }
-    return null;
-  }, {category: ['prompting']});
-
-  add.method('prompt', function (context, evt, callback, errback) {
-    var p = this.prompter();
-    if (p) {
-      return p.prompt(this._name, context, evt, callback);
-    } else {
-      return errback(new Error('Cannot prompt for the "' + this._name + '" argument without a prompter'));
-    }
-  }, {category: ['prompting']});
-  
-  add.method('findArgOrPrompt', function (context, evt, callback, errback) {
-    var arg = this.findArg(context, evt, callback);
-    if (typeof(arg) !== 'undefined') {
-      callback(arg);
-    } else {
-      this.prompt(context, evt, callback, errback);
-    }
-  }, {category: ['prompting']});
-  
-  add.method('findArg', function (context, evt) {
-    if (this._argFinder) {
-      return this._argFinder(context, evt);
-    } else {
-      return undefined;
-    }
-  }, {category: ['prompting']});
 
 });
 
@@ -441,77 +349,100 @@ thisModule.addSlots(avocado.command.list, function(add) {
 });
 
 
-thisModule.addSlots(avocado.command.partial, function(add) {
-  
+thisModule.addSlots(avocado.command.argumentSpec, function(add) {
+
   add.method('create', function () {
-    return Object.newChildOf(this);
+    var c = Object.create(this);
+    c.initialize.apply(c, arguments);
+    return c;
   }, {category: ['creating']});
-  
-  add.method('initialize', function () {
+
+  add.method('initialize', function (name) {
+    this._name = name;
   }, {category: ['creating']});
-  
-  add.method('toString', function () {
-    return this.command().toString();
-  }, {category: ['printing']});
-  
-  add.method('command', function () {
-    return this._command;
+
+  add.method('name', function () {
+    return this._name;
   }, {category: ['accessing']});
-  
-  add.method('setCommand', function (c) {
-    this._command = c;
-    this._argumentHolders = (this._command._argumentSpecsThatWillBeFoundOrPromptedFor || this._command.argumentSpecs() || []).map(function(s) {
-      var h = avocado.valueHolder.containing(s.type() && s.type().defaultValue ? s.type().defaultValue() : undefined).setName(s.name()).setType(s.type());
-      // aaa kind of a hack; this isn't quite what isReallyPartOfHolder was meant to be used for
-      h.isReallyPartOfHolder = function () { var v = this.getValue(); return v !== null && typeof(v) !== 'undefined'; };
-      return h;
-    });
+
+  add.method('type', function () {
+    return this._type;
+  }, {category: ['accessing']});
+
+  add.method('onlyAccepts', function (f) {
+    this._acceptanceFunction = f;
     return this;
-  }, {category: ['accessing']});
-  
-  add.method('argumentHolders', function () {
-    return this._argumentHolders;
-  }, {category: ['arguments']});
-  
-  add.method('immediateContents', function () {
-    return this.argumentHolders();
-  }, {category: ['user interface']});
-  
-  add.method('commands', function () {
-    var cmdList = avocado.command.list.create(this);
-    cmdList.addItem(avocado.command.create('run', function(evt) {
-      var args = this.argumentHolders().map(function(h) { return h.getValue(); });
-      args.unshift(evt);
-      return this._command.go.apply(this._command, args);
-    }));
-    return cmdList;
-  }, {category: ['user interface', 'commands']});
+  }, {category: ['filtering']});
 
-});
+  add.method('onlyAcceptsType', function (t) {
+    this._type = t;
+    this.onlyAccepts(function(o) { return typeof(t.doesTypeMatch) === 'function' ? t.doesTypeMatch(o) : Object.inheritsFrom(t, o); });
+    return this;
+  }, {category: ['filtering']});
 
+  add.method('butDoesNotAccept', function (rejectionFunction) {
+    var oldAcceptanceFunction = this._acceptanceFunction || function() { return true; };
+    this.onlyAccepts(function(o) { return !rejectionFunction(o) && oldAcceptanceFunction(o); });
+    return this;
+  }, {category: ['filtering']});
 
-thisModule.addSlots(String, function(add) {
-  
-  add.creator('prompter', {}, {category: ['prompting']});
-  
-});
+  add.method('setPrompter', function (p) {
+    this._prompter = p;
+    return this;
+  }, {category: ['prompting']});
 
+  add.method('setArgFinder', function (f) {
+    this._argFinder = f;
+    return this;
+  }, {category: ['prompting']});
 
-thisModule.addSlots(String.prompter, function(add) {
+  add.method('canAccept', function (arg) {
+    if (! this._acceptanceFunction) { return true; }
+    return this._acceptanceFunction(arg);
+  }, {category: ['testing']});
 
-  add.method('prompt', function (caption, context, evt, callback) {
-    avocado.ui.currentWorld().prompt(caption, function(s) {
-      if (s) {
-        callback(s);
-      }
-    }, '');
+  add.method('prompter', function () {
+    var p = this._prompter;
+    if (p) { return p; }
+    var t = this._type;
+    if (t) {
+      if (typeof(t.prompter) === 'function') { return t.prompter(); }
+      if (typeof(t.prompter) === 'object'  ) { return t.prompter;   }
+    }
+    return null;
+  }, {category: ['prompting']});
+
+  add.method('prompt', function (context, evt, callback, errback) {
+    var p = this.prompter();
+    if (p) {
+      return p.prompt(this._name, context, evt, callback);
+    } else {
+      return errback(new Error('Cannot prompt for the "' + this._name + '" argument without a prompter'));
+    }
+  }, {category: ['prompting']});
+
+  add.method('findArgOrPrompt', function (context, evt, callback, errback) {
+    var arg = this.findArg(context, evt, callback);
+    if (typeof(arg) !== 'undefined') {
+      callback(arg);
+    } else {
+      this.prompt(context, evt, callback, errback);
+    }
+  }, {category: ['prompting']});
+
+  add.method('findArg', function (context, evt) {
+    if (this._argFinder) {
+      return this._argFinder(context, evt);
+    } else {
+      return undefined;
+    }
   }, {category: ['prompting']});
 
 });
 
 
 thisModule.addSlots(avocado.command.tests, function(add) {
-  
+
   add.method('doughnutEatingCommand', function (answer) {
     return avocado.command.create('eat doughnuts', function (howMany, whatKind) {
       if (whatKind.indexOf('chocolate') < 0) {
@@ -525,7 +456,7 @@ thisModule.addSlots(avocado.command.tests, function(add) {
       avocado.command.argumentSpec.create("what kind").onlyAcceptsType(avocado.types.string)
     ]);
   });
-  
+
   add.method('testAcceptingArguments', function () {
     var answer = {};
     var c = this.doughnutEatingCommand(answer);
@@ -552,7 +483,76 @@ thisModule.addSlots(avocado.command.tests, function(add) {
     c2.go();
     this.assertEqual("om nom nom nom", answer.whatDoYouSay);
   });
-  
+
+});
+
+
+thisModule.addSlots(avocado.command.partial, function(add) {
+
+  add.method('create', function () {
+    return Object.newChildOf(this);
+  }, {category: ['creating']});
+
+  add.method('initialize', function () {
+  }, {category: ['creating']});
+
+  add.method('toString', function () {
+    return this.command().toString();
+  }, {category: ['printing']});
+
+  add.method('command', function () {
+    return this._command;
+  }, {category: ['accessing']});
+
+  add.method('setCommand', function (c) {
+    this._command = c;
+    this._argumentHolders = (this._command._argumentSpecsThatWillBeFoundOrPromptedFor || this._command.argumentSpecs() || []).map(function(s) {
+      var h = avocado.valueHolder.containing(s.type() && s.type().defaultValue ? s.type().defaultValue() : undefined).setName(s.name()).setType(s.type());
+      // aaa kind of a hack; this isn't quite what isReallyPartOfHolder was meant to be used for
+      h.isReallyPartOfHolder = function () { var v = this.getValue(); return v !== null && typeof(v) !== 'undefined'; };
+      return h;
+    });
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('argumentHolders', function () {
+    return this._argumentHolders;
+  }, {category: ['arguments']});
+
+  add.method('immediateContents', function () {
+    return this.argumentHolders();
+  }, {category: ['user interface']});
+
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    cmdList.addItem(avocado.command.create('run', function(evt) {
+      var args = this.argumentHolders().map(function(h) { return h.getValue(); });
+      args.unshift(evt);
+      return this._command.go.apply(this._command, args);
+    }));
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
+
+});
+
+
+thisModule.addSlots(String, function(add) {
+
+  add.creator('prompter', {}, {category: ['prompting']});
+
+});
+
+
+thisModule.addSlots(String.prompter, function(add) {
+
+  add.method('prompt', function (caption, context, evt, callback) {
+    avocado.ui.currentWorld().prompt(caption, function(s) {
+      if (s) {
+        callback(s);
+      }
+    }, '');
+  }, {category: ['prompting']});
+
 });
 
 

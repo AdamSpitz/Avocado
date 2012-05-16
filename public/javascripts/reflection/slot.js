@@ -638,7 +638,7 @@ thisModule.addSlots(avocado.slots.plain, function(add) {
       if (parentMir.reflecteeHasOwnProperty(name)) {
         var slotsToOmit = cdp.slotsToOmit || [];
         if (typeof slotsToOmit === 'string') { slotsToOmit = slotsToOmit.split(' '); }
-        if (! slotsToOmit.include(name)) { return cdp; }
+        if (! slotsToOmit.include(name) && this.contents().equals(parentMir.slotAt(name).contents())) { return cdp; }
       }
     }
   }, {category: ['copy-down parents']});

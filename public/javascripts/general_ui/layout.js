@@ -4,52 +4,10 @@ requires('general_ui/basic_morph_mixins');
 
 }, function(thisModule) {
 
+
 thisModule.addSlots(avocado, function(add) {
 
   add.creator('LayoutModes', {}, {category: ['avocado', 'user interface']});
-
-});
-
-
-thisModule.addSlots(avocado.LayoutModes, function(add) {
-
-  add.creator('Abstract', {});
-
-  add.creator('Rigid', Object.create(avocado.LayoutModes.Abstract));
-
-  add.creator('SpaceFill', Object.create(avocado.LayoutModes.Abstract));
-
-  add.creator('ShrinkWrap', Object.create(avocado.LayoutModes.Abstract));
-
-});
-
-
-thisModule.addSlots(avocado.LayoutModes.Abstract, function(add) {
-
-  add.method('toString', function () {
-    return this.name;
-  });
-
-});
-
-
-thisModule.addSlots(avocado.LayoutModes.Rigid, function(add) {
-
-  add.data('name', 'rigid');
-
-});
-
-
-thisModule.addSlots(avocado.LayoutModes.SpaceFill, function(add) {
-
-  add.data('name', 'space-fill');
-
-});
-
-
-thisModule.addSlots(avocado.LayoutModes.ShrinkWrap, function(add) {
-
-  add.data('name', 'shrink-wrap');
 
 });
 
@@ -99,7 +57,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     }
     return newExtent.scaleBy(this.getScale());
   }, {category: ['layout']});
-  
+
   add.method('rejiggerTheLayout', function (availableSpace) {
     if (this._layout && this._layout.rejigger) {
       return this._layout.rejigger(this, availableSpace);
@@ -133,7 +91,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     
     return false;
   }, {category: ['layout']});
-  
+
   add.method('layoutRejiggeringBatcherUpper', function () {
     if (! this._layoutRejiggeringBatcherUpper) {
       this._layoutRejiggeringBatcherUpper = avocado.batcherUpper.create(this, function() {
@@ -172,7 +130,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
       o.forceLayoutRejiggering();
     }
   }, {category: ['layout']});
-  
+
   add.method('forceLayoutRejiggeringIfNecessaryAfter', function (operation, m) {
     if (this._layout) {
       if (this._layout.isAffectedBy(operation, m)) {
@@ -180,11 +138,11 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
       }
     }
   }, {category: ['layout']});
-  
+
   add.method('layout', function () {
     return this._layout;
   }, {category: ['layout']});
-  
+
   add.method('setLayout', function (layout) {
     this._layout = layout;
     if (this._debugMode) { layout._debugMode = true; }
@@ -232,7 +190,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this.  verticalLayoutMode = avocado.LayoutModes.Rigid;
     return this;
   }, {category: ['layout']});
-  
+
   add.method('layoutModes', function () {
     // aaa make the morph itself store them as a Point?
     return pt(this.horizontalLayoutMode, this.verticalLayoutMode);
@@ -249,6 +207,64 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     if (this._layout && this._layout.justSetLayoutModes) { this._layout.justSetLayoutModes(this); }
     return this;
   }, {category: ['layout']});
+
+});
+
+
+thisModule.addSlots(avocado.LayoutModes, function(add) {
+
+  add.creator('Abstract', {});
+
+});
+
+
+thisModule.addSlots(avocado.LayoutModes.Abstract, function(add) {
+
+  add.method('toString', function () {
+    return this.name;
+  });
+
+});
+
+
+thisModule.addSlots(avocado.LayoutModes, function(add) {
+
+  add.creator('Rigid', Object.create(avocado.LayoutModes.Abstract));
+
+});
+
+
+thisModule.addSlots(avocado.LayoutModes.Rigid, function(add) {
+
+  add.data('name', 'rigid');
+
+});
+
+
+thisModule.addSlots(avocado.LayoutModes, function(add) {
+
+  add.creator('SpaceFill', Object.create(avocado.LayoutModes.Abstract));
+
+});
+
+
+thisModule.addSlots(avocado.LayoutModes.SpaceFill, function(add) {
+
+  add.data('name', 'space-fill');
+
+});
+
+
+thisModule.addSlots(avocado.LayoutModes, function(add) {
+
+  add.creator('ShrinkWrap', Object.create(avocado.LayoutModes.Abstract));
+
+});
+
+
+thisModule.addSlots(avocado.LayoutModes.ShrinkWrap, function(add) {
+
+  add.data('name', 'shrink-wrap');
 
 });
 

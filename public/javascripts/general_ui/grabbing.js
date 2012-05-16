@@ -6,7 +6,7 @@ requires('general_ui/basic_morph_mixins');
 
 
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
-  
+
   add.method('grabCopy', function (evt) {
     var newMorph = avocado.ui.worldFor(evt).morphFor(this._model.copyForGrabbing());
     newMorph.applyStyle(this.styleForWhenNotEmbeddedInAnythingElse());
@@ -31,7 +31,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
       newMorph.refreshContentOfMeAndSubmorphs();
     }
   }, {category: ['drag and drop']});
-  
+
   add.method('wasJustDroppedOnWorld', function (world) {
     if (this._model && this._model.shouldCopyToNewHolderWhenDroppedOnWorld) {
       this.copyToNewHolderAndDropOnWorld(world);
@@ -40,7 +40,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     }
     if (this._shouldDisappearAfterCommandIsFinished) { this.remove(); }
   }, {category: ['drag and drop']});
-  
+
   add.method('pullMorphsCloser', function (morphsToPull, titleContent, callWhenDone) {
     var detailsMorph = this._morphForViewingThingsInMoreDetail || this.world() || avocado.ui.currentWorld();
     var detailsMorphLayout = detailsMorph.layout();
@@ -51,7 +51,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
       pm.assumePose(pm.cleaningUpPose(morphsToPull), null, callWhenDone);
     }
   }, {category: ['pulling']});
-  
+
 });
 
 

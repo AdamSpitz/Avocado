@@ -30,7 +30,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('wholeTestCaseName', function () {
     return reflect(this).name();
   }, {category: ['naming']});
-  
+
   add.creator('namingScheme', Object.create(avocado.namingScheme), {category: ['naming']});
 
   add.method('nameWithinEnclosingObject', function (enclosingObject) {
@@ -46,7 +46,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('id', function () {
     return this.wholeTestCaseName() + '>>' + this._currentSelector;
   }, {category: ['accessing']});
-  
+
   add.method('copy', function () {
     var c = Object.newChildOf(this['__proto__'], this._currentSelector);
     c._result = this._result.copy();
@@ -74,7 +74,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
       return [];
     }
   }, {category: ['contents']});
-  
+
   add.method('setUp', function () {});
 
   add.method('tearDown', function () {});
@@ -145,7 +145,7 @@ thisModule.addSlots(avocado.testCase, function(add) {
   add.method('copyForTestSelector', function (optTestSelector) {
     return Object.newChildOf(this, optTestSelector);
   });
-  
+
   add.method('eachLeaf', function (f) {
     f(this);
   }, {category: ['iterating']});
@@ -208,8 +208,149 @@ thisModule.addSlots(avocado.testCase, function(add) {
 
   add.creator('singleOrCompositeResult', {}, {category: ['results']});
 
+});
+
+
+thisModule.addSlots(avocado.testCase.singleOrCompositeResult, function(add) {
+
+  add.method('initialize', function (test) {
+		this._test = test;
+	}, {category: ['creating']});
+
+  add.method('passFailSummaryString', function () {
+	  var summary = { passed: 0, failed: 0, total: 0 };
+	  this._test.leaves().forEach(function(leaf) {
+	    summary.total += 1;
+	    if (leaf.result().passed()) { summary.passed += 1; }
+	    if (leaf.result().failed()) { summary.failed += 1; }
+	  });
+	  return summary.passed + " passed, " + summary.failed + " failed";
+	}, {category: ['printing']});
+
+});
+
+
+thisModule.addSlots(avocado.testCase, function(add) {
+
   add.creator('singleResult', Object.create(avocado.testCase.singleOrCompositeResult), {category: ['results']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.testCase.singleResult, function(add) {
+
+  add.method('result', function () {
+    // for setting the morph's fill
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('copy', function () {
+    return Object.deepCopyRecursingIntoCreatorSlots(this);
+  }, {category: ['copying']});
+
+  add.method('hasStarted', function () {
+    return this._hasStarted;
+  }, {category: ['accessing']});
+
+  add.method('hasFinished', function () {
+    return this._hasFinished;
+  }, {category: ['accessing']});
+
+  add.method('passed', function () {
+    return this.hasFinished() && ! this._error;
+  }, {category: ['accessing']});
+
+  add.method('allPassed', function () {
+    return this.passed();
+  }, {category: ['accessing']});
+
+  add.method('failed', function () {
+    return this.hasFinished() && ! this.passed();
+  }, {category: ['accessing']});
+
+  add.method('anyFailed', function () {
+    return this.failed();
+  }, {category: ['accessing']});
+
+  add.method('timeToRun', function () {
+    return this._timeToRun;
+  }, {category: ['accessing']});
+
+  add.method('recordStarted', function () {
+    this._hasStarted = true;
+    this._timestamp = new Date().getTime();
+  }, {category: ['accessing']});
+
+  add.method('timestamp', function () {
+    return this._timestamp;
+  }, {category: ['accessing']});
+
+  add.method('recordFinished', function (error, time) {
+    this._error = error;
+    this._timeToRun = time;
+    this.recordStarted(); // since this method might be called without having already called recordStarted, if we're displaying pre-computed test results
+    this._hasFinished = true;
+    this._test.justRecordedFinishing(error, time);
+  }, {category: ['accessing']});
+
+  add.method('toString', function () {
+    if (! this.hasStarted()) {
+      return "";
+    } else if (! this.hasFinished()) {
+      return "running...";
+    } else if (this.allPassed()) {
+      return "passed";
+    } else {
+      var s = ["failed "];
+      if (this._error.sourceURL !== undefined) {
+        s.push("(", this.getFileNameFromError(this._error));
+        if (this._error.line !== undefined) {
+          s.push(":", this._error.line);
+        }
+        s.push("): ");
+      }
+      s.push(typeof(this._error.message) !== 'undefined' ? this._error.message : this._error);
+      return s.join("");
+    }
+  }, {category: ['printing']});
+
+  add.method('getFileNameFromError', function (err) {
+    if (!err.sourceURL) { return ""; }
+    var path = err.sourceURL.split("/");
+    return path[path.length - 1].split("?")[0];
+  }, {category: ['printing']});
+
+  add.method('logFailures', function (log) {
+    if (this.anyFailed()) {
+      log(this._error);
+    }
+  }, {category: ['printing']});
+
+  add.method('isTheSameAs', function (other) {
+    if (this.passed()) {
+      return other.passed();
+    } else {
+      return "" + this._error === "" + other._error;
+    }
+  }, {category: ['comparing']});
+
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create(this);
+    if (this._error) {
+      if (this._error.objectsToShow) {
+        cmdList.addItem(avocado.command.create("show failure information", function(evt) {
+          avocado.ui.showObjects(this._error.objectsToShow, "failure information", evt);
+        }));
+      }
+    }
+    return cmdList;
+  }, {category: ['user interface', 'commands']});
+
+});
+
+
+thisModule.addSlots(avocado.testCase, function(add) {
+
   add.creator('compositeResult', Object.create(avocado.testCase.singleOrCompositeResult), {category: ['results']});
 
   add.creator('resultHistory', {}, {category: ['results']});
@@ -265,137 +406,6 @@ thisModule.addSlots(avocado.testCase, function(add) {
 });
 
 
-thisModule.addSlots(avocado.testCase.singleOrCompositeResult, function(add) {
-
-  add.method('initialize', function (test) {
-		this._test = test;
-	}, {category: ['creating']});
-	
-	add.method('passFailSummaryString', function () {
-	  var summary = { passed: 0, failed: 0, total: 0 };
-	  this._test.leaves().forEach(function(leaf) {
-	    summary.total += 1;
-	    if (leaf.result().passed()) { summary.passed += 1; }
-	    if (leaf.result().failed()) { summary.failed += 1; }
-	  });
-	  return summary.passed + " passed, " + summary.failed + " failed";
-	}, {category: ['printing']});
-  
-});
-
-
-thisModule.addSlots(avocado.testCase.singleResult, function(add) {
-
-  add.method('result', function () {
-    // for setting the morph's fill
-    return this;
-  }, {category: ['accessing']});
-  
-  add.method('copy', function () {
-    return Object.deepCopyRecursingIntoCreatorSlots(this);
-  }, {category: ['copying']});
-
-  add.method('hasStarted', function () {
-    return this._hasStarted;
-  }, {category: ['accessing']});
-
-  add.method('hasFinished', function () {
-    return this._hasFinished;
-  }, {category: ['accessing']});
-  
-  add.method('passed', function () {
-    return this.hasFinished() && ! this._error;
-  }, {category: ['accessing']});
-  
-  add.method('allPassed', function () {
-    return this.passed();
-  }, {category: ['accessing']});
-
-  add.method('failed', function () {
-    return this.hasFinished() && ! this.passed();
-  }, {category: ['accessing']});
-
-  add.method('anyFailed', function () {
-    return this.failed();
-  }, {category: ['accessing']});
-
-  add.method('timeToRun', function () {
-    return this._timeToRun;
-  }, {category: ['accessing']});
-
-  add.method('recordStarted', function () {
-    this._hasStarted = true;
-    this._timestamp = new Date().getTime();
-  }, {category: ['accessing']});
-
-  add.method('timestamp', function () {
-    return this._timestamp;
-  }, {category: ['accessing']});
-
-  add.method('recordFinished', function (error, time) {
-    this._error = error;
-    this._timeToRun = time;
-    this.recordStarted(); // since this method might be called without having already called recordStarted, if we're displaying pre-computed test results
-    this._hasFinished = true;
-    this._test.justRecordedFinishing(error, time);
-  }, {category: ['accessing']});
-  
-  add.method('toString', function () {
-    if (! this.hasStarted()) {
-      return "";
-    } else if (! this.hasFinished()) {
-      return "running...";
-    } else if (this.allPassed()) {
-      return "passed";
-    } else {
-      var s = ["failed "];
-      if (this._error.sourceURL !== undefined) {
-        s.push("(", this.getFileNameFromError(this._error));
-        if (this._error.line !== undefined) {
-          s.push(":", this._error.line);
-        }
-        s.push("): ");
-      }
-      s.push(typeof(this._error.message) !== 'undefined' ? this._error.message : this._error);
-      return s.join("");
-    }
-  }, {category: ['printing']});
-
-  add.method('getFileNameFromError', function (err) {
-    if (!err.sourceURL) { return ""; }
-    var path = err.sourceURL.split("/");
-    return path[path.length - 1].split("?")[0];
-  }, {category: ['printing']});
-
-  add.method('logFailures', function (log) {
-    if (this.anyFailed()) {
-      log(this._error);
-    }
-  }, {category: ['printing']});
-  
-  add.method('isTheSameAs', function (other) {
-    if (this.passed()) {
-      return other.passed();
-    } else {
-      return "" + this._error === "" + other._error;
-    }
-  }, {category: ['comparing']});
-  
-  add.method('commands', function () {
-    var cmdList = avocado.command.list.create(this);
-    if (this._error) {
-      if (this._error.objectsToShow) {
-        cmdList.addItem(avocado.command.create("show failure information", function(evt) {
-          avocado.ui.showObjects(this._error.objectsToShow, "failure information", evt);
-        }));
-      }
-    }
-    return cmdList;
-  }, {category: ['user interface', 'commands']});
-
-});
-
-
 thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
 
   add.method('timeToRun', function () {
@@ -406,11 +416,11 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
     });
     return total;
 	}, {category: ['accessing']});
-	
+
   add.method('hasFinished', function () {
     return this._test.subtests().all(function(t) { return t.result() && t.result().hasFinished(); });
   });
-	
+
   add.method('allPassed', function () {
     return this._test.subtests().all(function(t) { return t.result() && t.result().allPassed(); });
   });
@@ -456,7 +466,7 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
     });
     return timestamp;
   }, {category: ['accessing']});
-  
+
   add.method('summarySentence', function (parts) {
     var s = avocado.activeSentence.create(parts);
     //s._aaa_hack_minimumExtent = pt(1000, 200);
@@ -468,7 +478,7 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
     s._aaa_hack_desiredWidth = 100;
     return s;
   }, {category: ['printing']});
-  
+
   add.method('summarySentences', function (history) {
     var   totalPart = avocado.testCase.subset.create(history, this._test, history.isStillRunning(this._test) ? "so far" : "in total", this._test. leaves().toArray());
     var  failedPart = avocado.testCase.subset.create(history, this._test, "failed",                                                   this.failingLeaves().toArray());
@@ -482,16 +492,16 @@ thisModule.addSlots(avocado.testCase.compositeResult, function(add) {
       this.summarySentence([changedPart]),
     ];
   }, {category: ['printing']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
-  
+
   add.method('initialize', function (entries) {
     this._entries = entries;
   }, {category: ['creating']});
-  
+
   add.method('toString', function () {
     return "History of " + this.testToBeRun();
   }, {category: ['printing']});
@@ -501,14 +511,14 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   add.method('setEntries', function (entries) { this._entries = entries; return this; }, {category: ['accessing']});
 
   add.method('testToBeRun', function () { return this._entries[0]; }, {category: ['accessing']});
-  
+
   add.data('namingScheme', avocado.testCase.namingScheme, {category: ['naming']});
 
   add.method('nameWithinEnclosingObject', function (enclosingObject) {
     var n = this.testToBeRun().nameWithinEnclosingObject(enclosingObject);
     return n ? "History of " + n : "History";
   }, {category: ['naming']});
-  
+
   add.method('immediateContents', function () {
     var indexTable = Object.newChildOf(this.indexTable);
     var headerRow = [null, "total", "passed", "failed", "changed"].map(function(h) {
@@ -554,13 +564,13 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
     table._desiredSpaceToScaleTo = pt(800, null); // aaa hack; I think what I need is some way to combine a Table Layout with an Auto-Scaling Layout
     return table;
   }, {category: ['contents']});
-  
+
   add.method('enableRunning', function () {
     this._isOKToRunItAgain = true;
     avocado.ui.justChanged(this);
     return this;
   }, {category: ['running']});
-  
+
   add.method('disableRunning', function () {
     this._isOKToRunItAgain = false;
     avocado.ui.justChanged(this);
@@ -570,7 +580,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
   add.method('isStillRunning', function (test) {
     return test === this.entries().last() && typeof(this.runItAgain) === 'function' && !this._isOKToRunItAgain;
   }, {category: ['running']});
-  
+
   add.creator('indexTable', {}, {category: ['contents']}, {comment: 'I think maybe what we want is to sort the first row by status\n(so all the passing ones are together), but then use\nthe same order for subsequent rows, so that you\ncan see at a glance whether something has changed from\nthe previous run. -- Adam'});
 
   add.method('sortRowByStatus', function (originalRow) {
@@ -582,7 +592,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
     });
     return passed.concat(failed, unfinished);
   }, {category: ['contents']});
-  
+
   add.method('titleModel', function () {
     if (! this._titleSentence) {
       var displayOptions = Object.newChildOf(avocado.testCase.resultHistory.displayOptions, this);
@@ -592,15 +602,15 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
     }
     return this._titleSentence;
   }, {category: ['user interface']});
-  
+
   add.creator('interestingEntriesProto', {});
 
   add.method('createInterestingEntriesList', function () {
     return Object.newChildOf(this.interestingEntriesProto, this);
   }, {category: ['user interface']});
-  
+
   add.creator('displayOptions', {}, {category: ['user interface']});
-  
+
   add.method('makeUpSomeRandomResults', function (suite, numberOfRuns, newPassFrequency, newFailFrequency, maxDelay) {
     suite.setExtraDescription("Trial " + 0);
     this.entries().push(suite);
@@ -611,7 +621,7 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
     }
     return this;
   }, {category: ['making up fake results']});
-  
+
   add.method('makeUpAnotherRowOfRandomResults', function (newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing, callbackForWholeThingFinishing) {
     var newEntry = this.entries().last().copy().clearResults().setExtraDescription("Trial " + this.entries().size());
     this.entries().push(newEntry);
@@ -619,27 +629,28 @@ thisModule.addSlots(avocado.testCase.resultHistory, function(add) {
       newEntry.randomlyChangeSomeResults(newPassFrequency, newFailFrequency, maxDelay, callbackForEachIndividualTestFinishing, callbackForWholeThingFinishing);
     });
   }, {category: ['making up fake results']});
+
 });
 
 
 thisModule.addSlots(avocado.testCase.resultHistory.indexTable, function(add) {
-  
+
   add.method('initialize', function () {
     this._indicesByID = {};
     this._nextFreeIndex = 0;
   }, {category: ['creating']});
-  
+
   add.method('indicesForID', function (id) {
     return this._indicesByID[id] || (this._indicesByID[id] = []);
   }, {category: ['accessing']});
-  
+
   add.method('recordNewIndexForID', function (id) {
     var index = this._nextFreeIndex++;
     this.indicesForID(id).push(index);
     //console.log("First row, putting " + id + " at " + index);
     return index;
   }, {category: ['accessing']});
-  
+
   add.method('findOrCreateIndexForID', function (id, metaIndexByID) {
     // aaa - This has got to be some of the most confusing code I've ever written.
     // The basic problem is that we can't count on the tests all having unique IDs.
@@ -662,12 +673,42 @@ thisModule.addSlots(avocado.testCase.resultHistory.indexTable, function(add) {
     //console.log("Later row, putting " + id + " at " + index);
     return index;
   }, {category: ['accessing']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.testCase.resultHistory.interestingEntriesProto, function(add) {
+
+  add.method('initialize', function (history) {
+    this._history = history;
+  }, {category: ['creating']});
+
+  add.method('subset', function () {
+    return this.titleModel().content();
+  }, {category: ['accessing']});
+
+  add.method('setSubset', function (subset) {
+    this.titleModel().setContent(subset);
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('titleModel', function () {
+    if (! this._titleSentence) {
+      this._titleSentence = avocado.activeSentence.create([
+        function() { return this.content() ? this.content().tests().size() : ""; },
+        function() { return this.content() ? " tests " : ""; },
+        function() { return this.content() ? this.content().fullDescription() : ""; },
+        function() { return this.content() ? "." : ""; }
+      ]);
+    }
+    return this._titleSentence;
+  }, {category: ['user interface']});
+
 });
 
 
 thisModule.addSlots(avocado.testCase.resultHistory.displayOptions, function(add) {
-  
+
   add.method('initialize', function (history) {
     this._history = history;
   }, {category: ['creating']});
@@ -702,110 +743,37 @@ thisModule.addSlots(avocado.testCase.resultHistory.displayOptions, function(add)
   add.method('setNumberOfDaysBeingShown', function (n) {
     return this.setAmountOfTimeBeingShown(1000 * 60 * 60 * 24 * n);
   }, {category: ['accessing']});
-  
-});
 
-
-thisModule.addSlots(avocado.testCase.resultHistory.interestingEntriesProto, function(add) {
-  
-  add.method('initialize', function (history) {
-    this._history = history;
-  }, {category: ['creating']});
-  
-  add.method('subset', function () {
-    return this.titleModel().content();
-  }, {category: ['accessing']});
-  
-  add.method('setSubset', function (subset) {
-    this.titleModel().setContent(subset);
-    return this;
-  }, {category: ['accessing']});
-  
-  add.method('titleModel', function () {
-    if (! this._titleSentence) {
-      this._titleSentence = avocado.activeSentence.create([
-        function() { return this.content() ? this.content().tests().size() : ""; },
-        function() { return this.content() ? " tests " : ""; },
-        function() { return this.content() ? this.content().fullDescription() : ""; },
-        function() { return this.content() ? "." : ""; }
-      ]);
-    }
-    return this._titleSentence;
-  }, {category: ['user interface']});
-  
-});
-
-
-thisModule.addSlots(avocado.testCase.subset, function(add) {
-  
-  add.method('create', function () {
-    var s = Object.create(this);
-    s.initialize.apply(s, arguments);
-    return s;
-  }, {category: ['creating']});
-  
-  add.method('initialize', function (history, suite, kind, tests) {
-    this._history = history;
-    this._suite = suite;
-    this._kind  = kind;
-    this._tests = tests || [];
-  }, {category: ['creating']});
-  
-  add.method('tests', function () {
-    return this._tests;
-  }, {category: ['accessing']});
-  
-  add.method('setTests', function (tests) {
-    this._tests = tests;
-    return this;
-  }, {category: ['accessing']});
-  
-  add.method('toString', function () {
-    return this._tests.size().toString(); // + " " + this._kind;
-  }, {category: ['printing']});
-  
-  add.method('fullDescription', function () {
-    return this._kind + (this._suite ? " in " + this._suite.nameWithinEnclosingObject(this._history) : "");
-  }, {category: ['printing']});
-  
-  add.method('getValue', function () {
-    return this;
-  }, {category: ['accessing']});
-  
-  add.method('doAction', function (evt, linkNode) {
-    this._history.showInterestingSubset(evt, this, linkNode);
-  }, {category: ['linking']});
-    
 });
 
 
 thisModule.addSlots(avocado.testCase.suite, function(add) {
-  
+
   add.method('create', function () {
     var s = Object.create(this);
     s.initialize.apply(s, arguments);
     return s;
   }, {category: ['creating']});
-  
+
   add.method('createForTestCasePrototypes', function (testCasePrototypes, name) {
     return this.create(testCasePrototypes.map(function(t) { return avocado.testCase.suite.createForAppropriatelyPrefixedMethodsOf(t); }), name);
   }, {category: ['creating']});
-  
+
   add.method('createForAppropriatelyPrefixedMethodsOf', function (testCasePrototype) {
     var testCases = testCasePrototype.allTestSelectors().map(function(sel) { return testCasePrototype.copyForTestSelector(sel); });
     return this.create(testCases, testCasePrototype.wholeTestCaseName());
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (subtests, name) {
     this._subtests = subtests;
     this._name = name || "some tests";
     this._result = Object.newChildOf(avocado.testCase.compositeResult, this);
   }, {category: ['creating']});
-  
+
   add.method('subtests', function () { return this._subtests; }, {category: ['accessing']});
 
   add.method('result', function () { return this._result; }, {category: ['accessing']});
-  
+
   add.method('copy', function () {
     var c = avocado.testCase.suite.create(this._subtests.map(function(t) { return t.copy(); }), this._name);
     c._previousRun = this;
@@ -816,13 +784,13 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     // aaa - kind of weird, should really just be on the result object
     return this._result.timestamp();
   }, {category: ['accessing']});
-  
+
   add.method('name', function () { return this._name; }, {category: ['accessing']});
-  
+
   add.method('extraDescription', function () { return this._extraDescription; }, {category: ['accessing']});
-  
+
   add.method('setExtraDescription', function (d) { this._extraDescription = d; return this; }, {category: ['accessing']});
-  
+
   add.method('testToBeRun', function () { return this; }, {category: ['accessing']});
 
   add.method('toString', function () { return this.name(); }, {category: ['printing']});
@@ -839,15 +807,15 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     }
     return n + (d ? ": " + d : "");
   }, {category: ['naming']});
-  
+
   add.method('immediateContents', function () {
     return this.subtests();
   }, {category: ['contents']});
-  
+
   add.method('requiresContentsSummary', function () {
     return false;
   }, {category: ['user interface']});
-  
+
   add.data('_forTestingAvocado', null, {category: ['Avocado tests'], initializeTo: 'null'});
 
   add.method('forTestingAvocado', function () {
@@ -924,7 +892,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
       if (callback) { callback(); }
     }, "running test suite");
   }, {category: ['running']});
-  
+
   add.method('eachLeaf', function (f) {
     this.subtests().forEach(function(t) { t.eachLeaf(f); });
   }, {category: ['iterating']});
@@ -932,7 +900,7 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
   add.method('leaves', function () {
     return avocado.enumerator.create(this, 'eachLeaf');
   }, {category: ['iterating']});
-  
+
   add.method('makeUpSomeRandomResults', function (failureFrequency) {
     if (typeof(failureFrequency) !== 'number') { failureFrequency = 0.1; }
     this.clearResults();
@@ -977,14 +945,56 @@ thisModule.addSlots(avocado.testCase.suite, function(add) {
     }.bind(this), callbackForWholeThingFinishing, "randomly changing some test results");
     return this;
   }, {category: ['making up fake results']});
-  
+
   add.method('makeUpARandomResultHistory', function (numberOfRuns, newPassFrequency, newFailFrequency) {
     var history = Object.newChildOf(avocado.testCase.resultHistory, []);
     history.makeUpSomeRandomResults(this, numberOfRuns, newPassFrequency, newFailFrequency);
     return history;
   }, {category: ['making up fake results']});
-  
-  
+
+});
+
+
+thisModule.addSlots(avocado.testCase.subset, function(add) {
+
+  add.method('create', function () {
+    var s = Object.create(this);
+    s.initialize.apply(s, arguments);
+    return s;
+  }, {category: ['creating']});
+
+  add.method('initialize', function (history, suite, kind, tests) {
+    this._history = history;
+    this._suite = suite;
+    this._kind  = kind;
+    this._tests = tests || [];
+  }, {category: ['creating']});
+
+  add.method('tests', function () {
+    return this._tests;
+  }, {category: ['accessing']});
+
+  add.method('setTests', function (tests) {
+    this._tests = tests;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('toString', function () {
+    return this._tests.size().toString(); // + " " + this._kind;
+  }, {category: ['printing']});
+
+  add.method('fullDescription', function () {
+    return this._kind + (this._suite ? " in " + this._suite.nameWithinEnclosingObject(this._history) : "");
+  }, {category: ['printing']});
+
+  add.method('getValue', function () {
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('doAction', function (evt, linkNode) {
+    this._history.showInterestingSubset(evt, this, linkNode);
+  }, {category: ['linking']});
+
 });
 
 

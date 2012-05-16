@@ -119,12 +119,12 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   add.method('smoothlyScaleVerticallyTo', function (desiredScale, callback) {
     this.smoothlyAnimate(avocado.animation.accessors.verticalScale, desiredScale, callback);
   }, {category: ['animating']});
-  
+
   add.method('startTinyAndSmoothlyGrowTo', function (desiredScale, callback) {
     this.setScale(desiredScale * 0.01);
     this.smoothlyScaleTo(desiredScale, callback);
   }, {category: ['animating']});
-  
+
   add.method('smoothlyShrinkDownToNothing', function (callback) {
     this.smoothlyScaleTo(0.01, callback);
   }, {category: ['animating']});
@@ -142,72 +142,92 @@ thisModule.addSlots(avocado.animation, function(add) {
 thisModule.addSlots(avocado.animation.accessors, function(add) {
 
   add.creator('general', {});
-  
+
   add.creator('fillOpacity', Object.create(avocado.animation.accessors.general));
+
+});
+
+
+thisModule.addSlots(avocado.animation.accessors.fillOpacity, function(add) {
+
+  add.data('defaultDuration', 1000);
+
+  add.method('getValue', function (m) { return m.getFillOpacity(); });
+
+  add.method('setValue', function (m, a) { m.setFillOpacity(a); });
+
+});
+
+
+thisModule.addSlots(avocado.animation.accessors, function(add) {
 
   add.creator('extent', Object.create(avocado.animation.accessors.general));
 
+});
+
+
+thisModule.addSlots(avocado.animation.accessors.extent, function(add) {
+
+  add.data('defaultDuration', 100);
+
+  add.method('getValue', function (m) { return m.getExtent(); });
+
+  add.method('setValue', function (m, e) { m.setExtent(e); });
+
+});
+
+
+thisModule.addSlots(avocado.animation.accessors, function(add) {
+
   add.creator('scale', Object.create(avocado.animation.accessors.general));
 
+});
+
+
+thisModule.addSlots(avocado.animation.accessors.scale, function(add) {
+
+  add.data('defaultDuration', 200);
+
+  add.method('getValue', function (m) { return m.getScale(); });
+
+  add.method('setValue', function (m, s) { m.setScale(s); });
+
+});
+
+
+thisModule.addSlots(avocado.animation.accessors, function(add) {
+
   add.creator('horizontalScale', Object.create(avocado.animation.accessors.general));
+
+});
+
+
+thisModule.addSlots(avocado.animation.accessors.horizontalScale, function(add) {
+
+  add.data('defaultDuration', 200);
+
+  add.method('getValue', function (m) { return m.getHorizontalScale(); });
+
+  add.method('setValue', function (m, v) { m.setHorizontalScale(v); });
+
+});
+
+
+thisModule.addSlots(avocado.animation.accessors, function(add) {
 
   add.creator('verticalScale', Object.create(avocado.animation.accessors.general));
 
 });
 
 
-thisModule.addSlots(avocado.animation.accessors.fillOpacity, function(add) {
-  
-  add.data('defaultDuration', 1000);
-  
-  add.method('getValue', function (m) { return m.getFillOpacity(); });
-  
-  add.method('setValue', function (m, a) { m.setFillOpacity(a); });
-  
-});
-
-
-thisModule.addSlots(avocado.animation.accessors.extent, function(add) {
-  
-  add.data('defaultDuration', 100);
-  
-  add.method('getValue', function (m) { return m.getExtent(); });
-  
-  add.method('setValue', function (m, e) { m.setExtent(e); });
-  
-});
-
-
-thisModule.addSlots(avocado.animation.accessors.scale, function(add) {
-  
-  add.data('defaultDuration', 200);
-  
-  add.method('getValue', function (m) { return m.getScale(); });
-  
-  add.method('setValue', function (m, s) { m.setScale(s); });
-  
-});
-
-
-thisModule.addSlots(avocado.animation.accessors.horizontalScale, function(add) {
-  
-  add.data('defaultDuration', 200);
-  
-  add.method('getValue', function (m) { return m.getHorizontalScale(); });
-  
-  add.method('setValue', function (m, v) { m.setHorizontalScale(v); });
-  
-});
-
-
 thisModule.addSlots(avocado.animation.accessors.verticalScale, function(add) {
-  
+
   add.data('defaultDuration', 200);
-  
+
   add.method('getValue', function (m) { return m.getVerticalScale(); });
-  
+
   add.method('setValue', function (m, v) { m.setVerticalScale(v); });
-  
+
 });
 
 

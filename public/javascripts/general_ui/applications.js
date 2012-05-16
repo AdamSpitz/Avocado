@@ -6,9 +6,9 @@ requires('general_ui/basic_morph_mixins');
 
 
 thisModule.addSlots(avocado, function(add) {
-  
+
   add.creator('applicationList', {}, {category: ['user interface']});
-  
+
 });
 
 
@@ -24,6 +24,8 @@ thisModule.addSlots(avocado.applicationList, function(add) {
     });
     return appNames.join(", ");
   }, {category: ['printing']});
+
+  add.data('_applications', null, {category: ['accessing'], initializeTo: 'null'});
 
   add.method('applications', function () {
     if (! this._applications) {
@@ -50,39 +52,39 @@ thisModule.addSlots(avocado.applicationList, function(add) {
     if (cmdList.size() === 0) { return null; }
     return cmdList;
   }, {category: ['commands']});
-  
+
   add.creator('adapter', {});
 
 });
 
 
 thisModule.addSlots(avocado.applicationList.adapter, function(add) {
-  
+
   add.method('initialize', function (obj) {
     this._objectWhoseCommandsShouldBeGlobal = obj;
   }, {category: ['creating']});
-  
+
   add.method('addGlobalCommandsTo', function (cmdList) {
     cmdList.addAllCommands(this._objectWhoseCommandsShouldBeGlobal.commands());
   }, {category: ['creating']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
-  
+
   add.method('applicationList', function () {
     return avocado.applicationList;
-  }, {category: ['applications']})
+  }, {category: ['applications']});
 
   add.method('inspect', function () {
     return this.applicationList().worldName();
-  }, {category: ['printing']})
-  
+  }, {category: ['printing']});
+
   add.method('commands', function () {
     return this.applicationList().commands();
   }, {category: ['commands']});
-  
+
 });
 
 

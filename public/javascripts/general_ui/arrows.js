@@ -7,7 +7,7 @@ requires('general_ui/basic_morph_mixins');
 
 
 thisModule.addSlots(avocado, function(add) {
-  
+
   add.creator('arrow', {}, {category: ['ui']});
 
 });
@@ -47,7 +47,7 @@ thisModule.addSlots(avocado.arrow, function(add) {
 		var morph = avocado.ui.newMorph(avocado.ui.shapeFactory.newPolyLine([pt(0,5), pt(10,5), pt(5,0), pt(10,5), pt(5,10), pt(10,5)]));
     return morph.applyStyle({fill: Color.black, borderWidth: 1, borderColor: Color.black, suppressHandles: true, shouldIgnoreEvents: true});
   }, {category: ['creating morphs']});
-  
+
   add.method('newMorphFor', function (slot, optionalEndpoint1, optionalEndpoint2) {
     var arrow = avocado.ui.newMorph(avocado.ui.shapeFactory.newPolyLine([pt(0,0), pt(0,0)]));
     arrow.applyStyle(avocado.arrow.defaultStyle);
@@ -75,7 +75,7 @@ thisModule.addSlots(avocado.arrow, function(add) {
 
 
 thisModule.addSlots(avocado.arrow.layout, function(add) {
-  
+
   add.method('initialize', function (arrowMorph, assoc, ep1, ep2) {
     this._arrowMorph = arrowMorph;
     this._association = assoc;
@@ -128,7 +128,7 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
   add.method('tickQuickly', function () { this.changeUpdateFrequency(0.05); }, {category: ['updating']});
 
   add.method('tickSlowly', function () { this.changeUpdateFrequency(0.5); }, {category: ['updating']});
-  
+
   add.method('toggleVisibility', function () {
     this.setVisibility(this.noLongerNeedsToBeUpdated);
   }, {category: ['showing and hiding']});
@@ -221,14 +221,14 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
       }
     }
   }, {category: ['vertices']});
-  
+
   add.method('adjustScaleBasedOnWorldScale', function (worldScale) {
     var inverse = 1 / worldScale;
     this._arrowMorph.setBorderWidth(inverse);
     if (this.endpoint1.isArrowEndpoint) { this.endpoint1.setOverallScale(1); }
     if (this.endpoint2.isArrowEndpoint) { this.endpoint2.setOverallScale(1); }
   }, {category: ['scaling']});
-    
+
   add.method('justScaledWorld', function (worldScale) {
     this.adjustScaleBasedOnWorldScale(worldScale);
     this.putVerticesInTheRightPlace();
@@ -263,7 +263,7 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
   add.method('assumeUIState', function (morph, uiState, callWhenDone, evt) {
     this.setVisibility(uiState, callWhenDone);
   }, {category: ['UI state']});
-  
+
   add.method('addArrowGrabbingCommandTo', function (cmdList) {
     // aaa - To do "grab arrow" properly I think I need to do a more general drag-and-drop thing. Right
     // now nothing will get called if I drop the endpoint on something invalid (like the world or some
@@ -277,25 +277,8 @@ thisModule.addSlots(avocado.arrow.layout, function(add) {
 });
 
 
-thisModule.addSlots(avocado.arrow.defaultStyle, function(add) {
-
-  add.data('borderColor', new Color(0, 0, 0));
-
-  add.data('borderWidth', 1);
-
-  add.data('fill', null);
-
-  add.data('suppressGrabbing', true);
-
-  add.data('openForDragAndDrop', false);
-
-  add.data('shouldIgnoreEvents', true);
-
-});
-
-
 thisModule.addSlots(avocado.arrow.endpointLayout, function(add) {
-  
+
   add.method('initialize', function (arrowEndpointMorph, assoc, arrowMorph) {
     this._arrowEndpointMorph = arrowEndpointMorph;
     this._association = assoc;
@@ -454,12 +437,29 @@ thisModule.addSlots(avocado.arrow.endpointLayout, function(add) {
   add.method('calculateDefaultVectorFromOtherEndpoint', function () {
     return this._otherEndpoint.lineEndpoint().subPt(this._otherEndpoint.ownerCenterpoint());
   }, {category: ['attaching']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.arrow.defaultStyle, function(add) {
+
+  add.data('borderColor', new Color(0, 0, 0));
+
+  add.data('borderWidth', 1);
+
+  add.data('fill', null);
+
+  add.data('suppressGrabbing', true);
+
+  add.data('openForDragAndDrop', false);
+
+  add.data('shouldIgnoreEvents', true);
+
 });
 
 
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
-  
+
   add.method('detachArrowEndpoints', function () {
     this.detachSubmorphsSatisfying(function(m) { return m.isArrowEndpoint; });
   }, {category: ['arrows']});

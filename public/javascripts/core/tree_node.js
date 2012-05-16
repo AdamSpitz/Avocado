@@ -22,11 +22,11 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     this._name = name;
     this._immediateContents = contents;
   }, {category: ['creating']});
-  
+
   add.method('name', function () {
     return this._name;
   }, {category: ['accessing']});
-  
+
   add.method('setName', function (n) {
     this._name = n;
     return this;
@@ -86,7 +86,7 @@ thisModule.addSlots(avocado.treeNode, function(add) {
     // aaa - this might be a bad idea; do I really want the commands to be on the tree node rather than on the contents?
     return this._immediateContents.commands && this._immediateContents.commands();
   }, {category: ['user interface', 'commands']});
-  
+
 });
 
 

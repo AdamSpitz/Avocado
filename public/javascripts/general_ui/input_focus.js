@@ -41,7 +41,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     if (hand.getMouseFocus()    === this) { hand.setMouseFocus(null); }
     if (hand.getKeyboardFocus() === this) { hand.setKeyboardFocus(null); }
   }, {category: ['input focus']});
-  
+
   add.method('setOrderForInputFocus', function (morphs) {
     var first, last;
     morphs.forEach(function(m) {
@@ -58,7 +58,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     
     return this;
   }, {category: ['input focus']});
-  
+
 });
 
 

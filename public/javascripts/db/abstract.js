@@ -37,7 +37,7 @@ thisModule.addSlots(avocado.remoteObjectReference, function(add) {
   add.method('setObject', function (o) {
     if (this._object) { throw new Error("This ref already has an object. Don't change it."); }
     this._object = o;
-    avocado.remoteObjectReference.table.rememberRefForObject(o, this)
+    avocado.remoteObjectReference.table.rememberRefForObject(o, this);
   }, {category: ['accessing']});
 
   add.method('setDBInfo', function (realm, id, rev) {
@@ -62,24 +62,11 @@ thisModule.addSlots(avocado.remoteObjectReference, function(add) {
     if (this._realm ) { this._realm.forgetRemoteRefForID(this._id); }
     if (this._object) { this.table.forgetRefForObject(this._object); }
   });
-  
+
   add.method('expressionToRecreateRefAndFetchObject', function () {
     return ["(", this._realm.storeString(), ").remoteRefForID(", this.id().inspect(), ").fetchObjectIfNotYetPresent()"].join("");
   }, {category: ['transporting']});
 
-});
-
-
-thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
-  
-  add.method('getRemoteRef', function () {
-    return this.remoteRef;
-  }, {category: ['remote references']});
-  
-  add.method('setRemoteRef', function (ref) {
-    this.remoteRef = ref;
-  }, {category: ['remote references']});
-  
 });
 
 
@@ -143,6 +130,19 @@ thisModule.addSlots(avocado.remoteObjectReference.table, function(add) {
       realm.findObjectByID(refLiteralObj.id, callback);
     });
   });
+
+});
+
+
+thisModule.addSlots(avocado.annotator.objectAnnotationPrototype, function(add) {
+
+  add.method('getRemoteRef', function () {
+    return this.remoteRef;
+  }, {category: ['remote references']});
+
+  add.method('setRemoteRef', function (ref) {
+    this.remoteRef = ref;
+  }, {category: ['remote references']});
 
 });
 

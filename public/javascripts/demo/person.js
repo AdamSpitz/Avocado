@@ -1,6 +1,6 @@
 avocado.transporter.module.create('demo/person', function(requires) {
 
-requires("core/deep_copy");
+requires('core/deep_copy');
 
 }, function(thisModule) {
 
@@ -14,14 +14,43 @@ thisModule.addSlots(avocado, function(add) {
 });
 
 
+thisModule.addSlots(avocado.person, function(add) {
+
+  add.creator('example', Object.create(avocado.person));
+
+  add.method('toString', function () { return this._name.toString(); });
+
+});
+
+
+thisModule.addSlots(avocado.person.example, function(add) {
+
+  add.creator('_name', Object.create(avocado.humanName));
+
+  add.data('_age', 45);
+
+});
+
+
+thisModule.addSlots(avocado.person.example._name, function(add) {
+
+  add.data('_first', 'Bob');
+
+  add.data('_middle', 'J.');
+
+  add.data('_last', 'Smith');
+
+});
+
+
 thisModule.addSlots(avocado.humanName, function(add) {
-  
+
   add.creator('example', Object.create(avocado.humanName));
 
   add.method('copy', function () {
     return Object.deepCopyRecursingIntoCreatorSlots(this);
   }, {category: ['copying']});
-  
+
   add.method('toString', function () {
     var n = [];
     if (this._first ) { n.push(this._first ); }
@@ -36,36 +65,18 @@ thisModule.addSlots(avocado.humanName, function(add) {
     this._last = last;
     return this;
   }, {category: ['accessing']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.humanName.example, function(add) {
-  
+
   add.data('_first', 'Bullwinkle');
 
   add.data('_middle', 'J.');
 
   add.data('_last', 'Moose');
-  
-});
 
-
-thisModule.addSlots(avocado.person, function(add) {
-
-  add.creator('example', Object.create(avocado.person));
-  
-  add.method('toString', function () { return this._name.toString(); });
-  
-});
-
-
-thisModule.addSlots(avocado.person.example, function(add) {
-
-  add.creator('_name', avocado.humanName.example.copy().set("Bob", "J.", "Smith"));
-  
-  add.data('_age', 45);
-  
 });
 
 

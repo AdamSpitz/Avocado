@@ -11,7 +11,7 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.namingScheme, function(add) {
-  
+
   add.method('enclosingObjectInContext', function (context) {
     if (context) {
       if (typeof(context.enclosingObjectHavingANameInScheme) === 'function') {
@@ -20,7 +20,7 @@ thisModule.addSlots(avocado.namingScheme, function(add) {
     }
     return null;
   });
-  
+
   add.method('nameInContext', function (obj, context) {
     var enclosingObject = this.enclosingObjectInContext(context);
     return obj.nameWithinEnclosingObject(enclosingObject);

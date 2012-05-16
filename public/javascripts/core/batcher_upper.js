@@ -17,7 +17,7 @@ thisModule.addSlots(avocado.batcherUpper, function(add) {
     b.initialize.apply(b, arguments);
     return b;
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (context, finalFn, accumulatorFn, clearFn) {
     this._context = context;
     this._finalAction = finalFn;
@@ -25,7 +25,7 @@ thisModule.addSlots(avocado.batcherUpper, function(add) {
     this._clearParams = clearFn;
     this.clear();
   }, {category: ['creating']});
-  
+
   add.method('batchUp', function (params) {
     if (this._isRunning) {
       this._hasBeenCalled = true;
@@ -37,7 +37,7 @@ thisModule.addSlots(avocado.batcherUpper, function(add) {
     this._isRunning = true;
     return this;
   }, {category: ['batching up']});
-  
+
   add.method('stop', function () {
     this._isRunning = false;
     if (this._hasBeenCalled) {
@@ -64,7 +64,7 @@ thisModule.addSlots(avocado.batcherUpper, function(add) {
   add.method('isRunning', function () {
     return this._isRunning;
   }, {category: ['testing']});
-  
+
 });
 
 

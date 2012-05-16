@@ -6,16 +6,16 @@ requires('general_ui/basic_morph_mixins');
 
 
 thisModule.addSlots(avocado, function(add) {
-  
+
   add.creator('autoScaling', {}, {category: ['ui']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.autoScaling, function(add) {
 
   add.creator('layout', {});
-  
+
   add.method('newAutoScalingMorph', function (shape, shouldAutoOrganize) {
     return avocado.ui.newMorph(shape).useAutoScalingLayout(shouldAutoOrganize);
   });
@@ -24,15 +24,15 @@ thisModule.addSlots(avocado.autoScaling, function(add) {
 
 
 thisModule.addSlots(avocado.autoScaling.layout, function(add) {
-  
+
   add.method('initialize', function (morph, shouldAutoOrganize) {
     this._morph = morph;
     this._shouldAutoOrganize = shouldAutoOrganize;
   });
-  
+
   add.method('applyStyle', function (spec) {
   });
-  
+
   add.method('isAffectedBy', function (operation, morph) {
     return false;
   });
@@ -49,7 +49,7 @@ thisModule.addSlots(avocado.autoScaling.layout, function(add) {
     this.invalidateLayoutIfIDoNotContainMorphsIncludedIn(newContentMorphs);
     this.refreshLayoutIfNecessary(newContentMorphs);
   });
-  
+
   add.method('removeMorphsNotIncludedIn', function (contentMorphs) {
     // aaa - find a more efficient way to do this
 
@@ -77,39 +77,39 @@ thisModule.addSlots(avocado.autoScaling.layout, function(add) {
       }
     }.bind(this));
   });
-  
+
   add.method('invalidateLayout', function () {
     this._hasAlreadyBeenLaidOutAtLeastOnce = false;
   });
-  
+
   add.method('refreshLayoutIfNecessary', function (contentMorphs) {
     if (!this._hasAlreadyBeenLaidOutAtLeastOnce) {
       this.cleanUp(contentMorphs);
     }
   });
-  
+
   add.method('cleanUp', function (contentMorphsOrNull) {
     this._hasAlreadyBeenLaidOutAtLeastOnce = true;
     var contentMorphs = contentMorphsOrNull || this._morph.recalculateActualContent() || this._morph.submorphs;
     var pose = this.cleaningUpPoseFor(contentMorphs).beUnobtrusive().whenDoneScaleToFitWithinCurrentSpace().aaa_addExtraZHack(0);
     this._morph.poseManager().assumePose(pose);
   }, {category: ['organizing']});
-  
+
   add.method('cleaningUpPoseFor', function (contentMorphs) {
     return this._morph.poseManager().cleaningUpPose(contentMorphs).beSquarish();
   }, {category: ['organizing']});
-  
+
   add.method('aboutToReceiveDrop', function (m) {
     var tfm = m.transformForNewOwner(this._morph);
 		m.scaleBy(1 / tfm.getScale());
   }, {category: ['drag and drop']});
-  
+
   add.method('justReceivedDrop', function (m) {
     if (this._shouldAutoOrganize) {
       this.cleanUp();
     }
   }, {category: ['drag and drop']});
-  
+
   add.method('possiblyDoSomethingBecauseASubmorphMinimumExtentHasChanged', function (morph) {
     this.invalidateLayout();
     // aaa Can't just do the refreshLayoutIfNecessary() right now because the submorph's *actual* size
@@ -118,13 +118,12 @@ thisModule.addSlots(avocado.autoScaling.layout, function(add) {
     setTimeout(this.refreshLayoutIfNecessary.bind(this), 0);
     return false;
   }, {category: ['layout']});
-  
+
 });
 
 
-
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
-  
+
   add.method('useAutoScalingLayout', function (shouldAutoOrganize) {
     this.doIWantToLeaveAPlaceholderWhenRemoving = function (m) {
       // aaa - probably need to actually determine whether the submorph is part of
@@ -135,7 +134,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     this.setLayout(Object.newChildOf(avocado.autoScaling.layout, this, shouldAutoOrganize));
     return this;
   }, {category: ['layout']});
-  
+
 });
 
 

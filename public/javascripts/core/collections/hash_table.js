@@ -6,13 +6,73 @@ requires('core/testFramework');
 }, function(thisModule) {
 
 
+thisModule.addSlots(Array.prototype, function(add) {
+
+  add.method('equals', function (other) {
+    if (this.size() !== other.size()) { return false; }
+    for (var i = 0, n = this.size(); i < n; ++i) {
+      if (! avocado.hashTable.equalityComparator.keysAreEqual(this[i], other[i])) { return false; }
+    }
+    return true;
+  }, {category: ['comparing']});
+
+  add.method('hashCode', function () {
+    var s = [];
+    for (var i = 0, n = Math.min(this.length, 5); i < n; ++i) {
+      s.push(avocado.hashTable.equalityComparator.hashCodeForKey(this[i]));
+    }
+    return s.join();
+  }, {category: ['comparing']});
+
+  add.method('toSet', function () {
+    var s = avocado.set.copyRemoveAll();
+    s.addAll(this);
+    return s;
+  });
+
+  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+
+});
+
+
+thisModule.addSlots(Array.prototype.tests, function(add) {
+
+  add.creator('someObject', {});
+
+  add.method('testComparing', function () {
+    this.assertEqual([], []);
+    this.assertEqual(['a'], ['a']);
+    this.assertNotEqual(['a'], ['ab']);
+    this.assertNotEqual(['a', 'b'], ['ab']);
+    this.assertNotEqual(['a'], ['a', 'b']);
+    this.assertNotEqual(['a', 'b'], ['b', 'a']);
+    this.assertEqual([reflect(this.someObject)], [reflect(this.someObject)]);
+  });
+
+});
+
+
+thisModule.addSlots(Number.prototype, function(add) {
+
+  add.method('hashCode', function () {return this;}, {category: ['hashing']});
+
+  add.method('identityHashCode', function () {return this;}, {category: ['hashing']});
+
+});
+
+
+thisModule.addSlots(String.prototype, function(add) {
+
+  add.method('hashCode', function () {return this;}, {category: ['hashing']});
+
+  add.method('identityHashCode', function () {return this;}, {category: ['hashing']});
+
+});
+
+
 thisModule.addSlots(avocado, function(add) {
 
   add.creator('hashTable', {}, {category: ['collections']}, {comment: 'I don\'t mean to keep this class around forever - hopefully sooner or later Javascript will\rhave a working hash table that can handle arbitrary objects (rather than just strings) as\rkeys. Maybe it exists already, but I couldn\'t find it. So for now I\'ll just use this bloody\rthing. -- Adam', copyDownParents: [{parent: Enumerable}]});
-
-  add.creator('dictionary', Object.create(avocado.hashTable), {category: ['collections']});
-
-  add.creator('set', Object.create(avocado.hashTable), {category: ['collections']});
 
 });
 
@@ -179,6 +239,13 @@ thisModule.addSlots(avocado.hashTable.identityComparator, function(add) {
 });
 
 
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('dictionary', Object.create(avocado.hashTable), {category: ['collections']});
+
+});
+
+
 thisModule.addSlots(avocado.dictionary, function(add) {
 
   add.method('keyOfEntry', function (entry) {
@@ -332,6 +399,13 @@ thisModule.addSlots(avocado.dictionary.tests, function(add) {
 });
 
 
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('set', Object.create(avocado.hashTable), {category: ['collections']});
+
+});
+
+
 thisModule.addSlots(avocado.set, function(add) {
 
   add.method('keyOfEntry', function (entry) {
@@ -425,70 +499,6 @@ thisModule.addSlots(avocado.set.tests, function(add) {
     this.assertEqual(2, s.size());
     
   });
-
-});
-
-
-thisModule.addSlots(Array.prototype, function(add) {
-
-  add.method('equals', function (other) {
-    if (this.size() !== other.size()) { return false; }
-    for (var i = 0, n = this.size(); i < n; ++i) {
-      if (! avocado.hashTable.equalityComparator.keysAreEqual(this[i], other[i])) { return false; }
-    }
-    return true;
-  }, {category: ['comparing']});
-
-  add.method('hashCode', function () {
-    var s = [];
-    for (var i = 0, n = Math.min(this.length, 5); i < n; ++i) {
-      s.push(avocado.hashTable.equalityComparator.hashCodeForKey(this[i]));
-    }
-    return s.join();
-  }, {category: ['comparing']});
-
-  add.method('toSet', function () {
-    var s = avocado.set.copyRemoveAll();
-    s.addAll(this);
-    return s;
-  });
-
-  add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-
-});
-
-
-thisModule.addSlots(Array.prototype.tests, function(add) {
-
-  add.creator('someObject', {});
-
-  add.method('testComparing', function () {
-    this.assertEqual([], []);
-    this.assertEqual(['a'], ['a']);
-    this.assertNotEqual(['a'], ['ab']);
-    this.assertNotEqual(['a', 'b'], ['ab']);
-    this.assertNotEqual(['a'], ['a', 'b']);
-    this.assertNotEqual(['a', 'b'], ['b', 'a']);
-    this.assertEqual([reflect(this.someObject)], [reflect(this.someObject)]);
-  });
-
-});
-
-
-thisModule.addSlots(Number.prototype, function(add) {
-
-  add.method('hashCode', function () {return this;}, {category: ['hashing']});
-
-  add.method('identityHashCode', function () {return this;}, {category: ['hashing']});
-
-});
-
-
-thisModule.addSlots(String.prototype, function(add) {
-
-  add.method('hashCode', function () {return this;}, {category: ['hashing']});
-
-  add.method('identityHashCode', function () {return this;}, {category: ['hashing']});
 
 });
 

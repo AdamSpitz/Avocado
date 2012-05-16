@@ -9,6 +9,6 @@ Dir.chdir('public/javascripts')
 makeWritable(".")
 
 File.chmod(0666, *Dir["*.js"])
-["core", "db", "demo", "lk_ext", "lk_programming_environment", "programming_environment", "projects", "reflection", "transporter"].each do |dirName|
+["core", "core/collections", "db", "demo", "general_ui", "lk_ext", "lk_programming_environment", "programming_environment", "projects", "reflection", "transporter"].each do |dirName|
   makeWritable(dirName)
 end

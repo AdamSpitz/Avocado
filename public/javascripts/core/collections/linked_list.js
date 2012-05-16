@@ -190,53 +190,6 @@ thisModule.addSlots(avocado.list['__proto__'].linkProto, function(add) {
 });
 
 
-thisModule.addSlots(avocado.list['__proto__'].tests, function(add) {
-
-  add.method('testBasicStuff', function () {
-  var c = avocado.list.copyRemoveAll();
-  this.assertEqual(0, c.size());
-  this.assert(c.isEmpty());
-  c.each(function(elem) {this.fail();}.bind(this));
-  this.assertEqual([], c.toArray());
-  
-  c.add('one');
-  this.assertEqual(1, c.size());
-  this.assertEqual(['one'], c.toArray());
-
-  c.addLast(2);
-  c.addFirst('zero');
-  this.assertEqual(3, c.size());
-  this.assertEqual(['zero', 'one', 2], c.toArray());
-
-  var c2 = avocado.list.copyContaining(['zero', 'one', 2]);
-  this.assertEqual(c, c2);
-  
-  var s = avocado.set.copyRemoveAll();
-  s.add(c);
-  s.add(c2);
-  this.assertEqual(1, s.size());
-  this.assert(s.include(c));
-
-  c.addAllFirst(avocado.list.copyContaining([-2, -1]));
-  this.assertEqual(-2, c.first());
-  this.assertEqual(2, c.last());
-  this.assertEqual(5, c.size());
-
-  this.assertEqual(-2, c.removeFirst());
-  this.assertEqual(2, c.removeLast());
-  this.assertEqual(3, c.size());
-  c.remove('zero', function() {this.fail();}.bind(this));
-  this.assertEqual(2, c.size());
-  this.assertEqual([-1, 'one'], c.toArray());
-
-  var wasAbsent = false;
-  c.remove('not in there', function() {wasAbsent = true;});
-  this.assert(wasAbsent);
-});
-
-});
-
-
 thisModule.addSlots(avocado.list['__proto__'].linkProto['__proto__'], function(add) {
 
   add.method('copy', function () {
@@ -344,6 +297,53 @@ thisModule.addSlots(avocado.list['__proto__'].linkProto['__proto__'], function(a
     });
   }.bind(this));
 }, {category: ['iterating']});
+
+});
+
+
+thisModule.addSlots(avocado.list['__proto__'].tests, function(add) {
+
+  add.method('testBasicStuff', function () {
+  var c = avocado.list.copyRemoveAll();
+  this.assertEqual(0, c.size());
+  this.assert(c.isEmpty());
+  c.each(function(elem) {this.fail();}.bind(this));
+  this.assertEqual([], c.toArray());
+  
+  c.add('one');
+  this.assertEqual(1, c.size());
+  this.assertEqual(['one'], c.toArray());
+
+  c.addLast(2);
+  c.addFirst('zero');
+  this.assertEqual(3, c.size());
+  this.assertEqual(['zero', 'one', 2], c.toArray());
+
+  var c2 = avocado.list.copyContaining(['zero', 'one', 2]);
+  this.assertEqual(c, c2);
+  
+  var s = avocado.set.copyRemoveAll();
+  s.add(c);
+  s.add(c2);
+  this.assertEqual(1, s.size());
+  this.assert(s.include(c));
+
+  c.addAllFirst(avocado.list.copyContaining([-2, -1]));
+  this.assertEqual(-2, c.first());
+  this.assertEqual(2, c.last());
+  this.assertEqual(5, c.size());
+
+  this.assertEqual(-2, c.removeFirst());
+  this.assertEqual(2, c.removeLast());
+  this.assertEqual(3, c.size());
+  c.remove('zero', function() {this.fail();}.bind(this));
+  this.assertEqual(2, c.size());
+  this.assertEqual([-1, 'one'], c.toArray());
+
+  var wasAbsent = false;
+  c.remove('not in there', function() {wasAbsent = true;});
+  this.assert(wasAbsent);
+});
 
 });
 

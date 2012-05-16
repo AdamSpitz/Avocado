@@ -7,7 +7,7 @@ requires('general_ui/basic_morph_mixins');
 
 
 thisModule.addSlots(avocado.command, function(add) {
-  
+
   add.method('wrapForMorph', function (morph) {
     var modelCommand = this;
     
@@ -49,7 +49,7 @@ thisModule.addSlots(avocado.command, function(add) {
   add.method('immediateContents', function () {
     return this.argumentSpecs();
   }, {category: ['user interface']});
-  
+
 });
 
 
@@ -79,7 +79,7 @@ thisModule.addSlots(avocado.command.argumentSpec, function(add) {
     
     return argSpecForMorphCommand;
   }, {category: ['user interface']});
-  
+
   add.method('useMorphicContextualArgFinder', function () {
     var thisArgSpec = this;
     return this.setArgFinder(function(context, evt) {
@@ -163,7 +163,7 @@ thisModule.addSlots(avocado.command.list, function(add) {
     }.bind(this));
     return commands;
   }, {category: ['converting']});
-  
+
 });
 
 
@@ -226,13 +226,13 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 
 thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
 
-  add.method('isMorphMenuEnabled', function() {
+  add.method('isMorphMenuEnabled', function () {
     var b = false;
     avocado.ui.currentWorld().applicationList().applications().each(function(app) { if (app.isMorphMenuEnabled) { b = true; }; });
     return b;
   }, {category: ['menus']});
-  
-  add.method('showMorphMenu', function(evt) {
+
+  add.method('showMorphMenu', function (evt) {
     // Disable the reflective stuff in deployed apps. -- Adam
     if (!this.isMorphMenuEnabled()) { return false; }
 
@@ -242,7 +242,7 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
     return true;
   }, {category: ['menus']});
 
-  add.method('showContextMenu', function(evt) {
+  add.method('showContextMenu', function (evt) {
     var menu = this.contextMenu(evt);
     if (!menu) { return false; }
     
@@ -281,7 +281,7 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
     this.addModelSpecificUICommandsTo(cmdList);
     return cmdList;
   }, {category: ['menus']});
-  
+
   add.method('addExtraMorphMenuItemsTo', function (cmdList) {
     // children can override
     
@@ -289,7 +289,7 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
       this.layout().addExtraMorphMenuItemsTo(cmdList);
     }
   }, {category: ['menus']});
-	  
+
   add.method('morphMenu', function (evt) {
     var cmdList = avocado.command.list.create(this);
     
@@ -353,7 +353,7 @@ thisModule.addSlots(avocado.morphMixins.MorphOrWorld, function(add) {
 		menu.commandStyle = menu.morphCommandStyle;
     return menu;
   }, {category: ['menus']});
-    
+
 });
 
 

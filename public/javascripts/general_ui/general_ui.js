@@ -34,15 +34,15 @@ requires('general_ui/similar_objects');
 
 
 thisModule.addSlots(avocado.generalUI, function(add) {
-  
+
   add.data('shouldEnableMouseFreeMenuExperiment', true);
-  
+
   add.method('grab', function (obj, evt, callback) {
     var m = this.worldFor(evt).morphFor(obj);
     m.grabMe(evt, callback);
     return m;
   });
-  
+
   add.method('growFromNothing', function (obj, evt) {
     var m = this.worldFor(evt).morphFor(obj);
     m.grabMe(evt);
@@ -189,10 +189,10 @@ thisModule.addSlots(avocado.generalUI, function(add) {
     menu.openIn(world, (evt || Event.createFake()).point(), false, caption);
   });
 
-  add.method('createSpacer', function() {
+  add.method('createSpacer', function () {
     return avocado.table.newRowMorph().beInvisible().beSpaceFilling();
   });
-  
+
 });
 
 

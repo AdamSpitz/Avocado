@@ -7,7 +7,7 @@ requires('general_ui/table_layout');
 
 
 thisModule.addSlots(avocado.history, function(add) {
-  
+
   add.method('newMorph', function () {
     var m = avocado.table.newColumnMorph().setModel(this);
     m.applyStyle(this.defaultMorphStyle);
@@ -30,7 +30,7 @@ thisModule.addSlots(avocado.history, function(add) {
   }, {category: ['user interface']});
 
   add.creator('defaultMorphStyle', Object.create(avocado.table.boxStyle), {category: ['user interface']});
-  
+
 });
 
 

@@ -25,22 +25,6 @@ thisModule.addSlots(avocado.types, function(add) {
 
   add.creator('general', {});
 
-  add.creator('bool', Object.create(avocado.types.general), {}, {comment: 'Some JS tools don\'t like it if I call it "boolean" - reserved word or something.'});
-
-  add.creator('number', Object.create(avocado.types.general));
-
-  add.creator('string', Object.create(avocado.types.general));
-  
-  add.creator('shortString', Object.create(avocado.types.string));
-
-  add.creator('longString', Object.create(avocado.types.string));
-
-  add.creator('collection', Object.create(avocado.types.general));
-
-  add.creator('mirror', Object.create(avocado.types.general));
-
-  add.creator('enumeration', Object.create(avocado.types.general));
-
 });
 
 
@@ -49,7 +33,14 @@ thisModule.addSlots(avocado.types.general, function(add) {
   add.method('defaultValue', function () {
     return undefined;
   }, {category: ['default values']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.types, function(add) {
+
+  add.creator('bool', Object.create(avocado.types.general), {}, {comment: 'Some JS tools don\'t like it if I call it "boolean" - reserved word or something.'});
+
 });
 
 
@@ -62,7 +53,14 @@ thisModule.addSlots(avocado.types.bool, function(add) {
   add.method('doesTypeMatch', function (o) {
     return typeof(o) === 'boolean';
   }, {category: ['testing']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.types, function(add) {
+
+  add.creator('number', Object.create(avocado.types.general));
+
 });
 
 
@@ -75,7 +73,14 @@ thisModule.addSlots(avocado.types.number, function(add) {
   add.method('objectForString', function (s) {
     return Number(s);
   }, {category: ['converting']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.types, function(add) {
+
+  add.creator('string', Object.create(avocado.types.general));
+
 });
 
 
@@ -88,7 +93,18 @@ thisModule.addSlots(avocado.types.string, function(add) {
   add.method('objectForString', function (s) {
     return s;
   }, {category: ['converting']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.types, function(add) {
+
+  add.creator('shortString', Object.create(avocado.types.string));
+
+  add.creator('longString', Object.create(avocado.types.string));
+
+  add.creator('collection', Object.create(avocado.types.general));
+
 });
 
 
@@ -117,6 +133,13 @@ thisModule.addSlots(avocado.types.collection, function(add) {
 });
 
 
+thisModule.addSlots(avocado.types, function(add) {
+
+  add.creator('mirror', Object.create(avocado.types.general));
+
+});
+
+
 thisModule.addSlots(avocado.types.mirror, function(add) {
 
   add.method('onReflecteeOfType', function (reflecteeType) {
@@ -136,6 +159,13 @@ thisModule.addSlots(avocado.types.mirror, function(add) {
 });
 
 
+thisModule.addSlots(avocado.types, function(add) {
+
+  add.creator('enumeration', Object.create(avocado.types.general));
+
+});
+
+
 thisModule.addSlots(avocado.types.enumeration, function(add) {
 
   add.method('forPossibilities', function (possibilities) {
@@ -149,9 +179,9 @@ thisModule.addSlots(avocado.types.enumeration, function(add) {
   add.method('doesTypeMatch', function (o) {
     return this._possibilities.include(o);
   }, {category: ['testing']});
-  
+
   add.creator('prompterProto', {}, {category: ['prompting']});
-  
+
   add.method('prompter', function () {
     return Object.newChildOf(this.prompterProto, this._possibilities);
   });
@@ -160,11 +190,11 @@ thisModule.addSlots(avocado.types.enumeration, function(add) {
 
 
 thisModule.addSlots(avocado.types.enumeration.prompterProto, function(add) {
-  
+
   add.method('initialize', function (possibilities) {
     this._possibilities = possibilities;
   });
-  
+
 });
 
 

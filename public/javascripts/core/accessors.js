@@ -9,10 +9,6 @@ thisModule.addSlots(avocado, function(add) {
 
   add.creator('accessors', Object.create(avocado.generalValueHolder), {category: ['core']});
 
-  add.creator('methodAccessors', Object.create(avocado.accessors), {category: ['core']});
-
-  add.creator('attributeAccessors', Object.create(avocado.accessors), {category: ['core']});
-
 });
 
 
@@ -36,19 +32,19 @@ thisModule.addSlots(avocado.accessors, function(add) {
     this.get = getter;
     this.set = setter;
   }, {category: ['creating']});
-  
+
   add.method('canGet', function () {
     return !! this.get;
   }, {category: ['testing']});
-  
+
   add.method('canSet', function () {
     return !! this.set;
   }, {category: ['testing']});
-  
+
   add.method('getValue', function () {
     return this.get();
   }, {category: ['accessing']});
-  
+
   add.method('setValue', function (v) {
     this.set(v);
     return this;
@@ -59,69 +55,8 @@ thisModule.addSlots(avocado.accessors, function(add) {
 });
 
 
-thisModule.addSlots(avocado.methodAccessors, function(add) {
-
-  add.method('initialize', function (obj, getterName, setterName) {
-    this._object = obj;
-    this._getterName = getterName;
-    this._setterName = setterName || "set" + getterName.capitalize();
-  }, {category: ['creating']});
-
-  add.method('get', function () {
-    var obj = this._object;
-    var getter = obj[this._getterName];
-    if (!getter) { throw new Error("No attribute named " + this._getterName + " on " + obj); }
-    return getter.apply(obj, arguments);
-  }, {category: ['accessing']});
-
-  add.method('set', function (v) {
-    var obj = this._object;
-    var setter = obj[this._setterName];
-    if (!setter) { throw new Error("No attribute named " + this._setterName + " on " + obj); }
-    setter.apply(obj, arguments);
-    if (this._notifier) { this._notifier.notifyAllObservers(); }
-    return obj;
-  }, {category: ['accessing']});
-  
-  add.method('canGet', function () {
-    return !! this._object[this._getterName];
-  }, {category: ['testing']});
-  
-  add.method('canSet', function () {
-    return !! this._object[this._setterName];
-  }, {category: ['testing']});
-
-});
-
-
-thisModule.addSlots(avocado.attributeAccessors, function(add) {
-
-  add.method('initialize', function (obj, attrName) {
-    this._object = obj;
-    this._attrName = attrName;
-  }, {category: ['creating']});
-
-  add.method('get', function () {
-    return this._object[this._attrName];
-  }, {category: ['accessing']});
-
-  add.method('set', function (v) {
-    this._object[this._attrName] = v;
-  }, {category: ['accessing']});
-  
-  add.method('canGet', function () {
-    return true;
-  }, {category: ['testing']});
-  
-  add.method('canSet', function () {
-    return true;
-  }, {category: ['testing']});
-
-});
-
-
 thisModule.addSlots(avocado.accessors.tests, function(add) {
-  
+
   add.method('testRawFunctions', function () {
     var i = 0;
     var a = avocado.accessors.create(function() { return i; }, function(n) { i = n; });
@@ -156,7 +91,7 @@ thisModule.addSlots(avocado.accessors.tests, function(add) {
     this.assert(a.canGet());
     this.assert(a.canSet());
   });
-  
+
   add.method('testMethodAccessors', function () {
     var o = { _v: 0, value: function() { return this._v; }, setValue: function(v) { this._v = v; }, setValueToHalfOf: function(w) { this._v = w / 2; } };
     var a = avocado.accessors.forMethods(o, 'value');
@@ -181,7 +116,82 @@ thisModule.addSlots(avocado.accessors.tests, function(add) {
     this.assertThrowsException(function() { a3.get(  ); });
     this.assertThrowsException(function() { a3.set(22); });
   });
-  
+
+});
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('methodAccessors', Object.create(avocado.accessors), {category: ['core']});
+
+});
+
+
+thisModule.addSlots(avocado.methodAccessors, function(add) {
+
+  add.method('initialize', function (obj, getterName, setterName) {
+    this._object = obj;
+    this._getterName = getterName;
+    this._setterName = setterName || "set" + getterName.capitalize();
+  }, {category: ['creating']});
+
+  add.method('get', function () {
+    var obj = this._object;
+    var getter = obj[this._getterName];
+    if (!getter) { throw new Error("No attribute named " + this._getterName + " on " + obj); }
+    return getter.apply(obj, arguments);
+  }, {category: ['accessing']});
+
+  add.method('set', function (v) {
+    var obj = this._object;
+    var setter = obj[this._setterName];
+    if (!setter) { throw new Error("No attribute named " + this._setterName + " on " + obj); }
+    setter.apply(obj, arguments);
+    if (this._notifier) { this._notifier.notifyAllObservers(); }
+    return obj;
+  }, {category: ['accessing']});
+
+  add.method('canGet', function () {
+    return !! this._object[this._getterName];
+  }, {category: ['testing']});
+
+  add.method('canSet', function () {
+    return !! this._object[this._setterName];
+  }, {category: ['testing']});
+
+});
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('attributeAccessors', Object.create(avocado.accessors), {category: ['core']});
+
+});
+
+
+thisModule.addSlots(avocado.attributeAccessors, function(add) {
+
+  add.method('initialize', function (obj, attrName) {
+    this._object = obj;
+    this._attrName = attrName;
+  }, {category: ['creating']});
+
+  add.method('get', function () {
+    return this._object[this._attrName];
+  }, {category: ['accessing']});
+
+  add.method('set', function (v) {
+    this._object[this._attrName] = v;
+  }, {category: ['accessing']});
+
+  add.method('canGet', function () {
+    return true;
+  }, {category: ['testing']});
+
+  add.method('canSet', function () {
+    return true;
+  }, {category: ['testing']});
+
 });
 
 

@@ -7,15 +7,11 @@ thisModule.addSlots(avocado, function(add) {
 
   add.creator('generalValueHolder', {}, {category: ['core']});
 
-  add.creator('valueHolder', Object.create(avocado.generalValueHolder), {category: ['core']}, {comment: 'Stores a value and notifies you when someone changes it.'});
-
-  add.creator('booleanHolder', Object.create(avocado.valueHolder), {category: ['core']}, {comment: 'A valueHolder for booleans.'});
-
 });
 
 
 thisModule.addSlots(avocado.generalValueHolder, function(add) {
-  
+
   add.method('notifier', function () {
     return this._notifier || (this._notifier = Object.newChildOf(avocado.notifier, this));
   }, {category: ['observing']});
@@ -24,7 +20,14 @@ thisModule.addSlots(avocado.generalValueHolder, function(add) {
     this.notifier().addObserver(o);
     return this;
   }, {category: ['observing']});
-  
+
+});
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('valueHolder', Object.create(avocado.generalValueHolder), {category: ['core']}, {comment: 'Stores a value and notifies you when someone changes it.'});
+
 });
 
 
@@ -66,11 +69,11 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
   add.method('set', function (v) {
     return this.setValue.apply(this, arguments);
   }, {category: ['compatibility with accessors']});
-  
+
   add.method('canGet', function () {
     return true;
   }, {category: ['testing']});
-  
+
   add.method('canSet', function () {
     return true;
   }, {category: ['testing']});
@@ -114,11 +117,18 @@ thisModule.addSlots(avocado.valueHolder, function(add) {
     if (typeof(this._type.doesTypeMatch) !== 'function') { return true; }
     return this._type.doesTypeMatch(value);
   }, {category: ['types']});
-  
+
   add.method('commands', function () {
     var cmdList = avocado.command.list.create();
     return cmdList;
   }, {category: ['commands']});
+
+});
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('booleanHolder', Object.create(avocado.valueHolder), {category: ['core']}, {comment: 'A valueHolder for booleans.'});
 
 });
 

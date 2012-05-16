@@ -11,7 +11,23 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.compositeCollection, function(add) {
-  
+
+  add.method('include', function (e) {
+    return this._subcollections.any(function(subcollection) { return subcollection.include(e); });
+  }, {category: ['testing']});
+
+  add.method('toArray', function () {
+    var a = [];
+    this.each(function(x) { a.push(x); });
+    return a;
+  }, {category: ['transforming']});
+
+  add.method('size', function () {
+    var s = 0;
+    this._subcollections.each(function(subcollection) { s += subcollection.size(); });
+    return s;
+  }, {category: ['accessing']});
+
   add.method('create', function () {
     var c = Object.create(this);
     c.initialize.apply(c, arguments);
@@ -32,28 +48,12 @@ thisModule.addSlots(avocado.compositeCollection, function(add) {
     return this.each(f);
   }, {category: ['iterating']});
 
-  add.method('toArray', function () {
-    var a = [];
-    this.each(function(x) { a.push(x); });
-    return a;
-  }, {category: ['transforming']});
-
   add.method('sort', function (f) {
     return this.toArray().sort(f);
   }, {category: ['sorting']});
 
-  add.method('size', function () {
-    var s = 0;
-    this._subcollections.each(function(subcollection) { s += subcollection.size(); });
-    return s;
-  }, {category: ['accessing']});
-
-  add.method('include', function (e) {
-    return this._subcollections.any(function(subcollection) { return subcollection.include(e); });
-  }, {category: ['testing']});
-
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-  
+
 });
 
 
@@ -73,4 +73,3 @@ thisModule.addSlots(avocado.compositeCollection.tests, function(add) {
 
 
 });
-

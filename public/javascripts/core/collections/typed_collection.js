@@ -11,7 +11,11 @@ thisModule.addSlots(avocado, function(add) {
 
 
 thisModule.addSlots(avocado.typedCollection, function(add) {
-  
+
+  add.method('size', function () {
+    return this._elements.size();
+  }, {category: ['accessing']});
+
   add.method('create', function () {
     var c = Object.create(this);
     c.initialize.apply(c, arguments);
@@ -44,10 +48,6 @@ thisModule.addSlots(avocado.typedCollection, function(add) {
     this.forEach(f);
   }, {category: ['iterating']});
 
-  add.method('size', function () {
-    return this._elements.size();
-  }, {category: ['accessing']});
-
   add.method('remove', function (element) {
     this._elements.remove(element);
   }, {category: ['accessing']});
@@ -59,7 +59,7 @@ thisModule.addSlots(avocado.typedCollection, function(add) {
   add.method('push', function (element) {
     this.elements().push(element);
   }, {category: ['adding']});
-  
+
   add.method('addANewOne', function () {
     var newOne = this.elementType().createForAddingTo ? this.elementType().createForAddingTo(this) : this.elementType().create();
     this.push(newOne);

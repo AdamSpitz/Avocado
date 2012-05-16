@@ -52,7 +52,7 @@ thisModule.addSlots(Point.prototype, function(add) {
   add.method('approximatelyEqualsPt', function (other, maxDifference) {
     return Math.abs(this.x - other.x) < maxDifference && Math.abs(this.y - other.y) < maxDifference;
   });
-  
+
   add.method('toString', function () {
     // Overriding the one in LK, because I want Points to be able to contain things other than numbers.
     return ["pt(", this.x, ", ", this.y, ")"].join('');
@@ -154,7 +154,7 @@ thisModule.addSlots(avocado.geometry, function(add) {
   add.creator('planes', {});
 
   add.creator('circle', {});
-  
+
   add.creator('quickhull', {}, {}, {comment: 'http://en.literateprograms.org/Quickhull_(Javascript)'});
 
 });
@@ -170,7 +170,7 @@ thisModule.addSlots(avocado.geometry.planes, function(add) {
 
 
 thisModule.addSlots(avocado.geometry.planes.threeD, function(add) {
-  
+
   add.method('createFromThreePoints', function (pointA, pointB, pointC) {
     var normal = pointB.subPt(pointA).crossProduct(pointC.subPt(pointA));
     if (normal.x === 0 && normal.y === 0 && normal.z === 0) { return null; }
@@ -181,26 +181,26 @@ thisModule.addSlots(avocado.geometry.planes.threeD, function(add) {
     this._normalVector = normalVector.scaleToLength(1);
     this._referencePoint = referencePoint;
   }, {category: ['creating']});
-  
+
   add.method('normalVector', function () {
     return this._normalVector;
   }, {category: ['accessing']});
-  
+
   add.method('referencePoint', function () {
     return this._referencePoint;
   }, {category: ['accessing']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.geometry.circle, function(add) {
-  
+
   add.method('initialize', function (center, radius, plane) {
     this._center = center;
     this._radius = radius;
     this._plane  = plane || avocado.geometry.planes.twoD;
   }, {category: ['creating']});
-  
+
   add.method('center', function () { return this._center; }, {category: ['accessing']});
 
   add.method('radius', function () { return this._radius; }, {category: ['accessing']});

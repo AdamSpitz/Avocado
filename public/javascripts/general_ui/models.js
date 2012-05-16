@@ -6,13 +6,13 @@ requires('general_ui/basic_morph_mixins');
 
 
 thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
-  
+
   add.method('setModel', function (m) {
     this._model = m;
     return this;
   }, {category: ['models']});
 
-	add.method('inspect', function () {
+  add.method('inspect', function () {
 		try {
       if (this._model && typeof(this._model.inspect) === 'function') { return this._model.inspect(); } // added by Adam
 			return this.toString();
@@ -27,10 +27,10 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
     if (this._model) { return this._model.toString(); }
     if (this.typeName) { return "a " + this.typeName; }
     if (this._layout && this._layout.morphDescription) { return this._layout.morphDescription(this); }
-    return ""; // the default behaviour is annoying - makes morph mirrors very wide
+    return ""; // the default behaviour is annoying - makes morph mirrors very wide;
   }, {category: ['printing']});
-  	
-	add.method('enclosingObjectHavingANameInScheme', function (namingScheme) {
+
+  add.method('enclosingObjectHavingANameInScheme', function (namingScheme) {
 	  var m = this.getOwner();
 	  while (m) {
 	    if (m._model && m._model.namingScheme) {
@@ -40,7 +40,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
 	  }
 	  return null;
   }, {category: ['printing']});
-  
+
 });
 
 

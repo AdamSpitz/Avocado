@@ -12,7 +12,7 @@ thisModule.addSlots(avocado.morphMixins.Morph, function(add) {
   }, {category: ['shortcuts']});
 
   add.creator('invisibleStyle', {}, {category: ['styles']});
-  
+
 });
 
 

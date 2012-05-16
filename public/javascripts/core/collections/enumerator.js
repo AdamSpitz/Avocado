@@ -49,7 +49,7 @@ thisModule.addSlots(avocado.enumerator, function(add) {
   add.method('forEach', function (f) {
     return this._each(f);
   }, {category: ['iterating']});
-  
+
   add.method('_each', function (f) {
     var method = this._object[this._methodName];
     if (this._methodArgs.length === 0) { // just an optimization to avoid creating unnecessary arrays
@@ -60,7 +60,7 @@ thisModule.addSlots(avocado.enumerator, function(add) {
   }, {category: ['iterating']});
 
   add.method('sort', function (f) {
-    return this.toArray().sort(f)
+    return this.toArray().sort(f);
   }, {category: ['sorting']});
 
   add.method('eachFilteredBy', function (condition, f) {

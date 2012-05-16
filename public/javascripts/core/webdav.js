@@ -10,15 +10,6 @@ thisModule.addSlots(avocado, function(add) {
 });
 
 
-thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(add) {
-  
-  add.method('immediateContents', function () {
-    return [this._rootDir || (this._rootDir = new FileDirectory(new URL(this._url)))];
-  });
-  
-});
-
-
 thisModule.addSlots(avocado.webdav, function(add) {
 
   add.creator('file', {});
@@ -26,60 +17,12 @@ thisModule.addSlots(avocado.webdav, function(add) {
 });
 
 
-thisModule.addSlots(FileDirectory.prototype, function(add) {
-  
-  add.method('urlString', function () {
-    return this.url.toString();
-  }, {category: ['accessing']});
-
-  add.method('toString', function () {
-    return this.immediateName();
-  }, {category: ['printing']});
-
-  add.method('immediateName', function () {
-    return this.url.filename();
-  }, {category: ['printing']});
-
-  add.method('hashCode', function () {
-    return this.urlString();
-  }, {category: ['comparing']});
-
-  add.method('equals', function (other) {
-    return typeof(other.urlString) === 'function' && this.urlString() === other.urlString();
-  }, {category: ['comparing']});
-  
-  add.data('isImmutableForMorphIdentity', true, {category: ['comparing']});
-
-  add.method('sortOrder', function () { return this.urlString().toUpperCase(); }, {category: ['sorting']});
-  
-  add.method('immediateContents', function () {
-    if (! this._immediateContents) {
-      var subdirs = this.subdirectories().selectThenMap(function(subDirURL) { return ! subDirURL.filename().startsWith("."); }, function(subDirURL) { return new FileDirectory(subDirURL); });
-      var files = this.files().selectThenMap(function(fileURL) { return ! fileURL.filename().startsWith("."); }, function(fileURL) { return avocado.webdav.file.create(fileURL); });
-      this._immediateContents = subdirs.concat(files);
-    }
-    return this._immediateContents;
-  }, {category: ['user interface']});
-  
-  add.method('commands', function () {
-    var cmdList = avocado.command.list.create();
-    return cmdList;
-  }, {category: ['user interface']});
-  
-  add.method('dragAndDropCommands', function () {
-    var cmdList = avocado.command.list.create();
-    return cmdList;
-  }, {category: ['user interface']});
-
-});
-
-
 thisModule.addSlots(avocado.webdav.file, function(add) {
-  
+
   add.method('create', function (url) {
     return Object.newChildOf(this, url);
   }, {category: ['creating']});
-  
+
   add.method('initialize', function (url) {
     this._url = url;
   }, {category: ['creating']});
@@ -120,7 +63,7 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
     }
     avocado.ui.justChanged(thisFile);
   }, {category: ['accessing']});
-  
+
   add.method('urlString', function () {
     return this._url.toString();
   }, {category: ['accessing']});
@@ -140,11 +83,68 @@ thisModule.addSlots(avocado.webdav.file, function(add) {
   add.method('equals', function (other) {
     return typeof(other.urlString) === 'function' && this.urlString() === other.urlString();
   }, {category: ['comparing']});
-  
+
   add.data('isImmutableForMorphIdentity', true, {category: ['comparing']});
 
   add.method('sortOrder', function () { return this.urlString().toUpperCase(); }, {category: ['sorting']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.transporter.repositories.httpWithWebDAV, function(add) {
+
+  add.method('immediateContents', function () {
+    return [this._rootDir || (this._rootDir = new FileDirectory(new URL(this._url)))];
+  });
+
+});
+
+
+thisModule.addSlots(FileDirectory.prototype, function(add) {
+
+  add.method('urlString', function () {
+    return this.url.toString();
+  }, {category: ['accessing']});
+
+  add.method('toString', function () {
+    return this.immediateName();
+  }, {category: ['printing']});
+
+  add.method('immediateName', function () {
+    return this.url.filename();
+  }, {category: ['printing']});
+
+  add.method('hashCode', function () {
+    return this.urlString();
+  }, {category: ['comparing']});
+
+  add.method('equals', function (other) {
+    return typeof(other.urlString) === 'function' && this.urlString() === other.urlString();
+  }, {category: ['comparing']});
+
+  add.data('isImmutableForMorphIdentity', true, {category: ['comparing']});
+
+  add.method('sortOrder', function () { return this.urlString().toUpperCase(); }, {category: ['sorting']});
+
+  add.method('immediateContents', function () {
+    if (! this._immediateContents) {
+      var subdirs = this.subdirectories().selectThenMap(function(subDirURL) { return ! subDirURL.filename().startsWith("."); }, function(subDirURL) { return new FileDirectory(subDirURL); });
+      var files = this.files().selectThenMap(function(fileURL) { return ! fileURL.filename().startsWith("."); }, function(fileURL) { return avocado.webdav.file.create(fileURL); });
+      this._immediateContents = subdirs.concat(files);
+    }
+    return this._immediateContents;
+  }, {category: ['user interface']});
+
+  add.method('commands', function () {
+    var cmdList = avocado.command.list.create();
+    return cmdList;
+  }, {category: ['user interface']});
+
+  add.method('dragAndDropCommands', function () {
+    var cmdList = avocado.command.list.create();
+    return cmdList;
+  }, {category: ['user interface']});
+
 });
 
 

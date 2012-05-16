@@ -4,37 +4,28 @@ avocado.transporter.module.create('core/deep_copy', function(requires) {
 
 
 thisModule.addSlots(avocado, function(add) {
-  
+
   add.creator('deepCopier', {}, {category: ['core']}, {comment: 'Does a deep copy, recursing into creator slots. This is not *always* what you want in a deep copy, but often it is.'});
-  
-});
 
-
-thisModule.addSlots(Object, function(add) {
-  
-  add.method('deepCopyRecursingIntoCreatorSlots', function (o) {
-    return avocado.deepCopier.create().copy(o);
-  });
-  
 });
 
 
 thisModule.addSlots(avocado.deepCopier, function(add) {
-  
+
   add.method('create', function () {
     return Object.newChildOf(this);
   }, {category: ['creating']});
-  
+
   add.method('initialize', function () {
     this._originalsAndCopies = [];
   }, {category: ['creating']});
-  
+
   add.method('copy', function (o) {
     var c = this.createCopyOf(o);
     this.fixInternalReferences(c);
     return c;
   }, {category: ['copying']});
-  
+
   add.method('createCopyOf', function (o) {
     if (o === null) { return o; }
     
@@ -123,9 +114,9 @@ thisModule.addSlots(avocado.deepCopier, function(add) {
       }
     }
   }, {category: ['internal references']});
-  
+
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
-  
+
 });
 
 
@@ -177,37 +168,37 @@ thisModule.addSlots(avocado.deepCopier.tests, function(add) {
 
 
 thisModule.addSlots(avocado.deepCopier.tests.objectWithNoSubObjects, function(add) {
-  
+
   add.data('x', 3);
-  
+
   add.data('y', 'four');
-  
+
   add.data('externalRef', avocado.deepCopier.tests.objectWithSubObjects);
-  
+
 });
 
 
 thisModule.addSlots(avocado.deepCopier.tests.objectWithSubObjects, function(add) {
-  
+
   add.data('x', 5);
-  
+
   add.data('b', true);
-  
+
   add.method('m', function (a1, a2, a3) {
     return a1 + a2 + a3;
   });
-  
+
   add.creator('subObj', {});
-  
+
 });
 
 
 thisModule.addSlots(avocado.deepCopier.tests.objectWithSubObjects.subObj, function(add) {
-  
+
   add.data('qwerty', 'uiop');
-  
+
   add.creator('subSubObj', {});
-  
+
 });
 
 
@@ -219,22 +210,31 @@ thisModule.addSlots(avocado.deepCopier.tests.objectWithSubObjects.subObj.subSubO
 
 
 thisModule.addSlots(avocado.deepCopier.tests.objectWithSubObjectsAndInternalReferences, function(add) {
-  
+
   add.data('a', 1);
 
   add.creator('subObj', {});
 
   add.data('internalRefToSubObj', avocado.deepCopier.tests.objectWithSubObjectsAndInternalReferences.subObj);
-  
+
 });
 
 
 thisModule.addSlots(avocado.deepCopier.tests.objectWithSubObjectsAndInternalReferences.subObj, function(add) {
-  
+
   add.data('x', 24);
-  
+
   add.data('internalRefToRootObj', avocado.deepCopier.tests.objectWithSubObjectsAndInternalReferences);
-  
+
+});
+
+
+thisModule.addSlots(Object, function(add) {
+
+  add.method('deepCopyRecursingIntoCreatorSlots', function (o) {
+    return avocado.deepCopier.create().copy(o);
+  });
+
 });
 
 
