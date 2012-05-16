@@ -1129,7 +1129,7 @@ annotator.annotationOf(window).categorize(['avocado', 'bootstrap'], ['__annotati
 
 avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap',       function() {});
 avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_lk',    function() {}); // aaa lk-specific
-avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_three', function() {}); // aaa threejs-specific
+avocado.transporter.module.callWhenDoneLoadingModuleNamed('bootstrap_three', function() {}); // aaa threejs-specific;
 };
 bootstrapTheModuleSystem();
 
@@ -1177,7 +1177,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
   add.method('shouldLoadModule', function (name) {
     return true;
   }, {category: ['bootstrapping']});
-  
+
   add.method('loadExternal', function (names, callWhenDone) {
     if (names.length === 0) { return callWhenDone(); }
     var name = names.shift();
@@ -1185,8 +1185,8 @@ thisModule.addSlots(avocado.transporter, function(add) {
       avocado.transporter.loadExternal(names, callWhenDone);
     });
   }, {category: ['bootstrapping']});
-  
-  add.method('loadJSFileFromURL', function(url, callWhenDone) {
+
+  add.method('loadJSFileFromURL', function (url, callWhenDone) {
     var i = url.lastIndexOf("/");
     var repoURL = url.substring(0, i) + '/';
     var fileName = url.substring(i + 1);
@@ -1268,7 +1268,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
       }
     }).join("\n"));
   }, {category: ['bootstrapping']});
-  
+
   add.data('whatHasAlreadyBeenLoaded', {}, {category: ['bootstrapping'], initializeTo: '{}'});
 
   add.method('createAvocadoWorld', function () {
@@ -1367,36 +1367,36 @@ thisModule.addSlots(avocado.http, function(add) {
     }
     return params.join("&");
   }, {category: ['requests']});
-  
+
   add.creator('request', {}, {category: ['XHR']});
 
   add.creator('scriptTagRequest', {}, {category: ['script tags']});
-  
+
 });
 
 
 thisModule.addSlots(avocado.http.request, function(add) {
-  
+
   add.method('initialize', function (path) {
     this._path = path;
   }, {category: ['creating']});
-  
+
   add.method('httpMethod', function () {
     return this._httpMethod || "GET";
   }, {category: ['accessing']});
-  
+
   add.method('params', function () {
     return this._params || {};
   }, {category: ['accessing']});
-  
+
   add.method('paramsString', function () {
     return avocado.http.paramsStringFrom(this.params());
   }, {category: ['accessing']});
-  
+
   add.method('headers', function () {
     return this._headers || {};
   }, {category: ['accessing']});
-  
+
   add.method('eachHeader', function (f) {
     var headers =  this.headers()
   	for (var headerName in headers) {
@@ -1408,7 +1408,7 @@ thisModule.addSlots(avocado.http.request, function(add) {
     	f("Content-type", "application/x-www-form-urlencoded");
   	}
   }, {category: ['accessing']});
-  
+
   add.method('url', function () {
     if (this.httpMethod() === "GET") {
       return this._path + "?" + this.paramsString();
@@ -1416,7 +1416,7 @@ thisModule.addSlots(avocado.http.request, function(add) {
       return this._path;
     }
   }, {category: ['accessing']});
-  
+
   add.method('body', function () {
     var method = this.httpMethod();
     if (method === "POST" || method === "PUT") {
@@ -1429,7 +1429,7 @@ thisModule.addSlots(avocado.http.request, function(add) {
       return undefined;
     }
   }, {category: ['accessing']});
-  
+
   add.method('send', function (callback, errback, partback) {
   	var req = new XMLHttpRequest();
   	var httpMethod = this.httpMethod();
@@ -1476,7 +1476,7 @@ thisModule.addSlots(avocado.http.request, function(add) {
 
 
 thisModule.addSlots(avocado.http.scriptTagRequest, function(add) {
-  
+
   add.method('initialize', function (path) {
     this._path = path;
   }, {category: ['creating']});
@@ -1487,7 +1487,7 @@ thisModule.addSlots(avocado.http.scriptTagRequest, function(add) {
     if (p.indexOf('?') >= 0) { p += "&t=" + new Date().getTime(); } else { p += "?t=" + new Date().getTime(); } // to avoid caching;
     return p;
   }, {category: ['sending']});
-  
+
   add.method('send', function (callback) {
     var script = document.createElement('script');
     script.type = 'text/javascript';
@@ -1496,21 +1496,53 @@ thisModule.addSlots(avocado.http.scriptTagRequest, function(add) {
     var head = document.getElementsByTagName('head')[0];
     head.appendChild(script);
   }, {category: ['sending']});
-  
+
+});
+
+
+thisModule.addSlots(avocado.transporter.module, function(add) {
+
+  add.data('_repository', null, {initializeTo: 'null'});
+
+  add.method('setRepository', function (r) {
+    this._repository = r;
+    return this;
+  }, {category: ['accessing']});
+
+  add.method('existingOneNamed', function (n) {
+    return modules[n];
+  }, {category: ['accessing']});
+
+  add.method('requirements', function () {
+    if (! this._requirements) { this._requirements = []; }
+    return this._requirements;
+  }, {category: ['requirements']});
+
+  add.method('addRequirement', function (nameOfRequiredModule) {
+    if (this.requirements().include(nameOfRequiredModule)) { return; }
+    this.requirements().push(nameOfRequiredModule);
+    this.markAsChanged();
+  }, {category: ['requirements']});
+
+  add.method('requires', function (moduleName, reqLoadedCallback) {
+    this.requirements().push(moduleName);
+
+    reqLoadedCallback = reqLoadedCallback || function() {};
+
+    var module = avocado.transporter.module.existingOneNamed(moduleName);
+    if (module) {
+      avocado.transporter.module.callWhenDoneLoadingModuleNamed(moduleName, reqLoadedCallback);
+    } else {
+      avocado.transporter.fileIn(moduleName, reqLoadedCallback);
+    }
+  }, {category: ['requirements']});
+
 });
 
 
 thisModule.addSlots(avocado.transporter.repositories, function(add) {
 
   add.creator('abstract', {});
-
-  add.creator('console', Object.create(avocado.transporter.repositories['abstract']));
-
-  add.creator('http', Object.create(avocado.transporter.repositories['abstract']));
-
-  add.creator('httpWithWebDAV', Object.create(avocado.transporter.repositories.http));
-
-  add.creator('httpWithSavingScript', Object.create(avocado.transporter.repositories.http));
 
 });
 
@@ -1535,6 +1567,15 @@ thisModule.addSlots(avocado.transporter.repositories['abstract'], function(add) 
       }
     });
   }, {category: ['loading']});
+
+});
+
+
+thisModule.addSlots(avocado.transporter.repositories, function(add) {
+
+  add.creator('console', Object.create(avocado.transporter.repositories['abstract']));
+
+  add.creator('http', Object.create(avocado.transporter.repositories['abstract']));
 
 });
 
@@ -1619,10 +1660,19 @@ thisModule.addSlots(avocado.transporter.repositories.http, function(add) {
     var req = Object.newChildOf(avocado.http.scriptTagRequest, url);
     req.send(callback);
   }, {category: ['loading']});
-  
+
   add.method('canFileOutIndividualModules', function () {
     return typeof(this.fileOutModuleVersion) === 'function';
   }, {category: ['saving']});
+
+});
+
+
+thisModule.addSlots(avocado.transporter.repositories, function(add) {
+
+  add.creator('httpWithWebDAV', Object.create(avocado.transporter.repositories.http));
+
+  add.creator('httpWithSavingScript', Object.create(avocado.transporter.repositories.http));
 
 });
 
@@ -1633,46 +1683,6 @@ thisModule.addSlots(avocado.transporter.repositories.httpWithSavingScript, funct
     this._url = url;
     this._savingScriptURL = savingScriptURL;
   }, {category: ['creating']});
-
-});
-
-
-thisModule.addSlots(avocado.transporter.module, function(add) {
-  
-  add.data('_repository', null, {initializeTo: 'null'});
-  
-  add.method('setRepository', function (r) {
-    this._repository = r;
-    return this;
-  }, {category: ['accessing']});
-
-  add.method('existingOneNamed', function (n) {
-    return modules[n];
-  }, {category: ['accessing']});
-
-  add.method('requirements', function () {
-    if (! this._requirements) { this._requirements = []; }
-    return this._requirements;
-  }, {category: ['requirements']});
-
-  add.method('addRequirement', function (nameOfRequiredModule) {
-    if (this.requirements().include(nameOfRequiredModule)) { return; }
-    this.requirements().push(nameOfRequiredModule);
-    this.markAsChanged();
-  }, {category: ['requirements']});
-
-  add.method('requires', function (moduleName, reqLoadedCallback) {
-    this.requirements().push(moduleName);
-
-    reqLoadedCallback = reqLoadedCallback || function() {};
-
-    var module = avocado.transporter.module.existingOneNamed(moduleName);
-    if (module) {
-      avocado.transporter.module.callWhenDoneLoadingModuleNamed(moduleName, reqLoadedCallback);
-    } else {
-      avocado.transporter.fileIn(moduleName, reqLoadedCallback);
-    }
-  }, {category: ['requirements']});
 
 });
 

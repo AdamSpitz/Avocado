@@ -213,7 +213,7 @@ thisModule.addSlots(avocado.transporter.module.slotOrderizer, function(add) {
   }, {category: ['accessing']});
 
   add.method('determineOrder', function () {
-    if (this._debugMode) {
+    if (this._debugMode && false) { // aaa - This seems like it might be broken, it's giving me error messages when I think it shouldn't.
       this._remainingSlotsByMirror.eachKeyAndValue(function(mir, slots) {
         console.log(mir.name() + " contains slots: " + slots);
       });

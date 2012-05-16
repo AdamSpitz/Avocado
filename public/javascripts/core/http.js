@@ -25,10 +25,6 @@ thisModule.addSlots(avocado.http.request, function(add) {
     return c;
   }, {category: ['creating']});
   
-  add.method('initialize', function (path) {
-    this._path = path;
-  }, {category: ['creating']});
-  
   add.method('setParams', function (params) {
     this._params = params;
     return this;
