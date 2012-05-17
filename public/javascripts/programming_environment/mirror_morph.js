@@ -27,7 +27,7 @@ thisModule.addSlots(avocado.mirror, function(add) {
     mirMorph._descMorph = avocado.morphHider.create(mirMorph, [descLabel], function() {
       var s = this.shortDescription();
       descLabel.setText(s);
-      return s !== '';
+      return s === '' ? null : 0;
     }.bind(this));
 
     if (this.canHaveAnnotation() || this.hasAccessibleParent()) {
@@ -318,7 +318,7 @@ thisModule.addSlots(avocado.mirror.morphBuilder, function(add) {
       var optionalCommentButtonMorph = avocado.morphHider.create(mirMorph, [function() {
         return mirMorph._commentToggler.commandForToggling('my comment', "'...'").newMorph();
       }.memoize()], function() {
-        return mirMorph._commentToggler.isOn() || (mirMorph.mirror().comment && mirMorph.mirror().comment());
+        return (mirMorph._commentToggler.isOn() || (mirMorph.mirror().comment && mirMorph.mirror().comment())) ? 0 : null;
       });
     }
     
@@ -342,7 +342,7 @@ thisModule.addSlots(avocado.mirror.morphBuilder, function(add) {
     var optionalAKAButtonMorph = avocado.morphHider.create(mirMorph, [function() {
       return avocado.command.create("AKA", function(evt) { mirMorph.mirror().chooseAmongPossibleCreatorSlotChains(function() {}, evt); }).newMorph();
     }.memoize()], function() {
-      return mirMorph.mirror().hasMultiplePossibleNames();
+      return mirMorph.mirror().hasMultiplePossibleNames() ? 0 : null;
     });
 
     var descInHeader = mirMorph._shouldUseZooming ? null : mirMorph._descMorph;

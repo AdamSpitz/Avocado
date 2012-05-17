@@ -241,7 +241,7 @@ thisModule.addSlots(avocado.treeNode.morphFactories.expanderBased, function(add)
 
   add.method('createContentsPanelOrHider', function (ownerMorph, getOrCreateActualMorph) {
     return avocado.morphHider.create(ownerMorph, [getOrCreateActualMorph], function() {
-      return ownerMorph._expander.isExpanded();
+      return ownerMorph._expander.isExpanded() ? 0 : null;
     });
   });
 
@@ -298,7 +298,7 @@ thisModule.addSlots(avocado.treeNode.morphMixin_aaa_becauseIDoNotFeelLikeGeneral
 
   add.method('ensureVisibleForJustMe', function () {
     if (this._expander) {
-      this._expander.expand();
+      this.assumeUIState({isExpanded: true});
     } else {
       this.refreshContent(); // aaa - is this the right thing do? is it a performance bug?
     }

@@ -31,7 +31,9 @@ thisModule.addSlots(avocado.morphHider, function(add) {
   });
 
   add.method('morphOrFunctionToShow', function () {
-    return this._possibleMorphsToShow[this.whichMorphShouldBeShown()];
+    var i = this.whichMorphShouldBeShown();
+    if (i === null || typeof(i) === 'undefined') { return null; }
+    return this._possibleMorphsToShow[i];
   });
 
   add.method('actualMorphToShow', function (context) {
