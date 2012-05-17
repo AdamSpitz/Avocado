@@ -9,10 +9,6 @@ thisModule.addSlots(avocado, function(add) {
 
   add.creator('remoteMirror', Object.create(avocado.mirror), {category: ['reflection', 'remote']});
 
-  add.creator('remoteObjectServer', {}, {category: ['reflection', 'remote']});
-
-  add.creator('mockRemoteObjectServer', Object.create(avocado.remoteObjectServer), {category: ['reflection', 'remote']});
-
 });
 
 
@@ -29,9 +25,12 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
 
   add.method('reflectee', function () {
-    avocado.grabStack(); // aaa remove this line
     throw new Error('Cannot access reflectee of a remote object');
   }, {category: ['accessing']});
+
+  add.method('storeStringNeeds', function () {
+    return avocado.remoteMirror;
+  }, {category: ['transporting']});
 
   add.method('remoteOIDOrPrimitive', function () {
     return this._remoteOIDOrPrimitive;
@@ -73,11 +72,11 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
   }, {category: ['comparing']});
 
   add.method('isRootOfGlobalNamespace', function () {
-    return false; // aaa for now
+    return false; // aaa for now;
   }, {category: ['naming']});
 
   add.method('reflecteeToString', function () {
-    return ""; // aaa do a remote call?
+    return ""; // aaa do a remote call?;
   }, {category: ['naming']});
 
   add.method('inspect', function ($super) {
@@ -120,7 +119,7 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
   }, {category: ['accessing']});
 
   add.method('canAccessParent', function () {
-    return this.hasOID(); // aaa for now, can't access Number.prototype, String.prototype, etc.
+    return this.hasOID(); // aaa for now, can't access Number.prototype, String.prototype, etc.;
   }, {category: ['testing']});
 
   add.method('isReflecteeNull', function () {
@@ -128,15 +127,15 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
   }, {category: ['testing']});
 
   add.method('isReflecteeArray', function () {
-    return this.reflecteeType() === 'object' && this.reflecteeHasOwnProperty('length'); // aaa reasonable approximation for now
+    return this.reflecteeType() === 'object' && this.reflecteeHasOwnProperty('length'); // aaa reasonable approximation for now;
   }, {category: ['testing']});
 
   add.method('isReflecteeSimpleMethod', function () {
-    return false; // aaa for now
+    return false; // aaa for now;
   }, {category: ['testing']});
 
   add.method('isReflecteeProbablyAClass', function () {
-    return false; // aaa for now
+    return false; // aaa for now;
   }, {category: ['testing']});
 
   add.method('reflecteeLength', function () {
@@ -144,8 +143,31 @@ thisModule.addSlots(avocado.remoteMirror, function(add) {
   }, {category: ['arrays']});
 
   add.method('getExistingAnnotation', function () {
-    return null; // aaa how do we do annotations?
+    return null; // aaa how do we do annotations?;
   }, {category: ['annotations']});
+
+});
+
+
+thisModule.addSlots(avocado.remoteMirror.tests, function(add) {
+
+  add.method('testSimpleObject', function () {
+    var s = avocado.mockRemoteObjectServer.create();
+    s.addObject({x: 3, y: 4});
+    s.rootOID(function(rootOID) {
+      this.assertEqual(0, rootOID);
+      var rootMir = s.mirrorForOIDAndType(rootOID, 'object');
+      this.assertEqual(['x', 'y'], rootMir.normalSlotNames().toArray());
+      // avocado.ui.grab(rootMir);
+    }.bind(this));
+  });
+
+});
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('remoteObjectServer', {}, {category: ['reflection', 'remote']});
 
 });
 
@@ -176,6 +198,13 @@ thisModule.addSlots(avocado.remoteObjectServer, function(add) {
       mir.updateContentsAndTypes(contentsByName, typesByName);
     });
   }, {category: ['updating']});
+
+});
+
+
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('mockRemoteObjectServer', Object.create(avocado.remoteObjectServer), {category: ['reflection', 'remote']});
 
 });
 
@@ -252,22 +281,6 @@ thisModule.addSlots(avocado.mockRemoteObjectServer, function(add) {
     reflect(this.objectForOID(remoteOID)).removeSlotAt(n);
     if (callback) { callback(); }
   }, {category: ['remote protocol']});
-
-});
-
-
-thisModule.addSlots(avocado.remoteMirror.tests, function(add) {
-
-  add.method('testSimpleObject', function () {
-    var s = avocado.mockRemoteObjectServer.create();
-    s.addObject({x: 3, y: 4});
-    s.rootOID(function(rootOID) {
-      this.assertEqual(0, rootOID);
-      var rootMir = s.mirrorForOIDAndType(rootOID, 'object');
-      this.assertEqual(['x', 'y'], rootMir.normalSlotNames().toArray());
-      // avocado.ui.grab(rootMir);
-    }.bind(this));
-  });
 
 });
 

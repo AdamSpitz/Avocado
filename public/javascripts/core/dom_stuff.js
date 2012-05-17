@@ -4,7 +4,7 @@ avocado.transporter.module.create('core/dom_stuff', function(requires) {
 
 
 thisModule.addSlots(avocado, function(add) {
-  
+
   add.creator('DOMStuff', {}, {category: ['DOM stuff']});
 
 });
@@ -37,7 +37,7 @@ thisModule.addSlots(avocado.DOMStuff, function(add) {
     }
     return false;
   });
-  
+
 });
 
 
@@ -51,7 +51,7 @@ thisModule.addSlots(Node.prototype, function(add) {
     }
     return this;
   }, {category: ['removing']});
-  
+
   add.method('copy', function () {
     // aaa - There's probably a better way to do this. Heck, I'm not even completely sure this works right in all cases. -- Adam
     var thisNodeAsString = new XMLSerializer().serializeToString(this);

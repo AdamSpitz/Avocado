@@ -42,18 +42,18 @@ thisModule.addSlots(Morph.prototype, function(add) {
       }.bind(this));
     }
   }, {category: ['transporting']});
-  
+
   add.method('shouldNotBeTransported', function () {
     // Children can override.
     return false;
   }, {category: ['transporting']});
-  
-  add.method('basicMorphPropertiesStoreString', function() {
+
+  add.method('basicMorphPropertiesStoreString', function () {
     // useful for creating storeStrings
     return ["{ owner: " + reflect(this.owner).creatorSlotChainExpression() + ", position: ", this.getPosition().storeString(), " }"].join("");
   }, {category: ['transporting']});
-  
-  add.method('setBasicMorphProperties', function(info) {
+
+  add.method('setBasicMorphProperties', function (info) {
     // useful for creating storeStrings
     this.owner = info.owner;
     this.setPosition(info.position);
@@ -114,6 +114,7 @@ thisModule.addSlots(Text.prototype, function(add) {
 
 });
 
+
 thisModule.addSlots(lively.paint.LinearGradient.prototype, function(add) {
 
   add.method('storeString', function () {
@@ -130,6 +131,7 @@ thisModule.addSlots(lively.paint.LinearGradient.prototype, function(add) {
   }, {category: ['transporting']});
 
 });
+
 
 thisModule.addSlots(lively.paint.RadialGradient.prototype, function(add) {
 

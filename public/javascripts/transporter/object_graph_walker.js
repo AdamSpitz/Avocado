@@ -124,7 +124,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     var walker = this;
     
     // 'for' loops don't see String and Number and Array and their 'prototype' slots.
-    ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function', 'Error'].forEach(function(typeName) {
+    ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function', 'Error', 'Node', 'Text'].forEach(function(typeName) {
         var type = window[typeName];
         var pathToType          = avocado.objectGraphWalker.path.create(window, typeName);
         var pathToTypePrototype = pathToType.extendWith(type, 'prototype');

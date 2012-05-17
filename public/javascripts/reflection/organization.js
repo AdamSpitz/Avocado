@@ -57,14 +57,12 @@ thisModule.addSlots(avocado, function(add) {
 
   add.creator('organization', Object.create(avocado.abstractOrganization), {category: ['reflection']});
 
-  add.creator('organizationUsingAnnotations', Object.create(avocado.abstractOrganization), {category: ['reflection']});
-
 });
 
 
 thisModule.addSlots(avocado.organization, function(add) {
 
-  add.data('current', avocado.organizationUsingAnnotations, {initializeTo: 'avocado.organizationUsingAnnotations'});
+  add.data('current', null, {initializeTo: 'null'});
 
   add.method('setCurrent', function (org) {
     avocado.organization.current = org;
@@ -85,7 +83,18 @@ thisModule.addSlots(avocado.organization, function(add) {
 });
 
 
+thisModule.addSlots(avocado, function(add) {
+
+  add.creator('organizationUsingAnnotations', Object.create(avocado.abstractOrganization), {category: ['reflection']});
+
+});
+
+
 thisModule.addSlots(avocado.organizationUsingAnnotations, function(add) {
+
+  add.method('postFileIn', function () {
+    if (!avocado.organization.current) { avocado.organization.setCurrent(this); }
+  }, {category: ['transporting']});
 
   add.method('update', function (callWhenDone) {
     // nothing to do here

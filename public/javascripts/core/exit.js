@@ -30,7 +30,11 @@ thisModule.addSlots(window, function(add) {
 
 thisModule.addSlots(exitValueOf, function(add) {
 
+  add.data('displayName', 'exitValueOf');
+
   add.creator('tests', Object.create(avocado.testCase), {category: ['tests']});
+
+  add.creator('prototype', {});
 
 });
 
