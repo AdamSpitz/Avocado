@@ -209,6 +209,58 @@ thisModule.addSlots(avocado.livelyKernelUI.programmingEnvironment, function(add)
 
   }, {category: ['menu']});
 
+  add.method('initializeWorld', function (world) {
+    // Just a place where I can keep some code that's useful for debugging whatever I'm working on.
+
+
+    /* // Trying to fix that stupid moveOriginBy bug, the one where it doesn't work for images.
+    var tn = avocado.treeNode.create("Stuff", ["Argle", "Bargle"]);
+    var tnm = world.morphFor(tn);
+    tnm.setScale(4);
+    tnm.useBackgroundImage("images/cork_board.jpg");
+    world.addMorphAt(tnm, pt(500, 300));
+    tnm.refreshContentOfMeAndSubmorphs();
+    tnm.moveOriginBy(pt(60, 30));
+    */
+    
+    /*
+    avocado.shouldHideTextSmallerThan = 7;
+    //var suiteProto = avocado.testCase.suite.forTestingAvocado();
+    var suiteProto = avocado.testCase.suite.createForAppropriatelyPrefixedMethodsOf(avocado.mirror.tests);
+    var suite = suiteProto.copy().makeUpSomeRandomResults(0.1);
+    var history = suite.makeUpARandomResultHistory(2, 0.05, 0.05);
+    var historyMorph = world.morphFor(history).applyStyle({suppressGrabbing: true, fill: null});
+    world.addMorphAt(historyMorph, pt(20, 20));
+    historyMorph.refreshContentOfMeAndSubmorphs();
+  
+    setTimeout(function() {
+      history.makeUpAnotherRowOfRandomResults(0.05, 0.05, 5000, function() {
+        avocado.ui.justChanged(history);
+      });
+    }, 5000);
+    */
+    
+    /*
+    avocado.ui.enableHTMLTextMorphExperiment = true;
+    var slot = avocado.valueHolder.containing("Noodle face").setName("Kumquat").setType(avocado.types.longString);
+    var slotMorph = world.morphFor(slot); //avocado.slots.userInterface.createTypeSpecificInputMorphForSlot(slot);
+    world.addMorphAt(slotMorph, pt(300, 50));
+    */
+    
+    /*
+    var p = document.createElement("p");
+    p.innerHTML = "The quick brown fox jumps over the lazy friggin' dog.\nYeah!\nAwesome!\nI think it's doing the shrink-wrap layout stuff. Very cool.".replace(/\n/g, "<br/>");
+    var html = avocado.html.create(p);
+    var htmlMorph = world.morphFor(html);
+    htmlMorph.setFill(new Color(0.9, 0.9, 0.9));
+    htmlMorph.setExtent(pt(300, 300));
+    world.addMorphAt(htmlMorph, pt(100, 100));
+    htmlMorph.forceLayoutRejiggering();
+    */
+    
+    // avocado.ui.grab(avocado.searchResultsPresenter.create(avocado.senders.finder.create("exitValueOf"))).redo();
+  }, {category: ['world initialization']});
+    
 });
 
 
