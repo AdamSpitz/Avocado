@@ -173,7 +173,7 @@ thisModule.addSlots(avocado.objectGraphWalker, function(add) {
     
     if (this._shouldIgnoreSimpleMethods && avocado.annotator.isSimpleMethod(o)) { return true; }
     
-    if (this._shouldIgnoreObjectsWithAStoreString && typeof(o.storeString) === 'function' && (typeof(o.storeStringNeeds) !== 'function' || o !== o.storeStringNeeds())) { return true; }
+    if (this._shouldIgnoreObjectsWithAStoreString && avocado.transporter.canUseStoreStringToTransportObject(o)) { return true; }
     
     return false;
   });
@@ -605,7 +605,7 @@ thisModule.addSlots(avocado.objectGraphWalker.visitors.unownedSlotFinder, functi
     // can do exactly what the transporter does.
     if (avocado.annotator.isSimpleMethod(object)) { return false; }
     
-    if (typeof(object.storeString) === 'function' && (typeof(object.storeStringNeeds) !== 'function' || object !== object.storeStringNeeds())) { return false; }
+    if (avocado.transporter.canUseStoreStringToTransportObject(object)) { return false; }
     
     return true;
   });

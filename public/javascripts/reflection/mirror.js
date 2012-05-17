@@ -75,10 +75,6 @@ thisModule.addSlots(avocado.mirror, function(add) {
     return ["reflect(", expr, ")"].join("");
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return avocado.mirror;
-  }, {category: ['transporting']});
-
   add.method('isRootOfGlobalNamespace', function () {
     return this.reflectee() === window;
   }, {category: ['naming']});
@@ -604,13 +600,8 @@ thisModule.addSlots(avocado.mirror, function(add) {
 
   add.method('reflecteeStoreString', function () {
     if (! this.canHaveSlots()) { return null; }
-    var o = this.reflectee();
-    if (typeof(o.storeString) === 'function') {
-      if (typeof(o.storeStringNeeds) !== 'function' || o !== o.storeStringNeeds()) {
-        return o.storeString();
-      }
-    }
-    return null;
+    if (! avocado.transporter.canUseStoreStringToTransportObject(this.reflectee())) { return null; }
+    return this.reflectee().storeString();
   }, {category: ['transporting']});
 
   add.method('size', function () {

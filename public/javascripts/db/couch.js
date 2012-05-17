@@ -47,10 +47,6 @@ thisModule.addSlots(avocado.couch.dbServer, function(add) {
     return ["avocado.couch.dbServer.atURL(", this._baseURL.inspect(), ", ", this._proxyURL.inspect(), ")"].join("");
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return avocado.couch.dbServer;
-  }, {category: ['transporting']});
-
   add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback, errback) {
     // See http://wiki.apache.org/couchdb/Complete_HTTP_API_Reference for a list of possible requests.
     
@@ -131,10 +127,6 @@ thisModule.addSlots(avocado.couch.db, function(add) {
 
   add.method('storeString', function () {
     return ["(", this._server.storeString(), ").dbNamed(", this._name.inspect(), ")"].join("");
-  }, {category: ['transporting']});
-
-  add.method('storeStringNeeds', function () {
-    return avocado.couch.db;
   }, {category: ['transporting']});
 
   add.method('doRequest', function (httpMethod, url, paramsStringOrObject, body, callback, errback) {
@@ -659,10 +651,6 @@ thisModule.addSlots(avocado.couch.db.relationships.oneToMany, function(add) {
     return ["avocado.couch.db.relationships.oneToMany.create(", this._containerTypeMir.creatorSlotChainExpression(), ", ", this._elementTypeMir.creatorSlotChainExpression(), ", ", this._nameOfAttributePointingToContainer.inspect(), ")"].join("");
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return avocado.couch.db.relationships.oneToMany;
-  }, {category: ['transporting']});
-
 });
 
 
@@ -804,10 +792,6 @@ thisModule.addSlots(avocado.couch.db.container, function(add) {
     return ["avocado.couch.db.container.create(", this._relationship.storeString(), ", ", this._containerRef.expressionToRecreateRefAndFetchObject(), ", ", this._design.storeString(), (this._name ? ", " + Object.inspect(this._name) : ""), ")"].join("");
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return avocado.couch.db.container;
-  }, {category: ['transporting']});
-
 });
 
 
@@ -874,10 +858,6 @@ thisModule.addSlots(avocado.couch.db.design, function(add) {
     return ["(", this._db.storeString(), ").designWithName(", this._name.inspect(), ")"].join("");
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return avocado.couch.db.design;
-  }, {category: ['transporting']});
-
 });
 
 
@@ -902,10 +882,6 @@ thisModule.addSlots(avocado.couch.db.view, function(add) {
 
   add.method('storeString', function () {
     return ["(", this._design.storeString(), ").viewNamed(", this._name.inspect(), ")"].join("");
-  }, {category: ['transporting']});
-
-  add.method('storeStringNeeds', function () {
-    return avocado.couch.db.view;
   }, {category: ['transporting']});
 
 });

@@ -81,10 +81,6 @@ thisModule.addSlots(Color.prototype, function(add) {
     return ['new Color(', this.r, ', ', this.g, ', ', this.b, ')'].join('');
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return Color.prototype;
-  }, {category: ['transporting']});
-
 });
 
 
@@ -95,10 +91,6 @@ thisModule.addSlots(TextEmphasis.prototype, function(add) {
     return ['new TextEmphasis({', props.join(", "), '})'].join('');
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return TextEmphasis.prototype;
-  }, {category: ['transporting']});
-
 });
 
 
@@ -106,10 +98,6 @@ thisModule.addSlots(Text.prototype, function(add) {
 
   add.method('storeString', function () {
     return ['document.createTextNode(', this.textContent.inspect(), ')'].join('');
-  }, {category: ['transporting']});
-
-  add.method('storeStringNeeds', function () {
-    return Text.prototype;
   }, {category: ['transporting']});
 
 });
@@ -126,10 +114,6 @@ thisModule.addSlots(lively.paint.LinearGradient.prototype, function(add) {
             ].join("");
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return lively.paint.LinearGradient.prototype;
-  }, {category: ['transporting']});
-
 });
 
 
@@ -142,10 +126,6 @@ thisModule.addSlots(lively.paint.RadialGradient.prototype, function(add) {
             ].join("");
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return lively.paint.LinearGradient.prototype;
-  }, {category: ['transporting']});
-
 });
 
 
@@ -153,10 +133,6 @@ thisModule.addSlots(lively.paint.Stop.prototype, function(add) {
 
   add.method('storeString', function () {
     return ['new lively.paint.Stop(', this.offset(), ', ', this.color().storeString(), ')'].join('');
-  }, {category: ['transporting']});
-
-  add.method('storeStringNeeds', function () {
-    return lively.paint.Stop.prototype;
   }, {category: ['transporting']});
 
 });
@@ -168,10 +144,6 @@ thisModule.addSlots(lively.scene.Similitude.prototype, function(add) {
     return ['new lively.scene.Similitude({a: ', this.a, ', b: ', this.b, ', c: ', this.c, ', d: ', this.d, ', e: ', this.e, ', f: ', this.f, '})'].join('');
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return lively.scene.Similitude.prototype;
-  }, {category: ['transporting']});
-
 });
 
 
@@ -179,10 +151,6 @@ thisModule.addSlots(lively.Text.Font.prototype, function(add) {
 
   add.method('storeString', function () {
     return ['new lively.Text.Font(', this.family.inspect(), ', ', this.size, ', ', this.style.inspect(), ')'].join('');
-  }, {category: ['transporting']});
-
-  add.method('storeStringNeeds', function () {
-    return lively.Text.Font.prototype;
   }, {category: ['transporting']});
 
 });

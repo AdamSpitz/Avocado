@@ -145,10 +145,6 @@ thisModule.addSlots(avocado.mirror.morphMixin_aaa_becauseIDoNotFeelLikeGeneraliz
     ].join("");
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return avocado.mirror.morphMixin_aaa_becauseIDoNotFeelLikeGeneralizingTheseMethodsRightNow;
-  }, {category: ['transporting']});
-
   add.method('shouldNotBeTransported', function () {
     // aaa - Actually, for now, let's just not have mirrors get saved at all, because they
     // don't really come back right (what with the object identity problems).

@@ -1341,6 +1341,19 @@ thisModule.addSlots(avocado.transporter, function(add) {
       });
     });
   }, {category: ['bootstrapping']});
+  
+  add.method('canUseStoreStringToTransportObject', function (o) {
+    if (o === null || typeof(o) === 'undefined') { return false; }
+    if (typeof(o.storeString) !== 'function') { return false; }
+    
+    var storeStringFunctionAnno = avocado.annotator.existingAnnotationOf(o.storeString);
+    var storeStringFunctionCreatorSlot = storeStringFunctionAnno && storeStringFunctionAnno.probableCreatorSlot();
+    var storeStringFunctionIsOnThisObject = !!(storeStringFunctionCreatorSlot && o === storeStringFunctionCreatorSlot.holder);
+    
+    var storeStringNeedsThisObject = typeof(o.storeStringNeeds) === 'function' && o === o.storeStringNeeds();
+    
+    return !storeStringNeedsThisObject && !storeStringFunctionIsOnThisObject;
+  }, {category: ['bootstrapping']});
 
 });
 

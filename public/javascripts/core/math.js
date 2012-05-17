@@ -62,10 +62,6 @@ thisModule.addSlots(Point.prototype, function(add) {
     return ['new Point(', this.x, ', ', this.y, ')'].join('');
   }, {category: ['transporting']});
 
-  add.method('storeStringNeeds', function () {
-    return Point.prototype;
-  }, {category: ['transporting']});
-
   add.method('plus', function (p) { return this.addPt(p); });
 
   add.method('minus', function (p) { return this.subPt(p); });
@@ -133,10 +129,6 @@ thisModule.addSlots(Rectangle.prototype, function(add) {
 
   add.method('storeString', function () {
     return ['new Rectangle(', this.x, ', ', this.y, ', ', this.width, ', ', this.height, ')'].join('');
-  }, {category: ['transporting']});
-
-  add.method('storeStringNeeds', function () {
-    return Rectangle.prototype;
   }, {category: ['transporting']});
 
 });

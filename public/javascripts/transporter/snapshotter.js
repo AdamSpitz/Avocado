@@ -79,11 +79,7 @@ thisModule.addSlots(avocado.snapshotter, function(add) {
   });
 
   add.method('creationStringFor', function (o) {
-    if (o.storeString) {
-      if (!o.storeStringNeeds || o !== o.storeStringNeeds()) {
-        return o.storeString();
-      }
-    }
+    if (avocado.transporter.canUseStoreStringToTransportObject(o)) { return o.storeString(); }
 
     var mir = reflect(o);
     var cs = mir.theCreatorSlot();
