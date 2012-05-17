@@ -1140,6 +1140,17 @@ avocado.transporter.module.create('bootstrap', function(requires) {
 }, function(thisModule) {
 
 
+thisModule.addSlots(window, function(add) {
+  
+  add.data('isInProgrammingEnvironmentMode', false, {category: ['avocado', 'config'], initializeTo: 'false'});
+  
+  add.data('isInCodeOrganizingMode', false, {category: ['avocado', 'config'], initializeTo: 'false'});
+  
+  add.data('isInRunMode', false, {category: ['avocado', 'config'], initializeTo: 'false'});
+  
+});
+
+
 thisModule.addSlots(modules.bootstrap, function(add) {
 
   add.data('preFileInFunctionName', 'bootstrapTheModuleSystem');

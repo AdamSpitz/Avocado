@@ -313,7 +313,7 @@ thisModule.addSlots(avocado.treeNode.morphMixin_aaa_becauseIDoNotFeelLikeGeneral
   }, {category: ['updating']});
 
   add.method('partsOfUIState', function () {
-    var s = this._expander ? {} : { isExpanded: this._expander };
+    var s = this._expander ? { isExpanded: this._expander } : {};
     if (this._contentsPanel) { s.contents = this._contentsPanel; }
     return s;
   }, {category: ['UI state']});

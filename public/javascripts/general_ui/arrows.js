@@ -26,7 +26,7 @@ thisModule.addSlots(avocado.arrow, function(add) {
     if (shouldUsePlaceholdersAsArrowTogglingButtons && avocado.ui.shouldMirrorsUseZooming) {
       var m = avocado.placeholder.newPlaceholderMorphForSlot(slot).setScale(0.25);
     } else {
-      var m = avocado.command.create("Toggle arrow", function() { this._arrow._layout.toggleVisibility(); }, m).newMorph(avocado.arrow.createArrowIconLabelMorph(), 0, pt(2,2));
+      var m = avocado.command.create("Toggle arrow", function() { m._arrow._layout.toggleVisibility(); }).newMorph(avocado.arrow.createArrowIconLabelMorph(), 0, pt(2,2));
 
       m.commands = function() {
         var cmdList = avocado.command.list.create();

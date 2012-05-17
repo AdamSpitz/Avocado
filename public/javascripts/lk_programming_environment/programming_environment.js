@@ -28,7 +28,7 @@ thisModule.addSlots(avocado.livelyKernelUI.programmingEnvironment, function(add)
     $super();
     
     avocado.livelyKernelUI.isZoomingEnabled = true;
-    avocado.livelyKernelUI.shouldMirrorsUseZooming = true;
+    avocado.livelyKernelUI.shouldMirrorsUseZooming = false;
     avocado.livelyKernelUI.debugMode = false;
     
     // aaa - figure out a way to do this creator-slot stuff without wrecking performance of the zooming UI
