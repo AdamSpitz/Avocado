@@ -19,7 +19,7 @@ thisModule.addSlots(avocado.wheelMenu, function(add) {
 
   add.creator('eventHandlerForMenu', {}, {category: ['user interface', 'events']});
 
-  add.creator('eventHandlerForHighlightingOnMouseOver', {}, {category: ['user interface', 'events']});
+  add.creator('eventHandlerForHighlighting', {}, {category: ['user interface', 'events']});
 
   add.creator('eventHandlerForShowingPartialCommandMorph', {}, {category: ['user interface', 'events']});
 
@@ -144,7 +144,7 @@ thisModule.addSlots(avocado.wheelMenu, function(add) {
 		commandMorph._menuMorph = menuMorph;
 
 		commandMorph.setEventHandler(avocado.eventHandlers.composite.create([
-		  avocado.wheelMenu.eventHandlerForHighlightingOnMouseOver,
+		  avocado.wheelMenu.eventHandlerForHighlighting,
 		  avocado.wheelMenu.eventHandlerForRunningTheCommand,
 		  avocado.wheelMenu.eventHandlerForShowingPartialCommandMorph
 		]));
@@ -198,6 +198,18 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForMenu, function(add) {
     avocado.wheelMenu.highlightAppropriateCommandMorphs(morph, evt);
   });
 
+  add.method('onTouchStart', function (morph, evt) {
+    return this.onMouseDown(morph, evt);
+  });
+
+  add.method('onTouchEnd', function (morph, evt) {
+    return this.onMouseUp(morph, evt);
+  });
+
+  add.method('onTouchMove', function (morph, evt) {
+    return this.onMouseMove(morph, evt);
+  });
+
   add.method('onKeyDown', function (morph, evt) {
     switch (evt.getKeyCode()) {
     	case Event.KEY_ESC: {
@@ -235,7 +247,7 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForMenu, function(add) {
 });
 
 
-thisModule.addSlots(avocado.wheelMenu.eventHandlerForHighlightingOnMouseOver, function(add) {
+thisModule.addSlots(avocado.wheelMenu.eventHandlerForHighlighting, function(add) {
 
   add.method('isEnabled', function (morph, evt) {
     return avocado.wheelMenu.areCommandsEnabled(morph._menuMorph);
@@ -246,6 +258,18 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForHighlightingOnMouseOver, fu
   });
 
   add.method('onMouseOut', function (morph, evt) {
+    morph.beUnhighlighted();
+  });
+
+  add.method('onTouchOver', function (morph, evt) {
+    morph.beHighlighted();
+  });
+
+  add.method('onTouchOut', function (morph, evt) {
+    morph.beUnhighlighted();
+  });
+
+  add.method('onTouchEnd', function (morph, evt) {
     morph.beUnhighlighted();
   });
 
@@ -298,6 +322,10 @@ thisModule.addSlots(avocado.wheelMenu.eventHandlerForRunningTheCommand, function
 
   add.method('onMouseUp', function (morph, evt) {
     avocado.wheelMenu.runCommand(morph._menuMorph, morph._model, evt);
+  });
+
+  add.method('onTouchEnd', function (morph, evt) {
+    return this.onMouseUp(morph, evt);
   });
 
 });

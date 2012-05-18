@@ -31,7 +31,7 @@ Object.subclass('ScriptLoader', {
 			console.log('script ' + url + ' already loaded');
 			return
 		};
-		console.log('loading script ' + url);
+		if (window.shouldShowLoadingMessages) { console.log('loading script ' + url); }
 		// FIXME Assumption that first def node has scripts
 		var node = document.getElementsByTagName("defs")[0] || this.getScripts()[0].parentElement;
 		if (!node) throw(dbgOn(new Error('Cannot load script ' + url + ' dont know where to append it')));
@@ -94,7 +94,7 @@ Object.extend(Global, {
     modules
         .select(function(ea) { return ea.hasPendingRequirements() })
         .forEach(function(ea) { console.warn(ea.uri() + ' has unloaded requirements: ' + ea.pendingRequirementNames()) });
-    console.log('Module load check done. ' + modules.length + ' modules loaded.');
+    if (window.shouldShowLoadingMessages) { console.log('Module load check done. ' + modules.length + ' modules loaded.'); }
 }).delay(5);
 
 // ===========================================================================
@@ -596,7 +596,7 @@ Class.addMixin(lively.data.DOMNodeRecord, lively.data.Wrapper.prototype);
 
 
 
-console.log("Loaded basic DOM manipulation code");
+if (window.shouldShowLoadingMessages) { console.log("Loaded basic DOM manipulation code"); }
 
 // ===========================================================================
 // Event handling foundations
@@ -619,6 +619,9 @@ var Event = (function() {
 		mouseup: 'MouseUp', mousedown: 'MouseDown', mousemove: 'MouseMove', 
 		mouseover: 'MouseOver', mouseout: 'MouseOut', mousewheel: 'MouseWheel',
 		keydown: 'KeyDown', keypress: 'KeyPress', keyup: 'KeyUp',
+		// touch and gesture stuff added by Adam
+		touchstart: 'TouchStart', touchmove: 'TouchMove', touchend: 'TouchEnd', touchcancel: 'TouchCancel',
+		gesturestart: 'GestureStart', gesturechange: 'GestureChange', gestureend: 'GestureEnd',
 	},
 	
 	initialize: function(rawEvent) {
@@ -679,6 +682,16 @@ var Event = (function() {
 	isMouseEvent: function() {
 		return Event.mouseEvents.include(this.rawEvent.type);
 	},
+	
+	// touch and gesture stuff added by Adam
+	isTouchEvent: function() {
+		return Event.touchEvents.include(this.rawEvent.type);
+	},
+ 	isGesture: function() { return this.touches().length > 1 },
+	// see http://www.sitepen.com/blog/2008/07/10/touching-and-gesturing-on-the-iphone/
+	touches: function() { return this.rawEvent.touches },
+	targetTouches: function() { return this.rawEvent.targetTouches },
+	changedTouches: function() { return this.rawEvent.changedTouches },
 	
 	simpleCopy: function() {
 		return new Event(this.rawEvent);
@@ -834,7 +847,10 @@ var Event = (function() {
     Event.mouseEvents = basicMouseEvents.concat(extendedMouseEvents);
 
     Event.keyboardEvents = ["keypress", "keyup", "keydown"];
-    Event.basicInputEvents = basicMouseEvents.concat(Event.keyboardEvents).concat(["touchstart", "touchmove", "touchend", "touchcancel"]);
+    // touch and gesture stuff added by Adam
+    Event.touchEvents = ["touchstart", "touchmove", "touchend", "touchcancel"];
+    Event.gestureEvents = ["gesturestart", "gesturechange", "gestureend"];
+    Event.basicInputEvents = basicMouseEvents.concat(Event.keyboardEvents, Event.touchEvents, Event.gestureEvents);
 
     return Event;
 })();
@@ -5668,6 +5684,12 @@ Morph.subclass("HandMorph", {
 		this.layoutChangedCount = 0; // to prevent recursion on layoutChanged
 		
 		this.setTrait("pointer-events", "none"); // added by Adam, needed to make HTML links clickable in XenoMorphs, hope it doesn't screw anything else up
+		
+		// added by Adam - I don't like seeing the hand morph, especially on a touch device
+		this.setFill(null);
+		this.setBorderWidth(0);
+		this.setBorderColor(null);
+		
         return this;
     },
 
@@ -5759,7 +5781,7 @@ lookTouchy: function(morph) {
 	handleEvent: function HandMorph$handleEvent(rawEvt) {
 		var evt = new Event(rawEvt);
 		evt.hand = this;
-		//if(Config.showLivelyConsole) console.log("event type = " + rawEvt.type + ", platform = " +  window.navigator.platform);
+		// console.log("event type = " + rawEvt.type);
 
 		lively.lang.Execution.resetDebuggingStack();
 		switch (evt.type) {
@@ -5768,6 +5790,18 @@ lookTouchy: function(morph) {
 			case "MouseDown":
 			case "MouseUp":
 				this.handleMouseEvent(evt);
+				break;
+			// touch and gesture stuff added by Adam
+			case "TouchStart":
+			case "TouchMove":
+			case "TouchEnd":
+			case "TouchCancel":
+				this.handleTouchEvent(evt);
+				break;
+			case "GestureStart":
+			case "GestureChange":
+			case "GestureEnd":
+				this.handleGestureEvent(evt);
 				break;
 			case "KeyDown":
 			case "KeyPress": 
@@ -5778,7 +5812,8 @@ lookTouchy: function(morph) {
 				console.log("unknown event type " + evt.type);
 		}
 		evt.stopPropagation();
-		return evt; // for touch development FIXME remove
+		return;
+		//return evt; // for touch development FIXME remove
 	}.logErrors('Event Handler'),
 
     armProfileFor: function(evtType) { 
@@ -5814,6 +5849,7 @@ lookTouchy: function(morph) {
 
 	reallyHandleMouseEvent: function HandMorph$reallyHandleMouseEvent(evt) { 
 		// console.log("reallyHandleMouseEvent " + evt + " focus " +  this.mouseFocus);
+		
 		// var rawPosition = evt.mousePoint;
 		var world = this.owner;
 		evt.mousePoint = evt.mousePoint.matrixTransform(world.getTransform().createInverse()); // for scaling
@@ -5944,6 +5980,73 @@ lookTouchy: function(morph) {
 		if (this.mouseOverMorph) this.mouseOverMorph.onMouseOver(evt);
 		return true;
 	},
+	
+	// touch and gesture stuff added by Adam
+	handleTouchEvent: function HandMorph$handleTouchEvent(evt) {
+	  // console.log("handleTouchEvent of type " + evt.type);
+
+    // aaa - WRONG, don't hard-code to use just the first touch
+		var touch = evt.changedTouches()[0];
+		if (!touch) { console.warn('Cannot setup touch event because cannot find touch!'); } else { evt.mousePoint = pt(touch.pageX || touch.clientX, touch.pageY || touch.clientY).subPt(evt.offset()); }
+
+	  var world = this.world();
+	  
+		this.setPosition(evt.mousePoint);
+		
+		var touchedMorph = world.morphToReceiveEvent(evt);
+		if (touchedMorph !== this._mostRecentlyTouchedMorph) {
+		  if (this._mostRecentlyTouchedMorph) { this._mostRecentlyTouchedMorph.runAvocadoEventHandler('onTouchOut', evt); }
+		  this._mostRecentlyTouchedMorph = touchedMorph;
+		  if (this._mostRecentlyTouchedMorph) { this._mostRecentlyTouchedMorph.runAvocadoEventHandler('onTouchOver', evt); }
+		}
+    
+		if (evt.type === "TouchStart") {
+		  this.lastMouseDownEvent = evt;
+		  this.hasMovedSignificantly = false;
+		  
+			if (touchedMorph && ((touchedMorph.owner && touchedMorph.owner.openForDragAndDrop) || touchedMorph.okToBeGrabbedBy(evt))) {
+        this.grabMorph(touchedMorph, evt);
+			}
+		  
+		  setTimeout(function() {
+		    if (this.lastMouseDownEvent == evt) { // the user hasn't lifted his finger yet
+  		    if (! this.hasMovedSignificantly) {
+  		      // aaa - make this a "long touch" event and call some method on the _eventHandler or something
+  		      this.dropMorphsOn(world);
+    				var touchedMorph = world.morphToReceiveEvent(evt);
+    				touchedMorph.showContextMenu(evt);
+  		    }
+		    }
+		  }.bind(this), 750);
+
+      if (touchedMorph) { touchedMorph.runAvocadoEventHandler('onTouchStart', evt); }
+		} else if (evt.type === "TouchEnd") {
+		  this.lastMouseDownEvent = null;
+		  this.hasMovedSignificantly = false;
+      this.dropMorphsOn(world);
+
+      if (touchedMorph) { touchedMorph.runAvocadoEventHandler('onTouchEnd', evt); }
+		} else if (evt.type === "TouchMove") {
+			if (evt.mousePoint.dist(this.lastMouseDownEvent.mousePoint) > 10) { 
+				this.hasMovedSignificantly = true;
+			}
+
+      if (touchedMorph) { touchedMorph.runAvocadoEventHandler('onTouchMove', evt); }
+		} else if (evt.type === "TouchCancel") {
+		  this.lastMouseDownEvent = null;
+		  this.hasMovedSignificantly = false;
+      this.dropMorphsOn(world); // aaa - should actually return them to their previous positions or something
+
+      if (touchedMorph) { touchedMorph.runAvocadoEventHandler('onTouchCancel', evt); }
+	  }
+		
+		evt.preventDefault();
+  },
+
+	handleGestureEvent: function HandMorph$handleGestureEvent(evt) {
+	  // console.log("Got to handleGestureEvent, evt.type is " + evt.type + "; now what?");
+		evt.preventDefault();
+  },
 
     layoutChanged: function($super) {
 		this.layoutChangedCount ++;
@@ -6972,4 +7075,4 @@ Object.subclass('ClipboardCopier', {
 });
 
 
-console.log('loaded Core.js');
+if (window.shouldShowLoadingMessages) { console.log('loaded Core.js'); }

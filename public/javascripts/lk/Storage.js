@@ -1005,7 +1005,7 @@ View.subclass('Subversion',  NetRequestReporterTrait, {
 
 });
 
-console.log('Storage.js');
+if (window.shouldShowLoadingMessages) { console.log('loaded Storage.js'); }
 
 
 }); // end of module

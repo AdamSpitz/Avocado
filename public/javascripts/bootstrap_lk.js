@@ -111,9 +111,6 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
        "lk/Storage",
        "lk/bindings",
        "lk/Tools",
-       "lk/TestFramework",
-       "lk/TouchSupport",
-       "lk/cop/Layers",
        "jslint"
       ], callWhenDone
     );

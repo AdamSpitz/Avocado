@@ -988,7 +988,6 @@ Namespace.addMethods({ // module specific, should be a subclass?
 			this.loadRequirementsFirst();
 			return;
 		}
-		console.log("About to do LK load of " + this.uri());
 		Loader.loadJs(this.uri());
 	},
 	
@@ -1184,7 +1183,7 @@ Object.extend(Function.prototype, {
 				lively.lang.Execution.showStack();
 				throw er;
 			}
-			console.log('completed %s', module);
+			if (window.shouldShowLoadingMessages) { console.log('completed %s', module); }
 			return result;
 		}
 

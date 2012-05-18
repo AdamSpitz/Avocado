@@ -9,6 +9,6 @@ avocado.transporter.startAvocado(function(world) {
     if (app.initializeWorld) { app.initializeWorld(world); }
   });
 
-  world.showMessage("Right-click the background to start");
+  world.showMessage((UserAgent.isTouch ? "Long-touch" : "Right-click") + " the background to start");
   
 });

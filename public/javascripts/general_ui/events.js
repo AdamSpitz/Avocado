@@ -36,7 +36,11 @@ thisModule.addSlots(avocado, function(add) {
 
 thisModule.addSlots(avocado.eventHandlers, function(add) {
 
-  add.creator('composite', {});
+  add.creator('general', {});
+
+  add.creator('composite', Object.create(avocado.eventHandlers.general));
+
+  add.creator('default', Object.create(avocado.eventHandlers.general));
 
   add.method('grabAndPullOrPutBackIfPossible', function (morph, evt) {
     if (morph.hasPlaceholderToGoBackTo()) {
@@ -53,13 +57,18 @@ thisModule.addSlots(avocado.eventHandlers, function(add) {
 });
 
 
-thisModule.addSlots(avocado.eventHandlers.composite, function(add) {
+thisModule.addSlots(avocado.eventHandlers.general, function(add) {
 
   add.method('create', function () {
     var c = Object.create(this);
     c.initialize.apply(c, arguments);
     return c;
   }, {category: ['creating']});
+  
+});
+
+
+thisModule.addSlots(avocado.eventHandlers.composite, function(add) {
 
   add.method('initialize', function (handlers) {
     this._eventHandlers = handlers;
@@ -92,6 +101,30 @@ thisModule.addSlots(avocado.eventHandlers.composite, function(add) {
 
   add.method('onMouseOut', function (morph, evt) {
     return this.handleEvent('onMouseOut', morph, evt);
+  });
+
+  add.method('onTouchStart', function (morph, evt) {
+    return this.handleEvent('onTouchStart', morph, evt);
+  });
+
+  add.method('onTouchEnd', function (morph, evt) {
+    return this.handleEvent('onTouchEnd', morph, evt);
+  });
+
+  add.method('onTouchMove', function (morph, evt) {
+    return this.handleEvent('onTouchMove', morph, evt);
+  });
+
+  add.method('onTouchCancel', function (morph, evt) {
+    return this.handleEvent('onTouchCancel', morph, evt);
+  });
+
+  add.method('onTouchOver', function (morph, evt) {
+    return this.handleEvent('onTouchOver', morph, evt);
+  });
+
+  add.method('onTouchOut', function (morph, evt) {
+    return this.handleEvent('onTouchOut', morph, evt);
   });
 
   add.method('onKeyDown', function (morph, evt) {

@@ -186,7 +186,7 @@ WorldMorph.addMethods({
 
 Event.addMethods({
   isForGrabbing: function() {
-    return this.type !== 'MouseMove' && !this.isForMorphMenu() && !this.isForContextMenu();
+    return this.type !== 'MouseMove' && this.type !== 'TouchMove' && !this.isForMorphMenu() && !this.isForContextMenu();
   }
 });
 

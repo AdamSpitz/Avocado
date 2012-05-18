@@ -105,6 +105,11 @@ BoxMorph.subclass('ButtonMorph', {
 	},
     
     onMouseDown: function(evt) {
+      // factored out the wasJustPressedDown method because I want to call it for touch events too -- Adam
+      return this.wasJustPressedDown(evt);
+    },
+    
+    wasJustPressedDown: function(evt) {
 		if (!this.getIsActive() && this.getIsActive() !== undefined) return;
         // this.requestKeyboardFocus(evt.hand); // commented out by Adam, because I don't like it
         if (!this.toggle) {
@@ -114,13 +119,29 @@ BoxMorph.subclass('ButtonMorph', {
     },
     
 	onMouseMove: Functions.Empty,
+    
+  onMouseUp: function(evt) {
+    // factored out the wasJustReleasedUp method because I want to call it for touch events too -- Adam
+    return this.wasJustReleasedUp(evt);
+  },
 
-	onMouseUp: function(evt) {
+	wasJustReleasedUp: function(evt) {
 		if (!this.getIsActive() && this.getIsActive() !== undefined) return;
 		var newValue = this.toggle ? !this.getValue() : false;
 		this.setValue(newValue); 
 		// the following should happen in response
 		this.changeAppearanceFor(newValue); 
+	},
+	
+	// added by Adam
+	_eventHandler: {
+	  onTouchStart: function (morph, evt) {
+	    morph.wasJustPressedDown(evt);
+	  },
+
+	  onTouchEnd: function (morph, evt) {
+	    morph.wasJustReleasedUp(evt);
+	  },
 	},
     
 	changeAppearanceFor: function(value) {
@@ -5279,7 +5300,7 @@ BoxMorph.subclass('ScaleMorph', {
 	},
 })
 
-console.log('loaded Widgets.js');
+if (window.shouldShowLoadingMessages) { console.log('loaded Widgets.js'); }
 
 
 }); // end of module

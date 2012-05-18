@@ -1345,7 +1345,7 @@ WebResource.addMethods({
 });
 
 
-console.log('loaded Network.js');
+if (window.shouldShowLoadingMessages) { console.log('loaded Network.js'); }
 
 
 }); // end of module
