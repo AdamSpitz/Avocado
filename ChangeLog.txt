@@ -1,3 +1,71 @@
+Friday, May 18, 2012
+
+Many miscellaneous tiny changes - bug fixes, refactorings, minor performance improvements, color/layout tweaks, and a handful of small new features.
+
+Enhancements to non-UI stuff:
+
+  - Tiny:
+    - Added a way to exclude particular arguments from being accepted by a command.
+    - Small bug fix - running an individual test case was broken.
+    - Workaround for a performance problem that I don't know the right fix for yet; see shouldBreakCreatorSlotsInOrderToImprovePerformance.
+    - Refactorings:
+      - Factored some basic asynchronous-request stuff into objects.
+      - Added a comment here and there.
+      - Added canGet and canSet methods to the accessor objects.
+      - Added an isEmpty method to stringBuffer.
+      - Gave the collection objects their own subdirectory.
+
+  - Less tiny:
+    - Improved the Unowned Slot Finder. I wouldn't trust it just yet, but if I add an attribute to the window object and then get changed modules, I see the new attribute show up as unowned.
+    - Made it possible to run the basic core stuff (not the UI) under Node JS.
+    - Added JSONP functionality.
+    - Added basic WebDAV functionality.
+
+Enhancements to UI stuff:
+
+  - Tiny:
+    - Added a couple of shortcuts for common world-navigation operations - "show centered" and "navigate to."
+    - Commented out some annoying keyboard shortcuts.
+    - Modified the success/failure colours of tests, because pure red and pure green aren't good for colour-blind people. (Should really show the info in another way too, not just with colour. But this is an easy hack for now.)
+    - Made wheel menus more visible when the background is white.
+    - Fiddling with the pose layout code, trying to fix the shrinking-boxes bug.
+    - Disabled Mac OS 10.7 rubber-band scrolling.
+    - Fixed that bug where message notifier morphs wouldn't do the whooshing-away thing if you zoomed in while they were on the screen.
+    - Bug fixes to the pick-up-and-drop code, to make it play nicer with the zooming UI.
+    - Made command-arg morphs whoosh back to wherever they came from, after the command is executed.
+    - Made the carrying hand disappear properly when it's empty after executing a command.
+    - Made menus work when you right-click the contents panel of a tree node morph - should just use the owner's menu.
+    - Refresh the world on each zooming step (even when doing an automated pan-and-zoom), not just on mouse-wheel clicks.
+    - Some cleanup of the animation code.
+    - Made a MorphChooser - tell it what type of object you want, and then you can move it around and it'll highlight acceptable objects and let you choose one by dropping it on the object.
+    - Long-string input fields should be wrapped in a ScrollPane.
+    - Refactored TreeNodeMorph so that I can split it into a NamedMorph and a contents morph.
+    - Renamed "zooming away" to "whooshing away" - the word "zooming" is meant for zooming in and out, it's confusing to keep on using it for this whooshing-around behaviour.
+    - Update the fonts whenever we zoom in or out. (The fonts still look "fidgety", but at least they don't look wrong.)
+    - Made a StringBuffer morph - just a big text box that gets updated whenever the buffer is appended to.
+    - Made the SelectionMorph look right when zoomed in or out.
+    - Got rid of that annoying little focus halo that always appeared (and looked very weird) when starting to drag a SelectionMorph.
+    - I'm not sure this is the right thing to do, but I made okToBeGrabbedBy take the owner's openForDragAndDrop into account.
+    - The zooming UI performs a bit better now.
+    - Created a way for the programmer to say, "We're going to do a bunch of layout-affecting operations in a row; don't bother updating the layout until the end."
+    - Fixed the world-navigation animation so that it's a bit smarter about whether it needs to zoom out before zooming back in, etc.
+    - Fixed a bug that was causing message notifiers to show up in the wrong place in the world when zoomed in or out.
+    - Some enhancements to the layout algorithms.
+    - Refactored SlotMorph so that it could be used with other kinds of slots, not just JS-reflective-level slots.
+
+  - Less tiny:
+    - Experimental panning feature. Hold down Cmd+Shift and move the mouse around.
+    - Experiment grab-and-pull feature.
+    - Experimenting with being able to give a ValueHolder an optional type. It's used in the UI to show a better way of entering the value (e.g. a checkbox for a boolean, a text box for a string, etc.).
+    - Implemented a rudimentary kind of command feedback - when you mouse over a menu item, you'll see which arguments are required and which will be auto-supplied.
+    - First attempt at a line-graph.
+    - Made a morph to display a table of similar objects.
+    - Switched to using placeholders as arrow-toggling buttons. (The idea is that when you have a reference to another morph, you can either single-click it to see an arrow pointing to it, or double-click it to have the morph whoosh into place.)
+    - Basic HTML morphs, for embedding chunks of HTML inside an Avocado world.
+    - Factored the system into LK-specific and non-LK-specific stuff, to allow non-LK Avocado UIs to be created.
+    - Improved the test-suite UI, and made a UI for displaying test-result histories. 
+
+
 Friday, April 29, 2011
 
   - Made a test-suite morph that uses the zooming UI - zoom in on it to see the individual test cases.
