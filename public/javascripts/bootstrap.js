@@ -1371,6 +1371,8 @@ thisModule.addSlots(avocado.transporter, function(add) {
 
 thisModule.addSlots(avocado, function(add) {
 
+  add.data('version', '0.15', {category: ['version']});
+
   add.creator('http', {}, {category: ['HTTP']});
 
   add.creator('generalUI', {}, {category: ['user interface'], comment: 'An extra layer of indirection, so that we can switch between LK and ThreeJS and various other UI systems.'});
