@@ -1,3 +1,6 @@
 appengine-generated
 public/javascripts/auto_generated
+public/javascripts/auto_save
 _site
+.backups
+.DS_Store
