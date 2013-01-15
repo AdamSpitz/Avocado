@@ -7142,7 +7142,7 @@ var UserAgent = (function() {
         // Newer versions of WebKit implement proper SVGTransform API,
         // with potentially better performance. Scratch that, lets make it more predictable:
         usableTransformAPI: (webKitVersion < 0), //webKitVersion >= 525,
-        usableDropShadow: webKitVersion >= 525,
+        usableDropShadow: webKitVersion >= 525 && webKitVersion < 536, // added the upper bound because this broke in Safari 6
         canExtendBrowserObjects: !isRhino, // Error, document
         usableOwnerSVGElement: !isRhino && !isMozilla,
 
