@@ -22,14 +22,14 @@ and you might have to do things like play with your user config file, ie:
 
 possibly writing something like this in there:
 
-> <Directory "/Users/alex/Sites/">  
+> \<Directory "/Users/alex/Sites/"\>  
 >        Options Indexes Multiviews  
 >        Options FollowSymLinks  
 >        AllowOverride AuthConfig Limit  
 >        Order deny,allow  
 >        Deny from all  
 >        Allow from 127.0.0.1  
-> </Directory>  
+> \</Directory\>  
 
 ### More complicated, development installation
 
