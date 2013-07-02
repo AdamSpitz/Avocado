@@ -1215,10 +1215,7 @@ thisModule.addSlots(avocado.transporter, function(add) {
     var repoURL = baseURL + "javascripts/";
     
     // aaa - hack because I want saving to keep working on my local machine
-    if (repoURL.indexOf("http://localhost") === 0) { avocado.kernelModuleSupportsWebDAV = true; }
-    
-    // aaa - hack because I haven't managed to get WebDAV working on the real server yet
-    if (repoURL.indexOf("coolfridgesoftware.com") >= 0) { window.kernelModuleSavingScriptURL = "http://coolfridgesoftware.com/cgi-bin/savefile.cgi"; }
+    if (repoURL.indexOf("http://localhost") === 0 || repoURL.indexOf("http://127.0.0.1") === 0) { avocado.kernelModuleSupportsWebDAV = true; }
     
     var kernelRepo;
     if (window.kernelModuleSavingScriptURL) {
