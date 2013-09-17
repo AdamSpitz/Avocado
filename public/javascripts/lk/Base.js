@@ -64,6 +64,7 @@ Object.defineProperties(Object, {
 	keys: { 
 		value: function(object, optFast) {
 			if (typeof object !== 'object') throw new TypeError('not an object');
+			if (typeof object !== 'object' && typeof object !== 'function') throw new TypeError('not an object');
 			var names = []; // check behavior wrt arrays
 			for (var name in object) {
 				if (object.hasOwnProperty(name)) 
