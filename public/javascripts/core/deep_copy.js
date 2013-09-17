@@ -42,20 +42,21 @@ thisModule.addSlots(avocado.deepCopier, function(add) {
         var isArray = isObj && (o instanceof Array);
         c = isObj ? (isArray ? [] : Object.create(o['__proto__'])) : eval("(" + o.toString() + ")");
         var thisCopier = this;
-        for (var n in o) {
-          if (o.hasOwnProperty(n)) {
-            var contents = o[n];
-            if (n === '__annotation__') {
-              c[n] = contents.copy();
+        var keys = Object.native_keys(o);
+        var length = keys.length;
+        for (var j = 0; j < length; ++j){
+          var n = keys[j];
+          var contents = o[n];
+          if (n === '__annotation__') {
+            c[n] = contents.copy();
+          } else if (contents) {
+            var contentsType = typeof(contents);
+            var contentsCreatorSlot = (contentsType === 'object' || contentsType === 'function') && avocado.annotator.theCreatorSlotOf(contents);
+            if (contentsCreatorSlot && contentsCreatorSlot.name === n && contentsCreatorSlot.holder === o) {
+              c[n] = thisCopier.createCopyOf(contents);
+              avocado.annotator.annotationOf(c[n]).setCreatorSlot(n, c);
             } else {
-              var contentsType = typeof(contents);
-              var contentsCreatorSlot = (contentsType === 'object' || contentsType === 'function') && avocado.annotator.theCreatorSlotOf(contents);
-              if (contentsCreatorSlot && contentsCreatorSlot.name === n && contentsCreatorSlot.holder === o) {
-                c[n] = thisCopier.createCopyOf(contents);
-                avocado.annotator.annotationOf(c[n]).setCreatorSlot(n, c);
-              } else {
-                c[n] = contents;
-              }
+              c[n] = contents;
             }
           }
         }
@@ -87,12 +88,15 @@ thisModule.addSlots(avocado.deepCopier, function(add) {
       var thisCopier = this;
       var originalsAndCopies = this._originalsAndCopies;
       var originalsAndCopiesCount = originalsAndCopies.length;
-      for (var n in c) {
-        if (c.hasOwnProperty(n)) {
+      var keys = Object.native_keys(c);
+      var length = keys.length;
+      for (var j = 0; j < length; ++j){
+        var n = keys[j];
+        var contents = c[n];
+        if (contents) {
           if (n === '__annotation__') {
             // just ignore it, no refs to fix up, I think - oh, actually, could do the creator slot, but we've already done it up above
-          } else {
-            var contents = c[n];
+          } else {            
             var contentsType = typeof(contents);
             if (contentsType === 'object' || contentsType === 'function') {
               var wasInternalRef = false;
