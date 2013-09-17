@@ -42,7 +42,7 @@ thisModule.addSlots(avocado.deepCopier, function(add) {
         var isArray = isObj && (o instanceof Array);
         c = isObj ? (isArray ? [] : Object.create(o['__proto__'])) : eval("(" + o.toString() + ")");
         var thisCopier = this;
-        var keys = Object.keys(o);
+        var keys = Object.native_keys(o);
         var length = keys.length;
         for (var j = 0; j < length; ++j){
           var n = keys[j];
@@ -88,7 +88,7 @@ thisModule.addSlots(avocado.deepCopier, function(add) {
       var thisCopier = this;
       var originalsAndCopies = this._originalsAndCopies;
       var originalsAndCopiesCount = originalsAndCopies.length;
-      var keys = Object.keys(c);
+      var keys = Object.native_keys(c);
       var length = keys.length;
       for (var j = 0; j < length; ++j){
         var n = keys[j];

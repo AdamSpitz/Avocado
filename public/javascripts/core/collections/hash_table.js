@@ -167,7 +167,7 @@ thisModule.addSlots(avocado.hashTable, function(add) {
   }, {category: ['accessing']});
 
   add.method('_each', function (iterator) {
-    var keys = Object.keys(this._buckets);
+    var keys = Object.native_keys(this._buckets);
     var length = keys.length;
     for (var i = 0; i < length; i++) {
       var b = this._buckets[keys[i]];
