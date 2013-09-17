@@ -12,9 +12,9 @@ start up your webserver, and then copy the "public" folder to the "Sites" direct
 
 Remember, for the newer versions of OS X you'll have to start apache from the commandline, like so:  
 
->sudo apachectl start
->sudo apachectl stop
->sudo apachectl restart
+>sudo apachectl start  
+>sudo apachectl stop  
+>sudo apachectl restart  
 
 and you might have to do things like play with your user config file, ie:
 
@@ -22,14 +22,14 @@ and you might have to do things like play with your user config file, ie:
 
 possibly writing something like this in there:
 
-> <Directory "/Users/alex/Sites/">
->        Options Indexes Multiviews
->        Options FollowSymLinks
->        AllowOverride AuthConfig Limit
->        Order deny,allow
->        Deny from all
->        Allow from 127.0.0.1
-> </Directory>
+> \<Directory "/Users/alex/Sites/"\>  
+>        Options Indexes Multiviews  
+>        Options FollowSymLinks  
+>        AllowOverride AuthConfig Limit  
+>        Order deny,allow  
+>        Deny from all  
+>        Allow from 127.0.0.1  
+> \</Directory\>  
 
 ### More complicated, development installation
 
