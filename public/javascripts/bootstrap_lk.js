@@ -98,7 +98,6 @@ thisModule.addSlots(avocado.transporter.livelyKernelInitializer, function(add) {
     // Loading LK modules dynamically, in the same order that they are loaded in the xhtml file.   
     avocado.transporter.loadExternal(
       ["prototype/prototype",
-       "lk/JSON",
        "lk/defaultconfig",
        "local-LK-config",
        "lk/Base",
