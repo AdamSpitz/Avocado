@@ -47,7 +47,8 @@ Object.defineProperties = function(object, descriptorSet) {
 	}
 	return object;
 }
-	 
+
+Object.native_keys = Object.keys;	 
 Object.defineProperties(Object, {
   // I like mine better. -- Adam
   /*
@@ -62,12 +63,15 @@ Object.defineProperties(Object, {
 	*/
 
 	keys: { 
-		value: function(object, optFast) {
-			if (typeof object !== 'object') throw new TypeError('not an object');
-			var names = []; // check behavior wrt arrays
-			for (var name in object) {
-				if (object.hasOwnProperty(name)) 
-					names.push(name);
+	        value: function(object, optFast) {
+                        if (typeof object !== 'object' && typeof object !== 'function') throw new TypeError('not an object');
+                        var names = []; // check behavior wrt arrays
+                        var keys = Object.native_keys(object);
+                        var length = keys.length;
+		        for (var i = 0; i < length; ++i) {
+                                var name = keys[i];
+                                if (object[name])
+                                        names.push(name);
 			}
 			if (!optFast) names.sort();
 			return names;
