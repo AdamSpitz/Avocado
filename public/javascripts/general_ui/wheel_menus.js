@@ -514,7 +514,7 @@ thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
     return commandMorph._cachedArgumentMorphLabels;
   }, {category: ['commands', 'feedback']});
 
-  add.method('findArgumentMorphsAndShowLabels', function (argMorphLabels, partialCommand) {
+  add.method('findArgumentMorphsAndShowLabels', function (evt, argMorphLabels, partialCommand) {
     var context = partialCommand.command().contextOrDefault();
     argMorphLabels.each(function(m, i) {
       var argHolder = partialCommand.argumentHolders()[i];
@@ -531,7 +531,7 @@ thisModule.addSlots(avocado.morphMixins.WorldMorph, function(add) {
 
   add.method('showWhatWillHappenIfThisCommandRuns', function (evt, commandMorph) {
     var pc = commandMorph._model.createPartialCommand();
-    this.findArgumentMorphsAndShowLabels(this.argumentMorphLabelsFor(commandMorph), pc);
+    this.findArgumentMorphsAndShowLabels(evt, this.argumentMorphLabelsFor(commandMorph), pc);
     var world = avocado.ui.worldFor(evt);
     world.removeAllPartialCommandMorphs();
     world.showPartialCommandMorph(world.morphFor(pc).setFillOpacity(0.5));
